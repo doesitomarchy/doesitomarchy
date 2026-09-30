@@ -45,7 +45,8 @@ header { display: grid; gap: 10px; border-bottom: 1px solid var(--line-strong); 
 
 section { display: grid; gap: 14px; min-width: 0 }
 .intro { display: grid; gap: 10px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--line) }
-.intro ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; max-width: 80ch }
+.intro ul { margin: 0; padding-left: 18px; display: grid; gap: 6px }
+.intro p { max-width: none }
 .intro h2 { font-size: 15px }
 
 .scroll { overflow-x: auto; min-width: 0 }
@@ -62,7 +63,7 @@ article.mac { display: grid; gap: 16px; padding-top: 22px; border-top: 1px solid
 .facts { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 12.5px var(--mono); color: var(--muted) }
 .facts span b { color: var(--fg); font-weight: 500 }
 .blocker { padding: 10px 14px; background: var(--block-bg); color: var(--block); border: 1px solid var(--block); font: 500 13px var(--mono) }
-.notes { white-space: pre-line; max-width: 90ch; color: var(--fg) }
+.notes { white-space: pre-line; max-width: none; color: var(--fg) }
 details > summary { cursor: pointer; font: 12.5px var(--mono); color: var(--muted) }
 details ul { margin: 6px 0 0; padding-left: 18px; font: 12px var(--mono); display: grid; gap: 2px }
 details ul a { word-break: break-all }
@@ -74,6 +75,9 @@ details ul a { word-break: break-all }
 .cfg-head .title { display: grid; gap: 2px; min-width: 0 }
 .cfg-head .label-text { font: 500 14px var(--mono) }
 .pill { font: 500 11.5px var(--mono); padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 2px; white-space: nowrap; align-self: start; font-variant-numeric: tabular-nums }
+.pill.orders { white-space: normal; overflow-wrap: anywhere }
+.cfg-head .chips { min-width: 0 }
+article.mac, .release { min-width: 0 }
 .pill.bto { border-color: var(--accent); color: var(--accent) }
 .cfg-body { display: grid; gap: 14px; padding: 14px 16px 16px; min-width: 0 }
 .kv { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 4px 14px; margin: 0 }
@@ -179,7 +183,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
           <span class="id muted">{{.ID}}</span>
         </div>
         <div class="chips">
-          {{if .BTOOnly}}<span class="pill bto">Build to order only</span>{{else}}<span class="pill">{{join .OrderNumbers " · "}}</span>{{end}}
+          {{if .BTOOnly}}<span class="pill bto">Build to order only</span>{{else}}<span class="pill orders">{{join .OrderNumbers " · "}}</span>{{end}}
           <span class="pill">{{.Applies}} criteria apply</span>
         </div>
       </div>
