@@ -49,6 +49,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
 
 - id: ethernet/marvell-88e8058
   name: Marvell Yukon 88E8058 Gigabit Ethernet
@@ -87,3 +88,29 @@
   driver: forcedeth
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+
+- id: ethernet/intel-80003es2lan
+  name: Intel 80003ES2LAN dual Gigabit Ethernet
+  vendor: Intel
+  ids: [pci:8086:1096]
+  driver: e1000e
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro1/MacPro1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro3/MacPro3%2C1
+
+- id: ethernet/intel-82574l
+  name: Intel 82574L Gigabit Ethernet (×2)
+  vendor: Intel
+  ids: [pci:8086:10f6]
+  driver: e1000e
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro4/MacPro4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+
+- id: ethernet/broadcom-bcm57762
+  name: Broadcom NetXtreme BCM57762 Gigabit Ethernet (×2)
+  vendor: Broadcom
+  ids: [pci:14e4:1682]
+  driver: tg3
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1

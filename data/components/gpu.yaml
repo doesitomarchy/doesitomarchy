@@ -170,10 +170,11 @@
   name: NVIDIA GeForce 7300 GT
   vendor: NVIDIA
   role: discrete
-  ids: [pci:10de:0395]
+  ids: [pci:10de:0395, pci:10de:0393]
   driver: nouveau
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro1/MacPro1%2C1
 
 - id: gpu/nvidia-geforce-7600-gt
   name: NVIDIA GeForce 7600 GT
@@ -218,10 +219,11 @@
   name: NVIDIA GeForce GT 120
   vendor: NVIDIA
   role: discrete
-  ids: [pci:10de:0655]
+  ids: [pci:10de:0655, pci:10de:0640]
   driver: nouveau
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro4/MacPro4%2C1
 
 - id: gpu/nvidia-geforce-gt-130
   name: NVIDIA GeForce GT 130
@@ -375,14 +377,15 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
 
-- id: gpu/amd-radeon-r9-m290x
-  name: AMD Radeon R9 M290X
+- id: gpu/amd-radeon-r9-m290x-firepro-d300
+  name: AMD Radeon R9 M290X / FirePro D300 (Pitcairn XT)
   vendor: AMD
   role: discrete
   ids: [pci:1002:6810]
   driver: radeon, amdgpu
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
 
 - id: gpu/amd-radeon-r9-m295x
   name: AMD Radeon R9 M295X
@@ -442,10 +445,11 @@
   role: discrete
   ids: [pci:1002:67df]
   driver: amdgpu
-  notes: One chip under six names; the Apple subsystem ID identifies the model.
+  notes: One chip under six names (also the Mac Pro 580X MPX module); the Apple subsystem ID identifies the model.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
 
 - id: gpu/amd-radeon-pro-vega-48
   name: AMD Radeon Pro Vega 48
@@ -572,3 +576,173 @@
   uncertain:
     - field: ids
       note: No Linux hardware probe shows a Vega 64X, so its PCI device ID (and whether it matches the Vega 64) is unconfirmed.
+
+- id: gpu/ati-radeon-x1900-xt
+  name: ATI Radeon X1900 XT (512 MB)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:7249]
+  driver: radeon
+  sources:
+    - https://pci-ids.ucw.cz/
+  uncertain:
+    - field: ids
+      note: ID taken from the pci.ids name database for the Radeon X1900 XT; not observed on a real Mac.
+
+- id: gpu/nvidia-quadro-fx-4500
+  name: NVIDIA Quadro FX 4500 (512 MB)
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:009d]
+  driver: nouveau
+  sources:
+    - https://pci-ids.ucw.cz/
+  uncertain:
+    - field: ids
+      note: ID taken from the pci.ids name database for the Quadro FX 4500; not observed on a real Mac.
+
+- id: gpu/ati-radeon-hd-2600-xt
+  name: ATI Radeon HD 2600 XT (256 MB)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:9588]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro3/MacPro3%2C1
+
+- id: gpu/nvidia-geforce-8800-gt
+  name: NVIDIA GeForce 8800 GT (512 MB)
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0611, pci:10de:0602]
+  driver: nouveau
+  sources:
+    - https://pci-ids.ucw.cz/
+  uncertain:
+    - field: ids
+      note: pci.ids lists two G92 IDs named GeForce 8800 GT; which one Apple's card reports is unconfirmed.
+
+- id: gpu/nvidia-quadro-fx-5600
+  name: NVIDIA Quadro FX 5600 (1.5 GB)
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:019d]
+  driver: nouveau
+  sources:
+    - https://pci-ids.ucw.cz/
+  uncertain:
+    - field: ids
+      note: ID taken from the pci.ids name database for the Quadro FX 5600; not observed on a real Mac.
+
+- id: gpu/ati-radeon-hd-4870
+  name: ATI Radeon HD 4870 (512 MB)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:9440]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro4/MacPro4%2C1
+
+- id: gpu/ati-radeon-hd-5770
+  name: ATI Radeon HD 5770 (1 GB)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:68b8]
+  driver: radeon
+  notes: Juniper XT. Also widely used as an upgrade in older Mac Pros.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+
+- id: gpu/ati-radeon-hd-5870
+  name: ATI Radeon HD 5870 (1 GB)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6898]
+  driver: radeon
+  notes: Cypress XT.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+
+- id: gpu/amd-firepro-d500
+  name: AMD FirePro D500 (dual, 3 GB each)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:679e]
+  driver: radeon, amdgpu
+  notes: Tahiti LE; two GPUs per Mac Pro.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
+
+- id: gpu/amd-firepro-d700
+  name: AMD FirePro D700 (dual, 6 GB each)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6798]
+  driver: radeon, amdgpu
+  notes: Tahiti XT; two GPUs per Mac Pro.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
+
+- id: gpu/amd-radeon-pro-w5500x
+  name: AMD Radeon Pro W5500X MPX Module
+  vendor: AMD
+  role: discrete
+  ids: []
+  driver: amdgpu
+  sources:
+    - https://pci-ids.ucw.cz/
+  uncertain:
+    - field: ids
+      note: No real Mac probe and no pci.ids entry names the W5500X; its Navi 14 device ID is unconfirmed.
+
+- id: gpu/amd-radeon-pro-w5700x
+  name: AMD Radeon Pro W5700X MPX Module
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:7310]
+  driver: amdgpu
+  notes: Navi 10.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+
+- id: gpu/amd-radeon-pro-vega-ii
+  name: AMD Radeon Pro Vega II / Vega II Duo MPX Module
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:66a3]
+  driver: amdgpu
+  notes: Vega 20; the Duo carries two of the same GPU.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+
+- id: gpu/amd-radeon-pro-w6600x
+  name: AMD Radeon Pro W6600X MPX Module
+  vendor: AMD
+  role: discrete
+  ids: []
+  driver: amdgpu
+  sources:
+    - https://pci-ids.ucw.cz/
+  uncertain:
+    - field: ids
+      note: No real Mac probe and no pci.ids entry names the W6600X; its Navi 23 device ID is unconfirmed.
+
+- id: gpu/amd-radeon-pro-w6800x
+  name: AMD Radeon Pro W6800X / W6800X Duo MPX Module
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:73ab]
+  driver: amdgpu
+  notes: Navi 21 Pro-XLA; the Duo carries two of the same GPU.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+
+- id: gpu/amd-radeon-pro-w6900x
+  name: AMD Radeon Pro W6900X MPX Module
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:73a2]
+  driver: amdgpu
+  notes: Navi 21 Pro-XTA.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1

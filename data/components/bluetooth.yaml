@@ -131,6 +131,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Desktop/Apple/MacPro3/MacPro3%2C1
 
 - id: bluetooth/apple-05ac-820f
   name: Apple Bluetooth 2.0+EDR (USB 05ac:820f)
@@ -149,6 +150,7 @@
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
 
 - id: bluetooth/apple-05ac-828b
   name: Apple Bluetooth 4.0 (USB 05ac:828b)
@@ -166,6 +168,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
 
 - id: bluetooth/apple-05ac-8294
   name: Apple Bluetooth 4.2 (USB 05ac:8294)

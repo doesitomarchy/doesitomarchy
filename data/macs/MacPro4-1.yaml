@@ -1,0 +1,53 @@
+identifier: MacPro4,1
+line: mac-pro
+efi: 64
+board_ids: [Mac-F221BEC8]
+research_notes: |
+  Graphics cards are PCIe cards that owners often replace; configurations cover only the cards Apple sold with the machine.
+  Shares its board ID with MacPro5,1; many 2009 machines have been flashed to 5,1 firmware. Wi-Fi was optional (real machines show a BCM4322). Audio is a Realtek ALC889A codec on every observed machine.
+sources:
+  - https://support.apple.com/en-us/112590
+  - https://support.apple.com/en-us/102887
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.26-early-2009-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.66-early-2009-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.93-early-2009-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-2.66-early-2009-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-2.93-early-2009-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.33-early-2009-nehalem-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacPro/MP41.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro4/MacPro4%2C1
+  - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro4/MacPro4%2C1
+releases:
+  - id: early-2009
+    name: "Mac Pro (Early 2009)"
+    announced: 2009-03-03
+    discontinued: 2010-07-27
+    model_numbers: [A1289]
+    emc: ["2314"]
+    configs:
+      - id: macpro4-1-early-2009-a
+        label: "Quad-core or 8-core Xeon \u00b7 GeForce GT 120"
+        order_numbers: [MB871LL/A, MB535LL/A]
+        cpu:
+          codename: bloomfield
+          standard: [{ model: "Xeon W3520", ghz: 2.66, cores: 4 }, { model: "Dual Xeon E5520", ghz: 2.26, cores: 8 }]
+          bto: [{ model: "Xeon W3540", ghz: 2.93, cores: 4 }, { model: "Xeon W3580", ghz: 3.33, cores: 4 }, { model: "Dual Xeon X5550", ghz: 2.66, cores: 8 }, { model: "Dual Xeon X5570", ghz: 2.93, cores: 8 }]
+        memory: { type: DDR3-1066 ECC, standard_gb: [3, 6], max_gb: 32 }
+        storage: { interface: sata, standard: ["640 GB HDD"], bto: ["1 TB HDD", "2 TB HDD"] }
+        components: [gpu/nvidia-geforce-gt-120, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
+        bto_components: [wifi/broadcom-bcm4322]
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 1, dvi: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        notes: "Dual-processor models use Gainestown (Xeon 5500) CPUs."
+      - id: macpro4-1-early-2009-hd4870
+        label: "Xeon \u00b7 Radeon HD 4870 (build to order)"
+        bto_only: true
+        cpu:
+          codename: bloomfield
+          standard: [{ model: "Xeon W3520", ghz: 2.66, cores: 4 }, { model: "Dual Xeon E5520", ghz: 2.26, cores: 8 }, { model: "Dual Xeon X5570", ghz: 2.93, cores: 8 }]
+        memory: { type: DDR3-1066 ECC, standard_gb: [3, 6], max_gb: 32 }
+        storage: { interface: sata, standard: ["640 GB HDD"], bto: ["1 TB HDD", "2 TB HDD"] }
+        components: [gpu/ati-radeon-hd-4870, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
+        bto_components: [wifi/broadcom-bcm4322]
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 1, dvi: 1 }
+        features: [builtin-speaker, fan, optical-drive]

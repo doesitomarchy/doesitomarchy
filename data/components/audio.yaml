@@ -23,6 +23,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac8/iMac8%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook5/MacBook5%2C2
+    - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro5/MacPro5%2C1
 
 - id: audio/cirrus-cs4206
   name: Cirrus Logic CS4206
@@ -49,6 +50,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac16/iMac16%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook9/MacBook9%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro6/MacPro6%2C1
 
 - id: audio/apple-t2-audio
   name: Apple T2 audio (via T2 bridge)
@@ -62,6 +64,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
 
 - id: audio/cirrus-cs8409
   name: Cirrus Logic CS8409 (with CS42L42)

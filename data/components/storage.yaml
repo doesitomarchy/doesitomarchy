@@ -71,6 +71,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
 
 - id: storage/apple-ans2-nvme
   name: Apple ANS2 NVMe controller (T2)
@@ -83,6 +84,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
 
 - id: storage/intel-ich8m-sata
   name: Intel ICH8M SATA controller
@@ -174,3 +176,29 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook9/MacBook9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook10/MacBook10%2C1
+
+- id: storage/intel-esb2-sata
+  name: Intel 631xESB/632xESB (ESB2) SATA controller
+  vendor: Intel
+  ids: [pci:8086:2681]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro2/MacPro2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro3/MacPro3%2C1
+
+- id: storage/intel-ich10-sata
+  name: Intel ICH10 SATA controller
+  vendor: Intel
+  ids: [pci:8086:3a22]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro4/MacPro4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+
+- id: storage/intel-c620-sata
+  name: Intel C620 Series SATA controller
+  vendor: Intel
+  ids: [pci:8086:a182]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1

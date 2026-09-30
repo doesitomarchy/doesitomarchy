@@ -1,0 +1,62 @@
+identifier: MacPro6,1
+line: mac-pro
+efi: 64
+board_ids: [Mac-F60DEB81FF30ACF6]
+research_notes: |
+  Cylindrical Mac Pro with dual AMD FirePro GPUs (both the same model). Six Thunderbolt 2 ports, no internal drive bays or optical drive.
+  Audio is a Cirrus Logic CS4208 codec on every observed machine. BCM4360 Wi-Fi has no in-kernel 802.11ac driver; the proprietary wl driver is the usual route.
+sources:
+  - https://support.apple.com/en-us/112025
+  - https://support.apple.com/en-us/102887
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.0-xeon-e5-gray-black-cylinder-late-2013-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.7-xeon-e5-gray-black-cylinder-late-2013-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.5-xeon-e5-gray-black-cylinder-late-2013-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.7-xeon-e5-gray-black-cylinder-late-2013-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacPro/MP61.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
+  - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro6/MacPro6%2C1
+releases:
+  - id: late-2013
+    name: "Mac Pro (Late 2013)"
+    announced: 2013-10-22
+    discontinued: 2019-12-10
+    model_numbers: [A1481]
+    emc: ["2630"]
+    configs:
+      - id: macpro6-1-late-2013-d300
+        label: "Quad-core Xeon \u00b7 dual FirePro D300"
+        order_numbers: [ME253LL/A]
+        cpu:
+          codename: ivy-bridge-ep
+          standard: [{ model: "Xeon E5-1620 v2", ghz: 3.7, cores: 4 }]
+          bto: [{ model: "Xeon E5-1650 v2", ghz: 3.5, cores: 6 }, { model: "Xeon E5-1680 v2", ghz: 3.0, cores: 8 }, { model: "Xeon E5-2697 v2", ghz: 2.7, cores: 12 }]
+        memory: { type: DDR3-1866 ECC, standard_gb: [12, 16, 32], max_gb: 64 }
+        storage: { interface: pcie-ahci, standard: ["256 GB SSD"], bto: ["512 GB SSD", "1 TB SSD"] }
+        components: [gpu/amd-radeon-r9-m290x-firepro-d300, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4208, ethernet/broadcom-bcm57762, thunderbolt/intel-falcon-ridge, storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan]
+      - id: macpro6-1-late-2013-d500
+        label: "6-core Xeon \u00b7 dual FirePro D500"
+        order_numbers: [MD878LL/A]
+        cpu:
+          codename: ivy-bridge-ep
+          standard: [{ model: "Xeon E5-1650 v2", ghz: 3.5, cores: 6 }]
+          bto: [{ model: "Xeon E5-1680 v2", ghz: 3.0, cores: 8 }, { model: "Xeon E5-2697 v2", ghz: 2.7, cores: 12 }]
+        memory: { type: DDR3-1866 ECC, standard_gb: [12, 16, 32], max_gb: 64 }
+        storage: { interface: pcie-ahci, standard: ["256 GB SSD"], bto: ["512 GB SSD", "1 TB SSD"] }
+        components: [gpu/amd-firepro-d500, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4208, ethernet/broadcom-bcm57762, thunderbolt/intel-falcon-ridge, storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan]
+      - id: macpro6-1-late-2013-d700
+        label: "8-core Xeon (2017) or any Xeon \u00b7 dual FirePro D700"
+        order_numbers: [MQGG2LL/A]
+        cpu:
+          codename: ivy-bridge-ep
+          standard: [{ model: "Xeon E5-1680 v2", ghz: 3.0, cores: 8 }]
+          bto: [{ model: "Xeon E5-1620 v2", ghz: 3.7, cores: 4 }, { model: "Xeon E5-1650 v2", ghz: 3.5, cores: 6 }, { model: "Xeon E5-2697 v2", ghz: 2.7, cores: 12 }]
+        memory: { type: DDR3-1866 ECC, standard_gb: [12, 16, 32], max_gb: 64 }
+        storage: { interface: pcie-ahci, standard: ["256 GB SSD"], bto: ["512 GB SSD", "1 TB SSD"] }
+        components: [gpu/amd-firepro-d700, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4208, ethernet/broadcom-bcm57762, thunderbolt/intel-falcon-ridge, storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan]
+        notes: "Build to order until April 2017, when the 8-core MQGG2LL/A shipped with D700s as standard."
