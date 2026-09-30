@@ -7,7 +7,7 @@
    dense key/value grids and tables; the applicability matrix scrolls sideways on its own. */
 :root {
   --bg: #f8f8f6; --panel: #f0f0ed; --line: #d9d9d4; --line-strong: #b5b5b0;
-  --fg: #121214; --muted: #5d5d64; --accent: #c6371c; --link: #6a3fd1;
+  --fg: #121214; --muted: #5d5d64; --accent: #c6371c; --link: #27702b;
   --warn: #8a5a00; --warn-bg: #fff2d1; --block: #a3170b; --block-bg: #fde6e1;
   --ident: #a15c00; --release: #1d6f82;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
@@ -15,11 +15,11 @@
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
-  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36; --link: #b594ff;
+  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36; --link: #7ed492;
   --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; --ident: #f5b53f; --release: #5fc3d6; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
-  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36; --link: #b594ff;
+  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36; --link: #7ed492;
   --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; --ident: #f5b53f; --release: #5fc3d6; color-scheme: dark }
 
 * { box-sizing: border-box }
@@ -256,7 +256,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
 </section>
 
 <script>
-/* Matrix column highlighting: hover tints a column; a "criteria apply" link (#m-<config>) tints its column violet. */
+/* Matrix column highlighting: hover tints a column; a "criteria apply" link (#m-<config>) tints its column green. */
 (() => {
   const table = document.querySelector('.matrix');
   if (!table) return;
