@@ -1,0 +1,34 @@
+identifier: MacBook4,1
+line: macbook
+efi: 64
+board_ids: [Mac-F22788A9]
+research_notes: |
+  Intel GMA X3100 has only early KMS/OpenGL support; Hyprland may fall back to software rendering. Audio is a Realtek ALC889A codec on every observed machine.
+  The iSight reports "no firmware loaded" and needs firmware extracted from macOS.
+  OpenCore also names a "MacBook (13-inch, Late 2008)" release for this identifier (the white MacBook sold alongside the aluminum model); no separate spec source was found for it.
+sources:
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.1-white-13-early-2008-penryn-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.4-black-13-early-2008-penryn-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.4-white-13-early-2008-penryn-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB41.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+releases:
+  - id: early-2008
+    name: "MacBook (13-inch, Early 2008)"
+    announced: 2008-02-26
+    discontinued: 2009-01-20
+    model_numbers: [A1181]
+    emc: ["2242"]
+    configs:
+      - id: macbook4-1-early-2008-a
+        label: "Core 2 Duo 2.1 or 2.4 GHz \u00b7 GMA X3100 (white or black)"
+        order_numbers: [MB402LL/A, MB403LL/A, MB404LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo T8100, ghz: 2.1, cores: 2 }, { model: Core 2 Duo T8300, ghz: 2.4, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1, 2], max_gb: 4 }
+        storage: { interface: sata, standard: ["120 GB HDD", "160 GB HDD", "250 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/intel-gma-x3100, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8205, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw322, storage/intel-ich8m-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8242, input/apple-mb-2007]
+        ports: { usb-a-2: 2, firewire-400: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

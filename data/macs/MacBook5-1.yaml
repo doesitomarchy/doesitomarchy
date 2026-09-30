@@ -1,0 +1,45 @@
+identifier: MacBook5,1
+line: macbook
+efi: 64
+board_ids: [Mac-F42D89C8, Mac-F42D89A9]
+research_notes: |
+  Aluminum unibody MacBook: glass Multi-Touch trackpad (bcm5974), Mini DisplayPort, no FireWire. Only the 2.4 GHz model (MB467) has a backlit keyboard.
+sources:
+  - https://support.apple.com/en-us/103257
+  - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook5/MacBook5%2C1
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-aluminum-13-late-2008-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.4-aluminum-13-late-2008-unibody-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB51.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C1
+releases:
+  - id: late-2008
+    name: "MacBook (13-inch, Aluminum, Late 2008)"
+    announced: 2008-10-14
+    discontinued: 2009-06-08
+    model_numbers: [A1278]
+    emc: ["2254"]
+    configs:
+      - id: macbook5-1-late-2008-a
+        label: "Core 2 Duo 2.0 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MB466LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P7350, ghz: 2.0, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["160 GB HDD"], bto: ["250 GB HDD", "320 GB HDD", "128 GB SSD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8213, audio/realtek-alc889a, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody]
+        ports: { usb-a-2: 2, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: macbook5-1-late-2008-b
+        label: "Core 2 Duo 2.4 GHz \u00b7 GeForce 9400M \u00b7 backlit keyboard"
+        order_numbers: [MB467LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8600, ghz: 2.4, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["250 GB HDD"], bto: ["320 GB HDD", "128 GB SSD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8213, audio/realtek-alc889a, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody]
+        ports: { usb-a-2: 2, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, keyboard-backlight]

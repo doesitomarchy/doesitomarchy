@@ -7,6 +7,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
 
 - id: ethernet/nvidia-mcp79
   name: NVIDIA MCP79 Gigabit Ethernet
@@ -16,6 +17,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
 
 - id: ethernet/broadcom-bcm57765
   name: Broadcom NetXtreme BCM57765 Gigabit Ethernet
@@ -55,6 +57,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
 
 - id: ethernet/broadcom-bcm5764m
   name: Broadcom NetXtreme BCM5764M Gigabit Ethernet
@@ -75,3 +78,11 @@
   uncertain:
     - field: ids
       note: 10Gb Ethernet was a 2020 iMac build-to-order option; no probe shows it, so the exact chip and ID are unconfirmed.
+
+- id: ethernet/nvidia-mcp89
+  name: NVIDIA MCP89 Gigabit Ethernet
+  vendor: NVIDIA
+  ids: [pci:10de:0d7d]
+  driver: forcedeth
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1

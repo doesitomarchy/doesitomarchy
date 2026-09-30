@@ -1,0 +1,33 @@
+identifier: MacBook1,1
+line: macbook
+efi: 32
+hard_blocker: "32-bit-only CPU (Intel Core Duo \"Yonah\"). Omarchy and Arch Linux support x86_64 only."
+board_ids: [Mac-F4208CC8]
+research_notes: |
+  First MacBook. 32-bit Yonah CPU, so no configuration can run Omarchy.
+sources:
+  - https://everymac.com/systems/apple/macbook/specs/macbook_1.83.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook_2.0_black.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook_2.0_white.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB11.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook1/MacBook1%2C1
+releases:
+  - id: mid-2006
+    name: "MacBook (13-inch)"
+    announced: 2006-05-16
+    discontinued: 2006-11-08
+    model_numbers: [A1181]
+    emc: ["2092"]
+    configs:
+      - id: macbook1-1-mid-2006-a
+        label: "Core Duo 1.83 or 2.0 GHz \u00b7 GMA 950 (white or black)"
+        order_numbers: [MA254LL/A, MA255LL/A, MA472LL/A]
+        cpu:
+          codename: yonah
+          standard: [{ model: Core Duo T2400, ghz: 1.83, cores: 2 }, { model: Core Duo T2500, ghz: 2.0, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5], max_gb: 2 }
+        storage: { interface: sata, standard: ["60 GB HDD", "80 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/intel-gma-950, wifi/atheros-ar542x, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240, input/apple-mb-2006]
+        ports: { usb-a-2: 2, firewire-400: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

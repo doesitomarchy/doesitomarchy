@@ -9,6 +9,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook1/MacBook1%2C1
 
 - id: wifi/broadcom-bcm4321
   name: Broadcom BCM4321 802.11a/b/g/n
@@ -21,6 +22,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
 
 - id: wifi/broadcom-bcm43224
   name: Broadcom BCM43224 802.11a/b/g/n
@@ -32,6 +34,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
 
 - id: wifi/broadcom-bcm4331
   name: Broadcom BCM4331 802.11a/b/g/n
@@ -101,6 +104,7 @@
   driver: wl, b43-pci-bridge
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
 
 - id: wifi/atheros-ar928x
   name: Atheros AR928X 802.11a/b/g/n
@@ -128,3 +132,20 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac16/iMac16%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
+
+- id: wifi/atheros-ar5418
+  name: Atheros AR5418 802.11a/b/g/n (draft)
+  vendor: Atheros
+  ids: [pci:168c:0024]
+  driver: ath9k
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
+
+- id: wifi/broadcom-bcm4350
+  name: Broadcom BCM4350 802.11ac
+  vendor: Broadcom
+  ids: [pci:14e4:43a3]
+  driver: brcmfmac
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook8/MacBook8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook10/MacBook10%2C1

@@ -12,12 +12,13 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
 
 - id: gpu/nvidia-geforce-9400m
   name: NVIDIA GeForce 9400M
   vendor: NVIDIA
   role: integrated
-  ids: [pci:10de:0861, pci:10de:0870, pci:10de:0867, pci:10de:0869]
+  ids: [pci:10de:0861, pci:10de:0870, pci:10de:0867, pci:10de:0869, pci:10de:0863, pci:10de:0866]
   driver: nouveau
   notes: Chipset-integrated (MCP79) GPU. lspci names this device "C79 [GeForce 9400]".
   sources:
@@ -25,17 +26,19 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
 
 - id: gpu/nvidia-geforce-320m
   name: NVIDIA GeForce 320M
   vendor: NVIDIA
   role: integrated
-  ids: [pci:10de:08a4, pci:10de:08a2, pci:10de:08a3]
+  ids: [pci:10de:08a4, pci:10de:08a2, pci:10de:08a3, pci:10de:08a0]
   driver: nouveau
   notes: Chipset-integrated (MCP89) GPU.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
 
 - id: gpu/intel-hd-3000
   name: Intel HD Graphics 3000
@@ -109,6 +112,7 @@
   notes: Second PCI function 8086:2a03 is the same GPU's secondary display controller.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
 
 - id: gpu/intel-hd-6000
   name: Intel HD Graphics 6000
@@ -509,3 +513,30 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C1
+
+- id: gpu/intel-hd-5300
+  name: Intel HD Graphics 5300
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:161e]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook8/MacBook8%2C1
+
+- id: gpu/intel-hd-515
+  name: Intel HD Graphics 515
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:191e]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook9/MacBook9%2C1
+
+- id: gpu/intel-hd-615
+  name: Intel HD Graphics 615
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:591e]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook10/MacBook10%2C1
