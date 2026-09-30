@@ -1,0 +1,178 @@
+# Golden search queries (PLAN.md §16.6). Keys:
+#   exactly: the result set, any order     first: the top result
+#   top: the first N results, any order    contains / excludes: subset checks
+#   order: exact result order              line: every result is in this line
+#   configs: Mac → exactly these matched configs are listed (AllConfigs false)
+#   none: no results                       error: an error chip containing this text
+#   suggest: the did-you-mean must be non-empty (true) or empty (false)
+# Identifiers are quoted: YAML would otherwise split them at the comma.
+
+# ── nicknames and product lines ──
+- q: mbp 2011
+  exactly: ["MacBookPro8,1", "MacBookPro8,2", "MacBookPro8,3"]
+- q: mba 2013
+  exactly: ["MacBookAir6,1", "MacBookAir6,2"]
+- q: 2009 imac
+  exactly: ["iMac9,1", "iMac10,1", "iMac11,1"]
+- q: mbp 15 2012
+  exactly: ["MacBookPro9,1", "MacBookPro10,1"]
+- q: imac 27 5k 2017
+  exactly: ["iMac18,3", "iMacPro1,1"]   # "imac" matches the family (see #11); both are 27-inch 5K 2017
+- q: trash can
+  first: "MacPro6,1"
+- q: trashcan
+  first: "MacPro6,1"
+- q: cheese grater
+  exactly: ["MacPro1,1", "MacPro2,1", "MacPro3,1", "MacPro4,1", "MacPro5,1", "MacPro7,1"]
+- q: mac mini 2012
+  exactly: ["Macmini6,1", "Macmini6,2"]
+- q: mini server
+  exactly: ["Macmini3,1", "Macmini4,1", "Macmini5,3", "Macmini6,2"]
+  configs:
+    "Macmini3,1": [macmini3-1-late-2009-server]
+    "Macmini4,1": [macmini4-1-mid-2010-server]
+- q: retina macbook
+  order: ["MacBookPro16,4", "MacBookPro16,2", "MacBookPro16,3", "MacBookAir9,1", "MacBookPro16,1",
+          "MacBookAir8,2", "MacBookPro15,4", "MacBookPro15,1", "MacBookPro15,2", "MacBookPro15,3",
+          "MacBookAir8,1", "MacBook10,1", "MacBookPro14,1", "MacBookPro14,2", "MacBookPro14,3",
+          "MacBookPro13,1", "MacBookPro13,2", "MacBookPro13,3", "MacBook9,1", "MacBookPro11,4",
+          "MacBookPro11,5", "MacBook8,1", "MacBookPro12,1", "MacBookPro11,1", "MacBookPro11,2",
+          "MacBookPro11,3", "MacBookPro10,1", "MacBookPro10,2"]
+- q: macbook 12
+  exactly: ["MacBook8,1", "MacBook9,1", "MacBook10,1"]
+- q: imac pro
+  first: "iMacPro1,1"
+- q: xserve
+  exactly: ["Xserve1,1", "Xserve2,1", "Xserve3,1"]
+- q: mbp 16
+  top: ["MacBookPro16,1", "MacBookPro16,4"]
+- q: macbook air 11
+  exactly: ["MacBookAir3,1", "MacBookAir4,1", "MacBookAir5,1", "MacBookAir6,1", "MacBookAir7,1"]
+- q: imac 21.5 4k
+  exactly: ["iMac16,2", "iMac18,2", "iMac19,2"]
+- q: '"macbook pro" 2015 13'
+  first: "MacBookPro12,1"
+
+# ── identifiers ──
+- q: MacBookPro11,5
+  exactly: ["MacBookPro11,5"]
+- q: macbookpro11-5
+  exactly: ["MacBookPro11,5"]
+- q: mbp11,5
+  exactly: ["MacBookPro11,5"]
+- q: macmini6,2
+  exactly: ["Macmini6,2"]
+- q: imac14
+  exactly: ["iMac14,1", "iMac14,2", "iMac14,3", "iMac14,4"]
+- q: iMac20,1
+  first: "iMac20,1"
+
+# ── part numbers ──
+- q: A1278
+  exactly: ["MacBook5,1", "MacBookPro5,5", "MacBookPro7,1", "MacBookPro8,1", "MacBookPro9,2"]
+- q: a1398
+  exactly: ["MacBookPro10,1", "MacBookPro11,2", "MacBookPro11,3", "MacBookPro11,4", "MacBookPro11,5"]
+- q: MC374LL/A
+  exactly: ["MacBookPro7,1"]
+  matched: {"MacBookPro7,1": [macbookpro7-1-13-mid-2010-a]}
+- q: MC374
+  exactly: ["MacBookPro7,1"]
+- q: mb470
+  exactly: ["MacBookPro5,1"]
+- q: emc:2255
+  exactly: ["MacBookPro5,1"]
+- q: 2353-1
+  exactly: ["MacBookPro8,2"]
+- q: order:MD101
+  exactly: ["MacBookPro9,2"]
+
+# ── fields ──
+- q: gpu:nvidia year:<2011
+  contains: ["MacBookPro6,2", "Macmini4,1", "iMac9,1"]
+  excludes: ["MacBookPro8,1", "MacBookPro9,1", "iMac12,1"]
+- q: gpu:6770m
+  exactly: ["MacBookPro8,2", "MacBookPro8,3", "iMac12,1", "iMac12,2"]
+  configs:
+    "MacBookPro8,2": [macbookpro8-2-15-late-2011-b]
+- q: gpu:"iris pro"
+  exactly: ["MacBookPro11,2", "MacBookPro11,3", "MacBookPro11,4", "MacBookPro11,5", "iMac14,1", "iMac16,2"]
+- q: gpu:vega
+  exactly: ["MacBookPro15,3", "MacPro7,1", "iMac19,1", "iMac19,2", "iMacPro1,1"]
+- q: gpu:discrete line:macbook-air
+  none: true
+- q: chip:t2
+  exactly: ["MacBookAir8,1", "MacBookAir8,2", "MacBookAir9,1", "MacBookPro15,1", "MacBookPro15,2", "MacBookPro15,3",
+            "MacBookPro15,4", "MacBookPro16,1", "MacBookPro16,2", "MacBookPro16,3", "MacBookPro16,4", "MacPro7,1",
+            "Macmini8,1", "iMac20,1", "iMac20,2", "iMacPro1,1"]
+- q: chip:t1
+  exactly: ["MacBookPro13,2", "MacBookPro13,3", "MacBookPro14,2", "MacBookPro14,3"]
+- q: efi:32
+  exactly: ["MacBook1,1", "MacBook2,1", "MacBookPro1,1", "MacBookPro1,2", "MacBookPro2,1", "MacBookPro2,2", "MacPro1,1",
+            "MacPro2,1", "Macmini1,1", "Macmini2,1", "Xserve1,1", "iMac4,1", "iMac4,2", "iMac5,1", "iMac5,2", "iMac6,1"]
+- q: efi:32 -status:not-compatible
+  exactly: ["MacBook2,1", "MacBookPro2,1", "MacBookPro2,2", "MacPro1,1", "MacPro2,1", "Macmini2,1", "Xserve1,1",
+            "iMac5,1", "iMac5,2", "iMac6,1"]
+- q: feature:touch-bar
+  exactly: ["MacBookPro13,2", "MacBookPro13,3", "MacBookPro14,2", "MacBookPro14,3", "MacBookPro15,1", "MacBookPro15,2",
+            "MacBookPro15,3", "MacBookPro15,4", "MacBookPro16,1", "MacBookPro16,2", "MacBookPro16,3", "MacBookPro16,4"]
+- q: feature:touch-bar -chip:t2
+  exactly: ["MacBookPro13,2", "MacBookPro13,3", "MacBookPro14,2", "MacBookPro14,3"]
+- q: port:firewire-800 year:2012
+  exactly: ["MacBookPro9,1", "MacBookPro9,2", "Macmini6,1", "Macmini6,2", "MacPro5,1"]
+- q: wifi:bcm4360
+  exactly: ["MacBookAir6,1", "MacBookAir6,2", "MacBookAir7,1", "MacBookAir7,2", "MacBookPro11,1", "MacBookPro11,2",
+            "MacBookPro11,3", "MacPro6,1", "Macmini7,1", "iMac14,1", "iMac14,2", "iMac14,3", "iMac14,4", "iMac15,1"]
+- q: audio:cs8409
+  exactly: ["MacBookPro13,1", "MacBookPro13,2", "MacBookPro13,3", "MacBookPro14,1", "MacBookPro14,2", "MacBookPro14,3",
+            "iMac18,1", "iMac18,2", "iMac18,3", "iMac19,1", "iMac19,2"]
+- q: hw:10de:0647
+  exactly: ["MacBookPro5,1", "MacBookPro5,2", "MacBookPro5,3"]
+- q: 05ac:0340
+  exactly: ["MacBookPro16,1", "MacBookPro16,4"]
+- q: board:Mac-F42D86C8
+  exactly: ["MacBookPro5,1"]
+- q: Mac-F42D86C8
+  exactly: ["MacBookPro5,1"]
+- q: year:2009..2010 line:mac-mini
+  exactly: ["Macmini3,1", "Macmini4,1"]
+- q: year:>=2019 form:desktop
+  exactly: ["MacPro7,1"]
+- q: cpu:xeon
+  exactly: ["MacPro1,1", "MacPro2,1", "MacPro3,1", "MacPro4,1", "MacPro5,1", "MacPro6,1", "MacPro7,1",
+            "Xserve1,1", "Xserve2,1", "Xserve3,1", "iMacPro1,1"]
+- q: arch:haswell mini
+  exactly: ["Macmini7,1"]
+- q: status:not-compatible
+  exactly: ["MacBook1,1", "MacBookPro1,1", "MacBookPro1,2", "Macmini1,1", "iMac4,1", "iMac4,2"]
+- q: scope:out line:xserve
+  exactly: ["Xserve1,1", "Xserve2,1", "Xserve3,1"]
+- q: release:late year:2012 imac
+  exactly: ["iMac13,1", "iMac13,2"]
+
+# ── typos ──
+- q: macbok pro
+  line: macbook-pro
+- q: imca 2015
+  exactly: ["iMac15,1", "iMac16,1", "iMac16,2", "iMac17,1"]
+- q: mac mnii
+  line: mac-mini
+- q: macbuk air 2020
+  first: "MacBookAir9,1"
+- q: retna 5k
+  exactly: ["iMac15,1", "iMac17,1", "iMac18,3", "iMac19,1", "iMac20,1", "iMac20,2", "iMacPro1,1"]
+
+# ── edge cases ──
+- q: ""
+  none: true
+- q: "gpu:"
+  none: true
+- q: year:abc
+  none: true
+  error: "year: expected a year or range"
+- q: zzzzzz
+  none: true
+  suggest: false
+- q: -imac mini 2014
+  exactly: ["Macmini7,1"]
+- q: mbp 13 2020
+  exactly: ["MacBookPro16,2", "MacBookPro16,3"]

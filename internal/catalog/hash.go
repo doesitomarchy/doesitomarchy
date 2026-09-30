@@ -9,10 +9,10 @@ import (
 )
 
 // HashFS fingerprints the catalog files the loader reads (vocabulary,
-// capabilities, lock, coverage, components, macs), so a sync can skip an unchanged catalog.
+// capabilities, lock, coverage, aliases, components, macs), so a sync can skip an unchanged catalog.
 // Other files under data/ (README, LICENSE, embed.go) don't affect it.
 func HashFS(fsys fs.FS) (string, error) {
-	names := []string{"vocabulary.yaml", "capabilities.yaml", LockFile, "coverage.yaml"}
+	names := []string{"vocabulary.yaml", "capabilities.yaml", LockFile, "coverage.yaml", "aliases.yaml"}
 	for _, pat := range []string{"components/*.yaml", "macs/*.yaml"} {
 		m, err := fs.Glob(fsys, pat)
 		if err != nil {
@@ -24,7 +24,7 @@ func HashFS(fsys fs.FS) (string, error) {
 	h := sha256.New()
 	for _, n := range names {
 		b, err := fs.ReadFile(fsys, n)
-		if errors.Is(err, fs.ErrNotExist) && n == "coverage.yaml" {
+		if errors.Is(err, fs.ErrNotExist) && (n == "coverage.yaml" || n == "aliases.yaml") { // optional files
 			continue
 		}
 		if err != nil {

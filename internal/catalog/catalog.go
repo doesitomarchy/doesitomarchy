@@ -153,6 +153,11 @@ func (l *loader) load() {
 		}
 	}
 
+	const aliasPath = "aliases.yaml" // optional: search nicknames
+	if l.exists(aliasPath) {
+		l.decode(aliasPath, &c.Aliases)
+	}
+
 	macFiles, err := l.yamlFiles("macs")
 	if err != nil {
 		l.errf("macs", "%v", err)

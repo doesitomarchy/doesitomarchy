@@ -8,6 +8,7 @@ build:
 
 test:
 	go test -race ./...
+	go test -count=1 -run TestLatency ./internal/search   # p99 budget, without the race detector's overhead
 
 validate:
 	go run ./cmd/doioma validate

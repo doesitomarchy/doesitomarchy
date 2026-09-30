@@ -17,6 +17,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 	"github.com/doesitomarchy/doesitomarchy/internal/web"
 )
@@ -34,29 +35,29 @@ func dbFlags(fs *flag.FlagSet) (db, dataDir *string) {
 
 // openSynced loads the catalog (embedded unless dataDir is set), opens and
 // migrates the database, and syncs the catalog into it.
-func openSynced(ctx context.Context, dbPath, dataDir string) (*store.Store, bool, error) {
+func openSynced(ctx context.Context, dbPath, dataDir string) (*store.Store, *catalog.Catalog, bool, error) {
 	var fsys fs.FS = data.FS
 	if dataDir != "" {
 		fsys = os.DirFS(dataDir)
 	}
 	c, err := catalog.LoadFS(fsys)
 	if err != nil {
-		return nil, false, fmt.Errorf("catalog invalid:\n%w", err)
+		return nil, nil, false, fmt.Errorf("catalog invalid:\n%w", err)
 	}
 	hash, err := catalog.HashFS(fsys)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, false, err
 	}
 	st, err := store.Open(ctx, dbPath)
 	if err != nil {
-		return nil, false, err
+		return nil, nil, false, err
 	}
 	changed, err := st.SyncCatalog(ctx, c, hash)
 	if err != nil {
 		st.Close()
-		return nil, false, fmt.Errorf("sync: %w", err)
+		return nil, nil, false, fmt.Errorf("sync: %w", err)
 	}
-	return st, changed, nil
+	return st, c, changed, nil
 }
 
 func cmdSync(args []string, stdout, stderr io.Writer) int {
@@ -67,7 +68,7 @@ func cmdSync(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	ctx := context.Background()
-	st, changed, err := openSynced(ctx, *db, *dataDir)
+	st, _, changed, err := openSynced(ctx, *db, *dataDir)
 	if err != nil {
 		fmt.Fprintf(stderr, "sync: %v\n", err)
 		return 1
@@ -99,13 +100,16 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	st, changed, err := openSynced(ctx, *db, *dataDir)
+	st, c, changed, err := openSynced(ctx, *db, *dataDir)
 	if err != nil {
 		log.Error("startup", "err", err)
 		return 1
 	}
 	defer st.Close()
-	srv, err := web.New(st, log, version)
+	start := time.Now()
+	ix := search.Build(c, nil)
+	log.Info("search index built", "ms", time.Since(start).Milliseconds())
+	srv, err := web.New(st, ix, log, version)
 	if err != nil {
 		log.Error("templates", "err", err)
 		return 1

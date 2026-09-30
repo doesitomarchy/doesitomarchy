@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
@@ -28,17 +29,18 @@ var staticFS embed.FS
 // Server serves the site from a synced store.
 type Server struct {
 	store   *store.Store
+	index   *search.Index
 	log     *slog.Logger
 	version string
 	pages   map[string]*template.Template
 }
 
 // New parses templates and returns a server. version is shown in the footer.
-func New(st *store.Store, log *slog.Logger, version string) (*Server, error) {
-	s := &Server{store: st, log: log, version: version, pages: map[string]*template.Template{}}
+func New(st *store.Store, ix *search.Index, log *slog.Logger, version string) (*Server, error) {
+	s := &Server{store: st, index: ix, log: log, version: version, pages: map[string]*template.Template{}}
 	funcs := template.FuncMap{"pct": func(f float64) string { return formatPct(f) }}
-	for _, p := range []string{"home", "mac", "notfound", "error"} {
-		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html")
+	for _, p := range []string{"home", "mac", "notfound", "error", "search", "suggest"} {
+		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
 			return nil, err
 		}
@@ -55,6 +57,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /healthz", s.healthz)
 	mux.HandleFunc("GET /{$}", s.home)
 	mux.HandleFunc("GET /mac/{id}", s.mac)
+	mux.HandleFunc("GET /search", s.search)
+	mux.HandleFunc("GET /search/suggest", s.suggest)
 	mux.HandleFunc("/api/v1/", apiNotFound) // reserved until the API ships (Phase 7)
 	mux.HandleFunc("/", s.notFound)
 	return s.recoverer(logRequests(s.log, securityHeaders(mux)))
