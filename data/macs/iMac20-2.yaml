@@ -1,0 +1,49 @@
+identifier: iMac20,2
+line: imac
+efi: 64
+security_chip: t2
+board_ids: [Mac-AF89B6D9451A490B]
+research_notes: |
+  Last Intel iMac and the only T2 iMac. Omarchy's Mac support manual does not list it among supported T2 Macs, though the same automatic T2 setup should apply.
+  Disable Secure Boot in Startup Security Utility before installing. Very few Linux hardware probes exist for this model.
+  iMac20,2 covers the Radeon Pro 5700 and 5700 XT build-to-order configurations. No Linux hardware probes exist for it.
+sources:
+  - https://support.apple.com/en-us/111913
+  - https://support.apple.com/en-us/108054
+  - https://omarchy.org/manual/mac-support/
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-3.8-8-core-27-inch-retina-5k-2020-20-2-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i9-3.6-10-core-27-inch-retina-5k-2020-20-2-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM202.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C2
+releases:
+  - id: "5k-2020"
+    name: "iMac (Retina 5K, 27-inch, 2020)"
+    announced: 2020-08-04
+    discontinued: 2022-03-08
+    model_numbers: [A2115]
+    emc: ["3442"]
+    configs:
+      - id: imac20-2-5k-2020-a
+        label: "8-core Core i7 or 10-core i9 \u00b7 Radeon Pro 5700 / 5700 XT (build to order)"
+        bto_only: true
+        cpu:
+          codename: comet-lake
+          standard: [{ model: Core i7-10700K, ghz: 3.8, cores: 8 }, { model: Core i9-10910, ghz: 3.6, cores: 10 }]
+        memory: { type: DDR4-2666 SO-DIMM, standard_gb: [8], max_gb: 128 }
+        storage: { interface: nvme, standard: ["256 GB SSD", "512 GB SSD"], bto: ["1 TB SSD", "2 TB SSD", "4 TB SSD", "8 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-pro-5700-5700xt, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, card-reader/apple-usb-8408, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p, ethernet/broadcom-bcm57766]
+        ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac20-2-5k-2020-10gbe
+        label: "Radeon Pro 5700 / 5700 XT \u00b7 10Gb Ethernet (build to order)"
+        bto_only: true
+        cpu:
+          codename: comet-lake
+          standard: [{ model: Core i7-10700K, ghz: 3.8, cores: 8 }, { model: Core i9-10910, ghz: 3.6, cores: 10 }]
+        memory: { type: DDR4-2666 SO-DIMM, standard_gb: [8], max_gb: 128 }
+        storage: { interface: nvme, standard: ["256 GB SSD", "512 GB SSD"], bto: ["1 TB SSD", "2 TB SSD", "4 TB SSD", "8 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-pro-5700-5700xt, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, card-reader/apple-usb-8408, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p, ethernet/aquantia-aqc113]
+        ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, audio-out: 1, ethernet-10gbe: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

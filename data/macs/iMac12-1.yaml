@@ -1,0 +1,67 @@
+identifier: iMac12,1
+line: imac
+efi: 64
+board_ids: [Mac-942B5BF58194151B]
+research_notes: |
+  The Sandy Bridge CPU's integrated GPU is visible to Linux (8086:0102, i915) but does not drive any output; the AMD GPU does.
+sources:
+  - https://support.apple.com/en-us/111983
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i3-3.1-21-inch-aluminum-late-2011-education-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-2.5-21-inch-aluminum-mid-2011-thunderbolt-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-2.7-21-inch-aluminum-mid-2011-thunderbolt-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-2.8-21-inch-aluminum-mid-2011-thunderbolt-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM121.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+releases:
+  - id: "21-mid-2011"
+    name: "iMac (21.5-inch, Mid 2011)"
+    announced: 2011-05-03
+    discontinued: 2012-10-23
+    model_numbers: [A1311]
+    emc: ["2428"]
+    configs:
+      - id: imac12-1-21-mid-2011-a
+        label: "Quad-core Core i5 2.5 GHz \u00b7 Radeon HD 6750M"
+        order_numbers: [MC309LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i5-2400S, ghz: 2.5, cores: 4 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: ["500 GB HDD"], bto: ["1 TB HDD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/amd-radeon-hd-6630m-6750m, wifi/atheros-ar93xx, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-850b, ir/apple-05ac-8242, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 4, firewire-800: 1, thunderbolt-1: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: imac12-1-21-mid-2011-b
+        label: "Quad-core Core i5 2.7 GHz or Core i7 2.8 GHz \u00b7 Radeon HD 6770M"
+        order_numbers: [MC812LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i5-2500S, ghz: 2.7, cores: 4 }]
+          bto: [{ model: Core i7-2600S, ghz: 2.8, cores: 4 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "256 GB SSD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/amd-radeon-hd-6770m, wifi/atheros-ar93xx, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-850b, ir/apple-05ac-8242, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 4, firewire-800: 1, thunderbolt-1: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+  - id: "21-late-2011"
+    name: "iMac (21.5-inch, Late 2011)"
+    announced: 2011-08-08
+    discontinued: 2013-03-05
+    model_numbers: [A1311]
+    emc: ["2496"]
+    configs:
+      - id: imac12-1-21-late-2011-a
+        label: "Core i3 3.1 GHz \u00b7 Radeon HD 6750M (education)"
+        order_numbers: [MC978LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i3-2100, ghz: 3.1, cores: 2 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [2], max_gb: 16 }
+        storage: { interface: sata, standard: ["250 GB HDD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/amd-radeon-hd-6630m-6750m, wifi/atheros-ar93xx, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-850b, ir/apple-05ac-8242, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 4, firewire-800: 1, thunderbolt-1: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

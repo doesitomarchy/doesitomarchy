@@ -1,0 +1,50 @@
+identifier: iMac19,2
+line: imac
+efi: 64
+board_ids: [Mac-63001698E7A34814]
+research_notes: |
+  Audio is a Cirrus Logic CS8409 codec; on many observed machines Linux fell back to the generic HDA parser, so audio needs attention in testing.
+  No T2 chip, but the Wi-Fi/Bluetooth is the same BCM4364 used in T2 Macs.
+sources:
+  - https://support.apple.com/en-us/111963
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i3-3.6-21-inch-aluminum-retina-4k-early-2019-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.0-21-inch-aluminum-retina-4k-early-2019-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-3.2-21-inch-aluminum-retina-4k-early-2019-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM192.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C2
+releases:
+  - id: "4k-2019"
+    name: "iMac (Retina 4K, 21.5-inch, 2019)"
+    announced: 2019-03-19
+    discontinued: 2021-04-20
+    model_numbers: [A2116]
+    emc: ["3195"]
+    configs:
+      - id: imac19-2-4k-2019-a
+        label: "Quad-core Core i3 3.6 GHz, 6-core Core i5 3.0 GHz or i7 3.2 GHz \u00b7 Radeon Pro 555X / 560X"
+        order_numbers: [MRT32LL/A, MRT42LL/A, MHK23LL/A]
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i3-8100, ghz: 3.6, cores: 4 }, { model: Core i5-8500, ghz: 3.0, cores: 6 }]
+          bto: [{ model: Core i7-8700, ghz: 3.2, cores: 6 }]
+        memory: { type: DDR4-2400 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD", "1 TB Fusion Drive"], bto: ["256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 21.5, resolution: 4096x2304, panel: "Retina 4K LED IPS" }
+        components: [gpu/amd-radeon-pro-555-560, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/cirrus-cs8409, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-titan-ridge, storage/intel-cannon-lake-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/samsung-nvme-apple]
+        ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac19-2-4k-2019-vega20
+        label: "6-core \u00b7 Radeon Pro Vega 20 (build to order)"
+        bto_only: true
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i5-8500, ghz: 3.0, cores: 6 }, { model: Core i7-8700, ghz: 3.2, cores: 6 }]
+        memory: { type: DDR4-2666 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB Fusion Drive"], bto: ["256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 21.5, resolution: 4096x2304, panel: "Retina 4K LED IPS" }
+        components: [gpu/amd-radeon-pro-vega-20, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/cirrus-cs8409, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-titan-ridge, storage/intel-cannon-lake-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/samsung-nvme-apple]
+        ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

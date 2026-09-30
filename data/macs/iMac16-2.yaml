@@ -1,0 +1,57 @@
+identifier: iMac16,2
+line: imac
+efi: 64
+board_ids: [Mac-FFE5EF870D7BA81A]
+research_notes: |
+  Shared by the non-Retina 21.5-inch (MK442, 1920x1080) and the first Retina 4K 21.5-inch (MK452). Both use Iris Pro 6200.
+sources:
+  - https://support.apple.com/en-us/112036
+  - https://support.apple.com/en-us/112034
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-2.8-21-inch-aluminum-late-2015-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.1-21-inch-aluminum-retina-4k-late-2015-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-3.3-21-inch-aluminum-retina-4k-late-2015-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM162.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac16/iMac16%2C2
+releases:
+  - id: "21-late-2015"
+    name: "iMac (21.5-inch, Late 2015)"
+    announced: 2015-10-13
+    discontinued: 2017-06-05
+    model_numbers: [A1418]
+    emc: ["2889"]
+    configs:
+      - id: imac16-2-21-late-2015-a
+        label: "Quad-core Core i5 2.8 GHz \u00b7 Iris Pro 6200 \u00b7 1920x1080"
+        order_numbers: [MK442LL/A]
+        cpu:
+          codename: broadwell
+          standard: [{ model: Core i5-5575R, ghz: 2.8, cores: 4 }]
+        memory: { type: LPDDR3-1866, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["1 TB Fusion Drive", "256 GB SSD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/intel-iris-pro-6200, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4208, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-9-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+  - id: "4k-late-2015"
+    name: "iMac (Retina 4K, 21.5-inch, Late 2015)"
+    announced: 2015-10-13
+    discontinued: 2017-06-05
+    model_numbers: [A1418]
+    emc: ["2833"]
+    configs:
+      - id: imac16-2-4k-late-2015-a
+        label: "Quad-core Core i5 3.1 GHz or Core i7 3.3 GHz \u00b7 Iris Pro 6200 \u00b7 Retina 4K"
+        order_numbers: [MK452LL/A]
+        cpu:
+          codename: broadwell
+          standard: [{ model: Core i5-5675R, ghz: 3.1, cores: 4 }]
+          bto: [{ model: Core i7-5775R, ghz: 3.3, cores: 4 }]
+        memory: { type: LPDDR3-1866, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["1 TB Fusion Drive", "256 GB SSD", "512 GB SSD"] }
+        display: { inches: 21.5, resolution: 4096x2304, panel: "Retina 4K LED IPS" }
+        components: [gpu/intel-iris-pro-6200, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4208, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-9-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

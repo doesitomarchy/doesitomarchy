@@ -1,0 +1,62 @@
+identifier: iMac13,2
+line: imac
+efi: 64
+board_ids: [Mac-FC02E91DDD3FA6A4]
+research_notes: |
+  Thin redesign: no optical drive, IR receiver, FireWire or audio line-in. Audio is a Cirrus Logic CS4206 codec on every observed machine.
+sources:
+  - https://support.apple.com/en-us/112433
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-2.9-27-inch-aluminum-late-2012-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.2-27-inch-aluminum-late-2012-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-3.4-27-inch-aluminum-late-2012-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM132.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C2
+releases:
+  - id: "27-late-2012"
+    name: "iMac (27-inch, Late 2012)"
+    announced: 2012-10-23
+    discontinued: 2013-09-24
+    model_numbers: [A1419]
+    emc: ["2546"]
+    configs:
+      - id: imac13-2-27-late-2012-a
+        label: "Quad-core Core i5 2.9 GHz \u00b7 GeForce GTX 660M"
+        order_numbers: [MD095LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i5-3470S, ghz: 2.9, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["3 TB HDD", "1 TB Fusion Drive", "3 TB Fusion Drive"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-gtx-660m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828b, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac13-2-27-late-2012-b
+        label: "Quad-core Core i5 3.2 GHz or Core i7 3.4 GHz \u00b7 GeForce GTX 675MX"
+        order_numbers: [MD096LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i5-3470, ghz: 3.2, cores: 4 }]
+          bto: [{ model: Core i7-3770, ghz: 3.4, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["3 TB HDD", "1 TB Fusion Drive", "3 TB Fusion Drive", "768 GB SSD"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-gtx-675mx, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828b, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac13-2-27-late-2012-680mx
+        label: "Quad-core \u00b7 GeForce GTX 680MX (build to order)"
+        bto_only: true
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i5-3470, ghz: 3.2, cores: 4 }, { model: Core i7-3770, ghz: 3.4, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["3 TB HDD", "1 TB Fusion Drive", "3 TB Fusion Drive", "768 GB SSD"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-gtx-680mx, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828b, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

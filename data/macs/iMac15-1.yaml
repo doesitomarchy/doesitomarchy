@@ -1,0 +1,84 @@
+identifier: iMac15,1
+line: imac
+efi: 64
+board_ids: [Mac-42FD25EABCABB274, Mac-FA842E06C61E91C5]
+research_notes: |
+  First 5K iMac. Audio is a Cirrus Logic CS4206 codec on every observed machine.
+sources:
+  - https://support.apple.com/en-us/112436
+  - https://support.apple.com/en-us/112434
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.3-27-inch-aluminum-retina-5k-mid-2015-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.5-27-inch-aluminum-retina-5k-late-2014-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-4.0-27-inch-aluminum-retina-5k-late-2014-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM151.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
+releases:
+  - id: "5k-late-2014"
+    name: "iMac (Retina 5K, 27-inch, Late 2014)"
+    announced: 2014-10-16
+    discontinued: 2015-10-13
+    model_numbers: [A1419]
+    emc: ["2806"]
+    configs:
+      - id: imac15-1-5k-late-2014-a
+        label: "Quad-core Core i5 3.5 GHz or Core i7 4.0 GHz \u00b7 Radeon R9 M290X"
+        order_numbers: [MF886LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4690, ghz: 3.5, cores: 4 }]
+          bto: [{ model: Core i7-4790K, ghz: 4.0, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-r9-m290x, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac15-1-5k-late-2014-m295x
+        label: "Quad-core \u00b7 Radeon R9 M295X (build to order)"
+        bto_only: true
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4690, ghz: 3.5, cores: 4 }, { model: Core i7-4790K, ghz: 4.0, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-r9-m295x, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+  - id: "5k-mid-2015"
+    name: "iMac (Retina 5K, 27-inch, Mid 2015)"
+    announced: 2015-05-19
+    discontinued: 2015-10-13
+    model_numbers: [A1419]
+    emc: ["2806"]
+    configs:
+      - id: imac15-1-5k-mid-2015-a
+        label: "Quad-core Core i5 3.3 GHz \u00b7 Radeon R9 M290"
+        order_numbers: [MF885LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4590, ghz: 3.3, cores: 4 }]
+          bto: [{ model: Core i7-4790K, ghz: 4.0, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["3 TB HDD", "1 TB Fusion Drive", "3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-r9-m290-m390, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac15-1-5k-mid-2015-m295x
+        label: "Quad-core \u00b7 Radeon R9 M295X (build to order)"
+        bto_only: true
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4590, ghz: 3.3, cores: 4 }, { model: Core i7-4790K, ghz: 4.0, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-r9-m295x, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

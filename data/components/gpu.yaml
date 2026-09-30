@@ -11,17 +11,20 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C2
 
 - id: gpu/nvidia-geforce-9400m
   name: NVIDIA GeForce 9400M
   vendor: NVIDIA
   role: integrated
-  ids: [pci:10de:0861, pci:10de:0870]
+  ids: [pci:10de:0861, pci:10de:0870, pci:10de:0867, pci:10de:0869]
   driver: nouveau
   notes: Chipset-integrated (MCP79) GPU. lspci names this device "C79 [GeForce 9400]".
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
 
 - id: gpu/nvidia-geforce-320m
   name: NVIDIA GeForce 320M
@@ -45,26 +48,28 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C3
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
 
-- id: gpu/amd-radeon-hd-6630m
-  name: AMD Radeon HD 6630M (256 MB GDDR5)
+- id: gpu/amd-radeon-hd-6630m-6750m
+  name: AMD Radeon HD 6630M / 6750M (Whistler)
   vendor: AMD
   role: discrete
   ids: [pci:1002:6741]
   driver: radeon
-  notes: TeraScale 2 "Whistler". In Macmini5,2 the CPU's Intel HD 3000 is not exposed; the Radeon drives all outputs.
+  notes: TeraScale 2 "Whistler", sold as HD 6630M (Mac mini) and HD 6750M (21.5-inch iMac, Mid 2011). In Macmini5,2 the CPU's Intel HD 3000 is not exposed; the Radeon drives all outputs.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
 
 - id: gpu/intel-hd-4000
   name: Intel HD Graphics 4000
   vendor: Intel
   role: integrated
-  ids: [pci:8086:0166]
+  ids: [pci:8086:0166, pci:8086:0162]
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C3
 
 - id: gpu/intel-hd-5000
   name: Intel HD Graphics 5000
@@ -75,6 +80,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C4
 
 - id: gpu/intel-iris-5100
   name: Intel Iris Graphics 5100
@@ -112,6 +118,7 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac16/iMac16%2C1
 
 - id: gpu/intel-uhd-617
   name: Intel UHD Graphics 617
@@ -144,3 +151,361 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+
+- id: gpu/ati-radeon-x1600
+  name: ATI Radeon X1600
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:71c5]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac4/iMac4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
+
+- id: gpu/nvidia-geforce-7300-gt
+  name: NVIDIA GeForce 7300 GT
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0395]
+  driver: nouveau
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
+
+- id: gpu/nvidia-geforce-7600-gt
+  name: NVIDIA GeForce 7600 GT
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0391]
+  driver: nouveau
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
+
+- id: gpu/ati-radeon-hd-2400-xt
+  name: ATI Radeon HD 2400 XT
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:94c8]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
+
+- id: gpu/ati-radeon-hd-2600-pro
+  name: ATI Radeon HD 2600 Pro
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:9583]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
+
+- id: gpu/nvidia-geforce-8800-gs
+  name: NVIDIA GeForce 8800 GS
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0609]
+  driver: nouveau
+  notes: Reported by Linux as G92M [GeForce 8800M GTS].
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
+
+- id: gpu/nvidia-geforce-gt-120
+  name: NVIDIA GeForce GT 120
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0655]
+  driver: nouveau
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+
+- id: gpu/nvidia-geforce-gt-130
+  name: NVIDIA GeForce GT 130
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:062e]
+  driver: nouveau
+  notes: G94 chip (Linux reports it as GeForce 9600 GT).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+
+- id: gpu/ati-radeon-hd-4850
+  name: ATI Radeon HD 4850
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:944a]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+
+- id: gpu/ati-radeon-hd-4670
+  name: ATI Radeon HD 4670
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:9488]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C2
+
+- id: gpu/ati-radeon-hd-5670
+  name: ATI Radeon HD 5670
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:68c0]
+  driver: radeon
+  notes: Linux reports the Madison chip.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C3
+
+- id: gpu/ati-radeon-hd-5750
+  name: ATI Radeon HD 5750
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:68a1]
+  driver: radeon
+  notes: Linux reports the Broadway chip.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C3
+
+- id: gpu/amd-radeon-hd-6770m
+  name: AMD Radeon HD 6770M
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6740]
+  driver: radeon
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C2
+
+- id: gpu/amd-radeon-hd-6970m
+  name: AMD Radeon HD 6970M
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6720]
+  driver: radeon
+  notes: Blackcomb chip, 1 GB or 2 GB.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C2
+
+- id: gpu/nvidia-geforce-gt-640m
+  name: NVIDIA GeForce GT 640M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0fd8]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
+
+- id: gpu/nvidia-geforce-gt-650m
+  name: NVIDIA GeForce GT 650M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0fd5]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
+
+- id: gpu/nvidia-geforce-gtx-660m
+  name: NVIDIA GeForce GTX 660M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0fe0]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C2
+
+- id: gpu/nvidia-geforce-gtx-675mx
+  name: NVIDIA GeForce GTX 675MX
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:11a2]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C2
+
+- id: gpu/nvidia-geforce-gtx-680mx
+  name: NVIDIA GeForce GTX 680MX
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:11a3]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C2
+
+- id: gpu/nvidia-geforce-gt-750m
+  name: NVIDIA GeForce GT 750M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0fe9]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C3
+
+- id: gpu/nvidia-geforce-gt-755m
+  name: NVIDIA GeForce GT 755M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0fea]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
+
+- id: gpu/nvidia-geforce-gtx-775m
+  name: NVIDIA GeForce GTX 775M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:119d]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
+
+- id: gpu/nvidia-geforce-gtx-780m
+  name: NVIDIA GeForce GTX 780M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:119e]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
+
+- id: gpu/amd-radeon-r9-m290x
+  name: AMD Radeon R9 M290X
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6810]
+  driver: radeon, amdgpu
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
+
+- id: gpu/amd-radeon-r9-m295x
+  name: AMD Radeon R9 M295X
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6938]
+  driver: amdgpu
+  notes: Tonga chip.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
+
+- id: gpu/amd-radeon-r9-m290-m390
+  name: AMD Radeon R9 M290 / M390 (Pitcairn)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6819]
+  driver: radeon
+  notes: Sold as R9 M290 (Mid 2015 5K) and R9 M390 (Late 2015 5K).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
+
+- id: gpu/amd-radeon-r9-m380
+  name: AMD Radeon R9 M380
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6640]
+  driver: radeon
+  notes: Bonaire chip.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
+
+- id: gpu/amd-radeon-r9-m395
+  name: AMD Radeon R9 M395 / M395X (Tonga)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6920]
+  driver: amdgpu
+  notes: M395 and M395X share the chip; Apple subsystems 106b:014c and 106b:014d.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
+
+- id: gpu/amd-radeon-pro-555-560
+  name: AMD Radeon Pro 555 / 560 / 555X / 560X (Polaris 11)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:67ef]
+  driver: amdgpu
+  notes: One chip under four names; the Apple subsystem ID identifies the model.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C2
+
+- id: gpu/amd-radeon-pro-570-580
+  name: AMD Radeon Pro 570 / 575 / 580 / 570X / 575X / 580X (Polaris 10/20)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:67df]
+  driver: amdgpu
+  notes: One chip under six names; the Apple subsystem ID identifies the model.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
+
+- id: gpu/amd-radeon-pro-vega-48
+  name: AMD Radeon Pro Vega 48
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6869]
+  driver: amdgpu
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
+
+- id: gpu/amd-radeon-pro-vega-20
+  name: AMD Radeon Pro Vega 20
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:69af]
+  driver: amdgpu
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C2
+
+- id: gpu/amd-radeon-pro-5300-5500xt
+  name: AMD Radeon Pro 5300 / 5500 XT (Navi 14)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:7340]
+  driver: amdgpu
+  notes: Apple subsystems 106b:0218 and 106b:0219.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
+
+- id: gpu/amd-radeon-pro-5700-5700xt
+  name: AMD Radeon Pro 5700 / 5700 XT (Navi 10)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:7319]
+  driver: amdgpu
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
+  uncertain:
+    - field: ids
+      note: Only one 2020 iMac probe shows a Navi 10 device (1002:7319); iMac20,2 has no probes.
+
+- id: gpu/intel-iris-pro-5200
+  name: Intel Iris Pro Graphics 5200
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:0d22]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C1
+
+- id: gpu/intel-iris-pro-6200
+  name: Intel Iris Pro Graphics 6200
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:1622]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac16/iMac16%2C2
+
+- id: gpu/intel-iris-plus-640
+  name: Intel Iris Plus Graphics 640
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:5926]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C1

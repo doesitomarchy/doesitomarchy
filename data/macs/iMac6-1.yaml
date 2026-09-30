@@ -1,0 +1,44 @@
+identifier: iMac6,1
+line: imac
+efi: 32
+board_ids: [Mac-F4218FC8]
+research_notes: |
+  First 24-inch iMac. 32-bit EFI firmware. Graphics are NVIDIA GeForce 7300 GT (standard) or 7600 GT (build to order); the OpenCore database's Radeon X1600 entry is wrong.
+sources:
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.16-24-inch-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.33-24-inch-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM61.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
+releases:
+  - id: "24-late-2006"
+    name: "iMac (24-inch, Late 2006)"
+    announced: 2006-09-06
+    discontinued: 2007-08-07
+    model_numbers: [A1200]
+    emc: ["2111"]
+    configs:
+      - id: imac6-1-24-late-2006-a
+        label: "Core 2 Duo 2.16 GHz \u00b7 GeForce 7300 GT"
+        order_numbers: [MA456LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7400, ghz: 2.16, cores: 2 }]
+          bto: [{ model: Core 2 Duo T7600, ghz: 2.33, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1], max_gb: 3 }
+        storage: { interface: sata, standard: ["250 GB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/nvidia-geforce-7300-gt, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8206, audio/realtek-alc889a, ethernet/marvell-88e8053, firewire/ti-tsb82aa2, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: imac6-1-24-late-2006-7600gt
+        label: "Core 2 Duo \u00b7 GeForce 7600 GT (build to order)"
+        bto_only: true
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7400, ghz: 2.16, cores: 2 }, { model: Core 2 Duo T7600, ghz: 2.33, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1], max_gb: 3 }
+        storage: { interface: sata, standard: ["250 GB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/nvidia-geforce-7600-gt, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8206, audio/realtek-alc889a, ethernet/marvell-88e8053, firewire/ti-tsb82aa2, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

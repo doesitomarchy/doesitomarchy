@@ -1,0 +1,30 @@
+identifier: iMac5,2
+line: imac
+efi: 32
+board_ids: [Mac-F4218EC8]
+research_notes: |
+  17-inch Intel GMA 950 model. 32-bit EFI firmware; GMA 950 has no modern OpenGL, so Hyprland will likely use software rendering.
+sources:
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-1.83-17-inch-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM52.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C2
+releases:
+  - id: "17-late-2006-cd"
+    name: "iMac (17-inch, Late 2006 CD)"
+    announced: 2006-09-06
+    discontinued: 2007-08-07
+    model_numbers: [A1195]
+    emc: ["2124"]
+    configs:
+      - id: imac5-2-17-late-2006-a
+        label: "Core 2 Duo 1.83 GHz \u00b7 GMA 950"
+        order_numbers: [MA710LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T5600, ghz: 1.83, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5, 1], max_gb: 2 }
+        storage: { interface: sata, standard: ["160 GB HDD"] }
+        display: { inches: 17, resolution: 1440x900, panel: "LCD" }
+        components: [gpu/intel-gma-950, wifi/broadcom-bcm4311, bluetooth/apple-05ac-8206, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 2, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

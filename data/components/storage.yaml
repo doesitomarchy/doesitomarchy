@@ -7,6 +7,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
 
 - id: storage/nvidia-mcp79-sata
   name: NVIDIA MCP79 SATA controller
@@ -16,6 +17,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
 
 - id: storage/nvidia-mcp89-sata
   name: NVIDIA MCP89 SATA controller
@@ -29,28 +31,31 @@
 - id: storage/intel-6-series-sata
   name: Intel 6 Series SATA controller
   vendor: Intel
-  ids: [pci:8086:1c03]
+  ids: [pci:8086:1c03, pci:8086:1c02]
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
 
 - id: storage/intel-7-series-sata
   name: Intel 7 Series SATA controller
   vendor: Intel
-  ids: [pci:8086:1e03]
+  ids: [pci:8086:1e03, pci:8086:1e02]
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
 
 - id: storage/intel-8-series-sata
   name: Intel 8 Series SATA controller
   vendor: Intel
-  ids: [pci:8086:9c03]
+  ids: [pci:8086:9c03, pci:8086:8c02, pci:8086:8c03]
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
 
 - id: storage/apple-pcie-ssd-ahci
   name: Apple PCIe SSD (AHCI)
@@ -62,6 +67,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
 
 - id: storage/apple-ans2-nvme
   name: Apple ANS2 NVMe controller (T2)
@@ -72,6 +78,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
 
 - id: storage/intel-ich8m-sata
   name: Intel ICH8M SATA controller
@@ -81,6 +88,7 @@
   notes: In the 2008 MacBook Air the drive itself is a 1.8-inch Parallel ATA (ZIF) disk behind a bridge.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
 
 - id: storage/apple-s1x-nvme
   name: Apple S1X NVMe SSD controller
@@ -89,3 +97,65 @@
   driver: nvme
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
+
+- id: storage/intel-5-series-sata
+  name: Intel 5 Series SATA controller
+  vendor: Intel
+  ids: [pci:8086:3b22]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C3
+
+- id: storage/intel-9-series-sata
+  name: Intel 9 Series SATA controller
+  vendor: Intel
+  ids: [pci:8086:8c83]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac16/iMac16%2C2
+
+- id: storage/intel-wildcat-point-lp-sata
+  name: Intel Wildcat Point-LP SATA controller
+  vendor: Intel
+  ids: [pci:8086:9c83]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac16/iMac16%2C1
+
+- id: storage/intel-100-series-sata
+  name: Intel 100 Series SATA controller
+  vendor: Intel
+  ids: [pci:8086:a102]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
+
+- id: storage/intel-sunrise-point-lp-sata
+  name: Intel Sunrise Point-LP SATA controller
+  vendor: Intel
+  ids: [pci:8086:9d03]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C1
+
+- id: storage/intel-cannon-lake-sata
+  name: Intel Cannon Lake SATA controller
+  vendor: Intel
+  ids: [pci:8086:a352]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C2
+
+- id: storage/samsung-nvme-apple
+  name: Apple SSD (Samsung NVMe)
+  vendor: Samsung
+  ids: [pci:144d:a804, pci:144d:a806]
+  driver: nvme
+  notes: SSD and Fusion Drive flash on 2017–2019 iMacs; a standard NVMe device.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1

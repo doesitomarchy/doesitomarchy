@@ -1,0 +1,33 @@
+identifier: iMac18,1
+line: imac
+efi: 64
+board_ids: [Mac-4B682C642B45593E]
+research_notes: |
+  Audio is a Cirrus Logic CS8409 codec; on many observed machines Linux fell back to the generic HDA parser, so audio needs attention in testing.
+sources:
+  - https://support.apple.com/en-us/111921
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-2.3-21-inch-aluminum-mid-2017-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM181.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C1
+releases:
+  - id: "21-2017"
+    name: "iMac (21.5-inch, 2017)"
+    announced: 2017-06-05
+    discontinued: 2021-10-29
+    model_numbers: [A1418]
+    emc: ["3068"]
+    configs:
+      - id: imac18-1-21-2017-a
+        label: "Dual-core Core i5 2.3 GHz \u00b7 Iris Plus 640"
+        order_numbers: [MMQA2LL/A, MHK03LL/A]
+        cpu:
+          codename: kaby-lake
+          standard: [{ model: Core i5-7360U, ghz: 2.3, cores: 2 }]
+        memory: { type: DDR4-2133, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["1 TB Fusion Drive", "256 GB SSD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/intel-iris-plus-640, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8296, audio/cirrus-cs8409, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-alpine-ridge, camera/apple-facetime-hd-05ac-8511, storage/intel-sunrise-point-lp-sata]
+        bto_components: [storage/samsung-nvme-apple]
+        ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
