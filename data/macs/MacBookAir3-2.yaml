@@ -1,0 +1,37 @@
+identifier: MacBookAir3,2
+line: macbook-air
+efi: 64
+board_ids: [Mac-942C5DF58193131B]
+research_notes: |
+  The keyboard is not backlit on the Late 2010 models. The SD card reader is an internal USB device.
+sources:
+  - https://support.apple.com/en-us/112585
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-1.86-13-late-2010-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-2.13-13-late-2010-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA32.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C2
+releases:
+  - id: late-2010
+    name: "MacBook Air (13-inch, Late 2010)"
+    announced: 2010-10-20
+    discontinued: 2011-07-20
+    model_numbers: [A1369]
+    emc: ["2392"]
+    configs:
+      - id: macbookair3-2-late-2010-a
+        label: "Core 2 Duo 1.86 or 2.13 GHz \u00b7 GeForce 320M"
+        order_numbers: [MC503LL/A, MC504LL/A, MC905LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo SL9400, ghz: 1.86, cores: 2 }]
+          bto: [{ model: Core 2 Duo SL9600, ghz: 2.13, cores: 2 }]
+        memory: { type: DDR3-1066, standard_gb: [2, 4], max_gb: 4, soldered: true }
+        storage: { interface: sata, standard: [128 GB SSD, 256 GB SSD] }
+        display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
+        components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821b, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, card-reader/apple-usb-8403, storage/nvidia-mcp89-sata, input/apple-mba-13-2010]
+        ports: { usb-a-2: 2, mini-displayport: 1, sd-card: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan]
+        uncertain:
+          - field: features.ambient-light-sensor
+            note: "Not listed by Apple or EveryMac for Late 2010 (the keyboard is not backlit); recorded as absent."

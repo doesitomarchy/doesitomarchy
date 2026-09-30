@@ -16,6 +16,8 @@
   driver: thunderbolt
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
 
 - id: thunderbolt/intel-falcon-ridge
   name: Intel DSL5520 "Falcon Ridge" Thunderbolt 2 controller
@@ -32,3 +34,31 @@
   driver: thunderbolt
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+
+- id: thunderbolt/intel-eagle-ridge
+  name: Intel DSL2310 "Eagle Ridge" Thunderbolt controller
+  vendor: Intel
+  ids: [pci:8086:151a]
+  driver: thunderbolt
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+
+- id: thunderbolt/intel-falcon-ridge-2c
+  name: Intel DSL5320 "Falcon Ridge" Thunderbolt 2 controller (2-channel)
+  vendor: Intel
+  ids: [pci:8086:156a, pci:8086:156b]
+  driver: thunderbolt
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+
+- id: thunderbolt/intel-ice-lake
+  name: Intel Ice Lake integrated Thunderbolt 3
+  vendor: Intel
+  ids: [pci:8086:8a17, pci:8086:8a13]
+  driver: thunderbolt
+  notes: Built into the Ice Lake CPU; no separate controller chip.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1

@@ -76,6 +76,7 @@ ports:
   hdmi:               { name: HDMI, video: true }
   mini-displayport:   { name: Mini DisplayPort, video: true }
   mini-dvi:           { name: Mini-DVI, video: true }
+  micro-dvi:          { name: Micro-DVI, video: true }
   dvi:                { name: DVI, video: true }
   firewire-400:       { name: FireWire 400 }
   firewire-800:       { name: FireWire 800 }

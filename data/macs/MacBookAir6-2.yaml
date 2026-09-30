@@ -1,0 +1,57 @@
+identifier: MacBookAir6,2
+line: macbook-air
+efi: 64
+board_ids: [Mac-7DF21CB3ED6977E5]
+research_notes: |
+  Mid 2013 and Early 2014 share this identifier and all components.
+  PCIe flash storage speaks AHCI. The FaceTime HD camera is a PCIe device (Broadcom 1570) that needs the out-of-tree facetimehd driver.
+  BCM4360 Wi-Fi has no in-kernel 802.11ac driver; the proprietary wl driver is the usual route.
+sources:
+  - https://support.apple.com/en-us/111938
+  - https://support.apple.com/en-us/111944
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.3-13-mid-2013-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.4-13-early-2014-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA62.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+releases:
+  - id: mid-2013
+    name: "MacBook Air (13-inch, Mid 2013)"
+    announced: 2013-06-10
+    discontinued: 2014-04-29
+    model_numbers: [A1466]
+    emc: ["2632"]
+    configs:
+      - id: macbookair6-2-mid-2013-a
+        label: "Core i5 1.3 GHz or Core i7 1.7 GHz \u00b7 HD Graphics 5000"
+        order_numbers: [MD760LL/A, MD761LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4250U, ghz: 1.3, cores: 2 }]
+          bto: [{ model: Core i7-4650U, ghz: 1.7, cores: 2 }]
+        memory: { type: LPDDR3-1600, standard_gb: [4], max_gb: 8, soldered: true }
+        storage: { interface: pcie-ahci, standard: [128 GB SSD, 256 GB SSD], bto: [512 GB SSD] }
+        display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
+        components: [gpu/intel-hd-5000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-cactus-ridge, storage/apple-pcie-ssd-ahci, input/apple-mba-13-2013]
+        ports: { usb-a-3: 2, thunderbolt-1: 1, sd-card: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+  - id: early-2014
+    name: "MacBook Air (13-inch, Early 2014)"
+    announced: 2014-04-29
+    discontinued: 2015-03-09
+    model_numbers: [A1466]
+    emc: ["2632"]
+    configs:
+      - id: macbookair6-2-early-2014-a
+        label: "Core i5 1.4 GHz or Core i7 1.7 GHz \u00b7 HD Graphics 5000"
+        order_numbers: [MD760LL/B, MD761LL/B, MF068LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4260U, ghz: 1.4, cores: 2 }]
+          bto: [{ model: Core i7-4650U, ghz: 1.7, cores: 2 }]
+        memory: { type: LPDDR3-1600, standard_gb: [4], max_gb: 8, soldered: true }
+        storage: { interface: pcie-ahci, standard: [128 GB SSD, 256 GB SSD], bto: [512 GB SSD] }
+        display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
+        components: [gpu/intel-hd-5000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-cactus-ridge, storage/apple-pcie-ssd-ahci, input/apple-mba-13-2013]
+        ports: { usb-a-3: 2, thunderbolt-1: 1, sd-card: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]

@@ -1,0 +1,54 @@
+identifier: MacBookAir2,1
+line: macbook-air
+efi: 64
+board_ids: [Mac-F42D88C8]
+research_notes: |
+  Late 2008 and Mid 2009 share this identifier and all components. Audio is a Realtek ALC889A on every observed machine.
+  Bluetooth: 6 of 8 observed machines report USB 05ac:8216, 2 report 05ac:8210.
+  Apple's identification page also lists MC505 under Mid 2009; MC505 is the 11-inch Late 2010 model.
+sources:
+  - https://support.apple.com/en-us/112660
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-1.6-13-nvidia-late-2008-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-1.86-13-mid-2009-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA21.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
+releases:
+  - id: late-2008
+    name: "MacBook Air (Late 2008)"
+    announced: 2008-10-14
+    discontinued: 2009-06-08
+    model_numbers: [A1304]
+    emc: ["2253"]
+    configs:
+      - id: macbookair2-1-late-2008-a
+        label: "Core 2 Duo 1.6 or 1.86 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MB543LL/A, MB940LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo SL9300, ghz: 1.6, cores: 2 }, { model: Core 2 Duo SL9400, ghz: 1.86, cores: 2 }]
+        memory: { type: DDR3-1066, standard_gb: [2], max_gb: 2, soldered: true }
+        storage: { interface: sata, standard: [120 GB HDD, 128 GB SSD] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LED glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8216, audio/realtek-alc889a, camera/apple-isight-05ac-8505, storage/nvidia-mcp79-sata, input/apple-mba-2008, ir/apple-05ac-8242]
+        ports: { usb-a-2: 1, mini-displayport: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver]
+  - id: mid-2009
+    name: "MacBook Air (Mid 2009)"
+    announced: 2009-06-08
+    discontinued: 2010-10-20
+    model_numbers: [A1304]
+    emc: ["2334"]
+    configs:
+      - id: macbookair2-1-mid-2009-a
+        label: "Core 2 Duo 1.86 or 2.13 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MC233LL/A, MC234LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo SL9400, ghz: 1.86, cores: 2 }, { model: Core 2 Duo SL9600, ghz: 2.13, cores: 2 }]
+        memory: { type: DDR3-1066, standard_gb: [2], max_gb: 2, soldered: true }
+        storage: { interface: sata, standard: [120 GB HDD, 128 GB SSD] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LED glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8216, audio/realtek-alc889a, camera/apple-isight-05ac-8505, storage/nvidia-mcp79-sata, input/apple-mba-2008, ir/apple-05ac-8242]
+        ports: { usb-a-2: 1, mini-displayport: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver]

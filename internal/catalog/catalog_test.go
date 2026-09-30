@@ -59,6 +59,35 @@ func TestRealCatalogApplicability(t *testing.T) {
 			[]string{"boot.installer-efi64", "ports.usb-c", "ports.thunderbolt", "network.ethernet", "network.wifi", "audio.headphone"},
 			[]string{"ports.sd-card", "input.ir-receiver", "audio.line-in", "ports.firewire", "bridge.touch-bar-camera"}},
 	}
+	laptops := []struct {
+		config   string
+		has, not []string
+	}{
+		{"macbookair1-1-early-2008-a",
+			[]string{"boot.installer-efi64", "graphics.external-display", "input.keyboard-backlight", "input.ambient-light-sensor", "power.lid", "camera.builtin"},
+			[]string{"ports.thunderbolt", "network.ethernet", "ports.sd-card"}},
+		{"macbookair3-1-late-2010-a", []string{"input.trackpad", "power.battery-status"}, []string{"input.keyboard-backlight", "ports.sd-card"}},
+		{"macbookair7-2-2017-a", []string{"ports.sd-card", "ports.thunderbolt", "audio.microphone"}, []string{"input.touch-id", "ports.usb-c"}},
+		{"macbookair9-1-2020-b",
+			[]string{"input.touch-id", "input.force-touch", "ports.usb-c", "ports.usb-c-charging", "network.bluetooth"},
+			[]string{"ports.usb-a", "ports.sd-card", "input.touch-bar", "bridge.touch-bar-camera", "graphics.discrete"}},
+	}
+	for _, tt := range laptops {
+		t.Run(tt.config, func(t *testing.T) {
+			m, cfg := findConfig(t, c, tt.config)
+			got := capSet(c, m, cfg)
+			for _, id := range tt.has {
+				if !got[id] {
+					t.Errorf("expected %s to apply", id)
+				}
+			}
+			for _, id := range tt.not {
+				if got[id] {
+					t.Errorf("expected %s NOT to apply", id)
+				}
+			}
+		})
+	}
 	laptopOnly := []string{"power.battery-status", "power.lid", "input.keyboard", "input.trackpad", "display.brightness", "camera.builtin"}
 	for _, tt := range tests {
 		t.Run(tt.config, func(t *testing.T) {

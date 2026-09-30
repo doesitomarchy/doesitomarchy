@@ -1,0 +1,37 @@
+identifier: MacBookAir3,1
+line: macbook-air
+efi: 64
+board_ids: [Mac-942452F5819B1C1B]
+research_notes: |
+  First 11-inch MacBook Air. The keyboard is not backlit on the Late 2010 models.
+sources:
+  - https://support.apple.com/en-us/112580
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-1.4-11-late-2010-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-1.6-11-late-2010-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA31.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
+releases:
+  - id: late-2010
+    name: "MacBook Air (11-inch, Late 2010)"
+    announced: 2010-10-20
+    discontinued: 2011-07-20
+    model_numbers: [A1370]
+    emc: ["2393"]
+    configs:
+      - id: macbookair3-1-late-2010-a
+        label: "Core 2 Duo 1.4 or 1.6 GHz \u00b7 GeForce 320M"
+        order_numbers: [MC505LL/A, MC506LL/A, MC906LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo SU9400, ghz: 1.4, cores: 2 }]
+          bto: [{ model: Core 2 Duo SU9600, ghz: 1.6, cores: 2 }]
+        memory: { type: DDR3-1066, standard_gb: [2, 4], max_gb: 4, soldered: true }
+        storage: { interface: sata, standard: [64 GB SSD, 128 GB SSD] }
+        display: { inches: 11.6, resolution: 1366x768, panel: "LED glossy" }
+        components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821b, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, storage/nvidia-mcp89-sata, input/apple-mba-11-2010]
+        ports: { usb-a-2: 2, mini-displayport: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan]
+        uncertain:
+          - field: features.ambient-light-sensor
+            note: "Not listed by Apple or EveryMac for Late 2010 (the keyboard is not backlit); recorded as absent."

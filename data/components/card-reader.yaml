@@ -7,3 +7,29 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+
+- id: card-reader/apple-usb-8403
+  name: Apple internal SD card reader (USB 05ac:8403)
+  vendor: Apple
+  ids: [usb:05ac:8403]
+  driver: usb-storage
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C2
+
+- id: card-reader/apple-usb-8404
+  name: Apple internal SD card reader (USB 05ac:8404)
+  vendor: Apple
+  ids: [usb:05ac:8404]
+  driver: usb-storage
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+
+- id: card-reader/apple-usb-8406
+  name: Apple internal SDXC card reader (USB 05ac:8406)
+  vendor: Apple
+  ids: [usb:05ac:8406]
+  driver: usb-storage
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2

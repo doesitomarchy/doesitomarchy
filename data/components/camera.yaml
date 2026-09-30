@@ -1,0 +1,45 @@
+# Built-in cameras. USB cameras use the standard uvcvideo driver; the 2013–2017
+# PCIe FaceTime HD camera needs the out-of-tree facetimehd driver.
+
+- id: camera/apple-isight-05ac-8505
+  name: Apple iSight (USB 05ac:8505)
+  vendor: Apple
+  ids: [usb:05ac:8505]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
+
+- id: camera/apple-facetime-05ac-850a
+  name: Apple FaceTime camera (USB 05ac:850a)
+  vendor: Apple
+  ids: [usb:05ac:850a]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+
+- id: camera/apple-facetime-hd-05ac-8510
+  name: Apple FaceTime HD camera (USB 05ac:8510)
+  vendor: Apple
+  ids: [usb:05ac:8510]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+
+- id: camera/broadcom-1570-facetime-hd
+  name: Broadcom 1570 720p FaceTime HD camera (PCIe)
+  vendor: Broadcom
+  ids: [pci:14e4:1570]
+  driver: facetimehd
+  notes: PCIe camera; not a USB webcam. Works with the out-of-tree facetimehd driver and firmware extracted from Apple's drivers.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+
+- id: camera/apple-t2-facetime-hd
+  name: Apple FaceTime HD camera via T2 (USB 05ac:8514)
+  vendor: Apple
+  ids: [usb:05ac:8514]
+  notes: Exposed as a USB device by the T2 bridge (apple-bce).
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1

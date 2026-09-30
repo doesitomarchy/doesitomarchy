@@ -1,0 +1,37 @@
+identifier: MacBookAir4,2
+line: macbook-air
+efi: 64
+board_ids: [Mac-742912EFDBEE19B3]
+research_notes: |
+  Adds Thunderbolt and brings back the backlit keyboard. MD508LL/A was a 2012 education configuration (Core i5 1.6 GHz, 2 GB, 64 GB).
+sources:
+  - https://support.apple.com/en-us/112038
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.7-13-mid-2011-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.6-13-early-2012-edu-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA42.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+releases:
+  - id: mid-2011
+    name: "MacBook Air (13-inch, Mid 2011)"
+    announced: 2011-07-20
+    discontinued: 2012-06-11
+    model_numbers: [A1369]
+    emc: ["2469"]
+    configs:
+      - id: macbookair4-2-mid-2011-a
+        label: "Core i5 1.7 GHz or Core i7 1.8 GHz \u00b7 HD Graphics 3000"
+        order_numbers: [MC965LL/A, MC966LL/A, MD226LL/A, MD508LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i5-2557M, ghz: 1.7, cores: 2 }, { model: Core i5-2467M, ghz: 1.6, cores: 2 }]
+          bto: [{ model: Core i7-2677M, ghz: 1.8, cores: 2 }]
+        memory: { type: DDR3-1333, standard_gb: [2, 4], max_gb: 4, soldered: true }
+        storage: { interface: sata, standard: [128 GB SSD, 256 GB SSD] }
+        display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
+        components: [gpu/intel-hd-3000, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821f, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, card-reader/apple-usb-8404, thunderbolt/intel-eagle-ridge, storage/intel-6-series-sata, input/apple-mba-13-2011]
+        ports: { usb-a-2: 2, thunderbolt-1: 1, sd-card: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+        uncertain:
+          - field: features.ambient-light-sensor
+            note: "Neither Apple nor EveryMac mentions an ambient light sensor for Mid 2011; the 2008\u20132009 and 2012+ models have one."

@@ -1,0 +1,37 @@
+identifier: MacBookAir1,1
+line: macbook-air
+efi: 64
+board_ids: [Mac-F42C8CC8]
+research_notes: |
+  Original MacBook Air. Intel GMA X3100 has only early KMS/OpenGL support; Hyprland may fall back to software rendering.
+  The drive is a 1.8-inch Parallel ATA (ZIF) disk. The Apple IR receiver USB device (05ac:8242) appears on every observed machine.
+  Audio is a Realtek ALC889A codec on every observed machine (the spreadsheet assumed SigmaTel STAC922x).
+sources:
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-1.6-13-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-2-duo-1.8-13-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA11.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+uncertain:
+  - field: efi
+    note: "EveryMac lists EFI Architecture 32-Bit, but Linux dmesg shows the 64-bit-EFI firmware table layout (ACPI \u2026eeee000 / SMBIOS \u2026ec4000, as on MacBook4,1). Recorded as 64; a boot test will confirm."
+releases:
+  - id: early-2008
+    name: "MacBook Air (Early 2008)"
+    announced: 2008-01-15
+    discontinued: 2008-10-14
+    model_numbers: [A1237]
+    emc: ["2142"]
+    configs:
+      - id: macbookair1-1-early-2008-a
+        label: "Core 2 Duo 1.6 GHz \u00b7 GMA X3100"
+        order_numbers: [MB003LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo P7500, ghz: 1.6, cores: 2 }]
+          bto: [{ model: Core 2 Duo P7700, ghz: 1.8, cores: 2 }]
+        memory: { type: DDR2-667, standard_gb: [2], max_gb: 2, soldered: true }
+        storage: { interface: pata, standard: [80 GB HDD], bto: [64 GB SSD] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LED glossy" }
+        components: [gpu/intel-gma-x3100, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8210, audio/realtek-alc889a, camera/apple-isight-05ac-8505, storage/intel-ich8m-sata, input/apple-mba-2008, ir/apple-05ac-8242]
+        ports: { usb-a-2: 1, micro-dvi: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver]
