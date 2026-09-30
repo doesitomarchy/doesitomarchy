@@ -79,8 +79,9 @@
 - id: thunderbolt/intel-alpine-ridge
   name: Intel JHL6540 "Alpine Ridge" Thunderbolt 3 controller
   vendor: Intel
-  ids: [pci:8086:15d3, pci:8086:15d2]
+  ids: [pci:8086:15d3, pci:8086:15d2, pci:8086:15d4, pci:8086:1578]
   driver: thunderbolt
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1

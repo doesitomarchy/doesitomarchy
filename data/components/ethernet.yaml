@@ -48,6 +48,7 @@
   driver: atlantic
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
 
 - id: ethernet/marvell-88e8058
   name: Marvell Yukon 88E8058 Gigabit Ethernet

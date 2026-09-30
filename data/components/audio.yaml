@@ -61,6 +61,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
 
 - id: audio/cirrus-cs8409
   name: Cirrus Logic CS8409 (with CS42L42)

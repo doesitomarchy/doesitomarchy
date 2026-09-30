@@ -540,3 +540,35 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook10/MacBook10%2C1
+
+- id: gpu/amd-radeon-pro-vega-56
+  name: AMD Radeon Pro Vega 56 (8 GB HBM2)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6867]
+  driver: amdgpu
+  notes: Vega 10 XL. Real machines pair it with the 8- and 10-core Xeon W.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/iMacPro1/iMacPro1%2C1
+
+- id: gpu/amd-radeon-pro-vega-64
+  name: AMD Radeon Pro Vega 64 (16 GB HBM2)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6860]
+  driver: amdgpu
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
+
+- id: gpu/amd-radeon-pro-vega-64x
+  name: AMD Radeon Pro Vega 64X (16 GB HBM2)
+  vendor: AMD
+  role: discrete
+  ids: []
+  driver: amdgpu
+  sources:
+    - https://support.apple.com/en-us/111995
+  uncertain:
+    - field: ids
+      note: No Linux hardware probe shows a Vega 64X, so its PCI device ID (and whether it matches the Vega 64) is unconfirmed.
