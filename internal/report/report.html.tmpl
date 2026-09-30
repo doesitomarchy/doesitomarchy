@@ -111,6 +111,10 @@ article.mac, .release { min-width: 0 }
 .matrix th.count-head { position: relative; width: 1%; text-align: right; vertical-align: bottom; padding: 4px 6px 4px 30px; line-height: 1.3 }
 .matrix-wrap { padding-right: 80px }
 .matrix td.cell { border-left: 1px solid var(--line) }
+/* Column tint on body cells only, so the tilted header borders stay intact. */
+.matrix td.col-hover { background: color-mix(in srgb, var(--fg) 7%, transparent) }
+.matrix td.col-target { background: color-mix(in srgb, var(--link) 20%, transparent) }
+.matrix td.col-target.col-hover { background: color-mix(in srgb, var(--link) 28%, transparent) }
 .matrix td.count { border-left: 1px solid var(--line) }
 .matrix td { padding: 4px 6px }
 .matrix td.cell { text-align: center; color: var(--accent); font-family: var(--mono); padding: 4px 2px }
@@ -250,6 +254,33 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
   </table>
   </div>
 </section>
+
+<script>
+/* Matrix column highlighting: hover tints a column; a "criteria apply" link (#m-<config>) tints its column violet. */
+(() => {
+  const table = document.querySelector('.matrix');
+  if (!table) return;
+  const heads = [...table.tHead.rows[0].cells];
+  const first = 1, last = heads.length - 2; // config columns only (not Criterion or Config Count)
+  const column = (i) => [...table.tBodies[0].rows].filter((r) => r.cells.length === heads.length).map((r) => r.cells[i]);
+  const setClass = (name, i) => {
+    table.querySelectorAll('td.' + name).forEach((td) => td.classList.remove(name));
+    if (i >= first && i <= last) column(i).forEach((td) => td.classList.add(name));
+  };
+  table.addEventListener('mouseover', (e) => {
+    const cell = e.target.closest('td, th');
+    const full = cell && cell.parentElement.cells.length === heads.length;
+    setClass('col-hover', full ? cell.cellIndex : -1);
+  });
+  table.addEventListener('mouseleave', () => setClass('col-hover', -1));
+  const mark = () => {
+    const id = location.hash.slice(1);
+    setClass('col-target', id.startsWith('m-') ? heads.findIndex((h) => h.id === id) : -1);
+  };
+  addEventListener('hashchange', mark);
+  mark();
+})();
+</script>
 
 <footer>
   Reply with corrections by identifier and field (for example “Macmini4,1 · built-in speaker: yes”). Approved batches are merged into the catalog; config IDs are locked once results reference them.
