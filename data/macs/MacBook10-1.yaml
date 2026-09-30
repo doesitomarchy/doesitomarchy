@@ -1,0 +1,35 @@
+identifier: MacBook10,1
+line: macbook
+efi: 64
+board_ids: [Mac-EE2EBD4B90B839A8]
+research_notes: |
+  Fanless 12-inch Retina MacBook with a single USB-C port (charging, USB and DisplayPort through an adapter).
+  Keyboard, trackpad and backlight connect over SPI (in-kernel applespi driver). Bluetooth is on UART (hci_uart). The FaceTime HD camera is a PCIe device needing the out-of-tree facetimehd driver.
+  BCM4350 Wi-Fi uses brcmfmac.
+sources:
+  - https://support.apple.com/en-us/103257
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-i5-1.3-12-mid-2017-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-i7-1.4-12-mid-2017-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB101.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook10/MacBook10%2C1
+releases:
+  - id: "2017"
+    name: "MacBook (Retina, 12-inch, 2017)"
+    announced: 2017-06-05
+    discontinued: 2019-07-09
+    model_numbers: [A1534]
+    emc: ["3099"]
+    configs:
+      - id: macbook10-1-2017-a
+        label: "Core m3 1.2 GHz or Core i5 1.3 GHz \u00b7 HD Graphics 615"
+        order_numbers: [MNYF2LL/A, MNYG2LL/A, MNYH2LL/A, MNYJ2LL/A, MNYK2LL/A, MNYL2LL/A, MNYM2LL/A, MNYN2LL/A]
+        cpu:
+          codename: kaby-lake
+          standard: [{ model: Core m3-7Y32, ghz: 1.2, cores: 2 }, { model: Core i5-7Y54, ghz: 1.3, cores: 2 }]
+          bto: [{ model: Core i7-7Y75, ghz: 1.4, cores: 2 }]
+        memory: { type: LPDDR3-1866, standard_gb: [8, 16], max_gb: 16, soldered: true }
+        storage: { interface: nvme, standard: ["256 GB SSD", "512 GB SSD"] }
+        display: { inches: 12, resolution: 2304x1440, panel: "Retina LED IPS" }
+        components: [gpu/intel-hd-615, wifi/broadcom-bcm4350, bluetooth/broadcom-bcm4350-uart, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, storage/apple-s3x-nvme, input/apple-spi-keyboard]
+        ports: { usb-c: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging]

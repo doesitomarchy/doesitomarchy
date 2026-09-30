@@ -1,0 +1,31 @@
+identifier: MacBook6,1
+line: macbook
+efi: 64
+board_ids: [Mac-F22C8AC8]
+research_notes: |
+  White polycarbonate unibody MacBook. Glass Multi-Touch trackpad, one combined audio jack, no FireWire. No Apple IR receiver appears on any observed machine.
+sources:
+  - https://support.apple.com/en-us/103257
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.26-white-13-polycarbonate-unibody-late-2009-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB61.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook6/MacBook6%2C1
+releases:
+  - id: late-2009
+    name: "MacBook (13-inch, Late 2009)"
+    announced: 2009-10-20
+    discontinued: 2010-05-18
+    model_numbers: [A1342]
+    emc: ["2350"]
+    configs:
+      - id: macbook6-1-late-2009-a
+        label: "Core 2 Duo 2.26 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MC207LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P7550, ghz: 2.26, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["250 GB HDD"], bto: ["320 GB HDD", "500 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-8218, audio/cirrus-cs4206, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, input/apple-mb-unibody]
+        ports: { usb-a-2: 2, mini-displayport: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, audio-in: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, optical-drive]

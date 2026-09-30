@@ -34,6 +34,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook8/MacBook8%2C1
 
 - id: camera/apple-t2-facetime-hd
   name: Apple FaceTime HD camera via T2 (USB 05ac:8514)
@@ -53,6 +54,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
 
 - id: camera/apple-isight-05ac-8502
   name: Apple iSight (USB 05ac:8502)
@@ -87,3 +89,11 @@
   uncertain:
     - field: ids
       note: No probe lists the 2020 iMac camera's USB ID.
+
+- id: camera/apple-isight-05ac-8507
+  name: Apple iSight (USB 05ac:8507)
+  vendor: Apple
+  ids: [usb:05ac:8507]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1

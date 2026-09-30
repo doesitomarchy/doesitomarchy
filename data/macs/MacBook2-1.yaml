@@ -1,0 +1,56 @@
+identifier: MacBook2,1
+line: macbook
+efi: 32
+board_ids: [Mac-F4208CA9, Mac-F4208CAA]
+research_notes: |
+  64-bit Core 2 Duo CPU with 32-bit EFI firmware: the stock installer needs a 32-bit EFI boot shim. GMA 950 has no modern OpenGL, so Hyprland will likely use software rendering.
+  The iSight reports "no firmware loaded" and needs firmware extracted from macOS.
+sources:
+  - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook2/MacBook2%2C1
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-1.83-13-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-black-13-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-white-13-mid-2007-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-white-13-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.16-black-13-mid-2007-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.16-white-13-mid-2007-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB21.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
+releases:
+  - id: late-2006
+    name: "MacBook (13-inch, Late 2006)"
+    announced: 2006-11-08
+    discontinued: 2007-05-15
+    model_numbers: [A1181]
+    emc: ["2121"]
+    configs:
+      - id: macbook2-1-late-2006-a
+        label: "Core 2 Duo 1.83 or 2.0 GHz \u00b7 GMA 950 (white or black)"
+        order_numbers: [MA699LL/A, MA700LL/A, MA701LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T5600, ghz: 1.83, cores: 2 }, { model: Core 2 Duo T7200, ghz: 2.0, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5, 1], max_gb: 2 }
+        storage: { interface: sata, standard: ["60 GB HDD", "80 GB HDD", "120 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/intel-gma-950, wifi/atheros-ar5418, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240, input/apple-mb-2006b]
+        ports: { usb-a-2: 2, firewire-400: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+  - id: mid-2007
+    name: "MacBook (13-inch, Mid 2007)"
+    announced: 2007-05-15
+    discontinued: 2007-11-01
+    model_numbers: [A1181]
+    emc: ["2139"]
+    configs:
+      - id: macbook2-1-mid-2007-a
+        label: "Core 2 Duo 2.0 or 2.16 GHz \u00b7 GMA 950 (white or black)"
+        order_numbers: [MB061LL/A, MB062LL/A, MB063LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7200, ghz: 2.0, cores: 2 }, { model: Core 2 Duo T7400, ghz: 2.16, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1], max_gb: 2 }
+        storage: { interface: sata, standard: ["80 GB HDD", "120 GB HDD", "160 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/intel-gma-950, wifi/atheros-ar5418, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240, input/apple-mb-2006b]
+        ports: { usb-a-2: 2, firewire-400: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

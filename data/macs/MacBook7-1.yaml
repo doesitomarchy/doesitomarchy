@@ -1,0 +1,31 @@
+identifier: MacBook7,1
+line: macbook
+efi: 64
+board_ids: [Mac-F22C89C8]
+research_notes: |
+  Last white MacBook. Mini DisplayPort carries audio. No Apple IR receiver appears on any observed machine.
+sources:
+  - https://support.apple.com/en-us/103257
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.4-white-13-polycarbonate-unibody-mid-2010-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB71.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+releases:
+  - id: mid-2010
+    name: "MacBook (13-inch, Mid 2010)"
+    announced: 2010-05-18
+    discontinued: 2012-02-08
+    model_numbers: [A1342]
+    emc: ["2395"]
+    configs:
+      - id: macbook7-1-mid-2010-a
+        label: "Core 2 Duo 2.4 GHz \u00b7 GeForce 320M"
+        order_numbers: [MC516LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8600, ghz: 2.4, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["250 GB HDD"], bto: ["320 GB HDD", "500 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-8218, audio/cirrus-cs4206, ethernet/nvidia-mcp89, storage/nvidia-mcp89-sata, camera/apple-isight-05ac-8507, input/apple-mb-unibody]
+        ports: { usb-a-2: 2, mini-displayport: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, audio-in: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, optical-drive, displayport-audio]

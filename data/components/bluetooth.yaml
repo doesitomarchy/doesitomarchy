@@ -10,6 +10,8 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook1/MacBook1%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
 
 - id: bluetooth/apple-05ac-8216
   name: Apple Bluetooth 2.1+EDR (USB 05ac:8216, Broadcom BCM2046)
@@ -27,6 +29,7 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
 
 - id: bluetooth/apple-05ac-8281
   name: Apple Bluetooth 4.0 (USB 05ac:8281)
@@ -145,6 +148,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
 
 - id: bluetooth/apple-05ac-828b
   name: Apple Bluetooth 4.0 (USB 05ac:828b)
@@ -180,3 +184,21 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C2
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
+
+- id: bluetooth/apple-05ac-8213
+  name: Apple Bluetooth 2.1+EDR (USB 05ac:8213)
+  vendor: Apple
+  ids: [usb:05ac:8213]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C1
+
+- id: bluetooth/broadcom-bcm4350-uart
+  name: Broadcom BCM4350 Bluetooth (UART)
+  vendor: Broadcom
+  ids: []
+  driver: hci_uart
+  notes: Bluetooth half of the BCM4350 combo chip, attached over UART (hci_uart), not USB.
+  sources:
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook9/MacBook9%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook10/MacBook10%2C1

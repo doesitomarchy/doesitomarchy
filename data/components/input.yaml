@@ -69,3 +69,46 @@
   notes: Exposed as a USB device by the T2 bridge (apple-bce).
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+
+- id: input/apple-mb-2006
+  name: Apple internal keyboard/trackpad (MacBook 2006)
+  vendor: Apple
+  ids: [usb:05ac:0217, usb:05ac:0218]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook1/MacBook1%2C1
+
+- id: input/apple-mb-2006b
+  name: Apple internal keyboard/trackpad (MacBook Late 2006–2007)
+  vendor: Apple
+  ids: [usb:05ac:021a, usb:05ac:021b]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
+
+- id: input/apple-mb-2007
+  name: Apple internal keyboard/trackpad (MacBook Late 2007–2009, white)
+  vendor: Apple
+  ids: [usb:05ac:0229, usb:05ac:022a, usb:05ac:022b]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook3/MacBook3%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
+
+- id: input/apple-mb-unibody
+  name: Apple internal keyboard/glass trackpad (MacBook unibody 2008–2010)
+  vendor: Apple
+  ids: [usb:05ac:0236, usb:05ac:0237, usb:05ac:0238]
+  driver: bcm5974
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook6/MacBook6%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+
+- id: input/apple-spi-keyboard
+  name: Apple SPI keyboard and Force Touch trackpad (12-inch MacBook)
+  vendor: Apple
+  ids: []
+  driver: applespi
+  notes: Connected over SPI (Intel LPSS), not USB; the in-kernel applespi driver handles keyboard, trackpad and keyboard backlight.
+  sources:
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook9/MacBook9%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook10/MacBook10%2C1

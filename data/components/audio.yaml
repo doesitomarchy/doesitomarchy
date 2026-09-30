@@ -10,6 +10,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac5/iMac5%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook2/MacBook2%2C1
 
 - id: audio/realtek-alc889a
   name: Realtek ALC889A
@@ -21,6 +22,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac8/iMac8%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook5/MacBook5%2C2
 
 - id: audio/cirrus-cs4206
   name: Cirrus Logic CS4206
@@ -34,6 +36,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac12/iMac12%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac14/iMac14%2C2
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook7/MacBook7%2C1
 
 - id: audio/cirrus-cs4208
   name: Cirrus Logic CS4208
@@ -45,6 +48,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac16/iMac16%2C2
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook9/MacBook9%2C1
 
 - id: audio/apple-t2-audio
   name: Apple T2 audio (via T2 bridge)

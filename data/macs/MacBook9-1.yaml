@@ -1,0 +1,37 @@
+identifier: MacBook9,1
+line: macbook
+efi: 64
+board_ids: [Mac-9AE82516C7C6B903]
+research_notes: |
+  Fanless 12-inch Retina MacBook with a single USB-C port (charging, USB and DisplayPort through an adapter).
+  Keyboard, trackpad and backlight connect over SPI (in-kernel applespi driver). Bluetooth is on UART (hci_uart). The FaceTime HD camera is a PCIe device needing the out-of-tree facetimehd driver.
+  BCM4350 Wi-Fi uses brcmfmac.
+sources:
+  - https://support.apple.com/en-us/103257
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-m3-1.1-12-early-2016-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-m5-1.2-12-early-2016-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-m7-1.3-12-early-2016-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB91.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook9/MacBook9%2C1
+releases:
+  - id: early-2016
+    name: "MacBook (Retina, 12-inch, Early 2016)"
+    announced: 2016-04-19
+    discontinued: 2017-06-05
+    model_numbers: [A1534]
+    emc: ["2991"]
+    configs:
+      - id: macbook9-1-early-2016-a
+        label: "Core m3 1.1 GHz or Core m5 1.2 GHz \u00b7 HD Graphics 515"
+        order_numbers: [MLHA2LL/A, MLHC2LL/A]
+        cpu:
+          codename: skylake
+          standard: [{ model: Core m3-6Y30, ghz: 1.1, cores: 2 }, { model: Core m5-6Y54, ghz: 1.2, cores: 2 }]
+          bto: [{ model: Core m7-6Y75, ghz: 1.3, cores: 2 }]
+        memory: { type: LPDDR3-1866, standard_gb: [8], max_gb: 8, soldered: true }
+        storage: { interface: nvme, standard: ["256 GB SSD", "512 GB SSD"] }
+        display: { inches: 12, resolution: 2304x1440, panel: "Retina LED IPS" }
+        components: [gpu/intel-hd-515, wifi/broadcom-bcm4350, bluetooth/broadcom-bcm4350-uart, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, storage/apple-s3x-nvme, input/apple-spi-keyboard]
+        ports: { usb-c: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging]
+        notes: "Apple's identification page lists no part numbers for this model; order numbers are from EveryMac."

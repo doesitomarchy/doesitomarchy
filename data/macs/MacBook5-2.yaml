@@ -1,0 +1,52 @@
+identifier: MacBook5,2
+line: macbook
+efi: 64
+board_ids: [Mac-F22788AA]
+research_notes: |
+  White polycarbonate MacBook with the GeForce 9400M chipset (Early and Mid 2009). Audio is a Realtek ALC889A codec on every observed machine.
+  The iSight reports "no firmware loaded" and needs firmware extracted from macOS.
+sources:
+  - https://support.apple.com/en-us/103257
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-white-13-early-2009-nvidia-specs.html
+  - https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.13-white-13-mid-2009-nvidia-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBook/MB52.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
+releases:
+  - id: early-2009
+    name: "MacBook (13-inch, Early 2009)"
+    announced: 2009-01-20
+    discontinued: 2009-05-27
+    model_numbers: [A1181]
+    emc: ["2300"]
+    configs:
+      - id: macbook5-2-early-2009-a
+        label: "Core 2 Duo 2.0 GHz \u00b7 GeForce 9400M (white)"
+        order_numbers: [MB881LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P7350, ghz: 2.0, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["120 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw533, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8242, input/apple-mb-2007]
+        ports: { usb-a-2: 2, firewire-400: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+  - id: mid-2009
+    name: "MacBook (13-inch, Mid 2009)"
+    announced: 2009-05-27
+    discontinued: 2009-10-20
+    model_numbers: [A1181]
+    emc: ["2330"]
+    configs:
+      - id: macbook5-2-mid-2009-a
+        label: "Core 2 Duo 2.13 GHz \u00b7 GeForce 9400M (white)"
+        order_numbers: [MC240LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P7450, ghz: 2.13, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["160 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LCD glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw533, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8242, input/apple-mb-2007]
+        ports: { usb-a-2: 2, firewire-400: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
