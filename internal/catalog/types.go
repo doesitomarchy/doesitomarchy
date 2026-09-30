@@ -2,53 +2,53 @@ package catalog
 
 // Vocabulary is data/vocabulary.yaml: every controlled value the catalog may use.
 type Vocabulary struct {
-	Lines          map[string]Line        `yaml:"lines"`
-	SecurityChips  map[string]Named       `yaml:"security_chips"`
-	ComponentKinds map[string]Named       `yaml:"component_kinds"`
-	CPUCodenames   map[string]CPUCodename `yaml:"cpu_codenames"`
-	Ports          map[string]Port        `yaml:"ports"`
-	Features       map[string]Named       `yaml:"features"`
+	Lines          map[string]Line        `yaml:"lines" json:"lines"`
+	SecurityChips  map[string]Named       `yaml:"security_chips" json:"security_chips"`
+	ComponentKinds map[string]Named       `yaml:"component_kinds" json:"component_kinds"`
+	CPUCodenames   map[string]CPUCodename `yaml:"cpu_codenames" json:"cpu_codenames"`
+	Ports          map[string]Port        `yaml:"ports" json:"ports"`
+	Features       map[string]Named       `yaml:"features" json:"features"`
 }
 
 type Line struct {
-	Name             string `yaml:"name"`
-	Form             string `yaml:"form"`
-	IdentifierPrefix string `yaml:"identifier_prefix"`
+	Name             string `yaml:"name" json:"name"`
+	Form             string `yaml:"form" json:"form"`
+	IdentifierPrefix string `yaml:"identifier_prefix" json:"identifier_prefix"`
 }
 
 type Named struct {
-	Name string `yaml:"name"`
+	Name string `yaml:"name" json:"name"`
 }
 
 type CPUCodename struct {
-	Name   string `yaml:"name"`
-	Family string `yaml:"family"`
-	Bits   int    `yaml:"bits"`
+	Name   string `yaml:"name" json:"name"`
+	Family string `yaml:"family" json:"family"`
+	Bits   int    `yaml:"bits" json:"bits"`
 }
 
 type Port struct {
-	Name  string `yaml:"name"`
-	Video bool   `yaml:"video"`
+	Name  string `yaml:"name" json:"name"`
+	Video bool   `yaml:"video" json:"video"`
 }
 
 // CapabilityFile is data/capabilities.yaml.
 type CapabilityFile struct {
-	Categories   []Category   `yaml:"categories"`
-	Capabilities []Capability `yaml:"capabilities"`
+	Categories   []Category   `yaml:"categories" json:"categories"`
+	Capabilities []Capability `yaml:"capabilities" json:"capabilities"`
 }
 
 type Category struct {
-	ID       string `yaml:"id"`
-	Name     string `yaml:"name"`
-	Icon     string `yaml:"icon"`
-	Blocking bool   `yaml:"blocking"` // a failure here makes the config Unsupported
+	ID       string `yaml:"id" json:"id"`
+	Name     string `yaml:"name" json:"name"`
+	Icon     string `yaml:"icon" json:"icon"`
+	Blocking bool   `yaml:"blocking" json:"blocking"` // a failure here makes the config Unsupported
 }
 
 type Capability struct {
-	ID          string     `yaml:"id"`
-	Name        string     `yaml:"name"`
-	Description string     `yaml:"description"`
-	When        *Condition `yaml:"when"`
+	ID          string     `yaml:"id" json:"id"`
+	Name        string     `yaml:"name" json:"name"`
+	Description string     `yaml:"description" json:"description"`
+	When        *Condition `yaml:"when" json:"when"`
 }
 
 // Category returns the category part of the capability ID ("boot" for "boot.install").
@@ -63,109 +63,109 @@ func (c Capability) Category() string {
 
 // Condition selects configurations by their derived tags (see Tags).
 type Condition struct {
-	All  []string `yaml:"all"`
-	Any  []string `yaml:"any"`
-	None []string `yaml:"none"`
+	All  []string `yaml:"all" json:"all"`
+	Any  []string `yaml:"any" json:"any"`
+	None []string `yaml:"none" json:"none"`
 }
 
 // Uncertain flags a field whose value could not be confirmed from sources.
 type Uncertain struct {
-	Field string `yaml:"field"`
-	Note  string `yaml:"note"`
+	Field string `yaml:"field" json:"field"`
+	Note  string `yaml:"note" json:"note"`
 }
 
 // Component is one entry in data/components/<kind>.yaml.
 type Component struct {
-	ID        string      `yaml:"id"` // "<kind>/<slug>"
-	Name      string      `yaml:"name"`
-	Vendor    string      `yaml:"vendor"`
-	Role      string      `yaml:"role"`   // gpu only: integrated | discrete
-	IDs       []string    `yaml:"ids"`    // "pci:vvvv:dddd" or "usb:vvvv:pppp"
-	Driver    string      `yaml:"driver"` // Linux driver seen on real hardware (research, not a test result)
-	Notes     string      `yaml:"notes"`
-	Sources   []string    `yaml:"sources"`
-	Uncertain []Uncertain `yaml:"uncertain"`
+	ID        string      `yaml:"id" json:"id"` // "<kind>/<slug>"
+	Name      string      `yaml:"name" json:"name"`
+	Vendor    string      `yaml:"vendor" json:"vendor"`
+	Role      string      `yaml:"role" json:"role"`     // gpu only: integrated | discrete
+	IDs       []string    `yaml:"ids" json:"ids"`       // "pci:vvvv:dddd" or "usb:vvvv:pppp"
+	Driver    string      `yaml:"driver" json:"driver"` // Linux driver seen on real hardware (research, not a test result)
+	Notes     string      `yaml:"notes" json:"notes"`
+	Sources   []string    `yaml:"sources" json:"sources"`
+	Uncertain []Uncertain `yaml:"uncertain" json:"uncertain"`
 
-	Kind string `yaml:"-"` // from the file name
-	File string `yaml:"-"`
+	Kind string `yaml:"-" json:"-"` // from the file name
+	File string `yaml:"-" json:"-"`
 }
 
 // Mac is one data/macs/<Identifier>.yaml file.
 type Mac struct {
-	Identifier    string      `yaml:"identifier"`
-	Line          string      `yaml:"line"`
-	EFI           int         `yaml:"efi"`
-	SecurityChip  string      `yaml:"security_chip"`
-	HardBlocker   string      `yaml:"hard_blocker"`
-	BoardIDs      []string    `yaml:"board_ids"`
-	ResearchNotes string      `yaml:"research_notes"`
-	Sources       []string    `yaml:"sources"`
-	Uncertain     []Uncertain `yaml:"uncertain"`
-	Releases      []Release   `yaml:"releases"`
+	Identifier    string      `yaml:"identifier" json:"identifier"`
+	Line          string      `yaml:"line" json:"line"`
+	EFI           int         `yaml:"efi" json:"efi"`
+	SecurityChip  string      `yaml:"security_chip" json:"security_chip"`
+	HardBlocker   string      `yaml:"hard_blocker" json:"hard_blocker"`
+	BoardIDs      []string    `yaml:"board_ids" json:"board_ids"`
+	ResearchNotes string      `yaml:"research_notes" json:"research_notes"`
+	Sources       []string    `yaml:"sources" json:"sources"`
+	Uncertain     []Uncertain `yaml:"uncertain" json:"uncertain"`
+	Releases      []Release   `yaml:"releases" json:"releases"`
 
-	File string `yaml:"-"`
+	File string `yaml:"-" json:"-"`
 }
 
 type Release struct {
-	ID           string   `yaml:"id"`
-	Name         string   `yaml:"name"`
-	Announced    string   `yaml:"announced"` // YYYY-MM-DD
-	Discontinued string   `yaml:"discontinued"`
-	ModelNumbers []string `yaml:"model_numbers"` // Apple "A" numbers
-	EMC          []string `yaml:"emc"`
-	Sources      []string `yaml:"sources"`
-	Configs      []Config `yaml:"configs"`
+	ID           string   `yaml:"id" json:"id"`
+	Name         string   `yaml:"name" json:"name"`
+	Announced    string   `yaml:"announced" json:"announced"` // YYYY-MM-DD
+	Discontinued string   `yaml:"discontinued" json:"discontinued"`
+	ModelNumbers []string `yaml:"model_numbers" json:"model_numbers"` // Apple "A" numbers
+	EMC          []string `yaml:"emc" json:"emc"`
+	Sources      []string `yaml:"sources" json:"sources"`
+	Configs      []Config `yaml:"configs" json:"configs"`
 }
 
 type Config struct {
-	ID            string         `yaml:"id"` // permanent; results reference it
-	Label         string         `yaml:"label"`
-	OrderNumbers  []string       `yaml:"order_numbers"`
-	BTOOnly       bool           `yaml:"bto_only"` // only available as a build-to-order option
-	CPU           CPU            `yaml:"cpu"`
-	Memory        Memory         `yaml:"memory"`
-	Storage       Storage        `yaml:"storage"`
-	Display       *Display       `yaml:"display"`
-	Components    []string       `yaml:"components"`
-	BTOComponents []string       `yaml:"bto_components"` // optional add-ons that don't warrant their own config
-	Ports         map[string]int `yaml:"ports"`
-	Features      []string       `yaml:"features"`
-	Notes         string         `yaml:"notes"`
-	Aliases       []string       `yaml:"aliases"` // former IDs of this config
-	Sources       []string       `yaml:"sources"`
-	Uncertain     []Uncertain    `yaml:"uncertain"`
+	ID            string         `yaml:"id" json:"id"` // permanent; results reference it
+	Label         string         `yaml:"label" json:"label"`
+	OrderNumbers  []string       `yaml:"order_numbers" json:"order_numbers"`
+	BTOOnly       bool           `yaml:"bto_only" json:"bto_only"` // only available as a build-to-order option
+	CPU           CPU            `yaml:"cpu" json:"cpu"`
+	Memory        Memory         `yaml:"memory" json:"memory"`
+	Storage       Storage        `yaml:"storage" json:"storage"`
+	Display       *Display       `yaml:"display" json:"display"`
+	Components    []string       `yaml:"components" json:"components"`
+	BTOComponents []string       `yaml:"bto_components" json:"bto_components"` // optional add-ons that don't warrant their own config
+	Ports         map[string]int `yaml:"ports" json:"ports"`
+	Features      []string       `yaml:"features" json:"features"`
+	Notes         string         `yaml:"notes" json:"notes"`
+	Aliases       []string       `yaml:"aliases" json:"aliases"` // former IDs of this config
+	Sources       []string       `yaml:"sources" json:"sources"`
+	Uncertain     []Uncertain    `yaml:"uncertain" json:"uncertain"`
 }
 
 type CPU struct {
-	Codename string      `yaml:"codename"`
-	Standard []Processor `yaml:"standard"`
-	BTO      []Processor `yaml:"bto"`
+	Codename string      `yaml:"codename" json:"codename"`
+	Standard []Processor `yaml:"standard" json:"standard"`
+	BTO      []Processor `yaml:"bto" json:"bto"`
 }
 
 type Processor struct {
-	Model string  `yaml:"model"` // e.g. "Core 2 Duo P7350"
-	GHz   float64 `yaml:"ghz"`
-	Cores int     `yaml:"cores"`
+	Model string  `yaml:"model" json:"model"` // e.g. "Core 2 Duo P7350"
+	GHz   float64 `yaml:"ghz" json:"ghz"`
+	Cores int     `yaml:"cores" json:"cores"`
 }
 
 type Memory struct {
-	Type       string    `yaml:"type"`
-	StandardGB []float64 `yaml:"standard_gb"`
-	MaxGB      float64   `yaml:"max_gb"` // Apple's official maximum
-	Soldered   bool      `yaml:"soldered"`
-	Notes      string    `yaml:"notes"`
+	Type       string    `yaml:"type" json:"type"`
+	StandardGB []float64 `yaml:"standard_gb" json:"standard_gb"`
+	MaxGB      float64   `yaml:"max_gb" json:"max_gb"` // Apple's official maximum
+	Soldered   bool      `yaml:"soldered" json:"soldered"`
+	Notes      string    `yaml:"notes" json:"notes"`
 }
 
 type Storage struct {
-	Interface string   `yaml:"interface"` // sata | pata | pcie-ahci | nvme
-	Standard  []string `yaml:"standard"`
-	BTO       []string `yaml:"bto"`
+	Interface string   `yaml:"interface" json:"interface"` // sata | pata | pcie-ahci | nvme
+	Standard  []string `yaml:"standard" json:"standard"`
+	BTO       []string `yaml:"bto" json:"bto"`
 }
 
 type Display struct {
-	Inches     float64 `yaml:"inches"`
-	Resolution string  `yaml:"resolution"`
-	Panel      string  `yaml:"panel"`
+	Inches     float64 `yaml:"inches" json:"inches"`
+	Resolution string  `yaml:"resolution" json:"resolution"`
+	Panel      string  `yaml:"panel" json:"panel"`
 }
 
 // Catalog is the fully loaded and cross-referenced data directory.
@@ -177,4 +177,5 @@ type Catalog struct {
 	Macs          []*Mac
 	LockedIDs     []string       // data/config-ids.lock
 	CoverageRules []CoverageRule // data/coverage.yaml (optional)
+	Aliases       []Alias        // data/aliases.yaml (optional)
 }

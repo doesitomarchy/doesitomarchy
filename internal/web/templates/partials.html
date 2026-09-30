@@ -1,0 +1,23 @@
+{{define "results"}}
+<div id="results">
+{{range .Resp.Errors}}<p class="chip error" role="alert">{{.}}</p>{{end}}
+{{if .Resp.Results}}
+<p class="muted">{{len .Resp.Results}} model{{if ne (len .Resp.Results) 1}}s{{end}}</p>
+<ol class="results">
+{{range .Resp.Results}}{{$slug := .Slug}}
+  <li><a href="/mac/{{.Slug}}"><strong>{{.Identifier}}</strong></a> · {{range $i, $r := .Releases}}{{if $i}}; {{end}}{{$r}}{{end}}
+  {{if not .AllConfigs}}<ul class="hits">{{range .Configs}}<li><a href="/mac/{{$slug}}#cfg-{{.ID}}">{{.Label}}</a> <span class="muted">{{.ReleaseName}}</span></li>{{end}}</ul>{{end}}
+  </li>
+{{end}}
+</ol>
+{{else if .Q}}
+<p>No Macs match <code>{{.Q}}</code>.{{with .Resp.DidYouMean}} Did you mean <a href="/search?q={{.}}">{{.}}</a>?{{end}}</p>
+{{end}}
+</div>
+{{end}}
+
+{{define "suggestions"}}
+<ul class="suggest" role="listbox">
+{{range .}}<li role="option" data-kind="{{.Kind}}" data-cursor="{{.Cursor}}"><a href="/search?q={{.Query}}">{{.Label}}</a></li>
+{{end}}</ul>
+{{end}}

@@ -18,6 +18,10 @@ var catalogTables = []string{
 	"configs", "releases", "macs", "component_ids", "components", "capabilities", "categories", "vocab",
 }
 
+// syncFormat versions how catalog rows are written (column set, JSON shape).
+// Bumping it forces a re-sync of an unchanged catalog after an upgrade.
+const syncFormat = "2"
+
 // SyncCatalog replaces the catalog tables with c in one transaction. hash
 // identifies the catalog content (catalog.HashFS); if it matches the last
 // sync, nothing is written and changed is false.
@@ -25,6 +29,9 @@ var catalogTables = []string{
 // Foreign keys are checked at commit (defer_foreign_keys), so rows that other
 // tables reference (configs, later results) can be deleted and re-inserted.
 func (s *Store) SyncCatalog(ctx context.Context, c *catalog.Catalog, hash string) (changed bool, err error) {
+	if hash != "" {
+		hash += "/" + syncFormat
+	}
 	if prev, err := s.Setting(ctx, "catalog_hash"); err == nil && prev == hash && hash != "" {
 		return false, nil
 	}

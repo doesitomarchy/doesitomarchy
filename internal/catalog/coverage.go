@@ -7,20 +7,20 @@ import "fmt"
 // still be tested; they are just not counted in N (PLAN.md §6.1). This is
 // separate from hard_blocker, which makes a config Not compatible.
 type CoverageFile struct {
-	Exclude []CoverageRule `yaml:"exclude"`
+	Exclude []CoverageRule `yaml:"exclude" json:"exclude"`
 }
 
 // CoverageRule excludes every config matching all of its conditions.
 type CoverageRule struct {
-	Reason string        `yaml:"reason"`
-	When   CoverageMatch `yaml:"when"`
+	Reason string        `yaml:"reason" json:"reason"`
+	When   CoverageMatch `yaml:"when" json:"when"`
 }
 
 // CoverageMatch conditions are ANDed; at least one must be set.
 type CoverageMatch struct {
-	AnnouncedBefore string   `yaml:"announced_before"` // YYYY-MM-DD, compared with the config's release date
-	Line            string   `yaml:"line"`             // vocabulary line key, e.g. xserve
-	Identifiers     []string `yaml:"identifiers"`      // e.g. ["iMac4,1"]
+	AnnouncedBefore string   `yaml:"announced_before" json:"announced_before"` // YYYY-MM-DD, compared with the config's release date
+	Line            string   `yaml:"line" json:"line"`                         // vocabulary line key, e.g. xserve
+	Identifiers     []string `yaml:"identifiers" json:"identifiers"`           // e.g. ["iMac4,1"]
 }
 
 func (w CoverageMatch) empty() bool {

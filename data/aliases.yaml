@@ -1,0 +1,19 @@
+# Search nicknames. Each phrase stands for a query fragment (the search
+# syntax: field:value, values ORed with |, quoted when they contain commas or
+# spaces). Phrases are matched case-insensitively against consecutive words of
+# a query. `doioma validate` checks every entry parses and matches something.
+
+- match: [mbp, macbookpro, "macbook pro"]
+  means: "line:macbook-pro"
+- match: [mba, macbookair, "macbook air"]
+  means: "line:macbook-air"
+- match: [mini, macmini, "mac mini"]
+  means: "line:mac-mini"
+- match: [macpro, "mac pro"]
+  means: "line:mac-pro"
+- match: [imacpro, "imac pro"]
+  means: "line:imac-pro"
+- match: ["trash can", trashcan, "trash-can", cylinder]
+  means: 'id:"MacPro6,1"'
+- match: ["cheese grater", cheesegrater, "cheese-grater"]
+  means: 'id:"MacPro1,1|MacPro2,1|MacPro3,1|MacPro4,1|MacPro5,1|MacPro7,1"'

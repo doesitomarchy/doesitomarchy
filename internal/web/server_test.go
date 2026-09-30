@@ -13,6 +13,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
@@ -32,7 +33,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 	if _, err := st.SyncCatalog(ctx, c, h); err != nil {
 		t.Fatal(err)
 	}
-	srv, err := New(st, slog.New(slog.NewTextHandler(io.Discard, nil)), "test")
+	srv, err := New(st, search.Build(c, nil), slog.New(slog.NewTextHandler(io.Discard, nil)), "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,6 +89,15 @@ func TestRoutes(t *testing.T) {
 		{"POST", "/mac/MacBookPro5-1", 404, "", "", ""},
 		{"GET", "/static/site.css", 200, "", "--accent", "text/css"},
 		{"HEAD", "/", 200, "", "", "text/html"},
+		{"GET", "/search?q=mbp+2011", 200, "", `href="/mac/MacBookPro8-2"`, "text/html"},
+		{"GET", "/search?q=mbp+2011", 200, "", "<html", "text/html"},
+		{"GET", "/search?q=gpu%3A6770m", 200, "", `href="/mac/MacBookPro8-2#cfg-macbookpro8-2-15-late-2011-b"`, "text/html"},
+		{"GET", "/search?q=macbookk+pro+20099", 200, "", "Did you mean", "text/html"},
+		{"GET", "/search?q=chip%3At3", 200, "", "chip: expected none, t1 or t2", "text/html"},
+		{"GET", "/search?q=%3Cscript%3E", 200, "", "&lt;script&gt;", "text/html"},
+		{"GET", "/search", 200, "", `role="search"`, "text/html"},
+		{"GET", "/search/suggest?q=gp", 200, "", `href="/search?q=gpu%3a"`, "text/html"},
+		{"GET", "/search/suggest?q=gp+year%3A2012&cursor=2", 200, "", "gpu%3a%20year%3a2012", "text/html"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.method+" "+tt.path, func(t *testing.T) {
@@ -134,6 +144,30 @@ func TestSecurityHeaders(t *testing.T) {
 				t.Errorf("%s: %s = %q", path, h, got)
 			}
 		}
+	}
+}
+
+// HTMX requests get the results partial only.
+func TestSearchPartial(t *testing.T) {
+	ts := newTestServer(t)
+	req, _ := http.NewRequest("GET", ts.URL+"/search?q=xserve", nil)
+	req.Header.Set("HX-Request", "true")
+	res, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	s := string(body)
+	if res.StatusCode != 200 || strings.Contains(s, "<html") || !strings.Contains(s, `id="results"`) || strings.Count(s, `href="/mac/Xserve`) != 3 {
+		t.Fatalf("partial wrong (%d):\n%s", res.StatusCode, s)
+	}
+	if v := res.Header.Get("Vary"); v != "HX-Request" {
+		t.Errorf("Vary = %q", v)
+	}
+	long := strings.Repeat("a", 5000)
+	if res, err := ts.Client().Get(ts.URL + "/search?q=" + long); err != nil || res.StatusCode != 200 {
+		t.Fatalf("long query: %v %v", err, res.StatusCode)
 	}
 }
 

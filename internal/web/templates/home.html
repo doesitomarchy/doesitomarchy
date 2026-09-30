@@ -1,6 +1,10 @@
 {{define "content"}}{{with .Data}}
 <h1>does your intel mac run omarchy?</h1>
-<p class="muted">Placeholder home page. Search and browsing arrive in Phases 3 and 4.</p>
+<form action="/search" method="get" role="search">
+  <input type="search" name="q" aria-label="Search Intel Macs" placeholder="mbp 2015 gpu:amd">
+  <button type="submit">Search</button>
+</form>
+<p class="muted">Placeholder home page; the full interface arrives in Phase 4.</p>
 <dl class="stats">
   <dt>Omarchy compatibility coverage</dt>
   <dd>{{.Coverage.Verified}} / {{.Coverage.Eligible}} configs · {{pct .Coverage.VerifiedPct}}</dd>

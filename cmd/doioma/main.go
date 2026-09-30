@@ -8,10 +8,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/report"
+	"github.com/doesitomarchy/doesitomarchy/internal/search"
 )
 
 // version is set at build time: -ldflags "-X main.version=..."
@@ -85,6 +87,10 @@ func cmdValidate(args []string, stdout, stderr io.Writer) int {
 	c, err := catalog.Load(dir)
 	if err != nil {
 		fmt.Fprintf(stderr, "catalog invalid:\n%v\n", err)
+		return 1
+	}
+	if problems := search.ValidateAliases(c); len(problems) > 0 {
+		fmt.Fprintf(stderr, "catalog invalid:\n%s\n", strings.Join(problems, "\n"))
 		return 1
 	}
 	s := c.Stats()

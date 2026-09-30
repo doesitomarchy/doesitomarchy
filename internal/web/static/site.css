@@ -15,3 +15,8 @@ h1 { font-size: 1.4rem; } h2 { font-size: 1.05rem; margin-top: 2rem; }
 .stats dt { color: var(--muted); margin-top: 0.75rem; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; }
 .stats dd { margin: 0; }
 .notes { white-space: pre-wrap; font: inherit; }
+form[role=search] { display: flex; gap: 0.5rem; margin: 1rem 0; }
+form[role=search] input { flex: 1; font: inherit; padding: 0.4rem; background: var(--bg); color: var(--text); border: 1px solid var(--line); }
+form[role=search] button { font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line); padding: 0 0.75rem; }
+.results { padding-left: 1.5rem; } .results > li { padding: 0.3rem 0; } .hits { font-size: 13px; }
+.chip.error { border: 1px solid var(--accent); display: inline-block; padding: 0 0.4rem; }
