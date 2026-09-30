@@ -20,7 +20,9 @@ Rules the validator enforces:
 
 - **One configuration per distinct Linux-relevant hardware set.** Split a release into configurations only when components (GPU, Wi‑Fi, Ethernet chip…) or the applicable test criteria (ports, features) differ. CPU speed, RAM and disk size are attributes, not new configurations.
 - **Configuration IDs are permanent.** They look like `<identifier-slug>-<release>-<letter>` (e.g. `macmini3-1-late-2009-a`). To rename one, move the old ID into `aliases`. Never delete or reuse an ID. After adding configurations, run `doioma lock`.
-- **Every model and component needs a source.** Prefer Apple Tech Specs, then EveryMac, then hardware probe data (linuxhw).
+- **Every model and component needs a source.** Apple Tech Specs and EveryMac are the sources for releases, order numbers, specs and ports.
+- **Real hardware reports count as evidence.** Chips, hardware IDs and features observed on real machines (e.g. linuxhw probes) are recorded as known facts, even when Apple's pages don't list them. Flag them `uncertain` only when another source contradicts them.
+- **Test results belong to a configuration**, never just to a model identifier, because one identifier can span several releases.
 - **Don't guess.** When sources disagree or are silent, record your best value and add an `uncertain` entry (`field` + `note`) explaining why.
 - **Unknown fields and values are errors.** Add new ports or features to `vocabulary.yaml` first.
 

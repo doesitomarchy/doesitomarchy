@@ -3,7 +3,9 @@ line: mac-mini
 efi: 32
 board_ids: [Mac-F4208EAA]
 research_notes: |
-  64-bit Core 2 Duo CPU, but the firmware is believed to be 32-bit EFI, so the stock x86_64 installer is not expected to boot without a 32-bit EFI boot shim.
+  64-bit Core 2 Duo CPU with 32-bit EFI firmware, so the stock x86_64 installer is not expected to boot without a 32-bit EFI boot shim.
+  EveryMac lists "EFI Architecture: 64-Bit", but community 32-bit-EFI lists include this model and Linux dmesg shows the same firmware
+  table layout as the 32-bit-EFI MacBook2,1. Recorded as 32-bit (reviewed 2026-09-30); a boot test will confirm.
   Intel GMA 950 graphics: expect a basic i915 framebuffer but no modern OpenGL, so Hyprland will likely fall back to software rendering.
   Macmini2,1 is the Macmini1,1 platform with a Merom Core 2 Duo; every other component observed on real machines is identical.
 sources:
@@ -11,12 +13,6 @@ sources:
   - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-2.0-specs.html
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM21.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
-uncertain:
-  - field: efi
-    note: >-
-      EveryMac lists "EFI Architecture: 64-Bit", but community 32-bit-EFI lists include Macmini2,1. Linux dmesg shows the
-      same firmware table layout (ACPI …efd000 / SMBIOS …ebf000) as the 32-bit-EFI MacBook2,1 rather than the 64-bit
-      MacBook3,1 layout. Recorded as 32; the first boot test should settle it.
 releases:
   - id: mid-2007
     name: Mac mini (Mid 2007)

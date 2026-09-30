@@ -34,9 +34,6 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
-  uncertain:
-    - field: name
-      note: Commonly reported as a Broadcom BCM20702 module; not confirmed from a primary source.
 
 - id: bluetooth/apple-05ac-828a
   name: Apple Bluetooth 4.0 (USB 05ac:828a)
@@ -45,9 +42,6 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
-  uncertain:
-    - field: name
-      note: Commonly reported as a Broadcom BCM20702 module; not confirmed from a primary source.
 
 - id: bluetooth/apple-05ac-8289
   name: Apple Bluetooth 4.0 (USB 05ac:8289)
@@ -56,9 +50,6 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
-  uncertain:
-    - field: name
-      note: Commonly reported as a Broadcom BCM20702 module; not confirmed from a primary source.
 
 - id: bluetooth/broadcom-bcm4364
   name: Broadcom BCM4364 Bluetooth 5.0
