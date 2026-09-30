@@ -1,0 +1,35 @@
+identifier: Xserve2,1
+line: xserve
+efi: 64
+board_ids: [Mac-F42289C8]
+research_notes: |
+  1U rack server with Harpertown quad-core Xeons and 64-bit EFI. No audio hardware, Wi-Fi or Bluetooth.
+  No Linux hardware probes exist for this model; controllers are assumed from its closest relative, the Early 2008 Mac Pro (MacPro3,1).
+sources:
+  - https://everymac.com/systems/apple/xserve/specs/xserve-intel-xeon-2.8-quad-specs.html
+  - https://everymac.com/systems/apple/xserve/specs/xserve-intel-xeon-2.8-eight-core-specs.html
+  - https://everymac.com/systems/apple/xserve/specs/xserve-intel-xeon-3.0-eight-core-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Xserve/XS21.yaml
+releases:
+  - id: early-2008
+    name: "Xserve (Early 2008)"
+    announced: 2008-01-08
+    discontinued: 2009-04-07
+    model_numbers: [A1246]
+    emc: ["2186"]
+    configs:
+      - id: xserve2-1-early-2008-a
+        label: "Quad-core Xeon 2.8 GHz (×1 or ×2) or 3.0 GHz (×2) · Radeon X1300"
+        order_numbers: [MA882LL/A]
+        cpu:
+          codename: harpertown
+          standard: [{ model: "Xeon E5462", ghz: 2.8, cores: 4 }]
+          bto: [{ model: "Dual Xeon E5462", ghz: 2.8, cores: 8 }, { model: "Dual Xeon E5472", ghz: 3.0, cores: 8 }]
+        memory: { type: DDR2-800 FB-DIMM ECC, standard_gb: [2], max_gb: 32 }
+        storage: { interface: sata, standard: ["80 GB HDD"], bto: ["160 GB HDD", "500 GB HDD", "750 GB HDD", "1 TB HDD"] }
+        components: [gpu/ati-radeon-x1300, ethernet/intel-80003es2lan, firewire/ti-xio2213, storage/intel-esb2-sata]
+        ports: { usb-a-2: 3, firewire-800: 2, ethernet-gbe: 2, mini-dvi: 1 }
+        features: [fan, optical-drive]
+        uncertain:
+          - field: components
+            note: No Linux probe of an Xserve2,1 exists; GPU, Ethernet, FireWire and SATA controllers are assumed from Xserve1,1 and the Early 2008 Mac Pro.

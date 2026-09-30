@@ -29,6 +29,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve3/Xserve3%2C1
 
 - id: firewire/ti-tsb82aa2
   name: Texas Instruments TSB82AA2 FireWire 400/800 controller
@@ -38,6 +39,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro1/MacPro1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve1/Xserve1%2C1
 
 - id: firewire/lsi-fw533
   name: LSI FW533 FireWire 400 controller
