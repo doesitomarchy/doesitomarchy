@@ -24,6 +24,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C1
 
 - id: camera/broadcom-1570-facetime-hd
   name: Broadcom 1570 720p FaceTime HD camera (PCIe)
@@ -35,6 +36,8 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook8/MacBook8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C1
 
 - id: camera/apple-t2-facetime-hd
   name: Apple FaceTime HD camera via T2 (USB 05ac:8514)
@@ -44,6 +47,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
 
 - id: camera/apple-isight-05ac-8300
   name: Apple iSight (USB 05ac:8300)
@@ -55,6 +59,7 @@
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
 
 - id: camera/apple-isight-05ac-8502
   name: Apple iSight (USB 05ac:8502)
@@ -63,6 +68,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C3
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
 
 - id: camera/apple-facetime-hd-05ac-850b
   name: Apple FaceTime HD camera (USB 05ac:850b)
@@ -97,3 +103,24 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
+
+- id: camera/apple-facetime-hd-05ac-8509
+  name: Apple FaceTime HD camera (USB 05ac:8509)
+  vendor: Apple
+  ids: [usb:05ac:8509]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
+
+- id: camera/apple-t1-facetime-hd
+  name: Apple FaceTime HD camera via T1 (iBridge)
+  vendor: Apple
+  ids: []
+  notes: On Touch Bar models with a T1 chip the camera is part of the iBridge USB device (05ac:8600).
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C3
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C3
+  uncertain:
+    - field: ids
+      note: The camera's own interface ID behind the T1 iBridge is not broken out in the probes.

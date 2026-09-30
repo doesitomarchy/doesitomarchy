@@ -9,6 +9,8 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C1
 
 - id: card-reader/apple-usb-8403
   name: Apple internal SD card reader (USB 05ac:8403)
@@ -19,6 +21,7 @@
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C2
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
 
 - id: card-reader/apple-usb-8404
   name: Apple internal SD card reader (USB 05ac:8404)
@@ -37,6 +40,8 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro12/MacBookPro12%2C1
 
 - id: card-reader/apple-usb-8408
   name: Apple SDXC card reader (USB 05ac:8408)

@@ -11,6 +11,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook2/MacBook2%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
 
 - id: audio/realtek-alc889a
   name: Realtek ALC889A
@@ -24,6 +25,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac8/iMac8%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook5/MacBook5%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro5/MacPro5%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro5/MacBookPro5%2C1
 
 - id: audio/cirrus-cs4206
   name: Cirrus Logic CS4206
@@ -38,6 +40,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac12/iMac12%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac14/iMac14%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook7/MacBook7%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
 
 - id: audio/cirrus-cs4208
   name: Cirrus Logic CS4208
@@ -51,6 +54,7 @@
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac16/iMac16%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook9/MacBook9%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro6/MacPro6%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
 
 - id: audio/apple-t2-audio
   name: Apple T2 audio (via T2 bridge)
@@ -65,13 +69,15 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C1
 
 - id: audio/cirrus-cs8409
   name: Cirrus Logic CS8409 (with CS42L42)
   vendor: Cirrus Logic
   ids: []
   driver: snd_hda_codec_cs8409
-  notes: On many observed 2017–2019 iMacs the kernel fell back to the generic HDA parser for this codec, which suggests incomplete support for Apple's CS8409 setup.
+  notes: Used in 2016–2019 iMacs and 2016–2017 MacBook Pros. On many observed machines the kernel fell back to the generic HDA parser for this codec, which suggests incomplete support for Apple's CS8409 setup.
   sources:
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac18/iMac18%2C2
     - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac19/iMac19%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro14/MacBookPro14%2C1

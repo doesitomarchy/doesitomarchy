@@ -8,6 +8,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
 
 - id: ethernet/nvidia-mcp79
   name: NVIDIA MCP79 Gigabit Ethernet
@@ -18,6 +19,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
 
 - id: ethernet/broadcom-bcm57765
   name: Broadcom NetXtreme BCM57765 Gigabit Ethernet
@@ -28,6 +30,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
 
 - id: ethernet/broadcom-bcm57766
   name: Broadcom NetXtreme BCM57766 Gigabit Ethernet
@@ -60,6 +63,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
 
 - id: ethernet/broadcom-bcm5764m
   name: Broadcom NetXtreme BCM5764M Gigabit Ethernet
@@ -69,6 +73,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C2
 
 - id: ethernet/aquantia-aqc113
   name: Aquantia/Marvell AQC113 10Gb Ethernet

@@ -4,9 +4,9 @@ efi: 64
 security_chip: t2
 board_ids: [Mac-0CFF9C7C2B63DF8D]
 research_notes: |
-  T2 Mac. Omarchy's manual lists the MacBook Air 13-inch (2018) A1932; this 2020 model is not named in the manual as supported with automatic setup (patched linux-t2 kernel, T2 audio,
-  Apple's Broadcom Wi-Fi/Bluetooth firmware, t2fanrd). Disable Secure Boot in Startup Security Utility before installing.
-  Keyboard, trackpad, camera and ambient light sensor are USB devices behind the T2 bridge (apple-bce). Charging is over USB-C.
+  Apple T2 chip. The SSD controller, audio, FaceTime camera and ambient light sensor are reached through the T2 bridge (apple-bce binds on real Linux machines). Keyboard and trackpad are also USB devices behind the T2.
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
+  Charging is over USB-C.
   Last Intel MacBook Air (scissor-switch keyboard). Two GPUs across the line: the Core i3 has Iris Plus G4, the Core i5/i7 Iris Plus G7.
   Bluetooth is a PCIe function of the BCM4377 (hci_bcm4377 driver). Thunderbolt 3 is built into the Ice Lake CPU.
 sources:
@@ -16,7 +16,6 @@ sources:
   - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.1-quad-core-13-retina-display-2020-scissor-specs.html
   - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i7-1.2-quad-core-13-retina-display-2020-scissor-specs.html
   - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
-  - https://omarchy.org/manual/mac-support/
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA91.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
 releases:

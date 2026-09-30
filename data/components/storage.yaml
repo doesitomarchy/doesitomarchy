@@ -9,6 +9,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
 
 - id: storage/nvidia-mcp79-sata
   name: NVIDIA MCP79 SATA controller
@@ -20,6 +21,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
 
 - id: storage/nvidia-mcp89-sata
   name: NVIDIA MCP89 SATA controller
@@ -30,6 +32,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro7/MacBookPro7%2C1
 
 - id: storage/intel-6-series-sata
   name: Intel 6 Series SATA controller
@@ -40,6 +43,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C1
 
 - id: storage/intel-7-series-sata
   name: Intel 7 Series SATA controller
@@ -50,6 +54,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
 
 - id: storage/intel-8-series-sata
   name: Intel 8 Series SATA controller
@@ -72,6 +77,8 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro12/MacBookPro12%2C1
 
 - id: storage/apple-ans2-nvme
   name: Apple ANS2 NVMe controller (T2)
@@ -85,6 +92,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C1
 
 - id: storage/intel-ich8m-sata
   name: Intel ICH8M SATA controller
@@ -96,6 +104,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
 
 - id: storage/apple-s1x-nvme
   name: Apple S1X NVMe SSD controller
@@ -167,6 +176,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C3
 
 - id: storage/apple-s3x-nvme
   name: Apple S3X NVMe SSD controller
@@ -176,6 +186,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook9/MacBook9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook10/MacBook10%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C1
 
 - id: storage/intel-esb2-sata
   name: Intel 631xESB/632xESB (ESB2) SATA controller
@@ -204,3 +215,12 @@
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+
+- id: storage/intel-5-series-mobile-sata
+  name: Intel 5 Series (mobile) SATA controller
+  vendor: Intel
+  ids: [pci:8086:3b29]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C2

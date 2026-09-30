@@ -4,12 +4,10 @@ efi: 64
 security_chip: t2
 board_ids: [Mac-7BA5B2DFE22DDD8C]
 research_notes: |
-  T2 Mac. Omarchy's manual says its installer automatically sets up the patched linux-t2 kernel, the T2 audio configuration,
-  Apple's Broadcom Wi-Fi/Bluetooth firmware, and fan control via t2fanrd.
-  Before installing, open Startup Security Utility from Recovery and choose "No Security" and "Allow booting from external or removable media".
-  Audio, storage and the T2 bridge all sit behind the T2 chip.
+  Apple T2 chip. The SSD controller, audio and audio are reached through the T2 bridge (apple-bce binds on real Linux machines).
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media".
+  The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
   No SD card slot, line-in or IR receiver on this model.
-  Omarchy's manual lists this model as "A1998"; Apple and EveryMac give the model number as A1993.
 sources:
   - https://support.apple.com/en-us/111912
   - https://support.apple.com/en-us/102852
@@ -18,7 +16,6 @@ sources:
   - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i7-3.2-late-2018-specs.html
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM81.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
-  - https://omarchy.org/manual/mac-support/
 releases:
   - id: "2018"
     name: Mac mini (2018)

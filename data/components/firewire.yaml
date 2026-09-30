@@ -7,6 +7,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro1/MacBookPro1%2C1
 
 - id: firewire/lsi-fw643
   name: LSI FW643 FireWire 800 controller
@@ -18,6 +19,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
 
 - id: firewire/ti-xio2213
   name: Texas Instruments XIO2213 FireWire 800 controller
@@ -40,6 +42,8 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro1/MacPro1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve1/Xserve1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
 
 - id: firewire/lsi-fw533
   name: LSI FW533 FireWire 400 controller

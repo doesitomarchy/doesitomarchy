@@ -10,6 +10,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook1/MacBook1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro1/MacBookPro1%2C1
 
 - id: wifi/broadcom-bcm4321
   name: Broadcom BCM4321 802.11a/b/g/n
@@ -23,6 +24,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
 
 - id: wifi/broadcom-bcm43224
   name: Broadcom BCM43224 802.11a/b/g/n
@@ -35,6 +37,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C2
 
 - id: wifi/broadcom-bcm4331
   name: Broadcom BCM4331 802.11a/b/g/n
@@ -46,6 +49,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
 
 - id: wifi/broadcom-bcm4360
   name: Broadcom BCM4360 802.11ac
@@ -59,25 +63,27 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
 
 - id: wifi/broadcom-bcm4364
   name: Broadcom BCM4364 802.11ac
   vendor: Broadcom
   ids: [pci:14e4:4464]
   driver: brcmfmac
-  notes: T2-era combo chip (Wi-Fi + Bluetooth). Needs Apple's Broadcom firmware, which Omarchy's T2 install path sets up.
+  notes: T2-era combo chip (Wi-Fi + Bluetooth). Needs Apple's Broadcom firmware files.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
 
 - id: wifi/broadcom-bcm4355
   name: Broadcom BCM4355 802.11ac
   vendor: Broadcom
   ids: [pci:14e4:43dc]
   driver: brcmfmac
-  notes: T2-era combo chip (Wi-Fi + Bluetooth). Needs Apple's Broadcom firmware, which Omarchy's T2 install path sets up.
+  notes: T2-era combo chip (Wi-Fi + Bluetooth). Needs Apple's Broadcom firmware files.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C2
@@ -90,6 +96,7 @@
   notes: Combo chip; its Bluetooth half is a separate PCIe function (see bluetooth/broadcom-bcm4377).
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C4
 
 - id: wifi/broadcom-bcm4311
   name: Broadcom BCM4311 802.11a/b/g
@@ -109,6 +116,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
 
 - id: wifi/atheros-ar928x
   name: Atheros AR928X 802.11a/b/g/n
@@ -136,6 +144,8 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac16/iMac16%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro12/MacBookPro12%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C3
 
 - id: wifi/atheros-ar5418
   name: Atheros AR5418 802.11a/b/g/n (draft)
@@ -144,6 +154,7 @@
   driver: ath9k
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro3/MacBookPro3%2C1
 
 - id: wifi/broadcom-bcm4350
   name: Broadcom BCM4350 802.11ac
@@ -153,3 +164,4 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook8/MacBook8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook10/MacBook10%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C1

@@ -5,13 +5,12 @@ security_chip: t2
 board_ids: [Mac-27AD2F918AE68F61]
 research_notes: |
   Last Intel Mac Pro, in tower and rack-mount versions with identical internals. Every unit was build to order; the Radeon Pro 580X was the base graphics.
-  T2 Mac: Omarchy's manual does not list it among supported T2 Macs, though the same automatic T2 setup should apply. Disable Secure Boot before installing.
+  Apple T2 chip. The SSD controller, audio and audio are reached through the T2 bridge (apple-bce binds on real Linux machines). Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media".
   Two 10Gb Ethernet ports (Aquantia AQC107) are standard. Radeon Pro Vega II and W6800X Duo modules carry two GPUs of the same chip.
 sources:
   - https://support.apple.com/en-us/118461
   - https://support.apple.com/en-us/111907
   - https://support.apple.com/en-us/102887
-  - https://omarchy.org/manual/mac-support/
   - https://pci-ids.ucw.cz/
   - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-12-core-3.3-xeon-w-silver-rack-mountable-2019-specs.html
   - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-12-core-3.3-xeon-w-silver-tower-workstation-2019-specs.html

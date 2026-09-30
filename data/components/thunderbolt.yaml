@@ -9,6 +9,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C1
 
 - id: thunderbolt/intel-cactus-ridge
   name: Intel DSL3510 "Cactus Ridge" Thunderbolt controller
@@ -20,6 +21,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C1
 
 - id: thunderbolt/intel-falcon-ridge
   name: Intel DSL5520 "Falcon Ridge" Thunderbolt 2 controller
@@ -31,6 +33,8 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac15/iMac15%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro6/MacPro6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro12/MacBookPro12%2C1
 
 - id: thunderbolt/intel-titan-ridge
   name: Intel JHL7540 "Titan Ridge" Thunderbolt 3 controller
@@ -42,6 +46,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C1
 
 - id: thunderbolt/intel-eagle-ridge
   name: Intel DSL2310 "Eagle Ridge" Thunderbolt controller
@@ -64,11 +69,12 @@
 - id: thunderbolt/intel-ice-lake
   name: Intel Ice Lake integrated Thunderbolt 3
   vendor: Intel
-  ids: [pci:8086:8a17, pci:8086:8a13]
+  ids: [pci:8086:8a17, pci:8086:8a13, pci:8086:8a1d]
   driver: thunderbolt
   notes: Built into the Ice Lake CPU; no separate controller chip.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C2
 
 - id: thunderbolt/intel-redwood-ridge
   name: Intel DSL4510 "Redwood Ridge" Thunderbolt controller
@@ -87,3 +93,5 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C3
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C1

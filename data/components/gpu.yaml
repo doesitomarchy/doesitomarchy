@@ -27,6 +27,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
 
 - id: gpu/nvidia-geforce-320m
   name: NVIDIA GeForce 320M
@@ -39,6 +40,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro7/MacBookPro7%2C1
 
 - id: gpu/intel-hd-3000
   name: Intel HD Graphics 3000
@@ -50,6 +52,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C3
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C1
 
 - id: gpu/amd-radeon-hd-6630m-6750m
   name: AMD Radeon HD 6630M / 6750M (Whistler)
@@ -57,10 +60,11 @@
   role: discrete
   ids: [pci:1002:6741]
   driver: radeon
-  notes: TeraScale 2 "Whistler", sold as HD 6630M (Mac mini) and HD 6750M (21.5-inch iMac, Mid 2011). In Macmini5,2 the CPU's Intel HD 3000 is not exposed; the Radeon drives all outputs.
+  notes: TeraScale 2 "Whistler", sold as HD 6630M (Mac mini) and HD 6750M (21.5-inch iMac Mid 2011, 15/17-inch MacBook Pro 2011). In Macmini5,2 the CPU's Intel HD 3000 is not exposed; the Radeon drives all outputs.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C2
 
 - id: gpu/intel-hd-4000
   name: Intel HD Graphics 4000
@@ -73,6 +77,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
 
 - id: gpu/intel-hd-5000
   name: Intel HD Graphics 5000
@@ -93,6 +98,7 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
 
 - id: gpu/intel-uhd-630
   name: Intel UHD Graphics 630
@@ -102,6 +108,8 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
 
 - id: gpu/intel-gma-x3100
   name: Intel GMA X3100
@@ -286,6 +294,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C3
 
 - id: gpu/amd-radeon-hd-6970m
   name: AMD Radeon HD 6970M
@@ -314,6 +323,8 @@
   driver: nouveau, nvidia
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C1
 
 - id: gpu/nvidia-geforce-gtx-660m
   name: NVIDIA GeForce GTX 660M
@@ -350,6 +361,7 @@
   driver: nouveau, nvidia
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C3
 
 - id: gpu/nvidia-geforce-gt-755m
   name: NVIDIA GeForce GT 755M
@@ -430,15 +442,17 @@
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
 
 - id: gpu/amd-radeon-pro-555-560
-  name: AMD Radeon Pro 555 / 560 / 555X / 560X (Polaris 11)
+  name: AMD Radeon Pro 450 / 455 / 460 / 555 / 560 / 555X / 560X (Polaris 11)
   vendor: AMD
   role: discrete
   ids: [pci:1002:67ef]
   driver: amdgpu
-  notes: One chip under four names; the Apple subsystem ID identifies the model.
+  notes: One chip under many names (iMac and 15-inch MacBook Pro 2016–2019); the Apple subsystem ID identifies the model.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C2
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C1
 
 - id: gpu/amd-radeon-pro-570-580
   name: AMD Radeon Pro 570 / 575 / 580 / 570X / 575X / 580X (Polaris 10/20)
@@ -518,6 +532,7 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac18/iMac18%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C1
 
 - id: gpu/intel-hd-5300
   name: Intel HD Graphics 5300
@@ -757,3 +772,195 @@
   notes: RV515. Built onto the Xserve logic board (2006) or supplied as the standard card (2008).
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve1/Xserve1%2C1
+
+- id: gpu/ati-mobility-radeon-x1600
+  name: ATI Mobility Radeon X1600
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:71c5]
+  driver: radeon
+  notes: Same RV530 chip as the iMac's Radeon X1600 (1002:71c5).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro1/MacBookPro1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
+
+- id: gpu/nvidia-geforce-8600m-gt
+  name: NVIDIA GeForce 8600M GT
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0407]
+  driver: nouveau
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro3/MacBookPro3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
+
+- id: gpu/nvidia-geforce-9600m-gt
+  name: NVIDIA GeForce 9600M GT
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0647]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C3
+
+- id: gpu/intel-hd-arrandale
+  name: Intel HD Graphics (Arrandale)
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:0046]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C2
+
+- id: gpu/nvidia-geforce-gt-330m
+  name: NVIDIA GeForce GT 330M
+  vendor: NVIDIA
+  role: discrete
+  ids: [pci:10de:0a29]
+  driver: nouveau, nvidia
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C2
+
+- id: gpu/amd-radeon-hd-6490m
+  name: AMD Radeon HD 6490M
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6760]
+  driver: radeon
+  notes: Seymour chip.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C2
+
+- id: gpu/intel-iris-pro-5200-mobile
+  name: Intel Iris Pro Graphics 5200 (mobile)
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:0d26]
+  driver: i915
+  notes: Mobile Crystal Well GT3e (the iMac's Iris Pro 5200 reports 8086:0d22).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C4
+
+- id: gpu/amd-radeon-r9-m370x
+  name: AMD Radeon R9 M370X
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:6821]
+  driver: radeon, amdgpu
+  notes: Venus XT (Cape Verde).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C5
+
+- id: gpu/intel-iris-6100
+  name: Intel Iris Graphics 6100
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:162b]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro12/MacBookPro12%2C1
+
+- id: gpu/intel-iris-540
+  name: Intel Iris Graphics 540
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:1926]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C1
+
+- id: gpu/intel-iris-550
+  name: Intel Iris Graphics 550
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:1927]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C2
+
+- id: gpu/intel-hd-530
+  name: Intel HD Graphics 530
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:191b]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C3
+
+- id: gpu/intel-iris-plus-650
+  name: Intel Iris Plus Graphics 650
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:5927]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C2
+
+- id: gpu/intel-hd-630-mobile
+  name: Intel HD Graphics 630 (mobile)
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:591b]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C3
+
+- id: gpu/intel-iris-plus-655
+  name: Intel Iris Plus Graphics 655
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:3ea5]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C2
+
+- id: gpu/intel-iris-plus-645
+  name: Intel Iris Plus Graphics 645
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:3ea6]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C4
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C3
+
+- id: gpu/amd-radeon-pro-vega-16-20
+  name: AMD Radeon Pro Vega 16 / Vega 20 (Vega 12)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:69af]
+  driver: amdgpu
+  notes: Same Vega 12 chip as the iMac's Radeon Pro Vega 20.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C3
+
+- id: gpu/amd-radeon-pro-5300m-5500m
+  name: AMD Radeon Pro 5300M / 5500M (Navi 14)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:7340]
+  driver: amdgpu
+  notes: Apple subsystems 106b:020f and 106b:0210. Same chip as the 2020 iMac's 5300/5500 XT.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
+
+- id: gpu/amd-radeon-pro-5600m
+  name: AMD Radeon Pro 5600M (Navi 12, 8 GB HBM2)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:7360]
+  driver: amdgpu
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C4
+
+- id: gpu/intel-iris-plus-g7-ice-lake-u
+  name: Intel Iris Plus Graphics G7 (Ice Lake-U)
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:8a53]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C2
