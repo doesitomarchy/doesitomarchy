@@ -109,7 +109,7 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	start := time.Now()
 	ix := search.Build(c, nil)
 	log.Info("search index built", "ms", time.Since(start).Milliseconds())
-	srv, err := web.New(st, ix, log, version)
+	srv, err := web.New(st, c, ix, log, version)
 	if err != nil {
 		log.Error("templates", "err", err)
 		return 1

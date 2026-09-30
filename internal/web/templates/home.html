@@ -1,17 +1,10 @@
-{{define "content"}}{{with .Data}}
-<h1>does your intel mac run omarchy?</h1>
-<form action="/search" method="get" role="search">
-  <input type="search" name="q" aria-label="Search Intel Macs" placeholder="mbp 2015 gpu:amd">
-  <button type="submit">Search</button>
-</form>
-<p class="muted">Placeholder home page; the full interface arrives in Phase 4.</p>
-<dl class="stats">
-  <dt>Omarchy compatibility coverage</dt>
-  <dd>{{.Coverage.Verified}} / {{.Coverage.Eligible}} configs · {{pct .Coverage.VerifiedPct}}</dd>
-  <dt>Test result coverage</dt>
-  <dd>{{.Coverage.Tested}} / {{.Coverage.Eligible}} configs · {{pct .Coverage.TestedPct}}</dd>
-  <dt>Catalog</dt>
-  <dd>{{.Counts.Macs}} model identifiers · {{.Counts.Releases}} releases · {{.Counts.Configs}} configurations</dd>
-  <dd class="muted">Coverage counts {{.Coverage.Eligible}} configurations. Not counted: {{.Coverage.NotCompatible}} not compatible by design{{range .Exclusions}} · {{.Count}} {{.Reason}}{{end}}.</dd>
-</dl>
-{{end}}{{end}}
+{{define "content"}}
+<div class="hero">
+  <h1>does your intel mac run <span class="q">omarchy?</span></h1>
+  <div class="coverage">{{template "coverage-rows" .Site}}</div>
+  {{template "searchbox" .Data}}
+  <p class="hints">Try <a href="{{query "mbp 2015"}}"><code>mbp 2015</code></a>, <a href="{{query "imac 27 5k"}}"><code>imac 27 5k</code></a>,
+    <a href="{{query "gpu:nvidia year:<2011"}}"><code>gpu:nvidia year:&lt;2011</code></a>, an order number like <a href="{{query "MC374LL/A"}}"><code>MC374LL/A</code></a>,
+    or a hardware ID from <code>lspci -nn</code> like <a href="{{query "10de:0647"}}"><code>10de:0647</code></a>. Press <kbd>Ctrl K</kbd> anywhere to search.</p>
+</div>
+{{end}}

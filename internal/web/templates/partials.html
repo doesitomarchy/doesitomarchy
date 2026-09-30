@@ -1,23 +1,109 @@
+{{define "icon"}}<svg class="i" aria-hidden="true"><use href="{{asset "icons.svg"}}#i-{{.}}"></use></svg>{{end}}
+
+{{define "verdict"}}<span class="verdict {{.}}"><span class="g" aria-hidden="true">{{.Glyph}}</span>{{.Label}}</span>{{end}}
+
+{{define "scope"}}<span class="tag scope" title="Listed and testable, but not counted in the coverage figures">Out of coverage scope: {{.}}</span>{{end}}
+
+{{/* Two coverage rows: pass the site. */}}
+{{define "coverage-rows"}}
+<div class="stat" role="group" aria-label="Omarchy compatibility coverage">
+  <div class="row"><a class="label" href="/stats">Omarchy compatibility coverage</a>
+    <span class="figure">{{.Coverage.Verified}} / {{.Coverage.Eligible}} <span class="pct">configs · {{pct .Coverage.VerifiedPct}}</span></span></div>
+  <svg class="bar ok" viewBox="0 0 100 10" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="{{.Coverage.Eligible}}" aria-valuenow="{{.Coverage.Verified}}" aria-label="{{.Coverage.Verified}} of {{.Coverage.Eligible}} eligible configurations verified compatible"><rect width="{{barw .Coverage.Verified .Coverage.Eligible}}" height="10"/></svg>
+  <div class="sub">100% verified: every applicable test passed{{if .Coverage.StaleVerified}} · {{.Coverage.StaleVerified}} on an older Omarchy{{end}}</div>
+</div>
+<div class="stat" role="group" aria-label="Test result coverage">
+  <div class="row"><a class="label" href="/stats">Test result coverage</a>
+    <span class="figure">{{.Coverage.Tested}} / {{.Coverage.Eligible}} <span class="pct">configs · {{pct .Coverage.TestedPct}}</span></span></div>
+  <svg class="bar" viewBox="0 0 100 10" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="{{.Coverage.Eligible}}" aria-valuenow="{{.Coverage.Tested}}" aria-label="{{.Coverage.Tested}} of {{.Coverage.Eligible}} eligible configurations have a test result"><rect width="{{barw .Coverage.Tested .Coverage.Eligible}}" height="10"/></svg>
+  <div class="sub">configurations with at least one test result</div>
+</div>
+{{end}}
+
+{{define "superfooter"}}
+<footer class="super">
+  <div class="wrap">
+    <section aria-labelledby="f-cov">
+      <h2 id="f-cov">Coverage</h2>
+      <div class="coverage compact">{{template "coverage-rows" .Site}}</div>
+    </section>
+    <section aria-labelledby="f-cat">
+      <h2 id="f-cat">Catalog</h2>
+      <dl>
+        <dt>{{.Site.Macs}}</dt><dd>model identifiers</dd>
+        <dt>{{.Site.Releases}}</dt><dd>releases</dd>
+        <dt>{{.Site.Configs}}</dt><dd>hardware configurations</dd>
+        <dt>{{.Site.Components}}</dt><dd>components with hardware IDs</dd>
+        <dt>{{.Site.Criteria}}</dt><dd>test criteria</dd>
+        <dt>{{.Site.Coverage.Eligible}}</dt><dd>counted in coverage</dd>
+        <dt>{{.Site.Coverage.NotCompatible}}</dt><dd>not compatible by design (32-bit CPU)</dd>
+        {{range .Site.Exclusions}}<dt>{{.Count}}</dt><dd>out of scope: {{.Reason}}</dd>{{end}}
+      </dl>
+    </section>
+    <section aria-labelledby="f-site">
+      <h2 id="f-site">Site</h2>
+      <ul>
+        <li><a href="/macs">Browse all Intel Macs</a></li>
+        <li><a href="/stats">Stats</a></li>
+        <li><a href="/methodology">Methodology</a></li>
+        <li><a href="/contribute">Contribute</a></li>
+        <li><a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">Source on GitHub</a></li>
+      </ul>
+    </section>
+    <div class="legal">
+      <strong>A community site. Not officially affiliated with Omarchy or the Omacom Foundation.</strong>
+      <span>Code MIT · catalog data CC BY-SA 4.0 · themes from Omarchy (MIT)</span>
+      <span>doioma {{.Version}}</span>
+    </div>
+  </div>
+</footer>
+{{end}}
+
+{{define "searchbox"}}
+<div data-search-scope>
+<form class="searchbox" action="/search" method="get" role="search">
+  {{template "icon" "search"}}
+  <input type="search" name="q" value="{{.Q}}" autocomplete="off" spellcheck="false" aria-label="Search Intel Macs"
+    placeholder="mbp 2015 · imac 27 · gpu:nvidia · A1278" data-suggest="#suggest"
+    hx-get="/search" hx-trigger="input changed delay:150ms, search" hx-target="#results" hx-swap="outerHTML"{{if .OnSearchPage}} hx-push-url="true" autofocus{{end}}>
+  <button type="submit">Search</button>
+</form>
+<ul class="suggest" id="suggest" aria-label="Suggestions"></ul>
+{{if .Presets}}<ul class="presets" aria-label="Quick searches">{{range .Presets}}<li><a href="{{.URL}}">{{.Label}}</a></li>{{end}}</ul>{{end}}
+{{if .Results}}{{template "results" .}}{{else if .Q}}{{template "results" .}}{{else}}<div id="results"></div>{{end}}
+</div>
+{{end}}
+
 {{define "results"}}
 <div id="results">
-{{range .Resp.Errors}}<p class="chip error" role="alert">{{.}}</p>{{end}}
-{{if .Resp.Results}}
-<p class="muted">{{len .Resp.Results}} model{{if ne (len .Resp.Results) 1}}s{{end}}</p>
+{{range .Resp.Errors}}<span class="chip-error" role="alert">{{.}}</span>{{end}}
+{{if .Results}}
+<p class="results-meta">{{len .Results}} model {{plural (len .Results) "identifier" "identifiers"}}{{if eq .Sort "recent"}} · most recently tested first{{end}}</p>
 <ol class="results">
-{{range .Resp.Results}}{{$slug := .Slug}}
-  <li><a href="/mac/{{.Slug}}"><strong>{{.Identifier}}</strong></a> · {{range $i, $r := .Releases}}{{if $i}}; {{end}}{{$r}}{{end}}
-  {{if not .AllConfigs}}<ul class="hits">{{range .Configs}}<li><a href="/mac/{{$slug}}#cfg-{{.ID}}">{{.Label}}</a> <span class="muted">{{.ReleaseName}}</span></li>{{end}}</ul>{{end}}
+{{range .Results}}
+  <li>
+    <a class="hit" href="/mac/{{.Slug}}">
+      <span class="ident">{{.Identifier}}</span>
+      <span>{{.Mac.Title}}</span>
+      <span>{{range .Mac.Verdicts}}{{template "verdict" .}} {{end}}</span>
+      <span class="facts">{{.Mac.Years}} · {{joinlim .Mac.GPUs 2}}{{with .Mac.Chip}} · {{.}}{{end}} · {{len .Mac.Configs}} {{plural (len .Mac.Configs) "config" "configs"}}{{with .Mac.OutOfScope}} · out of coverage scope{{end}}</span>
+    </a>
+    {{if not .AllConfigs}}<ul class="hits">{{$slug := .Slug}}{{range .Scoped}}
+      <li><a href="/mac/{{$slug}}#cfg-{{.ID}}">{{.Letter}} · {{.Label}}</a><span class="release">{{.ReleaseName}}</span>{{with .OutOfScope}} {{template "scope" .}}{{end}}</li>{{end}}
+    </ul>{{end}}
   </li>
 {{end}}
 </ol>
+{{else if .NoResults}}
+<p class="empty">No test results yet. Testing opens with the submission API; until then every configuration is ⚪ Untested.</p>
 {{else if .Q}}
-<p>No Macs match <code>{{.Q}}</code>.{{with .Resp.DidYouMean}} Did you mean <a href="/search?q={{.}}">{{.}}</a>?{{end}}</p>
+<p class="empty">No Macs match <code>{{.Q}}</code>.{{with .Resp.DidYouMean}} Did you mean <a href="{{query .}}">{{.}}</a>?{{end}}</p>
 {{end}}
 </div>
 {{end}}
 
 {{define "suggestions"}}
 <ul class="suggest" role="listbox">
-{{range .}}<li role="option" data-kind="{{.Kind}}" data-cursor="{{.Cursor}}"><a href="/search?q={{.Query}}">{{.Label}}</a></li>
+{{range .}}<li role="option" data-kind="{{.Kind}}"><a href="{{query .Query}}" data-query="{{.Query}}" data-cursor="{{.Cursor}}">{{.Label}}</a></li>
 {{end}}</ul>
 {{end}}

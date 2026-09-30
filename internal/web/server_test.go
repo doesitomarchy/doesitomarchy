@@ -33,7 +33,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 	if _, err := st.SyncCatalog(ctx, c, h); err != nil {
 		t.Fatal(err)
 	}
-	srv, err := New(st, search.Build(c, nil), slog.New(slog.NewTextHandler(io.Discard, nil)), "test")
+	srv, err := New(st, c, search.Build(c, nil), slog.New(slog.NewTextHandler(io.Discard, nil)), "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,12 +72,12 @@ func TestRoutes(t *testing.T) {
 		ctype        string
 	}{
 		{"GET", "/healthz", 200, "", "ok", "text/plain"},
-		{"GET", "/", 200, "", "0 / " + strconv.Itoa(eligible(t)) + " configs", "text/html"},
+		{"GET", "/", 200, "", "0 / " + strconv.Itoa(eligible(t)) + " <span", "text/html"},
 		{"GET", "/mac/MacBookPro5-1", 200, "", "MacBook Pro (15-inch, Late 2008)", "text/html"},
-		{"GET", "/mac/MacBookPro5-1", 200, "", "</span> Untested", "text/html"},
+		{"GET", "/mac/MacBookPro5-1", 200, "", "</span>Untested</span>", "text/html"},
 		{"GET", "/mac/MacBookPro1-1", 200, "", "⛔ Not compatible", "text/html"},
-		{"GET", "/mac/MacBookPro5-1", 200, "", "Not counted in coverage: Released before 2009", "text/html"},
-		{"GET", "/mac/Xserve3-1", 200, "", "Not counted in coverage: Xserve (rack server)", "text/html"},
+		{"GET", "/mac/MacBookPro5-1", 200, "", "Out of coverage scope: Released before 2009", "text/html"},
+		{"GET", "/mac/Xserve3-1", 200, "", "Out of coverage scope: Xserve (rack server)", "text/html"},
 		{"GET", "/", 200, "", "Released before 2009", "text/html"},
 		{"GET", "/mac/MacBookPro5,1", 301, "/mac/MacBookPro5-1", "", ""},
 		{"GET", "/mac/MacBookPro5%2C1", 301, "/mac/MacBookPro5-1", "", ""},
@@ -96,8 +96,8 @@ func TestRoutes(t *testing.T) {
 		{"GET", "/search?q=chip%3At3", 200, "", "chip: expected none, t1 or t2", "text/html"},
 		{"GET", "/search?q=%3Cscript%3E", 200, "", "&lt;script&gt;", "text/html"},
 		{"GET", "/search", 200, "", `role="search"`, "text/html"},
-		{"GET", "/search/suggest?q=gp", 200, "", `href="/search?q=gpu%3a"`, "text/html"},
-		{"GET", "/search/suggest?q=gp+year%3A2012&cursor=2", 200, "", "gpu%3a%20year%3a2012", "text/html"},
+		{"GET", "/search/suggest?q=gp", 200, "", `href="/search?q=gpu%3A"`, "text/html"},
+		{"GET", "/search/suggest?q=gp+year%3A2012&cursor=2", 200, "", `data-query="gpu: year:2012"`, "text/html"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.method+" "+tt.path, func(t *testing.T) {

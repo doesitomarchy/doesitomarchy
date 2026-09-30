@@ -1,22 +1,21 @@
-// Package web is the HTTP server: routing, middleware, templates and static files.
-//
-// Phase 2 is a skeleton: health check, a placeholder home page, a minimal
-// model page read from the database, 404s, and the reserved /api/v1/ prefix.
-// The full UI arrives in Phase 4.
+// Package web is the HTTP server: routing, middleware, templates and static
+// files. Every page is server-rendered and works without JavaScript; HTMX
+// and site.js only enhance (PLAN.md §17).
 package web
 
 import (
 	"bytes"
 	"embed"
-	"errors"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 
+	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
-	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
@@ -26,23 +25,48 @@ var templateFS embed.FS
 //go:embed static
 var staticFS embed.FS
 
-// Server serves the site from a synced store.
+// BaseURL is the public origin, for the sitemap and canonical links.
+const BaseURL = "https://doesitomarchy.com"
+
+// Server serves the site.
 type Server struct {
 	store   *store.Store
 	index   *search.Index
+	view    *catalogView
+	cat     *catalog.Catalog
+	assets  *assets
 	log     *slog.Logger
 	version string
 	pages   map[string]*template.Template
 }
 
-// New parses templates and returns a server. version is shown in the footer.
-func New(st *store.Store, ix *search.Index, log *slog.Logger, version string) (*Server, error) {
-	s := &Server{store: st, index: ix, log: log, version: version, pages: map[string]*template.Template{}}
-	funcs := template.FuncMap{"pct": func(f float64) string { return formatPct(f) }}
-	for _, p := range []string{"home", "mac", "notfound", "error", "search", "suggest"} {
+// New builds the page views from the catalog and parses templates.
+func New(st *store.Store, c *catalog.Catalog, ix *search.Index, log *slog.Logger, version string) (*Server, error) {
+	static, err := fs.Sub(staticFS, "static")
+	if err != nil {
+		return nil, err
+	}
+	a, err := newAssets(static)
+	if err != nil {
+		return nil, err
+	}
+	s := &Server{store: st, index: ix, view: buildView(c), cat: c, assets: a, log: log, version: version, pages: map[string]*template.Template{}}
+	funcs := template.FuncMap{
+		"asset":   a.URL,
+		"pct":     formatPct,
+		"barw":    func(n, d int) string { return fmt.Sprintf("%.2f", pctOf(n, d)) },
+		"query":   func(q string) string { return "/search?q=" + url.QueryEscape(q) },
+		"plural":  func(n int, one, many string) string { return map[bool]string{true: one, false: many}[n == 1] },
+		"join":    strings.Join,
+		"joinlim": joinLimit,
+		"dots":    func(n int) string { return strings.Repeat("·", n) },
+		"add":     func(a, b int) int { return a + b },
+		"applies": s.appliesText,
+	}
+	for _, p := range []string{"home", "mac", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("template %s: %w", p, err)
 		}
 		s.pages[p] = t
 	}
@@ -52,16 +76,24 @@ func New(st *store.Store, ix *search.Index, log *slog.Logger, version string) (*
 // Handler returns the routed handler wrapped in middleware.
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
-	static, _ := fs.Sub(staticFS, "static")
-	mux.Handle("GET /static/", http.StripPrefix("/static/", cacheStatic(http.FileServerFS(static))))
+	mux.Handle("GET /static/", s.assets)
+	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, s.assets.URL("favicon.svg"), http.StatusMovedPermanently)
+	})
 	mux.HandleFunc("GET /healthz", s.healthz)
+	mux.HandleFunc("GET /robots.txt", s.robots)
+	mux.HandleFunc("GET /sitemap.xml", s.sitemap)
 	mux.HandleFunc("GET /{$}", s.home)
+	mux.HandleFunc("GET /macs", s.macs)
 	mux.HandleFunc("GET /mac/{id}", s.mac)
 	mux.HandleFunc("GET /search", s.search)
 	mux.HandleFunc("GET /search/suggest", s.suggest)
+	mux.HandleFunc("GET /stats", s.stats)
+	mux.HandleFunc("GET /methodology", s.methodology)
+	mux.HandleFunc("GET /contribute", s.contribute)
 	mux.HandleFunc("/api/v1/", apiNotFound) // reserved until the API ships (Phase 7)
 	mux.HandleFunc("/", s.notFound)
-	return s.recoverer(logRequests(s.log, securityHeaders(mux)))
+	return s.recoverer(logRequests(s.log, securityHeaders(compress(mux))))
 }
 
 func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
@@ -74,73 +106,6 @@ func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok\n"))
 }
 
-type homeData struct {
-	Counts     store.Counts
-	Coverage   status.Coverage
-	Exclusions []store.Exclusion
-}
-
-func (s *Server) home(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	counts, err := s.store.CatalogCounts(ctx)
-	if err != nil {
-		s.fail(w, r, err)
-		return
-	}
-	sums, err := s.store.ConfigSummaries(ctx)
-	if err != nil {
-		s.fail(w, r, err)
-		return
-	}
-	all := make([]status.ConfigStatus, len(sums))
-	for i, cs := range sums {
-		all[i] = status.Config(status.ConfigInput{HardBlocker: cs.HardBlocker, Excluded: cs.Excluded, Applicable: cs.Applicable})
-	}
-	excl, err := s.store.CoverageExclusions(ctx)
-	if err != nil {
-		s.fail(w, r, err)
-		return
-	}
-	s.render(w, r, http.StatusOK, "home", "Does it Omarchy?", homeData{counts, status.Summarize(all), excl})
-}
-
-type macData struct {
-	Mac      *store.Mac
-	Statuses map[string]status.ConfigStatus
-}
-
-func (s *Server) mac(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	m, err := s.store.MacBySlug(r.Context(), id)
-	if errors.Is(err, store.ErrNotFound) {
-		s.notFound(w, r)
-		return
-	}
-	if err != nil {
-		s.fail(w, r, err)
-		return
-	}
-	if id != m.Slug { // "MacBookPro5,1", "macbookpro5-1" → /mac/MacBookPro5-1
-		target := "/mac/" + url.PathEscape(m.Slug)
-		if r.URL.RawQuery != "" {
-			target += "?" + r.URL.RawQuery
-		}
-		http.Redirect(w, r, target, http.StatusMovedPermanently)
-		return
-	}
-	d := macData{Mac: m, Statuses: map[string]status.ConfigStatus{}}
-	for _, rel := range m.Releases {
-		for _, c := range rel.Configs {
-			d.Statuses[c.ID] = status.Config(status.ConfigInput{HardBlocker: c.Summary.HardBlocker, Excluded: c.Summary.Excluded, Applicable: c.Summary.Applicable})
-		}
-	}
-	s.render(w, r, http.StatusOK, "mac", m.Identifier, d)
-}
-
-func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
-	s.render(w, r, http.StatusNotFound, "notfound", "Not found", nil)
-}
-
 func apiNotFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
@@ -148,28 +113,76 @@ func apiNotFound(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"error":"not found","detail":"the API is not available yet"}` + "\n"))
 }
 
-func (s *Server) fail(w http.ResponseWriter, r *http.Request, err error) {
-	s.log.Error("request failed", "path", r.URL.Path, "err", err)
-	s.render(w, r, http.StatusInternalServerError, "error", "Server error", nil)
+func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
+	s.render(w, r, http.StatusNotFound, "notfound", page{Title: "Not found"})
 }
 
+func (s *Server) fail(w http.ResponseWriter, r *http.Request, err error) {
+	s.log.Error("request failed", "path", r.URL.Path, "err", err)
+	s.render(w, r, http.StatusInternalServerError, "error", page{Title: "Server error"})
+}
+
+// page is what every template receives.
 type page struct {
-	Title   string
-	Version string
-	Data    any
+	Title       string
+	Description string
+	Nav         string // current section: "macs", "stats", "methodology", "contribute"
+	Site        *site
+	Version     string
+	Data        any
 }
 
 // render executes into a buffer first so a template error never sends half a page.
-func (s *Server) render(w http.ResponseWriter, r *http.Request, code int, name, title string, data any) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, code int, name string, p page) {
+	p.Site, p.Version = &s.view.site, s.version
+	if p.Description == "" {
+		p.Description = "Which Intel Macs (2006–2020) run Omarchy, per model identifier and hardware configuration."
+	}
 	var buf bytes.Buffer
-	if err := s.pages[name].Execute(&buf, page{title, s.version, data}); err != nil {
+	if err := s.pages[name].Execute(&buf, p); err != nil {
 		s.log.Error("render", "page", name, "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	s.writeHTML(w, r, code, buf.Bytes())
+}
+
+// renderPartial executes one named template from a page's set, without the layout.
+func (s *Server) renderPartial(w http.ResponseWriter, r *http.Request, pageName, name string, data any) {
+	var buf bytes.Buffer
+	if err := s.pages[pageName].ExecuteTemplate(&buf, name, data); err != nil {
+		s.log.Error("render", "partial", name, "err", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	s.writeHTML(w, r, http.StatusOK, buf.Bytes())
+}
+
+func (s *Server) writeHTML(w http.ResponseWriter, r *http.Request, code int, b []byte) {
+	h := w.Header()
+	h.Set("Content-Type", "text/html; charset=utf-8")
+	if code == http.StatusOK {
+		// Browsers revalidate; Cloudflare may cache for 5 minutes (purged on deploy).
+		h.Set("Cache-Control", "public, max-age=0, s-maxage=300")
+	} else {
+		h.Set("Cache-Control", "no-store")
+	}
 	w.WriteHeader(code)
 	if r.Method != http.MethodHead {
-		buf.WriteTo(w)
+		w.Write(b)
 	}
+}
+
+func pctOf(n, d int) float64 {
+	if d == 0 {
+		return 0
+	}
+	return 100 * float64(n) / float64(d)
+}
+
+func joinLimit(xs []string, n int) string {
+	if len(xs) <= n {
+		return strings.Join(xs, ", ")
+	}
+	return strings.Join(xs[:n], ", ") + fmt.Sprintf(" +%d", len(xs)-n)
 }
