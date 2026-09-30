@@ -219,11 +219,12 @@
   name: NVIDIA GeForce GT 120
   vendor: NVIDIA
   role: discrete
-  ids: [pci:10de:0655, pci:10de:0640]
+  ids: [pci:10de:0655, pci:10de:0640, pci:10de:0656]
   driver: nouveau
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro4/MacPro4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve3/Xserve3%2C1
 
 - id: gpu/nvidia-geforce-gt-130
   name: NVIDIA GeForce GT 130
@@ -746,3 +747,13 @@
   notes: Navi 21 Pro-XTA.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
+
+- id: gpu/ati-radeon-x1300
+  name: ATI Radeon X1300 (64 MB)
+  vendor: AMD
+  role: discrete
+  ids: [pci:1002:7146]
+  driver: radeon
+  notes: RV515. Built onto the Xserve logic board (2006) or supplied as the standard card (2008).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve1/Xserve1%2C1

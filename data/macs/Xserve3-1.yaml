@@ -1,0 +1,34 @@
+identifier: Xserve3,1
+line: xserve
+efi: 64
+board_ids: [Mac-F223BEC8]
+research_notes: |
+  Last Xserve (Nehalem Xeon, 1U). No audio outputs, Wi-Fi or Bluetooth. GeForce GT 120 with Mini DisplayPort.
+  The single Linux probe also shows Apple's optional Xserve RAID card (106b:008a), not included here.
+sources:
+  - https://everymac.com/systems/apple/xserve/specs/xserve-intel-nehalem-xeon-2.26-2009-quad-specs.html
+  - https://everymac.com/systems/apple/xserve/specs/xserve-intel-nehalem-xeon-2.26-2009-eight-core-specs.html
+  - https://everymac.com/systems/apple/xserve/specs/xserve-intel-nehalem-xeon-2.66-2009-eight-core-specs.html
+  - https://everymac.com/systems/apple/xserve/specs/xserve-intel-nehalem-xeon-2.93-2009-eight-core-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Xserve/XS31.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve3/Xserve3%2C1
+releases:
+  - id: early-2009
+    name: "Xserve (Early 2009)"
+    announced: 2009-04-07
+    discontinued: 2011-01-31
+    model_numbers: [A1279]
+    emc: ["2279"]
+    configs:
+      - id: xserve3-1-early-2009-a
+        label: "Quad-core Xeon 2.26 GHz (×1 or ×2), 2.66 or 2.93 GHz (×2) · GeForce GT 120"
+        order_numbers: [MB449LL/A]
+        cpu:
+          codename: gainestown
+          standard: [{ model: "Xeon E5520", ghz: 2.26, cores: 4 }]
+          bto: [{ model: "Dual Xeon E5520", ghz: 2.26, cores: 8 }, { model: "Dual Xeon X5550", ghz: 2.66, cores: 8 }, { model: "Dual Xeon X5570", ghz: 2.93, cores: 8 }]
+        memory: { type: DDR3-1066 ECC, standard_gb: [3], max_gb: 48, notes: "Apple raised the official maximum from 24 GB to 48 GB in December 2009; 96 GB works with 8 GB modules." }
+        storage: { interface: sata, standard: ["160 GB HDD"], bto: ["1 TB HDD", "2 TB HDD", "128 GB SSD"] }
+        components: [gpu/nvidia-geforce-gt-120, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
+        ports: { usb-a-2: 3, firewire-800: 2, ethernet-gbe: 2, mini-displayport: 1 }
+        features: [fan, optical-drive]

@@ -97,6 +97,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro1/MacPro1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro3/MacPro3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve1/Xserve1%2C1
 
 - id: ethernet/intel-82574l
   name: Intel 82574L Gigabit Ethernet (×2)
@@ -106,6 +107,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro4/MacPro4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/Xserve3/Xserve3%2C1
 
 - id: ethernet/broadcom-bcm57762
   name: Broadcom NetXtreme BCM57762 Gigabit Ethernet (×2)
