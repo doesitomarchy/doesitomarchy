@@ -6,5 +6,5 @@ import "embed"
 
 // FS holds the catalog files, rooted at data/.
 //
-//go:embed vocabulary.yaml capabilities.yaml config-ids.lock components/*.yaml macs/*.yaml
+//go:embed vocabulary.yaml capabilities.yaml coverage.yaml config-ids.lock components/*.yaml macs/*.yaml
 var FS embed.FS

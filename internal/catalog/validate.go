@@ -33,6 +33,7 @@ func (l *loader) validate() {
 	l.validateCapabilities()
 	l.validateComponents()
 	l.validateMacs()
+	l.validateCoverage()
 	l.validateLock()
 }
 

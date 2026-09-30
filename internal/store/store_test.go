@@ -92,7 +92,7 @@ func TestSyncRealCatalog(t *testing.T) {
 		got.Components != want.Components || got.Capabilities != want.Capabilities {
 		t.Fatalf("counts %+v do not match catalog %+v", got, want)
 	}
-	applicable, blocked := 0, 0
+	applicable, blocked, excluded := 0, 0, 0
 	for _, m := range c.Macs {
 		for ri := range m.Releases {
 			for ci := range m.Releases[ri].Configs {
@@ -100,11 +100,18 @@ func TestSyncRealCatalog(t *testing.T) {
 				if m.HardBlocker != "" {
 					blocked++
 				}
+				if c.CoverageExclusion(m, &m.Releases[ri]) != "" {
+					excluded++
+				}
 			}
 		}
 	}
-	if got.ConfigCapabilities != applicable || got.HardBlockedConfigs != blocked {
-		t.Fatalf("applicability %d / blocked %d, want %d / %d", got.ConfigCapabilities, got.HardBlockedConfigs, applicable, blocked)
+	if got.ConfigCapabilities != applicable || got.HardBlockedConfigs != blocked || got.ExcludedConfigs != excluded {
+		t.Fatalf("applicability %d / blocked %d / excluded %d, want %d / %d / %d",
+			got.ConfigCapabilities, got.HardBlockedConfigs, got.ExcludedConfigs, applicable, blocked, excluded)
+	}
+	if excluded == 0 {
+		t.Fatal("expected data/coverage.yaml to exclude some configs")
 	}
 
 	if changed, err := st.SyncCatalog(ctx, c, hash); err != nil || changed {
@@ -200,6 +207,23 @@ func TestMacBySlug(t *testing.T) {
 	}
 	if m.Releases[0].Configs[0].Summary.Applicable == 0 || len(m.BoardIDs) == 0 || len(m.Sources) == 0 {
 		t.Fatal("applicability, board IDs and sources must be populated")
+	}
+
+	if m.Releases[0].Configs[0].Summary.Excluded != "" {
+		t.Error("MacBookPro8,2 (2011) must count toward coverage")
+	}
+	old, _ := st.MacBySlug(ctx, "MacBookPro5,1")
+	if old.Releases[0].Configs[0].Summary.Excluded != "Released before 2009" {
+		t.Errorf("MacBookPro5,1 exclusion = %q", old.Releases[0].Configs[0].Summary.Excluded)
+	}
+	ex, err := st.CoverageExclusions(ctx)
+	if err != nil || len(ex) == 0 {
+		t.Fatalf("exclusions: %v %v", ex, err)
+	}
+	for _, e := range ex {
+		if e.Reason == "" || e.Count == 0 {
+			t.Errorf("bad exclusion row %+v", e)
+		}
 	}
 
 	y, err := st.MacBySlug(ctx, "MacBookPro1,1")

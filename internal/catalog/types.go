@@ -170,10 +170,11 @@ type Display struct {
 
 // Catalog is the fully loaded and cross-referenced data directory.
 type Catalog struct {
-	Vocab        Vocabulary
-	Categories   []Category
-	Capabilities []Capability
-	Components   map[string]*Component
-	Macs         []*Mac
-	LockedIDs    []string // data/config-ids.lock
+	Vocab         Vocabulary
+	Categories    []Category
+	Capabilities  []Capability
+	Components    map[string]*Component
+	Macs          []*Mac
+	LockedIDs     []string       // data/config-ids.lock
+	CoverageRules []CoverageRule // data/coverage.yaml (optional)
 }

@@ -71,8 +71,9 @@ func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
 }
 
 type homeData struct {
-	Counts   store.Counts
-	Coverage status.Coverage
+	Counts     store.Counts
+	Coverage   status.Coverage
+	Exclusions []store.Exclusion
 }
 
 func (s *Server) home(w http.ResponseWriter, r *http.Request) {
@@ -89,9 +90,14 @@ func (s *Server) home(w http.ResponseWriter, r *http.Request) {
 	}
 	all := make([]status.ConfigStatus, len(sums))
 	for i, cs := range sums {
-		all[i] = status.Config(status.ConfigInput{HardBlocker: cs.HardBlocker, Applicable: cs.Applicable})
+		all[i] = status.Config(status.ConfigInput{HardBlocker: cs.HardBlocker, Excluded: cs.Excluded, Applicable: cs.Applicable})
 	}
-	s.render(w, r, http.StatusOK, "home", "Does it Omarchy?", homeData{counts, status.Summarize(all)})
+	excl, err := s.store.CoverageExclusions(ctx)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	s.render(w, r, http.StatusOK, "home", "Does it Omarchy?", homeData{counts, status.Summarize(all), excl})
 }
 
 type macData struct {
@@ -121,7 +127,7 @@ func (s *Server) mac(w http.ResponseWriter, r *http.Request) {
 	d := macData{Mac: m, Statuses: map[string]status.ConfigStatus{}}
 	for _, rel := range m.Releases {
 		for _, c := range rel.Configs {
-			d.Statuses[c.ID] = status.Config(status.ConfigInput{HardBlocker: c.Summary.HardBlocker, Applicable: c.Summary.Applicable})
+			d.Statuses[c.ID] = status.Config(status.ConfigInput{HardBlocker: c.Summary.HardBlocker, Excluded: c.Summary.Excluded, Applicable: c.Summary.Applicable})
 		}
 	}
 	s.render(w, r, http.StatusOK, "mac", m.Identifier, d)

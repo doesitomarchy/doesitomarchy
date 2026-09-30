@@ -10,7 +10,7 @@ import (
 
 // Counts are catalog row counts (status line, tests).
 type Counts struct {
-	Macs, Releases, Configs, Components, Capabilities, ConfigCapabilities, HardBlockedConfigs int
+	Macs, Releases, Configs, Components, Capabilities, ConfigCapabilities, HardBlockedConfigs, ExcludedConfigs int
 }
 
 // CatalogCounts counts the synced catalog.
@@ -23,21 +23,51 @@ func (s *Store) CatalogCounts(ctx context.Context) (Counts, error) {
 		(SELECT count(*) FROM components),
 		(SELECT count(*) FROM capabilities),
 		(SELECT count(*) FROM config_capabilities),
-		(SELECT count(*) FROM configs JOIN macs ON macs.identifier = configs.mac_identifier WHERE macs.hard_blocker != '')`).
-		Scan(&c.Macs, &c.Releases, &c.Configs, &c.Components, &c.Capabilities, &c.ConfigCapabilities, &c.HardBlockedConfigs)
+		(SELECT count(*) FROM configs JOIN macs ON macs.identifier = configs.mac_identifier WHERE macs.hard_blocker != ''),
+		(SELECT count(*) FROM configs WHERE coverage_excluded != '')`).
+		Scan(&c.Macs, &c.Releases, &c.Configs, &c.Components, &c.Capabilities, &c.ConfigCapabilities, &c.HardBlockedConfigs, &c.ExcludedConfigs)
 	return c, err
+}
+
+// Exclusion is one coverage-scope reason and how many eligible (not hard-blocked)
+// configs it removes from N.
+type Exclusion struct {
+	Reason string
+	Count  int
+}
+
+// CoverageExclusions lists the out-of-scope reasons in use, largest first.
+func (s *Store) CoverageExclusions(ctx context.Context) ([]Exclusion, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT c.coverage_excluded, count(*) FROM configs c
+		JOIN macs m ON m.identifier = c.mac_identifier
+		WHERE c.coverage_excluded != '' AND m.hard_blocker = ''
+		GROUP BY 1 ORDER BY 2 DESC, 1`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []Exclusion
+	for rows.Next() {
+		var e Exclusion
+		if err := rows.Scan(&e.Reason, &e.Count); err != nil {
+			return nil, err
+		}
+		out = append(out, e)
+	}
+	return out, rows.Err()
 }
 
 // ConfigSummary is what the status engine needs to know about one config.
 type ConfigSummary struct {
 	ID          string
 	HardBlocker string // from its Mac; non-empty means Not compatible
+	Excluded    string // coverage-scope reason (data/coverage.yaml); non-empty means not counted in N
 	Applicable  int    // number of applicable capabilities
 }
 
 // ConfigSummaries lists every config in catalog order.
 func (s *Store) ConfigSummaries(ctx context.Context) ([]ConfigSummary, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT c.id, m.hard_blocker,
+	rows, err := s.db.QueryContext(ctx, `SELECT c.id, m.hard_blocker, c.coverage_excluded,
 			(SELECT count(*) FROM config_capabilities cc WHERE cc.config_id = c.id)
 		FROM configs c JOIN macs m ON m.identifier = c.mac_identifier ORDER BY c.ord`)
 	if err != nil {
@@ -47,7 +77,7 @@ func (s *Store) ConfigSummaries(ctx context.Context) ([]ConfigSummary, error) {
 	var out []ConfigSummary
 	for rows.Next() {
 		var cs ConfigSummary
-		if err := rows.Scan(&cs.ID, &cs.HardBlocker, &cs.Applicable); err != nil {
+		if err := rows.Scan(&cs.ID, &cs.HardBlocker, &cs.Excluded, &cs.Applicable); err != nil {
 			return nil, err
 		}
 		out = append(out, cs)
@@ -111,7 +141,7 @@ func (s *Store) MacBySlug(ctx context.Context, slug string) (*Mac, error) {
 	}
 
 	rows, err := s.db.QueryContext(ctx, `SELECT r.id, r.name, r.announced, r.discontinued, r.model_numbers,
-			c.id, c.label, c.bto_only, c.order_numbers,
+			c.id, c.label, c.bto_only, c.order_numbers, c.coverage_excluded,
 			(SELECT count(*) FROM config_capabilities cc WHERE cc.config_id = c.id)
 		FROM releases r JOIN configs c ON c.mac_identifier = r.mac_identifier AND c.release_id = r.id
 		WHERE r.mac_identifier = ? ORDER BY r.ord, c.ord`, m.Identifier)
@@ -124,7 +154,7 @@ func (s *Store) MacBySlug(ctx context.Context, slug string) (*Mac, error) {
 		var c Config
 		var models, orders string
 		if err := rows.Scan(&r.ID, &r.Name, &r.Announced, &r.Discontinued, &models,
-			&c.ID, &c.Label, &c.BTOOnly, &orders, &c.Summary.Applicable); err != nil {
+			&c.ID, &c.Label, &c.BTOOnly, &orders, &c.Summary.Excluded, &c.Summary.Applicable); err != nil {
 			return nil, err
 		}
 		c.Summary.ID, c.Summary.HardBlocker = c.ID, m.HardBlocker

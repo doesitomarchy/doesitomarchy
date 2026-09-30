@@ -41,7 +41,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 	return ts
 }
 
-// eligible is N: configs whose Mac has no hard blocker.
+// eligible is N: configs whose Mac has no hard blocker and that are in coverage scope.
 func eligible(t *testing.T) int {
 	c, err := catalog.LoadFS(data.FS)
 	if err != nil {
@@ -49,9 +49,9 @@ func eligible(t *testing.T) int {
 	}
 	n := 0
 	for _, m := range c.Macs {
-		for _, r := range m.Releases {
-			if m.HardBlocker == "" {
-				n += len(r.Configs)
+		for i := range m.Releases {
+			if m.HardBlocker == "" && c.CoverageExclusion(m, &m.Releases[i]) == "" {
+				n += len(m.Releases[i].Configs)
 			}
 		}
 	}
@@ -75,6 +75,9 @@ func TestRoutes(t *testing.T) {
 		{"GET", "/mac/MacBookPro5-1", 200, "", "MacBook Pro (15-inch, Late 2008)", "text/html"},
 		{"GET", "/mac/MacBookPro5-1", 200, "", "</span> Untested", "text/html"},
 		{"GET", "/mac/MacBookPro1-1", 200, "", "⛔ Not compatible", "text/html"},
+		{"GET", "/mac/MacBookPro5-1", 200, "", "Not counted in coverage: Released before 2009", "text/html"},
+		{"GET", "/mac/Xserve3-1", 200, "", "Not counted in coverage: Xserve (rack server)", "text/html"},
+		{"GET", "/", 200, "", "Released before 2009", "text/html"},
 		{"GET", "/mac/MacBookPro5,1", 301, "/mac/MacBookPro5-1", "", ""},
 		{"GET", "/mac/MacBookPro5%2C1", 301, "/mac/MacBookPro5-1", "", ""},
 		{"GET", "/mac/macbookpro5-1?view=matrix", 301, "/mac/MacBookPro5-1?view=matrix", "", ""},

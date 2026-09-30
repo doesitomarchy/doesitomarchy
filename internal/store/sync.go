@@ -199,9 +199,9 @@ func (w *writer) config(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, 
 		display = js(cfg.Display)
 	}
 	w.exec(`INSERT INTO configs (id, mac_identifier, release_id, label, order_numbers, bto_only, cpu, memory, storage,
-		display, notes, sources, uncertain, ord) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		display, notes, sources, uncertain, ord, coverage_excluded) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		cfg.ID, m.Identifier, r.ID, cfg.Label, js(cfg.OrderNumbers), b2i(cfg.BTOOnly), js(cfg.CPU), js(cfg.Memory),
-		js(cfg.Storage), display, cfg.Notes, js(cfg.Sources), js(cfg.Uncertain), ord)
+		js(cfg.Storage), display, cfg.Notes, js(cfg.Sources), js(cfg.Uncertain), ord, c.CoverageExclusion(m, r))
 	for _, a := range cfg.Aliases {
 		w.exec("INSERT INTO config_aliases (alias, config_id) VALUES (?, ?)", a, cfg.ID)
 	}

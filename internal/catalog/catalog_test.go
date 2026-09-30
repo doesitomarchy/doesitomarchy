@@ -139,6 +139,41 @@ func TestRealCatalogApplicability(t *testing.T) {
 	}
 }
 
+func TestRealCatalogCoverageScope(t *testing.T) {
+	c := loadReal(t)
+	want := map[[2]string]string{
+		{"MacBookPro5,1", "15-late-2008"}:  "Released before 2009",
+		{"MacBookPro5,2", "17-early-2009"}: "",
+		{"iMac9,1", ""}:                    "",
+		{"Xserve3,1", ""}:                  "Xserve (rack server)",
+		{"Xserve1,1", ""}:                  "Released before 2009", // first matching rule wins
+		{"MacBookPro16,1", ""}:             "",
+	}
+	for _, m := range c.Macs {
+		for i := range m.Releases {
+			r := &m.Releases[i]
+			for _, key := range [][2]string{{m.Identifier, r.ID}, {m.Identifier, ""}} {
+				if w, ok := want[key]; ok {
+					if got := c.CoverageExclusion(m, r); got != w {
+						t.Errorf("%s %s: exclusion %q, want %q", m.Identifier, r.ID, got, w)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestFixtureCoverageRuleMatchesNothing(t *testing.T) {
+	c, err := Load(writeFixture(t, nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := c.Macs[0]
+	if got := c.CoverageExclusion(m, &m.Releases[0]); got != "" {
+		t.Fatalf("2099 release must not match announced_before 2000: %q", got)
+	}
+}
+
 func TestRealCatalogHardBlocker(t *testing.T) {
 	c := loadReal(t)
 	for _, m := range c.Macs {
@@ -213,6 +248,11 @@ releases:
         features: [fan]
 `,
 	"config-ids.lock": "macmini9-9-mid-2099-a\n",
+	"coverage.yaml": `
+exclude:
+  - reason: Old
+    when: { announced_before: "2000-01-01" }
+`,
 }
 
 // writeFixture writes the fixture with optional edits: file → (old → new).
@@ -281,6 +321,12 @@ func TestValidationRules(t *testing.T) {
 		{"gpu without role", "components/gpu.yaml", "role: integrated", "role: ''", "gpu role"},
 		{"bad hardware id", "components/gpu.yaml", "pci:8086:0001", "8086:0001", "must look like pci:"},
 		{"duplicate key", mac, "efi: 64", "efi: 64\nefi: 32", "already defined"},
+		{"coverage without reason", "coverage.yaml", "reason: Old", "reason: ''", "reason is required"},
+		{"coverage without condition", "coverage.yaml", `when: { announced_before: "2000-01-01" }`, "when: {}", "at least one condition"},
+		{"coverage bad date", "coverage.yaml", `"2000-01-01"`, `"Jan 2000"`, "must be YYYY-MM-DD"},
+		{"coverage unknown line", "coverage.yaml", `announced_before: "2000-01-01"`, "line: toaster", `unknown line "toaster"`},
+		{"coverage unknown identifier", "coverage.yaml", `announced_before: "2000-01-01"`, `identifiers: ["Nope1,1"]`, `unknown identifier "Nope1,1"`},
+		{"coverage unknown field", "coverage.yaml", `announced_before: "2000-01-01"`, `year: 2000`, "unknown field"},
 		{"bad emc", mac, `emc: ["1234"]`, `emc: ["1234-12"]`, "must be four digits"},
 	}
 	for _, tt := range tests {

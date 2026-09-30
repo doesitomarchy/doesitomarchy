@@ -7,6 +7,7 @@
   <dt>Test result coverage</dt>
   <dd>{{.Coverage.Tested}} / {{.Coverage.Eligible}} configs · {{pct .Coverage.TestedPct}}</dd>
   <dt>Catalog</dt>
-  <dd>{{.Counts.Macs}} model identifiers · {{.Counts.Releases}} releases · {{.Counts.Configs}} configurations · {{.Coverage.NotCompatible}} not compatible by design</dd>
+  <dd>{{.Counts.Macs}} model identifiers · {{.Counts.Releases}} releases · {{.Counts.Configs}} configurations</dd>
+  <dd class="muted">Coverage counts {{.Coverage.Eligible}} configurations. Not counted: {{.Coverage.NotCompatible}} not compatible by design{{range .Exclusions}} · {{.Count}} {{.Reason}}{{end}}.</dd>
 </dl>
 {{end}}{{end}}

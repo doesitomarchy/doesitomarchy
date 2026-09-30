@@ -1,0 +1,14 @@
+# Coverage scope: configurations matching a rule below are listed on the site
+# and can still be tested, but are not counted in the coverage metrics (N).
+# This is separate from a Mac's hard_blocker, which makes it Not compatible.
+#
+# Conditions in one `when` are ANDed: announced_before (the config's release
+# date, YYYY-MM-DD), line (vocabulary key), identifiers (a list; quote each
+# one, e.g. ["iMac4,1"], or YAML splits it at the comma). The first
+# matching rule gives the reason shown on the site.
+
+exclude:
+  - reason: Released before 2009
+    when: { announced_before: "2009-01-01" }
+  - reason: Xserve (rack server)
+    when: { line: xserve }

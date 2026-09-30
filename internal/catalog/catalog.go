@@ -145,6 +145,14 @@ func (l *loader) load() {
 		}
 	}
 
+	const covPath = "coverage.yaml" // optional: no file means every config counts
+	if l.exists(covPath) {
+		var cf CoverageFile
+		if l.decode(covPath, &cf) {
+			c.CoverageRules = cf.Exclude
+		}
+	}
+
 	macFiles, err := l.yamlFiles("macs")
 	if err != nil {
 		l.errf("macs", "%v", err)

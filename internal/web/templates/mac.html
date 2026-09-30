@@ -9,7 +9,8 @@
   <ul class="configs">
   {{range .Configs}}{{$s := index $st .ID}}
     <li id="cfg-{{.ID}}"><span class="glyph" aria-hidden="true">{{$s.Verdict.Glyph}}</span> {{$s.Verdict.Label}} · <strong>{{.Label}}</strong>
-      <span class="muted">{{.ID}}{{if .BTOOnly}} · build to order{{end}}{{range .OrderNumbers}} · {{.}}{{end}} · {{$s.Applicable}} criteria apply</span></li>
+      <span class="muted">{{.ID}}{{if .BTOOnly}} · build to order{{end}}{{range .OrderNumbers}} · {{.}}{{end}} · {{$s.Applicable}} criteria apply</span>{{if and $s.Excluded (ne $s.Verdict "not-compatible")}}
+      <br><span class="muted">Not counted in coverage: {{$s.Excluded}}</span>{{end}}</li>
   {{end}}
   </ul>
 </section>
