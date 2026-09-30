@@ -1,0 +1,14 @@
+# build output
+/bin/
+/doioma
+
+# local databases (results live in SQLite, never in git)
+*.db
+*.db-shm
+*.db-wal
+
+# editor / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
