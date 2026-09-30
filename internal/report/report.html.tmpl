@@ -7,7 +7,7 @@
    dense key/value grids and tables; the applicability matrix scrolls sideways on its own. */
 :root {
   --bg: #f8f8f6; --panel: #f0f0ed; --line: #d9d9d4; --line-strong: #b5b5b0;
-  --fg: #121214; --muted: #5d5d64; --accent: #6a3fd1;
+  --fg: #121214; --muted: #5d5d64; --accent: #c6371c; --link: #6a3fd1;
   --warn: #8a5a00; --warn-bg: #fff2d1; --block: #a3170b; --block-bg: #fde6e1;
   --ident: #a15c00; --release: #1d6f82;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
@@ -15,11 +15,11 @@
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
-  --fg: #ececee; --muted: #a0a0a8; --accent: #b594ff;
+  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36; --link: #b594ff;
   --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; --ident: #f5b53f; --release: #5fc3d6; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
-  --fg: #ececee; --muted: #a0a0a8; --accent: #b594ff;
+  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36; --link: #b594ff;
   --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; --ident: #f5b53f; --release: #5fc3d6; color-scheme: dark }
 
 * { box-sizing: border-box }
@@ -79,9 +79,9 @@ details ul a { word-break: break-all }
 .cfg-head .title { display: grid; gap: 2px; min-width: 0 }
 .cfg-head .label-text { font: 500 14px var(--mono) }
 .pill { font: 500 11.5px var(--mono); padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 2px; white-space: nowrap; align-self: start; font-variant-numeric: tabular-nums }
-.pill.criteria-link { color: var(--accent); text-decoration: none }
-.pill.criteria-link:hover { border-color: var(--accent) }
-.matrix th.col:target > span a { color: var(--accent); font-weight: 700 }
+.pill.criteria-link { color: var(--link); border-color: var(--link); text-decoration: none }
+.pill.criteria-link:hover { background: color-mix(in srgb, var(--link) 12%, transparent) }
+.matrix th.col:target > span a { color: var(--link); font-weight: 700 }
 .pill.orders { white-space: normal; overflow-wrap: anywhere }
 .cfg-head .chips { min-width: 0 }
 article.mac, .release { min-width: 0 }
