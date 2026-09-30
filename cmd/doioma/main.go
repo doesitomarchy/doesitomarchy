@@ -23,13 +23,16 @@ Usage:
   doioma <command> [flags]
 
 Commands:
+  serve      Run the web server (-addr :8080, -db FILE, -data DIR)
+  sync       Migrate the database and load the catalog into it (-db FILE, -data DIR)
   validate   Check the catalog in data/ (-data DIR)
   lock       Record new config IDs in data/config-ids.lock (-data DIR)
   report     Write an HTML review page for a batch (-line mac-mini -o FILE [-intro FILE])
   version    Print the version
   help       Show this help
 
-Planned: serve, sync, results, stats
+-db defaults to $DOIOMA_DB, else ./doioma.db. serve and sync use the catalog
+built into the binary unless -data DIR is given.
 `
 
 func main() {
@@ -42,6 +45,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	switch cmd, rest := args[0], args[1:]; cmd {
+	case "serve":
+		return cmdServe(rest, stdout, stderr)
+	case "sync":
+		return cmdSync(rest, stdout, stderr)
 	case "validate":
 		return cmdValidate(rest, stdout, stderr)
 	case "lock":

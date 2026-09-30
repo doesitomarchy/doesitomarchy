@@ -1,0 +1,19 @@
+{{define "content"}}{{with .Data}}{{$st := .Statuses}}{{with .Mac}}
+<h1>{{.Identifier}}</h1>
+<p class="meta">{{.LineName}} · EFI{{.EFI}}{{if ne .SecurityChip "none"}} · Apple {{.SecurityChip}}{{end}}{{range .BoardIDs}} · {{.}}{{end}}</p>
+{{if .HardBlocker}}<p class="blocker">⛔ Not compatible: {{.HardBlocker}}</p>{{end}}
+{{range .Releases}}
+<section class="release" id="rel-{{.ID}}">
+  <h2>{{.Name}}</h2>
+  <p class="meta">announced {{.Announced}}{{if .Discontinued}} · discontinued {{.Discontinued}}{{end}}{{range .ModelNumbers}} · {{.}}{{end}}</p>
+  <ul class="configs">
+  {{range .Configs}}{{$s := index $st .ID}}
+    <li id="cfg-{{.ID}}"><span class="glyph" aria-hidden="true">{{$s.Verdict.Glyph}}</span> {{$s.Verdict.Label}} · <strong>{{.Label}}</strong>
+      <span class="muted">{{.ID}}{{if .BTOOnly}} · build to order{{end}}{{range .OrderNumbers}} · {{.}}{{end}} · {{$s.Applicable}} criteria apply</span></li>
+  {{end}}
+  </ul>
+</section>
+{{end}}
+{{if .ResearchNotes}}<details><summary>Research notes (unverified)</summary><pre class="notes">{{.ResearchNotes}}</pre></details>{{end}}
+{{if .Sources}}<details><summary>Sources ({{len .Sources}})</summary><ul>{{range .Sources}}<li><a href="{{.}}" rel="noopener">{{.}}</a></li>{{end}}</ul></details>{{end}}
+{{end}}{{end}}{{end}}

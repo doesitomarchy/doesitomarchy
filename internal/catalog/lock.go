@@ -3,6 +3,8 @@ package catalog
 import (
 	"bufio"
 	"errors"
+	"io"
+	"io/fs"
 	"os"
 	"sort"
 	"strings"
@@ -21,15 +23,31 @@ const lockHeader = `# Every configuration ID ever issued. Test results reference
 // ReadLock returns the IDs in a lock file. A missing file is an empty lock.
 func ReadLock(path string) ([]string, error) {
 	f, err := os.Open(path)
-	if errors.Is(err, os.ErrNotExist) {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+	if err != nil {
+		return nil, nil
+	}
+	defer f.Close()
+	return scanLock(f)
+}
+
+func readLockFS(fsys fs.FS, name string) ([]string, error) {
+	f, err := fsys.Open(name)
+	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
+	return scanLock(f)
+}
+
+func scanLock(r io.Reader) ([]string, error) {
 	var ids []string
-	s := bufio.NewScanner(f)
+	s := bufio.NewScanner(r)
 	for s.Scan() {
 		line := strings.TrimSpace(s.Text())
 		if line != "" && !strings.HasPrefix(line, "#") {
