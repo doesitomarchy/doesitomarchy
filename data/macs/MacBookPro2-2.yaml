@@ -1,0 +1,34 @@
+identifier: MacBookPro2,2
+line: macbook-pro
+efi: 32
+board_ids: [Mac-F42187C8]
+research_notes: |
+  64-bit Core 2 Duo CPU with 32-bit EFI firmware: the stock installer needs a 32-bit EFI boot shim.
+  Draft-n Atheros AR5418 Wi-Fi (ath9k). The iSight camera reports "no firmware loaded" and needs firmware extracted from macOS.
+  Apple's identification page no longer lists 2006–2007 MacBook Pros; release names follow the size and season convention used for later models.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.16-15-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.33-15-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP22.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
+releases:
+  - id: "15-late-2006"
+    name: "MacBook Pro (15-inch, Late 2006)"
+    announced: 2006-10-24
+    discontinued: 2007-06-05
+    model_numbers: [A1211]
+    emc: ["2120"]
+    configs:
+      - id: macbookpro2-2-15-late-2006-a
+        label: "Core 2 Duo 2.16 or 2.33 GHz \u00b7 Mobility Radeon X1600"
+        order_numbers: [MA609LL/A, MA610LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7400, ghz: 2.16, cores: 2 }, { model: Core 2 Duo T7600, ghz: 2.33, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1, 2], max_gb: 3, notes: "Apple's maximum is 3 GB; 4 GB can be installed but only 3 GB is addressable." }
+        storage: { interface: sata, standard: ["120 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LCD" }
+        components: [gpu/ati-mobility-radeon-x1600, wifi/atheros-ar5418, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/ti-tsb82aa2, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240, input/apple-mbp-2006b]
+        ports: { usb-a-2: 2, firewire-400: 1, firewire-800: 1, dvi: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive]

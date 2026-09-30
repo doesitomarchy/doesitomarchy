@@ -1,0 +1,39 @@
+identifier: MacBookPro16,1
+line: macbook-pro
+efi: 64
+security_chip: t2
+board_ids: [Mac-E1008331FDC96864]
+research_notes: |
+  Apple T2 chip. The SSD controller, audio, FaceTime camera, ambient light sensor, Touch Bar, keyboard and trackpad are reached through the T2 bridge (apple-bce binds on real Linux machines).
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
+  Thunderbolt 3 (USB-C) ports only, plus a headphone jack. Touch Bar and Touch ID on every model.
+  16-inch with a scissor-switch keyboard, physical Escape key and 3072x1920 True Tone display. MacBookPro16,4 is the build-to-order Radeon Pro 5600M (Navi 12, HBM2) model sold from June 2020.
+  Two GPUs: Intel UHD Graphics 630 and a discrete AMD Radeon Pro 5300M or 5500M (Navi 14, 1002:7340, amdgpu).
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.6-six-core-16-2019-scissor-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i9-2.3-eight-core-16-2019-scissor-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i9-2.4-eight-core-16-2019-scissor-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP161.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
+releases:
+  - id: "16-2019"
+    name: "MacBook Pro (16-inch, 2019)"
+    announced: 2019-11-13
+    discontinued: 2021-10-18
+    model_numbers: [A2141]
+    emc: ["3347"]
+    configs:
+      - id: macbookpro16-1-16-2019-a
+        label: "6-core Core i7 2.6 GHz or 8-core Core i9 2.3 GHz \u00b7 UHD 630 + Radeon Pro 5300M/5500M"
+        order_numbers: [MVVJ2LL/A, MVVK2LL/A, MVVL2LL/A, MVVM2LL/A]
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i7-9750H, ghz: 2.6, cores: 6 }, { model: Core i9-9880H, ghz: 2.3, cores: 8 }]
+          bto: [{ model: Core i9-9980HK, ghz: 2.4, cores: 8 }]
+        memory: { type: DDR4-2666, standard_gb: [16], max_gb: 64, soldered: true }
+        storage: { interface: nvme, standard: ["512 GB SSD", "1 TB SSD"] }
+        display: { inches: 16, resolution: 3072x1920, panel: "Retina LED IPS, P3, True Tone" }
+        components: [gpu/intel-uhd-630, gpu/amd-radeon-pro-5300m-5500m, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-16]
+        ports: { thunderbolt-3: 4, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, gpu-switching]

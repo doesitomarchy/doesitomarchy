@@ -12,3 +12,13 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro7/MacPro7%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C1
+
+- id: bridge/apple-t1
+  name: Apple T1 (iBridge)
+  vendor: Apple
+  ids: [usb:05ac:8600]
+  notes: ARM co-processor on the 2016–2017 Touch Bar MacBook Pros. It runs the Touch Bar, the Touch ID secure enclave and the FaceTime HD camera, and appears to the host as a USB device (iBridge). It does not sit between the CPU and the SSD or audio, and it has no secure-boot policy.
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro13/MacBookPro13%2C3
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C3

@@ -1,0 +1,35 @@
+identifier: MacBookPro5,3
+line: macbook-pro
+efi: 64
+board_ids: [Mac-F22587C8]
+research_notes: |
+  Mid 2009 15-inch: built-in battery, SD card slot (internal USB reader) instead of ExpressCard/34. Audio is a Cirrus Logic CS4206 codec on every observed machine.
+  Two GPUs: GeForce 9400M chipset graphics and a discrete GeForce 9600M GT.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.66-aluminum-15-mid-2009-sd-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.8-aluminum-15-mid-2009-sd-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-3.06-aluminum-15-mid-2009-sd-unibody-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP53.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C3
+releases:
+  - id: "15-mid-2009"
+    name: "MacBook Pro (15-inch, Mid 2009)"
+    announced: 2009-06-08
+    discontinued: 2010-04-13
+    model_numbers: [A1286]
+    emc: ["2325"]
+    configs:
+      - id: macbookpro5-3-15-mid-2009-a
+        label: "Core 2 Duo 2.66 or 2.8 GHz \u00b7 GeForce 9400M + 9600M GT"
+        order_numbers: [MB985LL/A, MB986LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8800, ghz: 2.66, cores: 2 }, { model: Core 2 Duo T9600, ghz: 2.8, cores: 2 }]
+          bto: [{ model: Core 2 Duo T9900, ghz: 3.06, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["320 GB HDD", "500 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte" }
+        components: [gpu/nvidia-geforce-9400m, gpu/nvidia-geforce-9600m-gt, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8213, firewire/lsi-fw643, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody, audio/cirrus-cs4206, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 2, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]

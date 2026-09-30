@@ -1,0 +1,39 @@
+identifier: MacBookPro14,1
+line: macbook-pro
+efi: 64
+board_ids: [Mac-B4831CEBD52A0C4C]
+research_notes: |
+  13-inch with two Thunderbolt 3 ports and function keys (no Touch Bar, no T1). The FaceTime HD camera is a PCIe device (Broadcom 1570, facetimehd driver). BCM4350 Wi-Fi uses brcmfmac.
+  Storage: 93 of 143 observed machines use an Apple S3X NVMe controller, 35 a Samsung NVMe controller; both use the in-kernel nvme driver.
+  Thunderbolt 3 (USB-C) ports only, used for charging, USB, DisplayPort and Thunderbolt; plus one headphone jack. Keyboard, trackpad and backlight connect over SPI (in-kernel applespi driver). Bluetooth is on UART (hci_uart).
+  The NVMe SSD is soldered. Audio is a Cirrus Logic CS8409 codec; on many observed boots the kernel binds only the generic HDA codec driver to it. Thunderbolt 3 controller is Alpine Ridge.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.3-13-mid-2017-retina-display-no-touch-bar-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.5-13-mid-2017-retina-display-no-touch-bar-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP141.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C1
+releases:
+  - id: "13-2017-2tb3"
+    name: "MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)"
+    announced: 2017-06-05
+    discontinued: 2019-07-09
+    model_numbers: [A1708]
+    emc: ["3164"]
+    configs:
+      - id: macbookpro14-1-13-2017-2tb3-a
+        label: "Core i5 2.3 GHz \u00b7 Iris Plus Graphics 640"
+        order_numbers: [MPXQ2LL/A, MPXR2LL/A, MPXT2LL/A, MPXU2LL/A]
+        cpu:
+          codename: kaby-lake
+          standard: [{ model: Core i5-7360U, ghz: 2.3, cores: 2 }]
+          bto: [{ model: Core i7-7660U, ghz: 2.5, cores: 2 }]
+        memory: { type: LPDDR3-2133, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: nvme, standard: ["128 GB SSD", "256 GB SSD"] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, P3 wide color" }
+        components: [gpu/intel-iris-plus-640, wifi/broadcom-bcm4350, bluetooth/broadcom-bcm4350-uart, audio/cirrus-cs8409, camera/broadcom-1570-facetime-hd, thunderbolt/intel-alpine-ridge, storage/apple-s3x-nvme, storage/samsung-nvme-apple, input/apple-spi-keyboard]
+        ports: { thunderbolt-3: 2, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging]
+        uncertain:
+          - field: storage
+            note: "Real machines show two SSD controllers (Apple S3X on most, Samsung on some); Apple does not say which units got which."

@@ -1,0 +1,34 @@
+identifier: MacBookPro9,1
+line: macbook-pro
+efi: 64
+board_ids: [Mac-4B7AC7E43945597E]
+research_notes: |
+  Ivy Bridge, USB 3, Thunderbolt (Light Ridge). The SD card reader is a PCIe function of the BCM57765 Ethernet chip. Last MacBook Pros with an optical drive, FireWire 800 and user-replaceable RAM and 2.5-inch drive. Audio is a Cirrus Logic CS4206 codec on every observed machine.
+  Two GPUs: Intel HD Graphics 4000 and a discrete GeForce GT 650M (Kepler), switched through a hardware mux.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.3-15-mid-2012-unibody-usb3-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.6-15-mid-2012-unibody-usb3-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.7-15-mid-2012-unibody-usb3-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP91.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C1
+releases:
+  - id: "15-mid-2012"
+    name: "MacBook Pro (15-inch, Mid 2012)"
+    announced: 2012-06-11
+    discontinued: 2013-10-22
+    model_numbers: [A1286]
+    emc: ["2556"]
+    configs:
+      - id: macbookpro9-1-15-mid-2012-a
+        label: "Core i7 2.3\u20132.7 GHz \u00b7 HD 4000 + GeForce GT 650M"
+        order_numbers: [MD103LL/A, MD104LL/A, MD546LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i7-3615QM, ghz: 2.3, cores: 4 }, { model: Core i7-3720QM, ghz: 2.6, cores: 4 }, { model: Core i7-3820QM, ghz: 2.7, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [4, 8], max_gb: 8, notes: "Apple's maximum is 8 GB; EveryMac reports 16 GB works." }
+        storage: { interface: sata, standard: ["500 GB HDD", "750 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
+        components: [gpu/intel-hd-4000, gpu/nvidia-geforce-gt-650m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821d, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
+        ports: { usb-a-3: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]

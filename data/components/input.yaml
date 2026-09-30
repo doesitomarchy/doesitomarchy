@@ -210,14 +210,25 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C2
 
+- id: input/apple-t2-mbp-16
+  name: Apple internal keyboard/trackpad via T2 (MacBook Pro 16-inch 2019)
+  vendor: Apple
+  ids: [usb:05ac:0340]
+  driver: hid-apple, bcm5974 (via apple-bce)
+  notes: Reported by lsusb as "Apple Internal Keyboard / Trackpad".
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C4
+
 - id: input/apple-t2-mbp-generic
-  name: Apple internal keyboard/trackpad via T2 (MacBook Pro 16-inch 2019–2020, 13-inch 2020 two-port)
+  name: Apple internal keyboard/trackpad via T2 (MacBook Pro 13-inch 2020, two Thunderbolt ports)
   vendor: Apple
   ids: []
   driver: hid-apple, bcm5974 (via apple-bce)
   notes: Exposed as a USB device by the T2 bridge (apple-bce).
   sources:
-    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C3
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C4
   uncertain:
     - field: ids
-      note: No probe of these models lists the internal keyboard's USB product ID.
+      note: No USB probe of MacBookPro16,3 exists. The similar MacBookPro15,4 reports 05ac:027d.

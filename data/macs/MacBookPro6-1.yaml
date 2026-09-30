@@ -1,0 +1,36 @@
+identifier: MacBookPro6,1
+line: macbook-pro
+efi: 64
+board_ids: [Mac-F22589C8]
+research_notes: |
+  Arrandale Core i5/i7 with two GPUs: Intel HD Graphics in the CPU package and a discrete GeForce GT 330M. Switching is automatic in macOS through a hardware mux.
+  Mini DisplayPort carries audio. Audio is a Cirrus Logic CS4206 codec on every observed machine.
+  MC846LL/A (2.8 GHz, October 2010) is a speed bump filed under Mid 2010.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.53-aluminum-17-mid-2010-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.66-aluminum-17-mid-2010-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.8-aluminum-17-mid-2010-unibody-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP61.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C1
+releases:
+  - id: "17-mid-2010"
+    name: "MacBook Pro (17-inch, Mid 2010)"
+    announced: 2010-04-13
+    discontinued: 2011-02-24
+    model_numbers: [A1297]
+    emc: ["2352"]
+    configs:
+      - id: macbookpro6-1-17-mid-2010-a
+        label: "Core i5 2.53 GHz or Core i7 2.8 GHz \u00b7 HD Graphics + GeForce GT 330M"
+        order_numbers: [MC024LL/A, MC846LL/A]
+        cpu:
+          codename: arrandale
+          standard: [{ model: Core i5-540M, ghz: 2.53, cores: 2 }, { model: Core i7-640M, ghz: 2.8, cores: 2 }]
+          bto: [{ model: Core i7-620M, ghz: 2.66, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["500 GB HDD"] }
+        display: { inches: 17, resolution: 1920x1200, panel: "LED glossy or matte" }
+        components: [gpu/intel-hd-arrandale, gpu/nvidia-geforce-gt-330m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-8218, firewire/lsi-fw643, ethernet/broadcom-bcm5764m, storage/intel-5-series-mobile-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody, audio/cirrus-cs4206]
+        ports: { usb-a-2: 3, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching, displayport-audio]

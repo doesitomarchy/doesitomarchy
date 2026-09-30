@@ -1,0 +1,33 @@
+identifier: MacBookPro7,1
+line: macbook-pro
+efi: 64
+board_ids: [Mac-F222BEC8]
+research_notes: |
+  13-inch with a Core 2 Duo and the GeForce 320M (MCP89) chipset GPU. Mini DisplayPort carries audio.
+  One combined audio jack. Audio is a Cirrus Logic CS4206 codec on every observed machine.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.4-aluminum-13-mid-2010-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.66-aluminum-13-mid-2010-unibody-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP71.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro7/MacBookPro7%2C1
+releases:
+  - id: "13-mid-2010"
+    name: "MacBook Pro (13-inch, Mid 2010)"
+    announced: 2010-04-13
+    discontinued: 2011-02-24
+    model_numbers: [A1278]
+    emc: ["2351"]
+    configs:
+      - id: macbookpro7-1-13-mid-2010-a
+        label: "Core 2 Duo 2.4 or 2.66 GHz \u00b7 GeForce 320M"
+        order_numbers: [MC374LL/A, MC375LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8600, ghz: 2.4, cores: 2 }, { model: Core 2 Duo P8800, ghz: 2.66, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8, notes: "EveryMac reports 16 GB works." }
+        storage: { interface: sata, standard: ["250 GB HDD", "320 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LED glossy" }
+        components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8213, audio/cirrus-cs4206, firewire/lsi-fw643, ethernet/broadcom-bcm5764m, storage/nvidia-mcp89-sata, camera/apple-isight-05ac-8507, card-reader/apple-usb-8403, ir/apple-05ac-8242, input/apple-mb-unibody]
+        ports: { usb-a-2: 2, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1, audio-in: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, displayport-audio]

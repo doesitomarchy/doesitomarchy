@@ -1,0 +1,59 @@
+identifier: MacBookPro10,2
+line: macbook-pro
+efi: 64
+board_ids: [Mac-AFD8A9D944EA4843]
+research_notes: |
+  First 13-inch Retina MacBook Pro. Intel HD Graphics 4000 only.
+  Retina display, no optical drive, Ethernet or FireWire port. RAM is soldered. HDMI and two Thunderbolt ports.
+  The headphone jack also carries optical digital audio out.
+  The SSD is a SATA blade on the Intel 7-series controller. The SD card reader is a PCIe BCM57765 function; the BCM57765/57786 also exposes an Ethernet function with no port, which is left out of the component list.
+  Thunderbolt is Cactus Ridge. FaceTime HD camera is USB (05ac:8510). Audio is a Cirrus Logic CS4206 codec on every observed machine.
+  Apple's identification page lists MD212 under both Late 2012 and Early 2013; EveryMac and Apple's Late 2012 entry place it in Late 2012, so it is listed there only.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.5-13-late-2012-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.6-13-early-2013-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.9-13-late-2012-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-3.0-13-early-2013-retina-display-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP102.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C2
+releases:
+  - id: "13-late-2012"
+    name: "MacBook Pro (Retina, 13-inch, Late 2012)"
+    announced: 2012-10-23
+    discontinued: 2013-02-13
+    model_numbers: [A1425]
+    emc: ["2557"]
+    configs:
+      - id: macbookpro10-2-13-late-2012-a
+        label: "Core i5 2.5 GHz or Core i7 2.9 GHz \u00b7 HD Graphics 4000"
+        order_numbers: [MD212LL/A, MD213LL/A, ME116LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i5-3210M, ghz: 2.5, cores: 2 }, { model: Core i7-3520M, ghz: 2.9, cores: 2 }]
+        memory: { type: DDR3L-1600, standard_gb: [8], max_gb: 8, soldered: true }
+        storage: { interface: sata, standard: ["128 GB SSD", "256 GB SSD"] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS" }
+        components: [gpu/intel-hd-4000, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828c, audio/cirrus-cs4206, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8510, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, input/apple-mbp-retina-13]
+        ports: { usb-a-3: 2, thunderbolt-1: 2, hdmi: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+  - id: "13-early-2013"
+    name: "MacBook Pro (Retina, 13-inch, Early 2013)"
+    announced: 2013-02-13
+    discontinued: 2013-10-22
+    model_numbers: [A1425]
+    emc: ["2672"]
+    configs:
+      - id: macbookpro10-2-13-early-2013-a
+        label: "Core i5 2.6 GHz \u00b7 HD Graphics 4000"
+        order_numbers: [ME662LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i5-3230M, ghz: 2.6, cores: 2 }]
+          bto: [{ model: Core i7-3540M, ghz: 3.0, cores: 2 }]
+        memory: { type: DDR3L-1600, standard_gb: [8], max_gb: 8, soldered: true }
+        storage: { interface: sata, standard: ["256 GB SSD"] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS" }
+        components: [gpu/intel-hd-4000, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828c, audio/cirrus-cs4206, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8510, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, input/apple-mbp-retina-13]
+        ports: { usb-a-3: 2, thunderbolt-1: 2, hdmi: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]

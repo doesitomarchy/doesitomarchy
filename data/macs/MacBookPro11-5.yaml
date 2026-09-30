@@ -1,0 +1,37 @@
+identifier: MacBookPro11,5
+line: macbook-pro
+efi: 64
+board_ids: [Mac-06F11F11946D27C5]
+research_notes: |
+  Mid 2015 15-inch Retina with two GPUs: Intel Iris Pro 5200 and a discrete AMD Radeon R9 M370X (GCN 1.0, radeon or amdgpu), switched through a hardware mux.
+  Retina display, no optical drive, Ethernet or FireWire port. RAM is soldered. HDMI and two Thunderbolt ports.
+  The headphone jack also carries optical digital audio out.
+  PCIe flash storage speaks AHCI (Samsung or Marvell controllers seen). The FaceTime HD camera is a PCIe device (Broadcom 1570) that needs the out-of-tree facetimehd driver.
+  Thunderbolt 2 (Falcon Ridge). The SD card reader is an internal USB device (05ac:8406). Audio is a Cirrus Logic CS4208 codec on every observed machine.
+  Force Touch trackpad. BCM43602 802.11ac Wi-Fi uses the in-kernel brcmfmac driver.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.5-15-dual-graphics-mid-2015-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.8-15-dual-graphics-mid-2015-retina-display-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP115.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C5
+releases:
+  - id: "15-mid-2015"
+    name: "MacBook Pro (Retina, 15-inch, Mid 2015)"
+    announced: 2015-05-19
+    discontinued: 2016-10-27
+    model_numbers: [A1398]
+    emc: ["2910"]
+    configs:
+      - id: macbookpro11-5-15-mid-2015-a
+        label: "Core i7 2.5 or 2.8 GHz \u00b7 Iris Pro + Radeon R9 M370X"
+        order_numbers: [MJLT2LL/A, MJLU2LL/A]
+        cpu:
+          codename: crystal-well
+          standard: [{ model: Core i7-4870HQ, ghz: 2.5, cores: 4 }, { model: Core i7-4980HQ, ghz: 2.8, cores: 4 }]
+        memory: { type: DDR3L-1600, standard_gb: [16], max_gb: 16, soldered: true }
+        storage: { interface: pcie-ahci, standard: ["512 GB SSD", "1 TB SSD"] }
+        display: { inches: 15.4, resolution: 2880x1800, panel: "Retina LED IPS" }
+        components: [gpu/intel-iris-pro-5200-mobile, gpu/amd-radeon-r9-m370x, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8290, audio/cirrus-cs4208, storage/apple-pcie-ssd-ahci, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-falcon-ridge, input/apple-mbp-2015-15]
+        ports: { usb-a-3: 2, thunderbolt-2: 2, hdmi: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, gpu-switching]
