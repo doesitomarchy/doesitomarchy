@@ -1,0 +1,54 @@
+identifier: MacBookAir9,1
+line: macbook-air
+efi: 64
+security_chip: t2
+board_ids: [Mac-0CFF9C7C2B63DF8D]
+research_notes: |
+  T2 Mac. Omarchy's manual lists the MacBook Air 13-inch (2018) A1932; this 2020 model is not named in the manual as supported with automatic setup (patched linux-t2 kernel, T2 audio,
+  Apple's Broadcom Wi-Fi/Bluetooth firmware, t2fanrd). Disable Secure Boot in Startup Security Utility before installing.
+  Keyboard, trackpad, camera and ambient light sensor are USB devices behind the T2 bridge (apple-bce). Charging is over USB-C.
+  Last Intel MacBook Air (scissor-switch keyboard). Two GPUs across the line: the Core i3 has Iris Plus G4, the Core i5/i7 Iris Plus G7.
+  Bluetooth is a PCIe function of the BCM4377 (hci_bcm4377 driver). Thunderbolt 3 is built into the Ice Lake CPU.
+sources:
+  - https://support.apple.com/en-us/111991
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i3-1.1-dual-core-13-retina-display-2020-scissor-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.1-quad-core-13-retina-display-2020-scissor-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i7-1.2-quad-core-13-retina-display-2020-scissor-specs.html
+  - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+  - https://omarchy.org/manual/mac-support/
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA91.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+releases:
+  - id: "2020"
+    name: "MacBook Air (Retina, 13-inch, 2020)"
+    announced: 2020-03-18
+    discontinued: 2020-11-10
+    model_numbers: [A2179]
+    emc: ["3302"]
+    configs:
+      - id: macbookair9-1-2020-a
+        label: "Dual-core Core i3 1.1 GHz \u00b7 Iris Plus G4"
+        order_numbers: [MWTJ2LL/A, MWTK2LL/A, MWTL2LL/A]
+        cpu:
+          codename: ice-lake
+          standard: [{ model: Core i3-1000NG4, ghz: 1.1, cores: 2 }]
+        memory: { type: LPDDR4X-3733, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: nvme, standard: [256 GB SSD], bto: [512 GB SSD, 1 TB SSD, 2 TB SSD] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, True Tone" }
+        components: [gpu/intel-iris-plus-g4-ice-lake, wifi/broadcom-bcm4377b, bluetooth/broadcom-bcm4377, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-ice-lake, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mba-2020]
+        ports: { thunderbolt-3: 2, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging]
+      - id: macbookair9-1-2020-b
+        label: "Quad-core Core i5 1.1 GHz or Core i7 1.2 GHz \u00b7 Iris Plus G7"
+        order_numbers: [MVH22LL/A, MVH42LL/A, MVH52LL/A]
+        cpu:
+          codename: ice-lake
+          standard: [{ model: Core i5-1030NG7, ghz: 1.1, cores: 4 }]
+          bto: [{ model: Core i7-1060NG7, ghz: 1.2, cores: 4 }]
+        memory: { type: LPDDR4X-3733, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: nvme, standard: [512 GB SSD], bto: [1 TB SSD, 2 TB SSD] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, True Tone" }
+        components: [gpu/intel-iris-plus-g7-ice-lake, wifi/broadcom-bcm4377b, bluetooth/broadcom-bcm4377, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-ice-lake, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mba-2020]
+        ports: { thunderbolt-3: 2, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging]

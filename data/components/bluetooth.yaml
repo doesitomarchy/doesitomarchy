@@ -18,6 +18,7 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
 
 - id: bluetooth/apple-05ac-8218
   name: Apple Bluetooth 2.1+EDR (USB 05ac:8218)
@@ -62,3 +63,58 @@
   uncertain:
     - field: driver
       note: Attachment (UART vs PCIe) and the Linux driver path for BCM4364 Bluetooth on T2 Macs need confirming by a test.
+
+- id: bluetooth/apple-05ac-8210
+  name: Apple Bluetooth 2.0+EDR (USB 05ac:8210)
+  vendor: Apple
+  ids: [usb:05ac:8210]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+
+- id: bluetooth/apple-05ac-821b
+  name: Apple Bluetooth 2.1+EDR (USB 05ac:821b)
+  vendor: Apple
+  ids: [usb:05ac:821b]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C2
+
+- id: bluetooth/apple-05ac-821f
+  name: Apple Bluetooth 4.0 (USB 05ac:821f)
+  vendor: Apple
+  ids: [usb:05ac:821f]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+
+- id: bluetooth/apple-05ac-828f
+  name: Apple Bluetooth 4.0 (USB 05ac:828f)
+  vendor: Apple
+  ids: [usb:05ac:828f]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+
+- id: bluetooth/broadcom-bcm4355
+  name: Broadcom BCM4355 Bluetooth 5.0
+  vendor: Broadcom
+  ids: []
+  driver: ""
+  notes: Bluetooth half of the BCM4355 combo chip. Not attached over USB, so it does not appear in lsusb.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+  uncertain:
+    - field: driver
+      note: No hardware report shows this Bluetooth device; attachment and Linux driver need confirming by a test.
+
+- id: bluetooth/broadcom-bcm4377
+  name: Broadcom BCM4377 Bluetooth 5.0
+  vendor: Broadcom
+  ids: [pci:14e4:5fa0]
+  driver: hci_bcm4377
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1

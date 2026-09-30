@@ -1,0 +1,57 @@
+identifier: MacBookAir7,2
+line: macbook-air
+efi: 64
+board_ids: [Mac-937CB26E2E02BB01]
+research_notes: |
+  Early 2015 and 2017 share this identifier and all components. Thunderbolt 2.
+  PCIe flash storage speaks AHCI. The FaceTime HD camera is a PCIe device (Broadcom 1570) that needs the out-of-tree facetimehd driver.
+  BCM4360 Wi-Fi has no in-kernel 802.11ac driver; the proprietary wl driver is the usual route.
+sources:
+  - https://support.apple.com/en-us/111956
+  - https://support.apple.com/en-us/111924
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.6-13-early-2015-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.8-13-2017-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA72.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+releases:
+  - id: early-2015
+    name: "MacBook Air (13-inch, Early 2015)"
+    announced: 2015-03-09
+    discontinued: 2017-06-05
+    model_numbers: [A1466]
+    emc: ["2925"]
+    configs:
+      - id: macbookair7-2-early-2015-a
+        label: "Core i5 1.6 GHz or Core i7 2.2 GHz \u00b7 HD Graphics 6000"
+        order_numbers: [MJVE2LL/A, MJVG2LL/A, MMGF2LL/A, MMGG2LL/A]
+        cpu:
+          codename: broadwell
+          standard: [{ model: Core i5-5250U, ghz: 1.6, cores: 2 }]
+          bto: [{ model: Core i7-5650U, ghz: 2.2, cores: 2 }]
+        memory: { type: LPDDR3-1600, standard_gb: [4, 8], max_gb: 8, soldered: true }
+        storage: { interface: pcie-ahci, standard: [128 GB SSD, 256 GB SSD], bto: [512 GB SSD] }
+        display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
+        components: [gpu/intel-hd-6000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-falcon-ridge-2c, storage/apple-pcie-ssd-ahci, input/apple-mba-13-2013]
+        ports: { usb-a-3: 2, thunderbolt-2: 1, sd-card: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+  - id: "2017"
+    name: "MacBook Air (13-inch, 2017)"
+    announced: 2017-06-05
+    discontinued: 2019-07-09
+    model_numbers: [A1466]
+    emc: ["3178"]
+    configs:
+      - id: macbookair7-2-2017-a
+        label: "Core i5 1.8 GHz or Core i7 2.2 GHz \u00b7 HD Graphics 6000"
+        order_numbers: [MQD32LL/A, MQD42LL/A, MQD52LL/A]
+        cpu:
+          codename: broadwell
+          standard: [{ model: Core i5-5350U, ghz: 1.8, cores: 2 }]
+          bto: [{ model: Core i7-5650U, ghz: 2.2, cores: 2 }]
+        memory: { type: LPDDR3-1600, standard_gb: [8], max_gb: 8, soldered: true }
+        storage: { interface: pcie-ahci, standard: [128 GB SSD, 256 GB SSD], bto: [512 GB SSD] }
+        display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
+        components: [gpu/intel-hd-6000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-falcon-ridge-2c, storage/apple-pcie-ssd-ahci, input/apple-mba-13-2013]
+        ports: { usb-a-3: 2, thunderbolt-2: 1, sd-card: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]

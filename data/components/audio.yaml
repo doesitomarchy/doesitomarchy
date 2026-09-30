@@ -17,6 +17,8 @@
   driver: snd_hda_codec_realtek
   sources:
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
 
 - id: audio/cirrus-cs4206
   name: Cirrus Logic CS4206
@@ -26,6 +28,8 @@
   sources:
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
 
 - id: audio/cirrus-cs4208
   name: Cirrus Logic CS4208
@@ -34,6 +38,8 @@
   driver: snd_hda_codec_cirrus
   sources:
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
 
 - id: audio/apple-t2-audio
   name: Apple T2 audio (via T2 bridge)
@@ -44,3 +50,4 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1

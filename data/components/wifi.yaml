@@ -18,6 +18,8 @@
   notes: Apple AirPort Extreme card (subsystem 106b:0090). Seen with both the in-kernel b43 (via ssb) and the proprietary wl driver.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
 
 - id: wifi/broadcom-bcm43224
   name: Broadcom BCM43224 802.11a/b/g/n
@@ -27,6 +29,8 @@
   notes: Apple subsystem 106b:0093.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
 
 - id: wifi/broadcom-bcm4331
   name: Broadcom BCM4331 802.11a/b/g/n
@@ -46,6 +50,8 @@
   notes: Apple subsystems 106b:013b and 106b:0112. No in-kernel driver supports 802.11ac on this chip; the proprietary wl driver is the usual choice.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
 
 - id: wifi/broadcom-bcm4364
   name: Broadcom BCM4364 802.11ac
@@ -55,3 +61,22 @@
   notes: T2-era combo chip (Wi-Fi + Bluetooth). Needs Apple's Broadcom firmware, which Omarchy's T2 install path sets up.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+
+- id: wifi/broadcom-bcm4355
+  name: Broadcom BCM4355 802.11ac
+  vendor: Broadcom
+  ids: [pci:14e4:43dc]
+  driver: brcmfmac
+  notes: T2-era combo chip (Wi-Fi + Bluetooth). Needs Apple's Broadcom firmware, which Omarchy's T2 install path sets up.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C2
+
+- id: wifi/broadcom-bcm4377b
+  name: Broadcom BCM4377b 802.11ac
+  vendor: Broadcom
+  ids: [pci:14e4:4488]
+  driver: brcmfmac
+  notes: Combo chip; its Bluetooth half is a separate PCIe function (see bluetooth/broadcom-bcm4377).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1

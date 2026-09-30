@@ -16,21 +16,23 @@
   name: NVIDIA GeForce 9400M
   vendor: NVIDIA
   role: integrated
-  ids: [pci:10de:0861]
+  ids: [pci:10de:0861, pci:10de:0870]
   driver: nouveau
   notes: Chipset-integrated (MCP79) GPU. lspci names this device "C79 [GeForce 9400]".
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
 
 - id: gpu/nvidia-geforce-320m
   name: NVIDIA GeForce 320M
   vendor: NVIDIA
   role: integrated
-  ids: [pci:10de:08a4]
+  ids: [pci:10de:08a4, pci:10de:08a2, pci:10de:08a3]
   driver: nouveau
   notes: Chipset-integrated (MCP89) GPU.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
 
 - id: gpu/intel-hd-3000
   name: Intel HD Graphics 3000
@@ -41,6 +43,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C3
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
 
 - id: gpu/amd-radeon-hd-6630m
   name: AMD Radeon HD 6630M (256 MB GDDR5)
@@ -61,6 +64,7 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
 
 - id: gpu/intel-hd-5000
   name: Intel HD Graphics 5000
@@ -70,6 +74,7 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
 
 - id: gpu/intel-iris-5100
   name: Intel Iris Graphics 5100
@@ -88,3 +93,54 @@
   driver: i915
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+
+- id: gpu/intel-gma-x3100
+  name: Intel GMA X3100
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:2a02]
+  driver: i915
+  notes: Second PCI function 8086:2a03 is the same GPU's secondary display controller.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+
+- id: gpu/intel-hd-6000
+  name: Intel HD Graphics 6000
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:1626]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+
+- id: gpu/intel-uhd-617
+  name: Intel UHD Graphics 617
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:87c0]
+  driver: i915
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C2
+
+- id: gpu/intel-iris-plus-g4-ice-lake
+  name: Intel Iris Plus Graphics G4 (Ice Lake)
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:8a5c]
+  driver: i915
+  notes: Paired with the Core i3-1000NG4 in the 2020 MacBook Air (dmesg shows CPU and GPU on the same machines).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+
+- id: gpu/intel-iris-plus-g7-ice-lake
+  name: Intel Iris Plus Graphics G7 (Ice Lake)
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:8a51]
+  driver: i915
+  notes: Paired with the Core i5-1030NG7 and i7-1060NG7 in the 2020 MacBook Air.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookAir9/MacBookAir9%2C1

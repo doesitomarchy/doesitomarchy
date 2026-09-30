@@ -1,0 +1,38 @@
+identifier: MacBookAir4,1
+line: macbook-air
+efi: 64
+board_ids: [Mac-C08A6BB70A942AC2]
+research_notes: |
+  Adds Thunderbolt and brings back the backlit keyboard.
+sources:
+  - https://support.apple.com/en-us/112439
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.6-11-mid-2011-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i7-1.8-11-mid-2011-specs.html
+  - https://everymac.com/systems/apple/macbook-air/macbook-air-faq/macbook-air-late-2010-pros-and-cons.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA41.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C1
+releases:
+  - id: mid-2011
+    name: "MacBook Air (11-inch, Mid 2011)"
+    announced: 2011-07-20
+    discontinued: 2012-06-11
+    model_numbers: [A1370]
+    emc: ["2471"]
+    configs:
+      - id: macbookair4-1-mid-2011-a
+        label: "Core i5 1.6 GHz or Core i7 1.8 GHz \u00b7 HD Graphics 3000"
+        order_numbers: [MC968LL/A, MC969LL/A, MD214LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i5-2467M, ghz: 1.6, cores: 2 }]
+          bto: [{ model: Core i7-2677M, ghz: 1.8, cores: 2 }]
+        memory: { type: DDR3-1333, standard_gb: [2, 4], max_gb: 4, soldered: true }
+        storage: { interface: sata, standard: [64 GB SSD, 128 GB SSD], bto: [256 GB SSD] }
+        display: { inches: 11.6, resolution: 1366x768, panel: "LED glossy" }
+        components: [gpu/intel-hd-3000, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821f, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, thunderbolt/intel-eagle-ridge, storage/intel-6-series-sata, input/apple-mba-11-2011]
+        ports: { usb-a-2: 2, thunderbolt-1: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+        uncertain:
+          - field: features.ambient-light-sensor
+            note: "Neither Apple nor EveryMac mentions an ambient light sensor for Mid 2011; the 2008\u20132009 and 2012+ models have one."

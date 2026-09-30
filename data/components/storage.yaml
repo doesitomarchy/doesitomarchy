@@ -15,6 +15,7 @@
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
 
 - id: storage/nvidia-mcp89-sata
   name: NVIDIA MCP89 SATA controller
@@ -23,6 +24,7 @@
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
 
 - id: storage/intel-6-series-sata
   name: Intel 6 Series SATA controller
@@ -31,6 +33,7 @@
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
 
 - id: storage/intel-7-series-sata
   name: Intel 7 Series SATA controller
@@ -39,6 +42,7 @@
   driver: ahci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
 
 - id: storage/intel-8-series-sata
   name: Intel 8 Series SATA controller
@@ -49,13 +53,15 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
 
 - id: storage/apple-pcie-ssd-ahci
-  name: Apple PCIe SSD (Samsung, AHCI)
+  name: Apple PCIe SSD (AHCI)
   vendor: Samsung
-  ids: [pci:144d:a801, pci:144d:1600]
+  ids: [pci:144d:a801, pci:144d:1600, pci:1b4b:9183, pci:1179:010b]
   driver: ahci
-  notes: Apple PCIe flash storage used for SSD and Fusion Drive options (2013–2015). Speaks AHCI, not NVMe.
+  notes: Apple PCIe flash storage (2013–2017) from Samsung, SanDisk (Marvell 88SS9183 controller) or Toshiba. Speaks AHCI, not NVMe.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
 
 - id: storage/apple-ans2-nvme
   name: Apple ANS2 NVMe controller (T2)
@@ -64,3 +70,22 @@
   driver: nvme
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+
+- id: storage/intel-ich8m-sata
+  name: Intel ICH8M SATA controller
+  vendor: Intel
+  ids: [pci:8086:2829]
+  driver: ahci
+  notes: In the 2008 MacBook Air the drive itself is a 1.8-inch Parallel ATA (ZIF) disk behind a bridge.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+
+- id: storage/apple-s1x-nvme
+  name: Apple S1X NVMe SSD controller
+  vendor: Apple
+  ids: [pci:106b:2001]
+  driver: nvme
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C1

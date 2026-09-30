@@ -1,0 +1,37 @@
+identifier: MacBookAir8,2
+line: macbook-air
+efi: 64
+security_chip: t2
+board_ids: [Mac-226CB3C6A851A671]
+research_notes: |
+  T2 Mac. Omarchy's manual lists the MacBook Air 13-inch (2018) A1932 as supported with automatic setup (patched linux-t2 kernel, T2 audio,
+  Apple's Broadcom Wi-Fi/Bluetooth firmware, t2fanrd). Disable Secure Boot in Startup Security Utility before installing.
+  Keyboard, trackpad, camera and ambient light sensor are USB devices behind the T2 bridge (apple-bce). Charging is over USB-C.
+  Adds a True Tone display; hardware is otherwise the 2018 model.
+sources:
+  - https://support.apple.com/en-us/111948
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.6-13-retina-display-true-tone-2019-specs.html
+  - https://omarchy.org/manual/mac-support/
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA82.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C2
+releases:
+  - id: "2019"
+    name: "MacBook Air (Retina, 13-inch, 2019)"
+    announced: 2019-07-09
+    discontinued: 2020-03-18
+    model_numbers: [A1932]
+    emc: ["3184"]
+    configs:
+      - id: macbookair8-2-2019-a
+        label: "Core i5 1.6 GHz \u00b7 UHD Graphics 617"
+        order_numbers: [MVFH2LL/A, MVFJ2LL/A, MVFK2LL/A, MVFL2LL/A, MVFM2LL/A, MVFN2LL/A, MVH62LL/A, MVH82LL/A]
+        cpu:
+          codename: amber-lake
+          standard: [{ model: Core i5-8210Y, ghz: 1.6, cores: 2 }]
+        memory: { type: LPDDR3-2133, standard_gb: [8, 16], max_gb: 16, soldered: true }
+        storage: { interface: nvme, standard: [128 GB SSD, 256 GB SSD], bto: [512 GB SSD, 1 TB SSD] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, True Tone" }
+        components: [gpu/intel-uhd-617, wifi/broadcom-bcm4355, bluetooth/broadcom-bcm4355, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mba-2018]
+        ports: { thunderbolt-3: 2, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging]

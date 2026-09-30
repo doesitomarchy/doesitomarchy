@@ -1,0 +1,71 @@
+# Built-in keyboard and trackpad. One USB product ID per keyboard layout (ANSI, ISO, JIS).
+
+- id: input/apple-mba-2008
+  name: Apple internal keyboard/trackpad (MacBook Air 2008–2009)
+  vendor: Apple
+  ids: [usb:05ac:0223, usb:05ac:0224]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir1/MacBookAir1%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir2/MacBookAir2%2C1
+
+- id: input/apple-mba-11-2010
+  name: Apple internal keyboard/trackpad (MacBook Air 11-inch, Late 2010)
+  vendor: Apple
+  ids: [usb:05ac:0242, usb:05ac:0243]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C1
+
+- id: input/apple-mba-13-2010
+  name: Apple internal keyboard/trackpad (MacBook Air 13-inch, Late 2010)
+  vendor: Apple
+  ids: [usb:05ac:023f, usb:05ac:0240]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir3/MacBookAir3%2C2
+
+- id: input/apple-mba-11-2011
+  name: Apple internal keyboard/trackpad (MacBook Air 11-inch, 2011–2012)
+  vendor: Apple
+  ids: [usb:05ac:0249, usb:05ac:024a]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C1
+
+- id: input/apple-mba-13-2011
+  name: Apple internal keyboard/trackpad (MacBook Air 13-inch, 2011–2012)
+  vendor: Apple
+  ids: [usb:05ac:024c, usb:05ac:024d]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C2
+
+- id: input/apple-mba-11-2013
+  name: Apple internal keyboard/trackpad (MacBook Air 11-inch, 2013–2015)
+  vendor: Apple
+  ids: [usb:05ac:0290]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C1
+
+- id: input/apple-mba-13-2013
+  name: Apple internal keyboard/trackpad (MacBook Air 13-inch, 2013–2017)
+  vendor: Apple
+  ids: [usb:05ac:0291]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir6/MacBookAir6%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C2
+
+- id: input/apple-t2-mba-2018
+  name: Apple internal keyboard/trackpad via T2 (MacBook Air 2018–2019)
+  vendor: Apple
+  ids: [usb:05ac:027a]
+  notes: Exposed as a USB device by the T2 bridge (apple-bce).
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+
+- id: input/apple-t2-mba-2020
+  name: Apple internal keyboard/trackpad via T2 (MacBook Air 2020)
+  vendor: Apple
+  ids: [usb:05ac:0280]
+  notes: Exposed as a USB device by the T2 bridge (apple-bce).
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1

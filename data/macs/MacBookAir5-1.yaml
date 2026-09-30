@@ -1,0 +1,34 @@
+identifier: MacBookAir5,1
+line: macbook-air
+efi: 64
+board_ids: [Mac-66F35F19FE2A0D05]
+research_notes: |
+  Adds USB 3 and a 720p FaceTime HD camera (USB).
+sources:
+  - https://support.apple.com/en-us/112008
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.7-11-mid-2012-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i7-2.0-11-mid-2012-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA51.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir5/MacBookAir5%2C1
+releases:
+  - id: mid-2012
+    name: "MacBook Air (11-inch, Mid 2012)"
+    announced: 2012-06-11
+    discontinued: 2013-06-10
+    model_numbers: [A1465]
+    emc: ["2558"]
+    configs:
+      - id: macbookair5-1-mid-2012-a
+        label: "Core i5 1.7 GHz or Core i7 2.0 GHz \u00b7 HD Graphics 4000"
+        order_numbers: [MD223LL/A, MD224LL/A, MD845LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i5-3317U, ghz: 1.7, cores: 2 }]
+          bto: [{ model: Core i7-3667U, ghz: 2.0, cores: 2 }]
+        memory: { type: DDR3L-1600, standard_gb: [4], max_gb: 8, soldered: true }
+        storage: { interface: sata, standard: [64 GB SSD, 128 GB SSD], bto: [256 GB SSD, 512 GB SSD] }
+        display: { inches: 11.6, resolution: 1366x768, panel: "LED glossy" }
+        components: [gpu/intel-hd-4000, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821f, audio/cirrus-cs4206, camera/apple-facetime-hd-05ac-8510, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, input/apple-mba-11-2011]
+        ports: { usb-a-3: 2, thunderbolt-1: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]

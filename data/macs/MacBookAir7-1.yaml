@@ -1,0 +1,40 @@
+identifier: MacBookAir7,1
+line: macbook-air
+efi: 64
+board_ids: [Mac-9F18E312C5C2BF0B]
+research_notes: |
+  Thunderbolt 2.
+  The FaceTime HD camera is a PCIe device (Broadcom 1570) that needs the out-of-tree facetimehd driver.
+  BCM4360 Wi-Fi has no in-kernel 802.11ac driver; the proprietary wl driver is the usual route.
+  Storage: 88 of 92 observed machines use an Apple S1X NVMe controller, 3 a Samsung AHCI controller; both drivers are in the kernel.
+sources:
+  - https://support.apple.com/en-us/112441
+  - https://support.apple.com/en-us/102869
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.6-11-early-2015-specs.html
+  - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i7-2.2-11-early-2015-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA71.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir7/MacBookAir7%2C1
+releases:
+  - id: early-2015
+    name: "MacBook Air (11-inch, Early 2015)"
+    announced: 2015-03-09
+    discontinued: 2016-10-27
+    model_numbers: [A1465]
+    emc: ["2924"]
+    configs:
+      - id: macbookair7-1-early-2015-a
+        label: "Core i5 1.6 GHz or Core i7 2.2 GHz \u00b7 HD Graphics 6000"
+        order_numbers: [MJVM2LL/A, MJVP2LL/A]
+        cpu:
+          codename: broadwell
+          standard: [{ model: Core i5-5250U, ghz: 1.6, cores: 2 }]
+          bto: [{ model: Core i7-5650U, ghz: 2.2, cores: 2 }]
+        memory: { type: LPDDR3-1600, standard_gb: [4], max_gb: 8, soldered: true }
+        storage: { interface: nvme, standard: [128 GB SSD, 256 GB SSD], bto: [512 GB SSD] }
+        display: { inches: 11.6, resolution: 1366x768, panel: "LED glossy" }
+        components: [gpu/intel-hd-6000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, thunderbolt/intel-falcon-ridge-2c, storage/apple-s1x-nvme, storage/apple-pcie-ssd-ahci, input/apple-mba-11-2013]
+        ports: { usb-a-3: 2, thunderbolt-2: 1, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+        uncertain:
+          - field: storage
+            note: "Real machines show two SSD controllers (Apple S1X NVMe on most, Samsung AHCI on a few); Apple does not say which units got which."

@@ -6,3 +6,5 @@
   notes: apple-bce provides T2 audio, keyboard/trackpad (laptops) and Touch Bar access. It is out-of-tree and ships with T2-patched kernels.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
