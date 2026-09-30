@@ -1,0 +1,67 @@
+identifier: MacPro2,1
+line: mac-pro
+efi: 32
+board_ids: [Mac-F4208DA9]
+research_notes: |
+  Graphics cards are PCIe cards that owners often replace; configurations cover only the cards Apple sold with the machine.
+  The 8-core (two quad-core Xeon) build-to-order Mac Pro of 2007. 32-bit EFI firmware: the stock installer needs a 32-bit EFI boot shim.
+  Most Linux boots reporting MacPro2,1 show the MacPro1,1 board ID (Mac-F4208DC8): those are 2006 machines flashed with 2,1 firmware.
+  Audio is a Realtek ALC889A codec on every observed machine.
+sources:
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.0-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacPro/MP21.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro2/MacPro2%2C1
+  - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro2/MacPro2%2C1
+releases:
+  - id: "2007"
+    name: "Mac Pro (8-core, 2007)"
+    announced: 2007-04-04
+    discontinued: 2008-01-08
+    model_numbers: [A1186]
+    emc: ["2138"]
+    configs:
+      - id: macpro2-1-2007-a
+        label: "8-core Xeon \u00b7 GeForce 7300 GT"
+        bto_only: true
+        cpu:
+          codename: clovertown
+          standard: [{ model: "Dual Xeon X5365", ghz: 3.0, cores: 8 }]
+        memory: { type: DDR2-667 FB-DIMM ECC, standard_gb: [2], max_gb: 16 }
+        storage: { interface: sata, standard: ["250 GB HDD"], bto: ["500 GB HDD", "750 GB HDD"] }
+        components: [gpu/nvidia-geforce-7300-gt, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-tsb82aa2, storage/intel-esb2-sata]
+        bto_components: [bluetooth/apple-05ac-8206]
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        uncertain:
+          - field: components.wifi
+            note: "AirPort Extreme was an optional card on this model and no Linux probe identifies it, so no Wi-Fi component is listed."
+      - id: macpro2-1-2007-x1900xt
+        label: "8-core Xeon \u00b7 Radeon X1900 XT (build to order)"
+        bto_only: true
+        cpu:
+          codename: clovertown
+          standard: [{ model: "Dual Xeon X5365", ghz: 3.0, cores: 8 }]
+        memory: { type: DDR2-667 FB-DIMM ECC, standard_gb: [2], max_gb: 16 }
+        storage: { interface: sata, standard: ["250 GB HDD"], bto: ["500 GB HDD", "750 GB HDD"] }
+        components: [gpu/ati-radeon-x1900-xt, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-tsb82aa2, storage/intel-esb2-sata]
+        bto_components: [bluetooth/apple-05ac-8206]
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        uncertain:
+          - field: components.wifi
+            note: "AirPort Extreme was an optional card on this model and no Linux probe identifies it, so no Wi-Fi component is listed."
+      - id: macpro2-1-2007-fx4500
+        label: "8-core Xeon \u00b7 Quadro FX 4500 (build to order)"
+        bto_only: true
+        cpu:
+          codename: clovertown
+          standard: [{ model: "Dual Xeon X5365", ghz: 3.0, cores: 8 }]
+        memory: { type: DDR2-667 FB-DIMM ECC, standard_gb: [2], max_gb: 16 }
+        storage: { interface: sata, standard: ["250 GB HDD"], bto: ["500 GB HDD", "750 GB HDD"] }
+        components: [gpu/nvidia-quadro-fx-4500, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-tsb82aa2, storage/intel-esb2-sata]
+        bto_components: [bluetooth/apple-05ac-8206]
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        uncertain:
+          - field: components.wifi
+            note: "AirPort Extreme was an optional card on this model and no Linux probe identifies it, so no Wi-Fi component is listed."

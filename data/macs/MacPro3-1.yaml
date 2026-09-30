@@ -1,0 +1,69 @@
+identifier: MacPro3,1
+line: mac-pro
+efi: 64
+board_ids: [Mac-F42C88C8]
+research_notes: |
+  Graphics cards are PCIe cards that owners often replace; configurations cover only the cards Apple sold with the machine.
+  First Mac Pro with 64-bit EFI. Audio is a Realtek ALC889A codec on every observed machine.
+sources:
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.8-2008-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.0-2008-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.2-2008-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-2.8-2008-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacPro/MP31.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro3/MacPro3%2C1
+  - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro3/MacPro3%2C1
+releases:
+  - id: early-2008
+    name: "Mac Pro (Early 2008)"
+    announced: 2008-01-08
+    discontinued: 2009-03-03
+    model_numbers: [A1186]
+    emc: ["2180"]
+    configs:
+      - id: macpro3-1-early-2008-a
+        label: "Xeon \u00b7 Radeon HD 2600 XT"
+        order_numbers: [MA970LL/A, MB451LL/A]
+        cpu:
+          codename: harpertown
+          standard: [{ model: "Dual Xeon E5462", ghz: 2.8, cores: 8 }, { model: "Dual Xeon X5482", ghz: 3.2, cores: 8 }]
+          bto: [{ model: "Xeon E5462", ghz: 2.8, cores: 4 }, { model: "Dual Xeon E5472", ghz: 3.0, cores: 8 }]
+        memory: { type: DDR2-800 FB-DIMM ECC, standard_gb: [2], max_gb: 32 }
+        storage: { interface: sata, standard: ["320 GB HDD"], bto: ["500 GB HDD", "750 GB HDD", "1 TB HDD"] }
+        components: [gpu/ati-radeon-hd-2600-xt, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-xio2213, storage/intel-esb2-sata]
+        bto_components: [bluetooth/apple-05ac-8206]
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        uncertain:
+          - field: components.wifi
+            note: "AirPort Extreme was an optional card on this model and no Linux probe identifies it, so no Wi-Fi component is listed."
+      - id: macpro3-1-early-2008-8800gt
+        label: "Xeon \u00b7 GeForce 8800 GT (build to order)"
+        bto_only: true
+        cpu:
+          codename: harpertown
+          standard: [{ model: "Dual Xeon E5462", ghz: 2.8, cores: 8 }, { model: "Dual Xeon X5482", ghz: 3.2, cores: 8 }, { model: "Xeon E5462", ghz: 2.8, cores: 4 }, { model: "Dual Xeon E5472", ghz: 3.0, cores: 8 }]
+        memory: { type: DDR2-800 FB-DIMM ECC, standard_gb: [2], max_gb: 32 }
+        storage: { interface: sata, standard: ["320 GB HDD"], bto: ["500 GB HDD", "750 GB HDD", "1 TB HDD"] }
+        components: [gpu/nvidia-geforce-8800-gt, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-xio2213, storage/intel-esb2-sata]
+        bto_components: [bluetooth/apple-05ac-8206]
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        uncertain:
+          - field: components.wifi
+            note: "AirPort Extreme was an optional card on this model and no Linux probe identifies it, so no Wi-Fi component is listed."
+      - id: macpro3-1-early-2008-fx5600
+        label: "Xeon \u00b7 Quadro FX 5600 (build to order)"
+        bto_only: true
+        cpu:
+          codename: harpertown
+          standard: [{ model: "Dual Xeon E5462", ghz: 2.8, cores: 8 }, { model: "Dual Xeon X5482", ghz: 3.2, cores: 8 }, { model: "Xeon E5462", ghz: 2.8, cores: 4 }, { model: "Dual Xeon E5472", ghz: 3.0, cores: 8 }]
+        memory: { type: DDR2-800 FB-DIMM ECC, standard_gb: [2], max_gb: 32 }
+        storage: { interface: sata, standard: ["320 GB HDD"], bto: ["500 GB HDD", "750 GB HDD", "1 TB HDD"] }
+        components: [gpu/nvidia-quadro-fx-5600, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-xio2213, storage/intel-esb2-sata]
+        bto_components: [bluetooth/apple-05ac-8206]
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        uncertain:
+          - field: components.wifi
+            note: "AirPort Extreme was an optional card on this model and no Linux probe identifies it, so no Wi-Fi component is listed."

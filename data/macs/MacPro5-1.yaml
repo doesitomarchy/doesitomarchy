@@ -1,0 +1,102 @@
+identifier: MacPro5,1
+line: mac-pro
+efi: 64
+board_ids: [Mac-F221BEC8]
+research_notes: |
+  Graphics cards are PCIe cards that owners often replace; configurations cover only the cards Apple sold with the machine.
+  Mid 2010 and Mid 2012 (and their Server variants, which add drives only) share this identifier. Wi-Fi is standard from 2010.
+  Quad-core models use Bloomfield-class Xeon W3500 CPUs; 6-core and dual-processor models use Westmere-EP.
+  A few Linux boots report an iMac Pro board ID; those are machines running OpenCore with spoofed SMBIOS.
+  Audio is a Realtek ALC889A codec on every observed machine. Widely used as a Linux workstation.
+sources:
+  - https://support.apple.com/en-us/112578
+  - https://support.apple.com/en-us/118464
+  - https://support.apple.com/en-us/102887
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.4-mid-2010-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.4-mid-2010-westmere-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-2.8-mid-2010-nehalem-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-2.8-mid-2010-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.2-mid-2010-nehalem-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.2-mid-2010-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.2-mid-2012-nehalem-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-quad-core-3.2-mid-2012-nehalem-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.33-mid-2010-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.33-mid-2010-westmere-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.33-mid-2012-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.33-mid-2012-westmere-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.4-mid-2012-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.4-mid-2012-westmere-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.66-mid-2010-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.66-mid-2010-westmere-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.66-mid-2012-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.66-mid-2012-westmere-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.93-mid-2010-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.93-mid-2010-westmere-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-server-specs.html
+  - https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacPro/MP51.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/MacPro5/MacPro5%2C1
+  - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/MacPro5/MacPro5%2C1
+releases:
+  - id: mid-2010
+    name: "Mac Pro (Mid 2010)"
+    announced: 2010-07-27
+    discontinued: 2012-06-11
+    model_numbers: [A1289]
+    emc: ["2314"]
+    configs:
+      - id: macpro5-1-mid-2010-a
+        label: "Quad-, 6-, 8- or 12-core Xeon \u00b7 Radeon HD 5770"
+        order_numbers: [MC250LL/A, MC560LL/A, MC561LL/A, MC915LL/A]
+        cpu:
+          codename: westmere-ep
+          standard: [{ model: "Xeon W3530", ghz: 2.8, cores: 4 }, { model: "Dual Xeon E5620", ghz: 2.4, cores: 8 }]
+          bto: [{ model: "Xeon W3565", ghz: 3.2, cores: 4 }, { model: "Xeon W3680", ghz: 3.33, cores: 6 }, { model: "Dual Xeon X5650", ghz: 2.66, cores: 12 }, { model: "Dual Xeon X5670", ghz: 2.93, cores: 12 }]
+        memory: { type: DDR3-1333 ECC, standard_gb: [3, 6, 12], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
+        components: [gpu/ati-radeon-hd-5770, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        notes: "MC915LL/A is Mac Pro Server (Mid 2010): same hardware with extra drives."
+      - id: macpro5-1-mid-2010-hd5870
+        label: "Xeon \u00b7 Radeon HD 5870 (build to order)"
+        bto_only: true
+        cpu:
+          codename: westmere-ep
+          standard: [{ model: "Xeon W3530", ghz: 2.8, cores: 4 }, { model: "Dual Xeon E5620", ghz: 2.4, cores: 8 }, { model: "Xeon W3565", ghz: 3.2, cores: 4 }, { model: "Xeon W3680", ghz: 3.33, cores: 6 }, { model: "Dual Xeon X5650", ghz: 2.66, cores: 12 }, { model: "Dual Xeon X5670", ghz: 2.93, cores: 12 }]
+        memory: { type: DDR3-1333 ECC, standard_gb: [3, 6, 12], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
+        components: [gpu/ati-radeon-hd-5870, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+  - id: mid-2012
+    name: "Mac Pro (Mid 2012)"
+    announced: 2012-06-11
+    discontinued: 2013-12-19
+    model_numbers: [A1289]
+    emc: ["2629"]
+    configs:
+      - id: macpro5-1-mid-2012-a
+        label: "Quad-, 6-, 8- or 12-core Xeon \u00b7 Radeon HD 5770"
+        order_numbers: [MD770LL/A, MD771LL/A, MD772LL/A]
+        cpu:
+          codename: westmere-ep
+          standard: [{ model: "Xeon W3565", ghz: 3.2, cores: 4 }, { model: "Dual Xeon E5645", ghz: 2.4, cores: 12 }]
+          bto: [{ model: "Xeon W3680", ghz: 3.33, cores: 6 }, { model: "Dual Xeon X5650", ghz: 2.66, cores: 12 }, { model: "Dual Xeon X5675", ghz: 3.06, cores: 12 }]
+        memory: { type: DDR3-1333 ECC, standard_gb: [3, 6, 12], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
+        components: [gpu/ati-radeon-hd-5770, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
+        features: [builtin-speaker, fan, optical-drive]
+        notes: "MD772LL/A is Mac Pro Server (Mid 2012): same hardware with extra drives."
+      - id: macpro5-1-mid-2012-hd5870
+        label: "Xeon \u00b7 Radeon HD 5870 (build to order)"
+        bto_only: true
+        cpu:
+          codename: westmere-ep
+          standard: [{ model: "Xeon W3565", ghz: 3.2, cores: 4 }, { model: "Dual Xeon E5645", ghz: 2.4, cores: 12 }, { model: "Xeon W3680", ghz: 3.33, cores: 6 }, { model: "Dual Xeon X5650", ghz: 2.66, cores: 12 }, { model: "Dual Xeon X5675", ghz: 3.06, cores: 12 }]
+        memory: { type: DDR3-1333 ECC, standard_gb: [3, 6, 12], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
+        components: [gpu/ati-radeon-hd-5870, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
+        features: [builtin-speaker, fan, optical-drive]
