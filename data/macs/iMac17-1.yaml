@@ -1,0 +1,66 @@
+identifier: iMac17,1
+line: imac
+efi: 64
+board_ids: []
+research_notes: |
+  Skylake 5K iMac. Audio is a Cirrus Logic CS4206 codec on every observed machine. SSDs are Apple PCIe flash (AHCI or NVMe depending on unit).
+sources:
+  - https://support.apple.com/en-us/112035
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.2-27-inch-aluminum-retina-5k-late-2015-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.3-27-inch-aluminum-retina-5k-late-2015-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-4.0-27-inch-aluminum-retina-5k-late-2015-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM171.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
+uncertain:
+  - field: board_ids
+    note: "OpenCore lists no board ID for iMac17,1."
+releases:
+  - id: "5k-late-2015"
+    name: "iMac (Retina 5K, 27-inch, Late 2015)"
+    announced: 2015-10-13
+    discontinued: 2017-06-05
+    model_numbers: [A1419]
+    emc: ["2834"]
+    configs:
+      - id: imac17-1-5k-late-2015-a
+        label: "Quad-core Core i5 3.2 GHz \u00b7 Radeon R9 M380"
+        order_numbers: [MK462LL/A]
+        cpu:
+          codename: skylake
+          standard: [{ model: Core i5-6500, ghz: 3.2, cores: 4 }]
+        memory: { type: DDR3-1867 SO-DIMM, standard_gb: [8], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB HDD", "1 TB Fusion Drive", "2 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD", "2 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-r9-m380, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-100-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci, storage/apple-s1x-nvme]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac17-1-5k-late-2015-b
+        label: "Quad-core Core i5 3.2 GHz \u00b7 Radeon R9 M390"
+        order_numbers: [MK472LL/A]
+        cpu:
+          codename: skylake
+          standard: [{ model: Core i5-6500, ghz: 3.2, cores: 4 }]
+        memory: { type: DDR3-1867 SO-DIMM, standard_gb: [8], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB HDD", "1 TB Fusion Drive", "2 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD", "2 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-r9-m290-m390, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-100-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci, storage/apple-s1x-nvme]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac17-1-5k-late-2015-c
+        label: "Quad-core Core i5 3.3 GHz or Core i7 4.0 GHz \u00b7 Radeon R9 M395 / M395X"
+        order_numbers: [MK482LL/A]
+        cpu:
+          codename: skylake
+          standard: [{ model: Core i5-6600, ghz: 3.3, cores: 4 }]
+          bto: [{ model: Core i7-6700K, ghz: 4.0, cores: 4 }]
+        memory: { type: DDR3-1867 SO-DIMM, standard_gb: [8], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB HDD", "1 TB Fusion Drive", "2 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD", "2 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-r9-m395, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-100-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci, storage/apple-s1x-nvme]
+        ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        notes: "The R9 M395X upgrade uses the same Tonga chip."

@@ -1,0 +1,34 @@
+identifier: iMac4,2
+line: imac
+efi: 32
+hard_blocker: "32-bit-only CPU (Intel Core Duo \"Yonah\"). Omarchy and Arch Linux support x86_64 only."
+board_ids: [Mac-F4218EC8]
+research_notes: |
+  17-inch education/low-cost model with Intel GMA 950. 32-bit Yonah CPU. No Linux hardware probes exist; components are assumed from the near-identical iMac5,2.
+sources:
+  - https://everymac.com/systems/apple/imac/specs/imac_cd_1.83_17_ig.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM42.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac4/iMac4%2C2
+releases:
+  - id: "17-mid-2006"
+    name: "iMac (17-inch, Mid 2006)"
+    announced: 2006-07-05
+    discontinued: 2006-09-06
+    model_numbers: [A1195]
+    emc: ["2110"]
+    configs:
+      - id: imac4-2-17-mid-2006-a
+        label: "Core Duo 1.83 GHz \u00b7 GMA 950"
+        order_numbers: [MA406LL/A]
+        cpu:
+          codename: yonah
+          standard: [{ model: Core Duo T2400, ghz: 1.83, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5], max_gb: 2 }
+        storage: { interface: sata, standard: ["80 GB HDD"] }
+        display: { inches: 17, resolution: 1440x900, panel: "LCD" }
+        components: [gpu/intel-gma-950, wifi/broadcom-bcm4311, bluetooth/apple-05ac-8206, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 2, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        uncertain:
+          - field: components
+            note: "No hardware probes exist for iMac4,2; components copied from iMac5,2."

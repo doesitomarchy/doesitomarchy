@@ -1,0 +1,54 @@
+identifier: iMac5,1
+line: imac
+efi: 32
+board_ids: [Mac-F4228EC8]
+research_notes: |
+  64-bit Core 2 Duo CPU but 32-bit EFI firmware: the stock installer needs a 32-bit EFI boot shim.
+sources:
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.0-17-inch-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.16-17-inch-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.16-20-inch-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.33-20-inch-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM51.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
+releases:
+  - id: "17-late-2006"
+    name: "iMac (17-inch, Late 2006)"
+    announced: 2006-09-06
+    discontinued: 2007-08-07
+    model_numbers: [A1208]
+    emc: ["2114"]
+    configs:
+      - id: imac5-1-17-late-2006-a
+        label: "Core 2 Duo 2.0 GHz \u00b7 Radeon X1600"
+        order_numbers: [MA590LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7200, ghz: 2.0, cores: 2 }]
+          bto: [{ model: Core 2 Duo T7400, ghz: 2.16, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1], max_gb: 3 }
+        storage: { interface: sata, standard: ["160 GB HDD"] }
+        display: { inches: 17, resolution: 1440x900, panel: "LCD" }
+        components: [gpu/ati-radeon-x1600, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8206, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 2, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+  - id: "20-late-2006"
+    name: "iMac (20-inch, Late 2006)"
+    announced: 2006-09-06
+    discontinued: 2007-08-07
+    model_numbers: [A1207]
+    emc: ["2118"]
+    configs:
+      - id: imac5-1-20-late-2006-a
+        label: "Core 2 Duo 2.16 GHz \u00b7 Radeon X1600"
+        order_numbers: [MA589LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7400, ghz: 2.16, cores: 2 }]
+          bto: [{ model: Core 2 Duo T7600, ghz: 2.33, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1], max_gb: 3 }
+        storage: { interface: sata, standard: ["250 GB HDD"] }
+        display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
+        components: [gpu/ati-radeon-x1600, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8206, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 2, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

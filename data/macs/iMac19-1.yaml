@@ -1,0 +1,51 @@
+identifier: iMac19,1
+line: imac
+efi: 64
+board_ids: [Mac-AA95B1DDAB278B95]
+research_notes: |
+  Audio is a Cirrus Logic CS8409 codec; on many observed machines Linux fell back to the generic HDA parser, so audio needs attention in testing.
+  No T2 chip, but the Wi-Fi/Bluetooth is the same BCM4364 used in T2 Macs.
+sources:
+  - https://support.apple.com/en-us/111998
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.0-27-inch-aluminum-retina-5k-early-2019-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.1-27-inch-aluminum-retina-5k-early-2019-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.7-27-inch-aluminum-retina-5k-early-2019-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i9-3.6-27-inch-aluminum-retina-5k-early-2019-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM191.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C1
+releases:
+  - id: "5k-2019"
+    name: "iMac (Retina 5K, 27-inch, 2019)"
+    announced: 2019-03-19
+    discontinued: 2020-08-04
+    model_numbers: [A2115]
+    emc: ["3194"]
+    configs:
+      - id: imac19-1-5k-2019-a
+        label: "6-core Core i5 3.0/3.1/3.7 GHz or 8-core Core i9 3.6 GHz \u00b7 Radeon Pro 570X / 575X / 580X"
+        order_numbers: [MRQY2LL/A, MRR02LL/A, MRR12LL/A]
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i5-8500, ghz: 3.0, cores: 6 }, { model: Core i5-8600, ghz: 3.1, cores: 6 }, { model: Core i5-9600K, ghz: 3.7, cores: 6 }]
+          bto: [{ model: Core i9-9900K, ghz: 3.6, cores: 8 }]
+        memory: { type: DDR4-2666 SO-DIMM, standard_gb: [8], max_gb: 64 }
+        storage: { interface: sata, standard: ["1 TB Fusion Drive", "2 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD", "2 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-pro-570-580, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/cirrus-cs8409, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-titan-ridge, storage/intel-cannon-lake-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/samsung-nvme-apple]
+        ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac19-1-5k-2019-vega48
+        label: "6- or 8-core \u00b7 Radeon Pro Vega 48 (build to order)"
+        bto_only: true
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i5-9600K, ghz: 3.7, cores: 6 }, { model: Core i9-9900K, ghz: 3.6, cores: 8 }]
+        memory: { type: DDR4-2666 SO-DIMM, standard_gb: [8], max_gb: 64 }
+        storage: { interface: sata, standard: ["2 TB Fusion Drive"], bto: ["3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD", "2 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-pro-vega-48, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/cirrus-cs8409, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-titan-ridge, storage/intel-cannon-lake-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/samsung-nvme-apple]
+        ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

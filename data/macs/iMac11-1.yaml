@@ -1,0 +1,32 @@
+identifier: iMac11,1
+line: imac
+efi: 64
+board_ids: [Mac-F2268DAE]
+research_notes: |
+  27-inch Late 2009 with quad-core Core i5/i7 (Lynnfield). Apple's identification page omits this identifier.
+sources:
+  - https://support.apple.com/en-us/112564
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-2.66-27-inch-aluminum-late-2009-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-2.8-27-inch-aluminum-late-2009-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM111.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C1
+releases:
+  - id: "27-late-2009"
+    name: "iMac (27-inch, Late 2009)"
+    announced: 2009-10-20
+    discontinued: 2010-07-27
+    model_numbers: [A1312]
+    emc: ["2374"]
+    configs:
+      - id: imac11-1-27-late-2009-a
+        label: "Quad-core Core i5 2.66 GHz or Core i7 2.8 GHz \u00b7 Radeon HD 4850"
+        order_numbers: [MB953LL/A, MC507LL/A]
+        cpu:
+          codename: lynnfield
+          standard: [{ model: Core i5-750, ghz: 2.66, cores: 4 }, { model: Core i7-860, ghz: 2.8, cores: 4 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/ati-radeon-hd-4850, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/broadcom-bcm5764m, firewire/ti-xio2213, storage/intel-5-series-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]

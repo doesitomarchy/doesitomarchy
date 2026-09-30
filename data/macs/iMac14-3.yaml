@@ -1,0 +1,35 @@
+identifier: iMac14,3
+line: imac
+efi: 64
+board_ids: [Mac-77EB7D7DAF985301]
+research_notes: |
+  Audio is a Cirrus Logic CS4206 codec on every observed machine. BCM4360 Wi-Fi has no in-kernel 802.11ac driver; the proprietary wl driver is the usual route.
+  Apple's identification page omits this identifier (it groups ME087 under iMac14,1).
+sources:
+  - https://support.apple.com/en-us/111967
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-2.9-21-inch-aluminum-late-2013-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-3.1-21-inch-aluminum-late-2013-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM143.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C3
+releases:
+  - id: "21-late-2013"
+    name: "iMac (21.5-inch, Late 2013)"
+    announced: 2013-09-24
+    discontinued: 2015-10-13
+    model_numbers: [A1418]
+    emc: ["2742"]
+    configs:
+      - id: imac14-3-21-late-2013-a
+        label: "Quad-core Core i5 2.9 GHz or Core i7 3.1 GHz \u00b7 GeForce GT 750M"
+        order_numbers: [ME087LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4570S, ghz: 2.9, cores: 4 }]
+          bto: [{ model: Core i7-4770S, ghz: 3.1, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 16 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["1 TB Fusion Drive", "256 GB SSD", "512 GB SSD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-gt-750m, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

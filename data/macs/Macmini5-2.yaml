@@ -28,6 +28,6 @@ releases:
           bto: [{ model: Core i7-2620M, ghz: 2.7, cores: 2 }]
         memory: { type: DDR3-1333 SO-DIMM, standard_gb: [4], max_gb: 8, notes: "Accepts 16 GB." }
         storage: { interface: sata, standard: [500 GB HDD], bto: [750 GB HDD, 256 GB SSD, 256 GB SSD + 750 GB HDD] }
-        components: [gpu/amd-radeon-hd-6630m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-8281, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, card-reader/broadcom-bcm57765-sd, firewire/ti-xio2213, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, ir/apple-05ac-8242]
+        components: [gpu/amd-radeon-hd-6630m-6750m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-8281, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, card-reader/broadcom-bcm57765-sd, firewire/ti-xio2213, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, ir/apple-05ac-8242]
         ports: { thunderbolt-1: 1, usb-a-2: 4, firewire-800: 1, hdmi: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
         features: [builtin-speaker, headset-mic, ir-receiver, fan]

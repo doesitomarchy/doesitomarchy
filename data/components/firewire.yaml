@@ -5,6 +5,7 @@
   driver: firewire_ohci
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
 
 - id: firewire/lsi-fw643
   name: LSI FW643 FireWire 800 controller
@@ -14,6 +15,8 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
 
 - id: firewire/ti-xio2213
   name: Texas Instruments XIO2213 FireWire 800 controller
@@ -23,3 +26,12 @@
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
+
+- id: firewire/ti-tsb82aa2
+  name: Texas Instruments TSB82AA2 FireWire 400/800 controller
+  vendor: Texas Instruments
+  ids: [pci:104c:8025]
+  driver: firewire_ohci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1

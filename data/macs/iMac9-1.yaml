@@ -1,0 +1,115 @@
+identifier: iMac9,1
+line: imac
+efi: 64
+board_ids: [Mac-F2218FA9]
+research_notes: |
+  Early 2009 (20- and 24-inch) and the Mid 2009 20-inch education model share this identifier.
+  Audio is a Realtek ALC889A codec on every observed machine.
+sources:
+  - https://support.apple.com/en-us/112427
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.0-20-inch-aluminum-early-2009-education-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.26-20-inch-aluminum-mid-2009-education-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.66-20-inch-aluminum-early-2009-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.66-24-inch-aluminum-early-2009-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.93-24-inch-aluminum-early-2009-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.06-24-inch-aluminum-early-2009-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM91.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac9/iMac9%2C1
+releases:
+  - id: "20-early-2009"
+    name: "iMac (20-inch, Early 2009)"
+    announced: 2009-03-03
+    discontinued: 2009-10-20
+    model_numbers: [A1224]
+    emc: ["2266"]
+    configs:
+      - id: imac9-1-20-early-2009-a
+        label: "Core 2 Duo 2.66 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MB417LL/A, MC019LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8135, ghz: 2.66, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2], max_gb: 8 }
+        storage: { interface: sata, standard: ["320 GB HDD"] }
+        display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        uncertain:
+          - field: order_numbers
+            note: "Apple's identification page lists MC019LL/A for this model; no spec source says which GPU it shipped with."
+  - id: "24-early-2009"
+    name: "iMac (24-inch, Early 2009)"
+    announced: 2009-03-03
+    discontinued: 2009-10-20
+    model_numbers: [A1225]
+    emc: ["2267"]
+    configs:
+      - id: imac9-1-24-early-2009-a
+        label: "Core 2 Duo 2.66 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MB418LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8135, ghz: 2.66, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["640 GB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: imac9-1-24-early-2009-b
+        label: "Core 2 Duo 2.93 GHz \u00b7 GeForce GT 120"
+        order_numbers: [MB419LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8335, ghz: 2.93, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["640 GB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/nvidia-geforce-gt-120, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: imac9-1-24-early-2009-c
+        label: "Core 2 Duo 3.06 GHz \u00b7 GeForce GT 130"
+        order_numbers: [MB420LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8435, ghz: 3.06, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["1 TB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/nvidia-geforce-gt-130, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: imac9-1-24-early-2009-4850
+        label: "Core 2 Duo \u00b7 Radeon HD 4850 (build to order)"
+        bto_only: true
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8435, ghz: 3.06, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["1 TB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/ati-radeon-hd-4850, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+  - id: "20-mid-2009"
+    name: "iMac (20-inch, Mid 2009)"
+    announced: 2009-04-07
+    discontinued: 2010-03-04
+    model_numbers: [A1224]
+    emc: ["2266", "2316"]
+    configs:
+      - id: imac9-1-20-mid-2009-a
+        label: "Core 2 Duo 2.0 or 2.26 GHz \u00b7 GeForce 9400M (education)"
+        order_numbers: [MC015LL/A, MC015LL/B]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P7350, ghz: 2.0, cores: 2 }, { model: Core 2 Duo P7550, ghz: 2.26, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [1, 2], max_gb: 8 }
+        storage: { interface: sata, standard: ["160 GB HDD"] }
+        display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

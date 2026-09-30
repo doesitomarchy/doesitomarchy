@@ -1,0 +1,33 @@
+identifier: iMac14,4
+line: imac
+efi: 64
+board_ids: [Mac-81E3E92DD6088272]
+research_notes: |
+  Low-cost 21.5-inch with a MacBook Air-class dual-core CPU and soldered memory. Audio is a Cirrus Logic CS4208 codec.
+sources:
+  - https://support.apple.com/en-us/112031
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-1.4-21-inch-aluminum-mid-2014-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM144.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C4
+releases:
+  - id: "21-mid-2014"
+    name: "iMac (21.5-inch, Mid 2014)"
+    announced: 2014-06-18
+    discontinued: 2015-10-13
+    model_numbers: [A1418]
+    emc: ["2805"]
+    configs:
+      - id: imac14-4-21-mid-2014-a
+        label: "Dual-core Core i5 1.4 GHz \u00b7 HD Graphics 5000"
+        order_numbers: [MF883LL/A, MG022LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4260U, ghz: 1.4, cores: 2 }]
+        memory: { type: LPDDR3-1600, standard_gb: [8], max_gb: 8, soldered: true }
+        storage: { interface: sata, standard: ["500 GB HDD"], bto: ["1 TB HDD", "1 TB Fusion Drive", "256 GB SSD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/intel-hd-5000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4208, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-redwood-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

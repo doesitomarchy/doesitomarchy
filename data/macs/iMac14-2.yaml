@@ -1,0 +1,61 @@
+identifier: iMac14,2
+line: imac
+efi: 64
+board_ids: [Mac-27ADBB7B4CEE8E61]
+research_notes: |
+  Audio is a Cirrus Logic CS4206 codec on every observed machine. BCM4360 Wi-Fi has no in-kernel 802.11ac driver; the proprietary wl driver is the usual route.
+sources:
+  - https://support.apple.com/en-us/111970
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.2-27-inch-aluminum-late-2013-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.4-27-inch-aluminum-late-2013-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-i7-3.5-27-inch-aluminum-late-2013-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM142.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac14/iMac14%2C2
+releases:
+  - id: "27-late-2013"
+    name: "iMac (27-inch, Late 2013)"
+    announced: 2013-09-24
+    discontinued: 2015-10-13
+    model_numbers: [A1419]
+    emc: ["2639"]
+    configs:
+      - id: imac14-2-27-late-2013-a
+        label: "Quad-core Core i5 3.2 GHz \u00b7 GeForce GT 755M"
+        order_numbers: [ME088LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4570, ghz: 3.2, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["3 TB HDD", "1 TB Fusion Drive", "3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-gt-755m, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac14-2-27-late-2013-b
+        label: "Quad-core Core i5 3.4 GHz or Core i7 3.5 GHz \u00b7 GeForce GTX 775M"
+        order_numbers: [ME089LL/A, MF125LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4670, ghz: 3.4, cores: 4 }, { model: Core i7-4771, ghz: 3.5, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["3 TB HDD", "1 TB Fusion Drive", "3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-gtx-775m, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imac14-2-27-late-2013-780m
+        label: "Quad-core \u00b7 GeForce GTX 780M (build to order)"
+        bto_only: true
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4670, ghz: 3.4, cores: 4 }, { model: Core i7-4771, ghz: 3.5, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [8], max_gb: 32 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["3 TB HDD", "1 TB Fusion Drive", "3 TB Fusion Drive", "256 GB SSD", "512 GB SSD", "1 TB SSD"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-gtx-780m, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-8-series-sata, camera/apple-facetime-hd-05ac-8511]
+        bto_components: [storage/apple-pcie-ssd-ahci]
+        ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

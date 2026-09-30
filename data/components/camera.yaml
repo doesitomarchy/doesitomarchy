@@ -43,3 +43,47 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+
+- id: camera/apple-isight-05ac-8300
+  name: Apple iSight (USB 05ac:8300)
+  vendor: Apple
+  ids: [usb:05ac:8300]
+  driver: 
+  notes: The kernel reports it as "no firmware loaded"; it needs the isight-firmware loader (firmware extracted from macOS) before uvcvideo can use it.
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac6/iMac6%2C1
+
+- id: camera/apple-isight-05ac-8502
+  name: Apple iSight (USB 05ac:8502)
+  vendor: Apple
+  ids: [usb:05ac:8502]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac11/iMac11%2C3
+
+- id: camera/apple-facetime-hd-05ac-850b
+  name: Apple FaceTime HD camera (USB 05ac:850b)
+  vendor: Apple
+  ids: [usb:05ac:850b]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C2
+
+- id: camera/apple-facetime-hd-05ac-8511
+  name: Apple FaceTime HD camera (USB 05ac:8511)
+  vendor: Apple
+  ids: [usb:05ac:8511]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac13/iMac13%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac19/iMac19%2C2
+
+- id: camera/apple-t2-facetime-hd-1080p
+  name: Apple 1080p FaceTime HD camera via T2
+  vendor: Apple
+  ids: []
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
+  uncertain:
+    - field: ids
+      note: No probe lists the 2020 iMac camera's USB ID.

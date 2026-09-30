@@ -1,0 +1,73 @@
+identifier: iMac10,1
+line: imac
+efi: 64
+board_ids: []
+research_notes: |
+  Core 2 Duo models of the first 16:9 iMacs (21.5- and 27-inch). The 27-inch Core i5/i7 models are iMac11,1.
+sources:
+  - https://support.apple.com/en-us/112565
+  - https://support.apple.com/en-us/112564
+  - https://support.apple.com/en-us/108054
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.06-21-inch-aluminum-late-2009-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.06-27-inch-aluminum-late-2009-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.33-21-inch-aluminum-late-2009-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.33-27-inch-aluminum-late-2009-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM101.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
+uncertain:
+  - field: board_ids
+    note: "OpenCore lists no board ID for iMac10,1; to be filled from a real machine."
+releases:
+  - id: "21-late-2009"
+    name: "iMac (21.5-inch, Late 2009)"
+    announced: 2009-10-20
+    discontinued: 2010-07-27
+    model_numbers: [A1311]
+    emc: ["2308"]
+    configs:
+      - id: imac10-1-21-late-2009-a
+        label: "Core 2 Duo 3.06 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MB950LL/A]
+        cpu:
+          codename: wolfdale
+          standard: [{ model: Core 2 Duo E7600, ghz: 3.06, cores: 2 }]
+          bto: [{ model: Core 2 Duo E8600, ghz: 3.33, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: ["500 GB HDD"], bto: ["1 TB HDD", "2 TB HDD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/nvidia-geforce-9400m, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/nvidia-mcp79, firewire/ti-xio2213, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
+      - id: imac10-1-21-late-2009-b
+        label: "Core 2 Duo 3.06 GHz \u00b7 Radeon HD 4670"
+        order_numbers: [MC413LL/A]
+        cpu:
+          codename: wolfdale
+          standard: [{ model: Core 2 Duo E7600, ghz: 3.06, cores: 2 }]
+          bto: [{ model: Core 2 Duo E8600, ghz: 3.33, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD"] }
+        display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
+        components: [gpu/ati-radeon-hd-4670, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/nvidia-mcp79, firewire/ti-xio2213, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
+  - id: "27-late-2009"
+    name: "iMac (27-inch, Late 2009)"
+    announced: 2009-10-20
+    discontinued: 2010-07-27
+    model_numbers: [A1312]
+    emc: ["2309"]
+    configs:
+      - id: imac10-1-27-late-2009-a
+        label: "Core 2 Duo 3.06 GHz \u00b7 Radeon HD 4670"
+        order_numbers: [MB952LL/A]
+        cpu:
+          codename: wolfdale
+          standard: [{ model: Core 2 Duo E7600, ghz: 3.06, cores: 2 }]
+          bto: [{ model: Core 2 Duo E8600, ghz: 3.33, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD"] }
+        display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
+        components: [gpu/ati-radeon-hd-4670, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/nvidia-mcp79, firewire/ti-xio2213, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]

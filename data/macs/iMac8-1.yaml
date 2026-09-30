@@ -1,0 +1,76 @@
+identifier: iMac8,1
+line: imac
+efi: 64
+board_ids: [Mac-F227BEC8]
+research_notes: |
+  Penryn refresh of the aluminum iMac.
+sources:
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.4-20-inch-aluminum-early-2008-penryn-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.66-20-inch-aluminum-early-2008-penryn-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-2.8-24-inch-aluminum-early-2008-penryn-specs.html
+  - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.06-24-inch-aluminum-early-2008-penryn-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM81.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
+releases:
+  - id: "20-early-2008"
+    name: "iMac (20-inch, Early 2008)"
+    announced: 2008-04-28
+    discontinued: 2009-03-03
+    model_numbers: [A1224]
+    emc: ["2210"]
+    configs:
+      - id: imac8-1-20-early-2008-a
+        label: "Core 2 Duo 2.4 GHz \u00b7 Radeon HD 2400 XT"
+        order_numbers: [MB323LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8135, ghz: 2.4, cores: 2 }]
+        memory: { type: DDR2-800 SO-DIMM, standard_gb: [1], max_gb: 4 }
+        storage: { interface: sata, standard: ["250 GB HDD"] }
+        display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
+        components: [gpu/ati-radeon-hd-2400-xt, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: imac8-1-20-early-2008-b
+        label: "Core 2 Duo 2.66 GHz \u00b7 Radeon HD 2600 Pro"
+        order_numbers: [MB324LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8335, ghz: 2.66, cores: 2 }]
+        memory: { type: DDR2-800 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["320 GB HDD"] }
+        display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
+        components: [gpu/ati-radeon-hd-2600-pro, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+  - id: "24-early-2008"
+    name: "iMac (24-inch, Early 2008)"
+    announced: 2008-04-28
+    discontinued: 2009-03-03
+    model_numbers: [A1225]
+    emc: ["2211"]
+    configs:
+      - id: imac8-1-24-early-2008-a
+        label: "Core 2 Duo 2.8 GHz \u00b7 Radeon HD 2600 Pro"
+        order_numbers: [MB325LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8235, ghz: 2.8, cores: 2 }]
+        memory: { type: DDR2-800 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["320 GB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/ati-radeon-hd-2600-pro, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+      - id: imac8-1-24-early-2008-b
+        label: "Core 2 Duo 3.06 GHz \u00b7 GeForce 8800 GS"
+        order_numbers: [MB398LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo E8435, ghz: 3.06, cores: 2 }]
+        memory: { type: DDR2-800 SO-DIMM, standard_gb: [2], max_gb: 4 }
+        storage: { interface: sata, standard: ["500 GB HDD"] }
+        display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
+        components: [gpu/nvidia-geforce-8800-gs, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]

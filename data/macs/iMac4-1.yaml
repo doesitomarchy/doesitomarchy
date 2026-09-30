@@ -1,0 +1,51 @@
+identifier: iMac4,1
+line: imac
+efi: 32
+hard_blocker: "32-bit-only CPU (Intel Core Duo \"Yonah\"). Omarchy and Arch Linux support x86_64 only."
+board_ids: [Mac-F42786C8]
+research_notes: |
+  First Intel iMac. Every configuration has a 32-bit Yonah CPU, so none can run Omarchy.
+sources:
+  - https://everymac.com/systems/apple/imac/specs/imac_cd_1.83_17.html
+  - https://everymac.com/systems/apple/imac/specs/imac_cd_2.0_20.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM41.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac4/iMac4%2C1
+releases:
+  - id: "17-early-2006"
+    name: "iMac (17-inch, Early 2006)"
+    announced: 2006-01-10
+    discontinued: 2006-09-06
+    model_numbers: [A1173]
+    emc: ["2104"]
+    configs:
+      - id: imac4-1-17-early-2006-a
+        label: "Core Duo 1.83 GHz \u00b7 Radeon X1600"
+        order_numbers: [MA199LL/A]
+        cpu:
+          codename: yonah
+          standard: [{ model: Core Duo T2400, ghz: 1.83, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5], max_gb: 2 }
+        storage: { interface: sata, standard: ["160 GB HDD"] }
+        display: { inches: 17, resolution: 1440x900, panel: "LCD" }
+        components: [gpu/ati-radeon-x1600, wifi/broadcom-bcm4311, bluetooth/apple-05ac-8206, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 2, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+  - id: "20-early-2006"
+    name: "iMac (20-inch, Early 2006)"
+    announced: 2006-01-10
+    discontinued: 2006-09-06
+    model_numbers: [A1174]
+    emc: ["2105"]
+    configs:
+      - id: imac4-1-20-early-2006-a
+        label: "Core Duo 2.0 GHz \u00b7 Radeon X1600"
+        order_numbers: [MA200LL/A]
+        cpu:
+          codename: yonah
+          standard: [{ model: Core Duo T2500, ghz: 2.0, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5], max_gb: 2 }
+        storage: { interface: sata, standard: ["250 GB HDD"] }
+        display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
+        components: [gpu/ati-radeon-x1600, wifi/broadcom-bcm4311, bluetooth/apple-05ac-8206, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
+        ports: { usb-a-2: 3, firewire-400: 2, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
