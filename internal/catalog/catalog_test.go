@@ -80,6 +80,26 @@ func TestRealCatalogApplicability(t *testing.T) {
 		{"macbookair9-1-2020-b",
 			[]string{"input.touch-id", "input.force-touch", "ports.usb-c", "ports.usb-c-charging", "network.bluetooth"},
 			[]string{"ports.usb-a", "ports.sd-card", "input.touch-bar", "bridge.touch-bar-camera", "graphics.discrete"}},
+		{"macbookpro2-2-15-late-2006-a",
+			[]string{"boot.installer-efi32", "ports.expresscard", "ports.firewire", "audio.optical-in", "input.ir-receiver", "input.keyboard-backlight"},
+			[]string{"boot.installer-efi64", "graphics.switching", "ports.sd-card"}},
+		{"macbookpro5-3-15-mid-2009-a",
+			[]string{"graphics.switching", "graphics.power-down", "graphics.integrated", "graphics.discrete", "ports.sd-card", "audio.line-in"},
+			[]string{"ports.expresscard", "audio.display-out"}},
+		{"macbookpro5-4-15-2-53ghz-mid-2009-a", []string{"graphics.integrated", "ports.sd-card"}, []string{"graphics.discrete", "graphics.switching"}},
+		{"macbookpro8-3-17-late-2011-a", []string{"ports.expresscard", "ports.thunderbolt", "graphics.switching", "storage.optical"}, []string{"ports.sd-card", "ports.usb-c"}},
+		{"macbookpro10-1-15-mid-2012-a",
+			[]string{"audio.display-out", "audio.optical-out", "ports.sd-card", "graphics.switching"},
+			[]string{"network.ethernet", "ports.firewire", "storage.optical", "input.ir-receiver", "audio.line-in"}},
+		{"macbookpro13-1-13-2016-2tb3-a",
+			[]string{"ports.usb-c", "ports.usb-c-charging", "input.force-touch", "camera.builtin"},
+			[]string{"input.touch-bar", "input.touch-id", "ports.usb-a", "ports.sd-card", "graphics.discrete"}},
+		{"macbookpro14-3-15-2017-a",
+			[]string{"input.touch-bar", "input.touch-id", "graphics.switching", "ports.thunderbolt"},
+			[]string{"bridge.touch-bar-camera", "audio.optical-out", "ports.sd-card"}},
+		{"macbookpro16-4-16-2019-5600m-a",
+			[]string{"input.touch-bar", "bridge.touch-bar-camera", "graphics.discrete", "graphics.switching"},
+			[]string{"ports.usb-a", "network.ethernet", "storage.optical"}},
 	}
 	for _, tt := range laptops {
 		t.Run(tt.config, func(t *testing.T) {
@@ -122,8 +142,11 @@ func TestRealCatalogApplicability(t *testing.T) {
 func TestRealCatalogHardBlocker(t *testing.T) {
 	c := loadReal(t)
 	for _, m := range c.Macs {
-		if m.Identifier == "Macmini1,1" && m.HardBlocker == "" {
-			t.Error("Macmini1,1 (Yonah) must have a hard_blocker")
+		switch m.Identifier {
+		case "Macmini1,1", "MacBook1,1", "MacBookPro1,1", "MacBookPro1,2":
+			if m.HardBlocker == "" {
+				t.Errorf("%s (Yonah) must have a hard_blocker", m.Identifier)
+			}
 		}
 	}
 }
@@ -214,6 +237,12 @@ func writeFixture(t *testing.T, edits map[string][2]string) string {
 	return dir
 }
 
+func TestEMCRevisionSuffix(t *testing.T) {
+	if _, err := Load(writeFixture(t, map[string][2]string{"macs/Macmini9-9.yaml": {`emc: ["1234"]`, `emc: ["1234-1"]`}})); err != nil {
+		t.Fatalf("an EMC number with a -N revision should validate:\n%v", err)
+	}
+}
+
 func TestFixtureIsValid(t *testing.T) {
 	c, err := Load(writeFixture(t, nil))
 	if err != nil {
@@ -252,6 +281,7 @@ func TestValidationRules(t *testing.T) {
 		{"gpu without role", "components/gpu.yaml", "role: integrated", "role: ''", "gpu role"},
 		{"bad hardware id", "components/gpu.yaml", "pci:8086:0001", "8086:0001", "must look like pci:"},
 		{"duplicate key", mac, "efi: 64", "efi: 64\nefi: 32", "already defined"},
+		{"bad emc", mac, `emc: ["1234"]`, `emc: ["1234-12"]`, "must be four digits"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

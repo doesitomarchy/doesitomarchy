@@ -1,0 +1,38 @@
+identifier: MacBookPro14,3
+line: macbook-pro
+efi: 64
+security_chip: t1
+board_ids: [Mac-551B86E5744E2388]
+research_notes: |
+  15-inch with Touch Bar and Touch ID. Two GPUs: Intel HD Graphics 630 and a discrete AMD Radeon Pro 555 or 560 (Polaris 21, 1002:67ef, amdgpu), with automatic switching in macOS. BCM43602 Wi-Fi uses brcmfmac.
+  Apple T1 chip: an ARM co-processor that runs the Touch Bar, the Touch ID secure enclave and the FaceTime HD camera. It appears to the host as a USB device (iBridge, 05ac:8600). It does not sit in the path to the SSD or audio and has no secure-boot policy.
+  Thunderbolt 3 (USB-C) ports only, used for charging, USB, DisplayPort and Thunderbolt; plus one headphone jack. Keyboard, trackpad and backlight connect over SPI (in-kernel applespi driver). Bluetooth is on UART (hci_uart).
+  The NVMe SSD is soldered. Audio is a Cirrus Logic CS8409 codec; on many observed boots the kernel binds only the generic HDA codec driver to it. Thunderbolt 3 controller is Alpine Ridge.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.8-15-mid-2017-retina-display-touch-bar-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.9-15-mid-2017-retina-display-touch-bar-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-3.1-15-mid-2017-retina-display-touch-bar-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP143.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro14/MacBookPro14%2C3
+releases:
+  - id: "15-2017"
+    name: "MacBook Pro (15-inch, 2017)"
+    announced: 2017-06-05
+    discontinued: 2018-07-12
+    model_numbers: [A1707]
+    emc: ["3162"]
+    configs:
+      - id: macbookpro14-3-15-2017-a
+        label: "Core i7 2.8 or 2.9 GHz \u00b7 HD 630 + Radeon Pro 555/560"
+        order_numbers: [MPTR2LL/A, MPTT2LL/A, MPTU2LL/A, MPTV2LL/A, MPTW2LL/A, MPTX2LL/A]
+        cpu:
+          codename: kaby-lake
+          standard: [{ model: Core i7-7700HQ, ghz: 2.8, cores: 4 }, { model: Core i7-7820HQ, ghz: 2.9, cores: 4 }]
+          bto: [{ model: Core i7-7920HQ, ghz: 3.1, cores: 4 }]
+        memory: { type: LPDDR3-2133, standard_gb: [16], max_gb: 16, soldered: true }
+        storage: { interface: nvme, standard: ["256 GB SSD", "512 GB SSD"] }
+        display: { inches: 15.4, resolution: 2880x1800, panel: "Retina LED IPS, P3 wide color" }
+        components: [gpu/intel-hd-630-mobile, gpu/amd-radeon-pro-555-560, wifi/broadcom-bcm43602, bluetooth/broadcom-bcm43602-uart, audio/cirrus-cs8409, camera/apple-t1-facetime-hd, thunderbolt/intel-alpine-ridge, storage/samsung-nvme-apple, input/apple-spi-keyboard, bridge/apple-t1]
+        ports: { thunderbolt-3: 4, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, gpu-switching]

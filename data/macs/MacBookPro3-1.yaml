@@ -1,0 +1,61 @@
+identifier: MacBookPro3,1
+line: macbook-pro
+efi: 64
+board_ids: [Mac-F4238BC8]
+research_notes: |
+  GeForce 8600M GT (G84, nouveau).
+  The 15-inch and 17-inch models share this identifier; each size is its own release.
+  Audio is a Realtek ALC889A codec on every observed machine.
+  Board ID Mac-F42388C8 (with genuine MBP31 firmware) appears on 2 observed machines. That is below the 3-boot evidence bar, so it is not listed; it may be the 17-inch board.
+  Apple's identification page no longer lists 2007 MacBook Pros; release names follow the size and season convention used for later models.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro3/MacBookPro3%2C1
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.2-15-santa-rosa-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.4-15-santa-rosa-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.4-17-santa-rosa-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.6-15-santa-rosa-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.6-17-santa-rosa-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP31.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro3/MacBookPro3%2C1
+releases:
+  - id: "15-mid-2007"
+    name: "MacBook Pro (15-inch, Mid 2007)"
+    announced: 2007-06-05
+    discontinued: 2008-02-26
+    model_numbers: [A1226]
+    emc: ["2136"]
+    configs:
+      - id: macbookpro3-1-15-mid-2007-a
+        label: "Core 2 Duo 2.2 or 2.4 GHz \u00b7 GeForce 8600M GT"
+        order_numbers: [MA895LL/A, MA896LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7500, ghz: 2.2, cores: 2 }, { model: Core 2 Duo T7700, ghz: 2.4, cores: 2 }]
+          bto: [{ model: Core 2 Duo T7800, ghz: 2.6, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [2], max_gb: 4, notes: "Apple's maximum is 4 GB; EveryMac reports 6 GB works." }
+        storage: { interface: sata, standard: ["120 GB HDD", "160 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte" }
+        components: [gpu/nvidia-geforce-8600m-gt, wifi/atheros-ar5418, bluetooth/apple-05ac-8205, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/ti-tsb82aa2, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, input/apple-mbp-2006b]
+        ports: { usb-a-2: 2, firewire-400: 1, firewire-800: 1, dvi: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive]
+  - id: "17-mid-2007"
+    name: "MacBook Pro (17-inch, Mid 2007)"
+    announced: 2007-06-05
+    discontinued: 2008-02-26
+    model_numbers: [A1229]
+    emc: ["2137"]
+    configs:
+      - id: macbookpro3-1-17-mid-2007-a
+        label: "Core 2 Duo 2.4 GHz \u00b7 GeForce 8600M GT"
+        order_numbers: [MA897LL/A]
+        cpu:
+          codename: merom
+          standard: [{ model: Core 2 Duo T7700, ghz: 2.4, cores: 2 }]
+          bto: [{ model: Core 2 Duo T7800, ghz: 2.6, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [2], max_gb: 4, notes: "Apple's maximum is 4 GB; EveryMac reports 6 GB works." }
+        storage: { interface: sata, standard: ["160 GB HDD"] }
+        display: { inches: 17, resolution: 1680x1050, panel: "LCD glossy or matte; 1920x1200 option" }
+        components: [gpu/nvidia-geforce-8600m-gt, wifi/atheros-ar5418, bluetooth/apple-05ac-8205, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/ti-tsb82aa2, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, input/apple-mbp-2006b]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, dvi: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive]

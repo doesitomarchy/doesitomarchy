@@ -1,0 +1,56 @@
+identifier: MacBookPro5,2
+line: macbook-pro
+efi: 64
+board_ids: [Mac-F2268EC8]
+research_notes: |
+  17-inch unibody with a built-in (non-removable) battery. Early 2009 and Mid 2009 share this identifier and all components.
+  Two GPUs: GeForce 9400M chipset graphics and a discrete GeForce 9600M GT. Audio is a Realtek ALC889A codec on every observed machine.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.66-aluminum-17-early-2009-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.8-aluminum-17-mid-2009-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.93-aluminum-17-early-2009-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-3.06-aluminum-17-mid-2009-unibody-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP52.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C2
+releases:
+  - id: "17-early-2009"
+    name: "MacBook Pro (17-inch, Early 2009)"
+    announced: 2009-01-06
+    discontinued: 2009-06-08
+    model_numbers: [A1297]
+    emc: ["2272"]
+    configs:
+      - id: macbookpro5-2-17-early-2009-a
+        label: "Core 2 Duo 2.66 GHz \u00b7 GeForce 9400M + 9600M GT"
+        order_numbers: [MB604LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo T9550, ghz: 2.66, cores: 2 }]
+          bto: [{ model: Core 2 Duo T9800, ghz: 2.93, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["320 GB HDD"] }
+        display: { inches: 17, resolution: 1920x1200, panel: "LED glossy or matte" }
+        components: [gpu/nvidia-geforce-9400m, gpu/nvidia-geforce-9600m-gt, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8217, firewire/lsi-fw643, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody, audio/realtek-alc889a]
+        ports: { usb-a-2: 3, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+  - id: "17-mid-2009"
+    name: "MacBook Pro (17-inch, Mid 2009)"
+    announced: 2009-06-08
+    discontinued: 2010-04-13
+    model_numbers: [A1297]
+    emc: ["2329"]
+    configs:
+      - id: macbookpro5-2-17-mid-2009-a
+        label: "Core 2 Duo 2.8 GHz \u00b7 GeForce 9400M + 9600M GT"
+        order_numbers: [MC226LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo T9600, ghz: 2.8, cores: 2 }]
+          bto: [{ model: Core 2 Duo T9900, ghz: 3.06, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8 }
+        storage: { interface: sata, standard: ["500 GB HDD"] }
+        display: { inches: 17, resolution: 1920x1200, panel: "LED glossy or matte" }
+        components: [gpu/nvidia-geforce-9400m, gpu/nvidia-geforce-9600m-gt, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8217, firewire/lsi-fw643, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody, audio/realtek-alc889a]
+        ports: { usb-a-2: 3, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]

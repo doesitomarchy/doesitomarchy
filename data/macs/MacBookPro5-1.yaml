@@ -1,0 +1,40 @@
+identifier: MacBookPro5,1
+line: macbook-pro
+efi: 64
+board_ids: [Mac-F42D86C8, Mac-F42D86A9]
+research_notes: |
+  First aluminum unibody MacBook Pro: glass Multi-Touch trackpad (bcm5974), Mini DisplayPort, FireWire 800 only.
+  Two GPUs: GeForce 9400M chipset graphics and a discrete GeForce 9600M GT. macOS switches between them only on logout.
+  Audio is a Realtek ALC889A codec on every observed machine. Two board IDs are seen on real machines (Mac-F42D86A9 on 6 machines, 14 boots); OpenCore lists only Mac-F42D86C8.
+  MC026LL/A (2.66 GHz, March 2009) is a speed bump that Apple files under the Late 2008 model.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro5/MacBookPro5%2C1
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.4-aluminum-15-late-2008-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.53-aluminum-15-late-2008-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.66-aluminum-15-early-2009-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.8-aluminum-15-late-2008-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.93-aluminum-15-early-2009-unibody-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP51.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C1
+releases:
+  - id: "15-late-2008"
+    name: "MacBook Pro (15-inch, Late 2008)"
+    announced: 2008-10-14
+    discontinued: 2009-06-08
+    model_numbers: [A1286]
+    emc: ["2255"]
+    configs:
+      - id: macbookpro5-1-15-late-2008-a
+        label: "Core 2 Duo 2.4\u20132.66 GHz \u00b7 GeForce 9400M + 9600M GT"
+        order_numbers: [MB470LL/A, MB471LL/A, MC026LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8600, ghz: 2.4, cores: 2 }, { model: Core 2 Duo T9400, ghz: 2.53, cores: 2 }, { model: Core 2 Duo T9550, ghz: 2.66, cores: 2 }]
+          bto: [{ model: Core 2 Duo T9600, ghz: 2.8, cores: 2 }, { model: Core 2 Duo T9800, ghz: 2.93, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2, 4], max_gb: 4, notes: "EveryMac reports 8 GB works." }
+        storage: { interface: sata, standard: ["250 GB HDD", "320 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy" }
+        components: [gpu/nvidia-geforce-9400m, gpu/nvidia-geforce-9600m-gt, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8213, firewire/lsi-fw643, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody, audio/realtek-alc889a]
+        ports: { usb-a-2: 2, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]

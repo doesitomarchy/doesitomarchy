@@ -1,0 +1,60 @@
+identifier: MacBookPro15,3
+line: macbook-pro
+efi: 64
+security_chip: t2
+board_ids: [Mac-1E7E29AD0135F9BC]
+research_notes: |
+  Apple T2 chip. The SSD controller, audio, FaceTime camera, ambient light sensor, Touch Bar, keyboard and trackpad are reached through the T2 bridge (apple-bce binds on real Linux machines).
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
+  Thunderbolt 3 (USB-C) ports only, plus a headphone jack. Touch Bar and Touch ID on every model.
+  Build-to-order 15-inch with a discrete AMD Radeon Pro Vega 16 or Vega 20 (Vega 12, 1002:69af, amdgpu) alongside Intel UHD Graphics 630. Apple files it under the same 2018/2019 15-inch releases as MacBookPro15,1.
+  OpenCore also lists the Radeon Pro 555X/560X for this identifier; every observed machine (4) has the Vega GPU, as EveryMac lists.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.6-15-mid-2018-true-tone-display-touch-bar-vega-16-vega-20-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i9-2.3-eight-core-15-mid-2019-touch-bar-vega-16-vega-20-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i9-2.4-eight-core-15-mid-2019-touch-bar-vega-16-vega-20-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i9-2.9-15-mid-2018-true-tone-display-touch-bar-vega-16-vega-20-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP153.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C3
+releases:
+  - id: "15-2018-vega"
+    name: "MacBook Pro (15-inch, 2018) with Radeon Pro Vega"
+    announced: 2018-11-14
+    discontinued: 2019-05-21
+    model_numbers: [A1990]
+    emc: ["3215"]
+    configs:
+      - id: macbookpro15-3-15-2018-vega-a
+        label: "Core i7 2.6 GHz or Core i9 2.9 GHz \u00b7 UHD 630 + Radeon Pro Vega 16/20"
+        bto_only: true
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i7-8850H, ghz: 2.6, cores: 6 }]
+          bto: [{ model: Core i9-8950HK, ghz: 2.9, cores: 6 }]
+        memory: { type: DDR4-2400, standard_gb: [16], max_gb: 32, soldered: true }
+        storage: { interface: nvme, standard: ["512 GB SSD"] }
+        display: { inches: 15.4, resolution: 2880x1800, panel: "Retina LED IPS, P3, True Tone" }
+        components: [gpu/intel-uhd-630, gpu/amd-radeon-pro-vega-16-20, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-2018-15]
+        ports: { thunderbolt-3: 4, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, gpu-switching]
+  - id: "15-2019-vega"
+    name: "MacBook Pro (15-inch, 2019) with Radeon Pro Vega"
+    announced: 2019-05-21
+    discontinued: 2019-11-13
+    model_numbers: [A1990]
+    emc: ["3359"]
+    configs:
+      - id: macbookpro15-3-15-2019-vega-a
+        label: "8-core Core i9 2.3 or 2.4 GHz \u00b7 UHD 630 + Radeon Pro Vega 16/20"
+        bto_only: true
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i9-9880H, ghz: 2.3, cores: 8 }]
+          bto: [{ model: Core i9-9980HK, ghz: 2.4, cores: 8 }]
+        memory: { type: DDR4-2400, standard_gb: [16], max_gb: 32, soldered: true }
+        storage: { interface: nvme, standard: ["512 GB SSD"] }
+        display: { inches: 15.4, resolution: 2880x1800, panel: "Retina LED IPS, P3, True Tone" }
+        components: [gpu/intel-uhd-630, gpu/amd-radeon-pro-vega-16-20, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-2018-15]
+        ports: { thunderbolt-3: 4, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, gpu-switching]

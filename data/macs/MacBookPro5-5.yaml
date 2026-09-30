@@ -1,0 +1,33 @@
+identifier: MacBookPro5,5
+line: macbook-pro
+efi: 64
+board_ids: [Mac-F2268AC8]
+research_notes: |
+  First 13-inch MacBook Pro (the former aluminum MacBook). One combined audio jack: optical/analog out, switchable to analog line in.
+  SD card slot (internal USB reader). Audio is a Cirrus Logic CS4206 codec on every observed machine.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.26-aluminum-13-mid-2009-sd-firewire-800-unibody-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-2-duo-2.53-aluminum-13-mid-2009-sd-firewire-800-unibody-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP55.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
+releases:
+  - id: "13-mid-2009"
+    name: "MacBook Pro (13-inch, Mid 2009)"
+    announced: 2009-06-08
+    discontinued: 2010-04-13
+    model_numbers: [A1278]
+    emc: ["2326"]
+    configs:
+      - id: macbookpro5-5-13-mid-2009-a
+        label: "Core 2 Duo 2.26 or 2.53 GHz \u00b7 GeForce 9400M"
+        order_numbers: [MB990LL/A, MB991LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P7550, ghz: 2.26, cores: 2 }, { model: Core 2 Duo P8700, ghz: 2.53, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2, 4], max_gb: 8 }
+        storage: { interface: sata, standard: ["160 GB HDD", "250 GB HDD"] }
+        display: { inches: 13.3, resolution: 1280x800, panel: "LED glossy" }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8213, firewire/lsi-fw643, ethernet/nvidia-mcp79, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8507, ir/apple-05ac-8242, input/apple-mb-unibody, audio/cirrus-cs4206, card-reader/apple-usb-8403]
+        ports: { usb-a-2: 2, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1, audio-in: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive]

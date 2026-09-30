@@ -1,0 +1,41 @@
+identifier: MacBookPro16,3
+line: macbook-pro
+efi: 64
+security_chip: t2
+board_ids: [Mac-E7203C0F68AA0004]
+research_notes: |
+  Apple T2 chip. The SSD controller, audio, FaceTime camera, ambient light sensor, Touch Bar, keyboard and trackpad are reached through the T2 bridge (apple-bce binds on real Linux machines).
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
+  Thunderbolt 3 (USB-C) ports only, plus a headphone jack. Touch Bar and Touch ID on every model.
+  Quad-core 13-inch with two Thunderbolt 3 ports, Intel Iris Plus Graphics 645 and a scissor-switch keyboard. Hardware is otherwise the MacBookPro15,4 platform.
+  BCM4377 Wi-Fi uses brcmfmac; its Bluetooth is a separate PCIe function (hci_bcm4377 driver).
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-1.4-quad-core-13-2020-2-thunderbolt-3-ports-scissor-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-1.7-quad-core-13-2020-2-thunderbolt-3-ports-scissor-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP163.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C3
+uncertain:
+  - field: board_ids
+    note: "No real-machine boot log exists for this model; the board ID is from OpenCore's database only."
+releases:
+  - id: "13-2020-2tb3"
+    name: "MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)"
+    announced: 2020-05-04
+    discontinued: 2020-11-10
+    model_numbers: [A2289]
+    emc: ["3456"]
+    configs:
+      - id: macbookpro16-3-13-2020-2tb3-a
+        label: "Core i5 1.4 GHz \u00b7 Iris Plus Graphics 645"
+        order_numbers: [MXK32LL/A, MXK52LL/A, MXK62LL/A, MXK72LL/A]
+        cpu:
+          codename: coffee-lake
+          standard: [{ model: Core i5-8257U, ghz: 1.4, cores: 4 }]
+          bto: [{ model: Core i7-8557U, ghz: 1.7, cores: 4 }]
+        memory: { type: LPDDR3-2133, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: nvme, standard: ["256 GB SSD", "512 GB SSD"] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, P3, True Tone" }
+        components: [gpu/intel-iris-plus-645, wifi/broadcom-bcm4377b, bluetooth/broadcom-bcm4377, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-generic]
+        ports: { thunderbolt-3: 2, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id]

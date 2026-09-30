@@ -1,0 +1,34 @@
+identifier: MacBookPro1,2
+line: macbook-pro
+efi: 32
+hard_blocker: "32-bit-only CPU (Intel Core Duo \"Yonah\"). Omarchy and Arch Linux support x86_64 only."
+board_ids: [Mac-F42DBEC8]
+research_notes: |
+  First 17-inch Intel MacBook Pro. Adds FireWire 800 and a third USB port. 32-bit Core Duo CPU and 32-bit EFI firmware, so no configuration can run Omarchy.
+  The iSight camera reports "no firmware loaded" and needs firmware extracted from macOS.
+  Apple's identification page no longer lists 2006–2007 MacBook Pros; release names follow the size and season convention used for later models.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook_pro_2.16_17.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP12.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro1/MacBookPro1%2C2
+releases:
+  - id: "17-early-2006"
+    name: "MacBook Pro (17-inch, Early 2006)"
+    announced: 2006-04-24
+    discontinued: 2006-10-24
+    model_numbers: [A1151]
+    emc: ["2102"]
+    configs:
+      - id: macbookpro1-2-17-early-2006-a
+        label: "Core Duo 2.16 GHz \u00b7 Mobility Radeon X1600"
+        order_numbers: [MA092LL/A]
+        cpu:
+          codename: yonah
+          standard: [{ model: Core Duo T2600, ghz: 2.16, cores: 2 }]
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1], max_gb: 2 }
+        storage: { interface: sata, standard: ["120 GB HDD"] }
+        display: { inches: 17, resolution: 1680x1050, panel: "LCD" }
+        components: [gpu/ati-mobility-radeon-x1600, wifi/atheros-ar542x, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/ti-tsb82aa2, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240, input/apple-mbp-2006]
+        ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, dvi: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive]

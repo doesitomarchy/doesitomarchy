@@ -1,0 +1,37 @@
+identifier: MacBookPro16,2
+line: macbook-pro
+efi: 64
+security_chip: t2
+board_ids: [Mac-5F9802EFE386AA28]
+research_notes: |
+  Apple T2 chip. The SSD controller, audio, FaceTime camera, ambient light sensor, Touch Bar, keyboard and trackpad are reached through the T2 bridge (apple-bce binds on real Linux machines).
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
+  Thunderbolt 3 (USB-C) ports only, plus a headphone jack. Touch Bar and Touch ID on every model.
+  Ice Lake 13-inch with four Thunderbolt 3 ports (Thunderbolt built into the CPU), Intel Iris Plus Graphics (G7) and a scissor-switch keyboard.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.0-quad-core-13-2020-4-thunderbolt-3-ports-scissor-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.3-quad-core-13-2020-4-thunderbolt-3-ports-scissor-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP162.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C2
+releases:
+  - id: "13-2020-4tb3"
+    name: "MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)"
+    announced: 2020-05-04
+    discontinued: 2021-10-18
+    model_numbers: [A2251]
+    emc: ["3348"]
+    configs:
+      - id: macbookpro16-2-13-2020-4tb3-a
+        label: "Core i5 2.0 GHz \u00b7 Iris Plus Graphics (G7)"
+        order_numbers: [MWP42LL/A, MWP52LL/A, MWP62LL/A, MWP72LL/A, MWP82LL/A]
+        cpu:
+          codename: ice-lake
+          standard: [{ model: Core i5-1038NG7, ghz: 2.0, cores: 4 }]
+          bto: [{ model: Core i7-1068NG7, ghz: 2.3, cores: 4 }]
+        memory: { type: LPDDR4X-3733, standard_gb: [16], max_gb: 32, soldered: true }
+        storage: { interface: nvme, standard: ["512 GB SSD", "1 TB SSD"] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, P3, True Tone" }
+        components: [gpu/intel-iris-plus-g7-ice-lake-u, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-ice-lake, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-2020-13]
+        ports: { thunderbolt-3: 4, audio-out: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id]

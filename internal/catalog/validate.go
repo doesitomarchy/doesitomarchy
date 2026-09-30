@@ -17,7 +17,7 @@ var (
 	reBoardID     = regexp.MustCompile(`^Mac-[0-9A-F]{8}([0-9A-F]{8})?$`)
 	reOrderNumber = regexp.MustCompile(`^[A-Z0-9]{4,5}[A-Z]{1,2}/[A-Z]$`) // MB463LL/A, MGEM2LL/A
 	reModelNumber = regexp.MustCompile(`^A[0-9]{4}$`)
-	reEMC         = regexp.MustCompile(`^[0-9]{4}$`)
+	reEMC         = regexp.MustCompile(`^[0-9]{4}(-[0-9])?$`) // Apple revision suffix, e.g. "2353-1"
 	reURL         = regexp.MustCompile(`^https?://\S+$`)
 )
 
@@ -232,7 +232,7 @@ func (l *loader) validateMacs() {
 			}
 			for _, n := range r.EMC {
 				if !reEMC.MatchString(n) {
-					l.errf(f, "%s: EMC %q must be four digits", where, n)
+					l.errf(f, "%s: EMC %q must be four digits, optionally with a -N revision", where, n)
 				}
 			}
 			l.checkSources(f, where, r.Sources, false)

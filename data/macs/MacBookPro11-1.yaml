@@ -1,0 +1,60 @@
+identifier: MacBookPro11,1
+line: macbook-pro
+efi: 64
+board_ids: [Mac-189A3D4F975D5FFC]
+research_notes: |
+  Haswell 13-inch Retina, Intel Iris 5100 graphics.
+  Retina display, no optical drive, Ethernet or FireWire port. RAM is soldered. HDMI and two Thunderbolt ports.
+  The headphone jack also carries optical digital audio out.
+  PCIe flash storage speaks AHCI (Samsung or Marvell controllers seen). The FaceTime HD camera is a PCIe device (Broadcom 1570) that needs the out-of-tree facetimehd driver.
+  Thunderbolt 2 (Falcon Ridge). The SD card reader is an internal USB device (05ac:8406). Audio is a Cirrus Logic CS4208 codec on every observed machine.
+  BCM4360 802.11ac Wi-Fi has no in-kernel driver; the proprietary wl driver is the usual route.
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.4-13-late-2013-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.6-13-late-2013-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.6-13-mid-2014-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i5-2.8-13-mid-2014-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.8-13-late-2013-retina-display-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-3.0-13-mid-2014-retina-display-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP111.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
+releases:
+  - id: "13-late-2013"
+    name: "MacBook Pro (Retina, 13-inch, Late 2013)"
+    announced: 2013-10-22
+    discontinued: 2014-07-29
+    model_numbers: [A1502]
+    emc: ["2678"]
+    configs:
+      - id: macbookpro11-1-13-late-2013-a
+        label: "Core i5 2.4\u20132.6 GHz or Core i7 2.8 GHz \u00b7 Iris 5100"
+        order_numbers: [ME864LL/A, ME865LL/A, ME866LL/A, ME867LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4258U, ghz: 2.4, cores: 2 }, { model: Core i5-4288U, ghz: 2.6, cores: 2 }, { model: Core i7-4558U, ghz: 2.8, cores: 2 }]
+        memory: { type: DDR3L-1600, standard_gb: [4, 8], max_gb: 16, soldered: true }
+        storage: { interface: pcie-ahci, standard: ["128 GB SSD", "256 GB SSD", "512 GB SSD"] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS" }
+        components: [gpu/intel-iris-5100, wifi/broadcom-bcm4360, bluetooth/apple-05ac-8289, audio/cirrus-cs4208, storage/apple-pcie-ssd-ahci, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-falcon-ridge, input/apple-mbp-retina-13]
+        ports: { usb-a-3: 2, thunderbolt-2: 2, hdmi: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+  - id: "13-mid-2014"
+    name: "MacBook Pro (Retina, 13-inch, Mid 2014)"
+    announced: 2014-07-29
+    discontinued: 2015-03-09
+    model_numbers: [A1502]
+    emc: ["2875"]
+    configs:
+      - id: macbookpro11-1-13-mid-2014-a
+        label: "Core i5 2.6\u20132.8 GHz or Core i7 3.0 GHz \u00b7 Iris 5100"
+        order_numbers: [MGX72LL/A, MGX82LL/A, MGX92LL/A, MGXD2LL/A]
+        cpu:
+          codename: haswell
+          standard: [{ model: Core i5-4278U, ghz: 2.6, cores: 2 }, { model: Core i5-4308U, ghz: 2.8, cores: 2 }, { model: Core i7-4578U, ghz: 3.0, cores: 2 }]
+        memory: { type: DDR3L-1600, standard_gb: [8], max_gb: 16, soldered: true }
+        storage: { interface: pcie-ahci, standard: ["128 GB SSD", "256 GB SSD", "512 GB SSD"] }
+        display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS" }
+        components: [gpu/intel-iris-5100, wifi/broadcom-bcm4360, bluetooth/apple-05ac-8289, audio/cirrus-cs4208, storage/apple-pcie-ssd-ahci, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-falcon-ridge, input/apple-mbp-retina-13]
+        ports: { usb-a-3: 2, thunderbolt-2: 2, hdmi: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]

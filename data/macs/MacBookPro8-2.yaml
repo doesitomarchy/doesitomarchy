@@ -1,0 +1,82 @@
+identifier: MacBookPro8,2
+line: macbook-pro
+efi: 64
+board_ids: [Mac-94245A3940C91C80]
+research_notes: |
+  Quad-core Sandy Bridge with two GPUs: Intel HD Graphics 3000 and a discrete AMD Radeon (TeraScale 2, radeon driver), switched through a hardware mux.
+  Sandy Bridge with Thunderbolt (Light Ridge). The SD card reader is a PCIe function of the BCM57765 Ethernet chip (sdhci-pci). FaceTime HD camera is USB (05ac:8509). Audio is a Cirrus Logic CS4206 codec on every observed machine.
+  Three discrete GPUs across the releases, each a distinct PCI device: Radeon HD 6490M (1002:6760), HD 6750M (1002:6741) and HD 6770M (1002:6740).
+sources:
+  - https://support.apple.com/en-us/108052
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.0-15-early-2011-unibody-thunderbolt-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.2-15-early-2011-unibody-thunderbolt-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.2-15-late-2011-unibody-thunderbolt-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.3-15-early-2011-unibody-thunderbolt-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.4-15-late-2011-unibody-thunderbolt-specs.html
+  - https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.5-15-late-2011-unibody-thunderbolt-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookPro/MBP82.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C2
+releases:
+  - id: "15-early-2011"
+    name: "MacBook Pro (15-inch, Early 2011)"
+    announced: 2011-02-24
+    discontinued: 2011-10-24
+    model_numbers: [A1286]
+    emc: ["2353-1"]
+    configs:
+      - id: macbookpro8-2-15-early-2011-a
+        label: "Core i7 2.0 GHz \u00b7 HD 3000 + Radeon HD 6490M"
+        order_numbers: [MC721LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i7-2635QM, ghz: 2.0, cores: 4 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [4], max_gb: 8, notes: "Apple's maximum is 8 GB; EveryMac reports 16 GB works." }
+        storage: { interface: sata, standard: ["500 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
+        components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6490m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
+        ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+      - id: macbookpro8-2-15-early-2011-b
+        label: "Core i7 2.2 or 2.3 GHz \u00b7 HD 3000 + Radeon HD 6750M"
+        order_numbers: [MC723LL/A, MD035LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i7-2720QM, ghz: 2.2, cores: 4 }, { model: Core i7-2820QM, ghz: 2.3, cores: 4 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [4], max_gb: 8, notes: "Apple's maximum is 8 GB; EveryMac reports 16 GB works." }
+        storage: { interface: sata, standard: ["750 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
+        components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6630m-6750m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
+        ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+  - id: "15-late-2011"
+    name: "MacBook Pro (15-inch, Late 2011)"
+    announced: 2011-10-24
+    discontinued: 2012-06-11
+    model_numbers: [A1286]
+    emc: ["2563"]
+    configs:
+      - id: macbookpro8-2-15-late-2011-a
+        label: "Core i7 2.2 GHz \u00b7 HD 3000 + Radeon HD 6750M"
+        order_numbers: [MD318LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i7-2675QM, ghz: 2.2, cores: 4 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [4], max_gb: 8, notes: "Apple's maximum is 8 GB; EveryMac reports 16 GB works." }
+        storage: { interface: sata, standard: ["500 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
+        components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6630m-6750m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
+        ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+      - id: macbookpro8-2-15-late-2011-b
+        label: "Core i7 2.4 GHz \u00b7 HD 3000 + Radeon HD 6770M"
+        order_numbers: [MD322LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i7-2760QM, ghz: 2.4, cores: 4 }]
+          bto: [{ model: Core i7-2860QM, ghz: 2.5, cores: 4 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [4], max_gb: 8, notes: "Apple's maximum is 8 GB; EveryMac reports 16 GB works." }
+        storage: { interface: sata, standard: ["750 GB HDD"] }
+        display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
+        components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6770m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
+        ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
