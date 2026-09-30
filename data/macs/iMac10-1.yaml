@@ -1,22 +1,21 @@
 identifier: iMac10,1
 line: imac
 efi: 64
-board_ids: []
+board_ids: [Mac-F2268CC8, Mac-F2268DC8]
 research_notes: |
   Core 2 Duo models of the first 16:9 iMacs (21.5- and 27-inch). The 27-inch Core i5/i7 models are iMac11,1.
+  Board IDs from real machines (dmesg DMI line): Mac-F2268CC8 on the 21.5-inch, Mac-F2268DC8 on the 27-inch.
 sources:
   - https://support.apple.com/en-us/112565
   - https://support.apple.com/en-us/112564
   - https://support.apple.com/en-us/108054
+  - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac10/iMac10%2C1
   - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.06-21-inch-aluminum-late-2009-specs.html
   - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.06-27-inch-aluminum-late-2009-specs.html
   - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.33-21-inch-aluminum-late-2009-specs.html
   - https://everymac.com/systems/apple/imac/specs/imac-core-2-duo-3.33-27-inch-aluminum-late-2009-specs.html
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM101.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac10/iMac10%2C1
-uncertain:
-  - field: board_ids
-    note: "OpenCore lists no board ID for iMac10,1; to be filled from a real machine."
 releases:
   - id: "21-late-2009"
     name: "iMac (21.5-inch, Late 2009)"

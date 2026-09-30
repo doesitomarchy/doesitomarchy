@@ -1,7 +1,7 @@
 identifier: iMac15,1
 line: imac
 efi: 64
-board_ids: [Mac-42FD25EABCABB274]
+board_ids: [Mac-42FD25EABCABB274, Mac-FA842E06C61E91C5]
 research_notes: |
   First 5K iMac. Audio is a Cirrus Logic CS4206 codec on every observed machine.
 sources:

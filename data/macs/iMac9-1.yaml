@@ -1,7 +1,7 @@
 identifier: iMac9,1
 line: imac
 efi: 64
-board_ids: [Mac-F2218FA9]
+board_ids: [Mac-F2218FA9, Mac-F2218EA9, Mac-F2218FC8, Mac-F2218EC8]
 research_notes: |
   Early 2009 (20- and 24-inch) and the Mid 2009 20-inch education model share this identifier.
   Audio is a Realtek ALC889A codec on every observed machine.

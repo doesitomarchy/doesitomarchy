@@ -7,6 +7,7 @@ research_notes: |
   EveryMac lists "EFI Architecture: 64-Bit", but community 32-bit-EFI lists include this model and Linux dmesg shows the same firmware
   table layout as the 32-bit-EFI MacBook2,1. Recorded as 32-bit (reviewed 2026-09-30); a boot test will confirm.
   Intel GMA 950 graphics: expect a basic i915 framebuffer but no modern OpenGL, so Hyprland will likely fall back to software rendering.
+  4 Linux boots report Macmini1,1's board ID (Mac-F4208EC8) with a Macmini2,1 identity, typically a Macmini1,1 upgraded with a Core 2 Duo and flashed firmware.
   Macmini2,1 is the Macmini1,1 platform with a Merom Core 2 Duo; every other component observed on real machines is identical.
 sources:
   - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-1.83-specs.html

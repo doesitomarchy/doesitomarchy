@@ -1,7 +1,7 @@
 identifier: iMac5,1
 line: imac
 efi: 32
-board_ids: [Mac-F4228EC8]
+board_ids: [Mac-F4228EC8, Mac-F42786A9]
 research_notes: |
   64-bit Core 2 Duo CPU but 32-bit EFI firmware: the stock installer needs a 32-bit EFI boot shim.
 sources:

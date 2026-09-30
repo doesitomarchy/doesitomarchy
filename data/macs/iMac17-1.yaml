@@ -1,20 +1,19 @@
 identifier: iMac17,1
 line: imac
 efi: 64
-board_ids: []
+board_ids: [Mac-65CE76090165799A, Mac-DB15BD556843C820, Mac-B809C3757DA9BB8D]
 research_notes: |
   Skylake 5K iMac. Audio is a Cirrus Logic CS4206 codec on every observed machine. SSDs are Apple PCIe flash (AHCI or NVMe depending on unit).
+  Board IDs from real machines (dmesg DMI line) follow the GPU: Mac-65CE76090165799A with the R9 M380, Mac-DB15BD556843C820 with the M390, Mac-B809C3757DA9BB8D with the M395/M395X.
 sources:
   - https://support.apple.com/en-us/112035
   - https://support.apple.com/en-us/108054
+  - https://github.com/linuxhw/Dmesg/tree/main/All%20In%20One/Apple/iMac17/iMac17%2C1
   - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.2-27-inch-aluminum-retina-5k-late-2015-specs.html
   - https://everymac.com/systems/apple/imac/specs/imac-core-i5-3.3-27-inch-aluminum-retina-5k-late-2015-specs.html
   - https://everymac.com/systems/apple/imac/specs/imac-core-i7-4.0-27-inch-aluminum-retina-5k-late-2015-specs.html
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM171.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac17/iMac17%2C1
-uncertain:
-  - field: board_ids
-    note: "OpenCore lists no board ID for iMac17,1."
 releases:
   - id: "5k-late-2015"
     name: "iMac (Retina 5K, 27-inch, Late 2015)"

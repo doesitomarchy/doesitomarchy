@@ -2,7 +2,7 @@ identifier: iMac4,1
 line: imac
 efi: 32
 hard_blocker: "32-bit-only CPU (Intel Core Duo \"Yonah\"). Omarchy and Arch Linux support x86_64 only."
-board_ids: [Mac-F42786C8]
+board_ids: [Mac-F42786C8, Mac-F42787C8]
 research_notes: |
   First Intel iMac. Every configuration has a 32-bit Yonah CPU, so none can run Omarchy.
 sources:

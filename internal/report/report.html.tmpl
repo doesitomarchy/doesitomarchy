@@ -9,17 +9,18 @@
   --bg: #f8f8f6; --panel: #f0f0ed; --line: #d9d9d4; --line-strong: #b5b5b0;
   --fg: #121214; --muted: #5d5d64; --accent: #c6371c;
   --warn: #8a5a00; --warn-bg: #fff2d1; --block: #a3170b; --block-bg: #fde6e1;
+  --ident: #a15c00; --release: #1d6f82;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
   --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36;
-  --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; color-scheme: dark } }
+  --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; --ident: #f5b53f; --release: #5fc3d6; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
   --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36;
-  --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; color-scheme: dark }
+  --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; --ident: #f5b53f; --release: #5fc3d6; color-scheme: dark }
 
 * { box-sizing: border-box }
 body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--sans); }
@@ -59,7 +60,10 @@ td.id, td .id { white-space: nowrap }
 
 article.mac { display: grid; gap: 16px; padding-top: 22px; border-top: 1px solid var(--line-strong) }
 .mac-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px }
-.mac-head h2 { font-size: 22px }
+.mac-head h2 { font-size: 22px; color: var(--ident) }
+.release-head h3 { color: var(--release) }
+.to-top { justify-self: end; font: 12px var(--mono); text-decoration: none }
+.to-top:hover { text-decoration: underline }
 .facts { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 12.5px var(--mono); color: var(--muted) }
 .facts span b { color: var(--fg); font-weight: 500 }
 .blocker { padding: 10px 14px; background: var(--block-bg); color: var(--block); border: 1px solid var(--block); font: 500 13px var(--mono) }
@@ -117,7 +121,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
 </style>
 
 <div class="wrap">
-<header>
+<header id="top">
   <div class="eyebrow">doesitomarchy · Phase 1 catalog review</div>
   <h1>{{.Title}}</h1>
   <div class="stats">
@@ -217,6 +221,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
     {{end}}
   </div>
   {{end}}
+  <a class="to-top" href="#top">back to top ^</a>
 </article>
 {{end}}
 </section>

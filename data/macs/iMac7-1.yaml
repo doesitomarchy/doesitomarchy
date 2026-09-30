@@ -1,7 +1,7 @@
 identifier: iMac7,1
 line: imac
 efi: 64
-board_ids: [Mac-F42386C8]
+board_ids: [Mac-F42386C8, Mac-F4238CC8]
 research_notes: |
   First aluminum iMac; 64-bit EFI.
 sources:

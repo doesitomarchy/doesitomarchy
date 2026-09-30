@@ -1,7 +1,7 @@
 identifier: iMac8,1
 line: imac
 efi: 64
-board_ids: [Mac-F227BEC8]
+board_ids: [Mac-F227BEC8, Mac-F226BEC8]
 research_notes: |
   Penryn refresh of the aluminum iMac.
 sources:
