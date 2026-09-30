@@ -1,0 +1,31 @@
+identifier: Macmini6,1
+line: mac-mini
+efi: 64
+board_ids: [Mac-031AEE4D24BFF0B1]
+research_notes: |
+  Audio is a Cirrus Logic CS4206 codec on every machine observed (not the CS4208 used from 2014).
+sources:
+  - https://support.apple.com/en-us/111926
+  - https://support.apple.com/en-us/102852
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i5-2.5-late-2012-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM61.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+releases:
+  - id: late-2012
+    name: Mac mini (Late 2012)
+    announced: 2012-10-23
+    discontinued: 2014-10-16
+    model_numbers: [A1347]
+    emc: ["2570"]
+    configs:
+      - id: macmini6-1-late-2012-a
+        label: Core i5 2.5 GHz · HD Graphics 4000
+        order_numbers: [MD387LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i5-3210M, ghz: 2.5, cores: 2 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: [500 GB HDD] }
+        components: [gpu/intel-hd-4000, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828a, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, firewire/lsi-fw643, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, ir/apple-05ac-8242]
+        ports: { thunderbolt-1: 1, usb-a-3: 4, firewire-800: 1, hdmi: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, headset-mic, ir-receiver, fan]

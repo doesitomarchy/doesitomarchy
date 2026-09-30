@@ -1,0 +1,231 @@
+<title>{{.Title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: one reading column; each configuration is its own card (a complete computer);
+   dense key/value grids and tables; the applicability matrix scrolls sideways on its own. */
+:root {
+  --bg: #f8f8f6; --panel: #f0f0ed; --line: #d9d9d4; --line-strong: #b5b5b0;
+  --fg: #121214; --muted: #5d5d64; --accent: #c6371c;
+  --warn: #8a5a00; --warn-bg: #fff2d1; --block: #a3170b; --block-bg: #fde6e1;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
+  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36;
+  --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #000; --panel: #0c0c0e; --line: #26262a; --line-strong: #3b3b40;
+  --fg: #ececee; --muted: #a0a0a8; --accent: #ff5a36;
+  --warn: #ffb000; --warn-bg: #241a00; --block: #ff8a73; --block-bg: #2a0c06; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--sans); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 40px; }
+a { color: var(--accent); text-underline-offset: 2px }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+h1, h2, h3, h4 { font-family: var(--mono); text-wrap: balance; margin: 0; letter-spacing: -0.01em }
+h1 { font-size: 26px; font-weight: 700 }
+h2 { font-size: 19px; font-weight: 700 }
+h3 { font-size: 15px; font-weight: 500 }
+.eyebrow, .label { font: 500 11px/1.4 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted) }
+.mono { font-family: var(--mono) }
+.muted { color: var(--muted) }
+code, .id { font: 12.5px var(--mono) }
+p { margin: 0; max-width: 72ch }
+
+header { display: grid; gap: 10px; border-bottom: 1px solid var(--line-strong); padding-bottom: 20px }
+.stats { display: flex; flex-wrap: wrap; gap: 6px 20px; font: 13px var(--mono); font-variant-numeric: tabular-nums }
+.stats b { color: var(--accent); font-weight: 700 }
+.jump { display: flex; flex-wrap: wrap; gap: 6px }
+.jump a { font: 12px var(--mono); padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: 2px; color: var(--fg); text-decoration: none }
+.jump a:hover { border-color: var(--accent); color: var(--accent) }
+
+section { display: grid; gap: 14px; min-width: 0 }
+.intro { display: grid; gap: 10px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--line) }
+.intro ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; max-width: 80ch }
+.intro h2 { font-size: 15px }
+
+.scroll { overflow-x: auto; min-width: 0 }
+table { border-collapse: collapse; width: 100%; font-size: 13px }
+th, td { text-align: left; vertical-align: top; padding: 6px 10px; border-bottom: 1px solid var(--line) }
+th { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); white-space: nowrap }
+td.id, td .id { white-space: nowrap }
+.warn-table td:first-child { font-family: var(--mono); font-size: 12.5px; white-space: nowrap }
+.q { display: inline-block; font: 700 11px var(--mono); color: var(--warn); background: var(--warn-bg); border: 1px solid var(--warn); padding: 0 5px; border-radius: 2px }
+
+article.mac { display: grid; gap: 16px; padding-top: 22px; border-top: 1px solid var(--line-strong) }
+.mac-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px }
+.mac-head h2 { font-size: 22px }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 12.5px var(--mono); color: var(--muted) }
+.facts span b { color: var(--fg); font-weight: 500 }
+.blocker { padding: 10px 14px; background: var(--block-bg); color: var(--block); border: 1px solid var(--block); font: 500 13px var(--mono) }
+.notes { white-space: pre-line; max-width: 90ch; color: var(--fg) }
+details > summary { cursor: pointer; font: 12.5px var(--mono); color: var(--muted) }
+details ul { margin: 6px 0 0; padding-left: 18px; font: 12px var(--mono); display: grid; gap: 2px }
+details ul a { word-break: break-all }
+
+.release { display: grid; gap: 10px }
+.release-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline }
+.cfg { background: var(--panel); border: 1px solid var(--line); display: grid; min-width: 0 }
+.cfg-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line) }
+.cfg-head .title { display: grid; gap: 2px; min-width: 0 }
+.cfg-head .label-text { font: 500 14px var(--mono) }
+.pill { font: 500 11.5px var(--mono); padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 2px; white-space: nowrap; align-self: start; font-variant-numeric: tabular-nums }
+.pill.bto { border-color: var(--accent); color: var(--accent) }
+.cfg-body { display: grid; gap: 14px; padding: 14px 16px 16px; min-width: 0 }
+.kv { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 4px 14px; margin: 0 }
+.kv dt { font: 500 11px/1.9 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted) }
+.kv dd { margin: 0; min-width: 0 }
+.comp td:nth-child(3) code { display: inline-block; margin-right: 6px }
+.comp .kind { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); white-space: nowrap }
+.comp .bto { font: 11px var(--mono); color: var(--accent); margin-left: 6px }
+.chips { display: flex; flex-wrap: wrap; gap: 5px }
+.chips span { font: 12px var(--mono); padding: 1px 7px; border: 1px solid var(--line-strong); border-radius: 2px; background: var(--bg) }
+.cfg .uncertain { display: grid; gap: 4px; font-size: 13px }
+
+.matrix th.col { writing-mode: vertical-rl; transform: rotate(180deg); text-transform: none; letter-spacing: 0; font-size: 11px; padding: 8px 4px; height: 150px; vertical-align: bottom }
+.matrix th.col a { color: var(--fg); text-decoration: none }
+.matrix td { padding: 4px 6px }
+.matrix td.cell { text-align: center; color: var(--accent); font-family: var(--mono); padding: 4px 2px }
+.matrix td.cap { white-space: nowrap; font-size: 12.5px }
+.matrix td.count { font: 12px var(--mono); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums }
+.matrix tr.cat td { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--panel); padding-top: 8px }
+.matrix tr:hover td:not(.cat-cell) { background: color-mix(in srgb, var(--accent) 7%, transparent) }
+
+footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var(--muted); font-size: 13px }
+@media (max-width: 560px) { .kv { grid-template-columns: 1fr } .kv dt { line-height: 1.4 } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">doesitomarchy · Phase 1 catalog review</div>
+  <h1>{{.Title}}</h1>
+  <div class="stats">
+    <span><b>{{.Stats.Macs}}</b> identifiers</span>
+    <span><b>{{.Stats.Releases}}</b> releases</span>
+    <span><b>{{.Stats.Configs}}</b> configurations</span>
+    <span><b>{{.Stats.Components}}</b> components</span>
+    <span><b>{{.Stats.Capabilities}}</b> test criteria</span>
+    <span><b>{{.Stats.Uncertain}}</b> uncertain fields</span>
+  </div>
+  <div class="muted mono" style="font-size:12px">Generated {{.Generated}} by <code>doioma report</code></div>
+  <nav class="jump" aria-label="Jump to identifier">
+    {{range .Macs}}<a href="#{{.Anchor}}">{{.Identifier}}</a>{{end}}
+    <a href="#uncertain">Uncertain</a><a href="#matrix">Criteria matrix</a>
+  </nav>
+</header>
+
+{{if .Intro}}<section class="intro">{{.Intro}}</section>{{end}}
+
+<section id="uncertain">
+  <h2>Needs your judgment <span class="muted">({{len .Uncertain}})</span></h2>
+  <p class="muted">Fields the sources could not settle. Each is marked <span class="q">?</span> where it appears below.</p>
+  <div class="scroll">
+  <table class="warn-table">
+    <thead><tr><th>Where</th><th>Field</th><th>Why it is uncertain</th></tr></thead>
+    <tbody>
+    {{range .Uncertain}}<tr>
+      <td>{{if .Anchor}}<a href="#{{.Anchor}}">{{.Where}}</a>{{else}}{{.Where}}{{end}}</td>
+      <td class="mono">{{.Field}}</td><td>{{.Note}}</td></tr>
+    {{else}}<tr><td colspan="3" class="muted">Nothing flagged.</td></tr>{{end}}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="models">
+{{range .Macs}}
+<article class="mac" id="{{.Anchor}}">
+  <div class="mac-head">
+    <h2>{{.Identifier}}</h2>
+    <div class="facts">
+      <span><b>{{.EFI}}</b></span>
+      <span>security chip <b>{{.Chip}}</b></span>
+      {{if .BoardIDs}}<span>board <b>{{join .BoardIDs ", "}}</b></span>{{end}}
+    </div>
+  </div>
+  {{if .HardBlocker}}<div class="blocker">Not compatible by design · {{.HardBlocker}}</div>{{end}}
+  {{range .Uncertain}}<div class="uncertain"><span class="q">?</span> <span class="mono">{{.Field}}</span>: {{.Note}}</div>{{end}}
+  {{if .ResearchNotes}}<div><div class="label">Research notes (unverified)</div><p class="notes">{{.ResearchNotes}}</p></div>{{end}}
+  <details><summary>Sources ({{len .Sources}})</summary><ul>{{range .Sources}}<li><a href="{{.}}">{{.}}</a></li>{{end}}</ul></details>
+
+  {{range .Releases}}
+  <div class="release">
+    <div class="release-head">
+      <h3>{{.Name}}</h3>
+      <span class="facts"><span>announced <b>{{.Announced}}</b></span>{{if .Discontinued}}<span>discontinued <b>{{.Discontinued}}</b></span>{{end}}{{if .ModelNumbers}}<span><b>{{join .ModelNumbers ", "}}</b></span>{{end}}{{if .EMC}}<span>EMC <b>{{join .EMC ", "}}</b></span>{{end}}</span>
+    </div>
+    {{range .Configs}}
+    <div class="cfg" id="cfg-{{.ID}}">
+      <div class="cfg-head">
+        <div class="title">
+          <span class="label-text">{{.Label}}</span>
+          <span class="id muted">{{.ID}}</span>
+        </div>
+        <div class="chips">
+          {{if .BTOOnly}}<span class="pill bto">Build to order only</span>{{else}}<span class="pill">{{join .OrderNumbers " · "}}</span>{{end}}
+          <span class="pill">{{.Applies}} criteria apply</span>
+        </div>
+      </div>
+      <div class="cfg-body">
+        <dl class="kv">
+          <dt>CPU</dt><dd>{{procs .CPU.Standard}} <span class="muted mono">· {{.CPU.Codename}}</span></dd>
+          {{if .CPU.BTO}}<dt>CPU (BTO)</dt><dd>{{procs .CPU.BTO}}</dd>{{end}}
+          <dt>Memory</dt><dd>{{gb .Memory.StandardGB}} {{.Memory.Type}} · Apple max {{num .Memory.MaxGB}} GB{{if .Memory.Soldered}} · <b>soldered</b>{{end}}{{if .Memory.Notes}} <span class="muted">· {{.Memory.Notes}}</span>{{end}}</dd>
+          <dt>Storage</dt><dd>{{join .Storage.Standard ", "}} <span class="muted mono">· {{.Storage.Interface}}</span>{{if .Storage.BTO}} <span class="muted">· BTO: {{join .Storage.BTO ", "}}</span>{{end}}</dd>
+          {{if .Display}}<dt>Display</dt><dd>{{num .Display.Inches}}″ {{.Display.Resolution}} {{.Display.Panel}}</dd>{{end}}
+        </dl>
+        <div class="scroll">
+        <table class="comp">
+          <thead><tr><th>Kind</th><th>Component</th><th>Hardware IDs</th><th>Linux driver seen</th></tr></thead>
+          <tbody>
+          {{range .Components}}<tr>
+            <td class="kind">{{.Kind}}</td>
+            <td>{{.Name}}{{if .BTO}}<span class="bto">BTO</span>{{end}}{{if .Uncertain}} <span class="q" title="{{range .Uncertain}}{{.Field}}: {{.Note}} {{end}}">?</span>{{end}}</td>
+            <td>{{range .IDs}}<code>{{.}}</code>{{else}}<span class="muted">—</span>{{end}}</td>
+            <td class="mono">{{if .Driver}}{{.Driver}}{{else}}<span class="muted">—</span>{{end}}</td>
+          </tr>{{end}}
+          </tbody>
+        </table>
+        </div>
+        <div><div class="label">Ports</div><div class="chips">{{range .Ports}}<span>{{.}}</span>{{end}}</div></div>
+        <div><div class="label">Features</div><div class="chips">{{range .Features}}<span>{{.}}</span>{{else}}<span class="muted">none</span>{{end}}</div></div>
+        {{if .Notes}}<p>{{.Notes}}</p>{{end}}
+        {{if .UncertainBy}}<div class="uncertain">{{range $f, $n := .UncertainBy}}<div><span class="q">?</span> <span class="mono">{{$f}}</span>: {{$n}}</div>{{end}}</div>{{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+  {{end}}
+</article>
+{{end}}
+</section>
+
+<section id="matrix">
+  <h2>Which test criteria apply</h2>
+  <p class="muted">Derived from each configuration's ports, features and components by the rules in <code>data/capabilities.yaml</code>. A dot means the criterion appears on that configuration's page.</p>
+  <div class="scroll">
+  <table class="matrix">
+    <thead><tr><th>Criterion</th>{{range .Matrix.Configs}}<th class="col"><a href="#{{.Anchor}}" title="{{.ID}}">{{.Short}}</a></th>{{end}}<th>Configs</th></tr></thead>
+    <tbody>
+    {{range .Matrix.Groups}}
+      <tr class="cat"><td class="cat-cell" colspan="{{len $.Matrix.Configs | printf "%d"}}">{{.Category.Name}}{{if .Category.Blocking}} · failure blocks install{{end}}</td><td class="cat-cell"></td><td class="cat-cell"></td></tr>
+      {{range .Rows}}<tr>
+        <td class="cap" title="{{.Cap.ID}}">{{.Cap.Name}}</td>
+        {{range .Cells}}<td class="cell">{{if .}}●{{end}}</td>{{end}}
+        <td class="count">{{.Count}}</td>
+      </tr>{{end}}
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer>
+  Reply with corrections by identifier and field (for example “Macmini4,1 · built-in speaker: yes”). Approved batches are merged into the catalog; config IDs are locked once results reference them.
+</footer>
+</div>

@@ -1,0 +1,193 @@
+# Test criteria, generalized from Boyd's Vintage Mac Compatibility Test Criteria.
+#
+# `when` decides which configurations a capability applies to. Omit it to
+# apply to every configuration. Conditions use tags derived from each config:
+#   efi:32 | efi:64            firmware bitness (mac file `efi`)
+#   chip:none | chip:t1 | chip:t2
+#   form:laptop | form:desktop | form:all-in-one | form:server
+#   feature:<name>             from the config's `features` (vocabulary.yaml)
+#   port:<class>               from the config's `ports` (vocabulary.yaml)
+#   video-out                  any port whose class has `video: true`
+#   has:<component-kind>       the config has a component of that kind
+#   gpu:integrated | gpu:discrete
+# Tags are quoted strings in YAML ("feature:battery").
+# `all`: every tag required · `any`: at least one · `none`: none may be present.
+#
+# A capability's id is "<category>.<name>" and must never change once
+# results reference it.
+
+categories:
+  - { id: boot,     name: Boot,       icon: power,     blocking: true }
+  - { id: graphics, name: Graphics,   icon: gpu }
+  - { id: display,  name: Display,    icon: monitor }
+  - { id: input,    name: Input,      icon: keyboard }
+  - { id: power,    name: Power,      icon: battery }
+  - { id: audio,    name: Audio,      icon: speaker }
+  - { id: camera,   name: Camera,     icon: camera }
+  - { id: network,  name: Networking, icon: wifi }
+  - { id: ports,    name: Ports,      icon: plug }
+  - { id: storage,  name: Storage,    icon: disk }
+  - { id: thermal,  name: Thermal,    icon: fan }
+  - { id: bridge,   name: Bridge,     icon: chip }
+
+capabilities:
+  # ── Boot ────────────────────────────────────────────────────────────────
+  - id: boot.installer-efi64
+    name: Stock installer boots via 64-bit EFI
+    description: The unmodified Omarchy installer ISO boots natively from the Mac's startup manager.
+    when: { all: ["efi:64"] }
+  - id: boot.installer-efi32
+    name: Installer boots via 32-bit EFI workaround
+    description: The installer boots on 32-bit EFI firmware using a boot shim (e.g. rEFInd with a 32-bit GRUB). Record the method used in the notes.
+    when: { all: ["efi:32"] }
+  - id: boot.install
+    name: Internal storage detected and installation completes
+  - id: boot.power-cycle
+    name: Installed system starts, restarts and shuts down cleanly
+
+  # ── Graphics ────────────────────────────────────────────────────────────
+  - id: graphics.integrated
+    name: Integrated GPU acceleration
+    when: { all: ["gpu:integrated"] }
+  - id: graphics.discrete
+    name: Discrete GPU acceleration
+    when: { all: ["gpu:discrete"] }
+  - id: graphics.switching
+    name: Integrated/discrete display switching
+    when: { all: ["feature:gpu-switching"] }
+  - id: graphics.power-down
+    name: Inactive GPU powers down correctly
+    when: { all: ["feature:gpu-switching"] }
+  - id: graphics.external-display
+    name: External display output
+    description: Each built-in video output drives an external display. Note in the notes which ports were tested.
+    when: { all: ["video-out"] }
+
+  # ── Display ─────────────────────────────────────────────────────────────
+  - id: display.native-resolution
+    name: Internal display at native resolution
+    when: { all: ["feature:builtin-display"] }
+  - id: display.brightness
+    name: Display brightness control
+    when: { all: ["feature:builtin-display"] }
+
+  # ── Input ───────────────────────────────────────────────────────────────
+  - id: input.keyboard
+    name: Built-in keyboard and function keys
+    when: { all: ["feature:builtin-keyboard"] }
+  - id: input.trackpad
+    name: Trackpad and multi-touch
+    when: { all: ["feature:trackpad"] }
+  - id: input.keyboard-backlight
+    name: Keyboard backlight
+    when: { all: ["feature:keyboard-backlight"] }
+  - id: input.ambient-light-sensor
+    name: Ambient light sensor
+    when: { all: ["feature:ambient-light-sensor"] }
+  - id: input.force-touch
+    name: Force Touch click and pressure sensing
+    when: { all: ["feature:force-touch"] }
+  - id: input.touch-bar
+    name: Touch Bar
+    when: { all: ["feature:touch-bar"] }
+  - id: input.touch-id
+    name: Touch ID
+    when: { all: ["feature:touch-id"] }
+  - id: input.ir-receiver
+    name: IR receiver (Apple Remote)
+    when: { all: ["feature:ir-receiver"] }
+
+  # ── Power ───────────────────────────────────────────────────────────────
+  - id: power.sleep-wake
+    name: Sleep and wake
+  - id: power.battery-status
+    name: Battery status and charge reporting
+    when: { all: ["feature:battery"] }
+  - id: power.charging
+    name: AC power and battery charging
+    when: { all: ["feature:battery"] }
+  - id: power.lid
+    name: Lid close sleep and lid open wake
+    when: { all: ["feature:lid"] }
+
+  # ── Audio ───────────────────────────────────────────────────────────────
+  - id: audio.speakers
+    name: Built-in speakers
+    when: { all: ["feature:builtin-speaker"] }
+  - id: audio.microphone
+    name: Built-in microphone
+    when: { all: ["feature:builtin-mic"] }
+  - id: audio.headphone
+    name: Headphone / analog audio output
+    when: { all: ["port:audio-out"] }
+  - id: audio.headset-mic
+    name: Headset microphone via headphone jack
+    when: { all: ["feature:headset-mic"] }
+  - id: audio.line-in
+    name: Line-in / analog audio input
+    when: { all: ["port:audio-in"] }
+  - id: audio.optical-out
+    name: Optical digital audio output
+    when: { all: ["port:audio-out-optical"] }
+  - id: audio.optical-in
+    name: Optical digital audio input
+    when: { all: ["port:audio-in-optical"] }
+  - id: audio.display-out
+    name: Audio over HDMI / DisplayPort
+    when: { any: ["port:hdmi", "feature:displayport-audio"] }
+
+  # ── Camera ──────────────────────────────────────────────────────────────
+  - id: camera.builtin
+    name: Built-in webcam
+    when: { all: ["has:camera"] }
+
+  # ── Networking ──────────────────────────────────────────────────────────
+  - id: network.wifi
+    name: Wi-Fi
+    when: { all: ["has:wifi"] }
+  - id: network.bluetooth
+    name: Bluetooth
+    when: { all: ["has:bluetooth"] }
+  - id: network.ethernet
+    name: Ethernet
+    when: { any: ["port:ethernet-fast", "port:ethernet-gbe", "port:ethernet-10gbe"] }
+
+  # ── Ports ───────────────────────────────────────────────────────────────
+  - id: ports.usb-a
+    name: USB-A ports
+    when: { any: ["port:usb-a-2", "port:usb-a-3"] }
+  - id: ports.usb-c
+    name: USB-C / Thunderbolt 3 ports (USB data)
+    when: { any: ["port:usb-c", "port:thunderbolt-3"] }
+  - id: ports.usb-c-charging
+    name: Charging over USB-C
+    when: { all: ["feature:usb-c-charging"] }
+  - id: ports.thunderbolt
+    name: Thunderbolt devices (storage, docks, hotplug)
+    when: { any: ["port:thunderbolt-1", "port:thunderbolt-2", "port:thunderbolt-3"] }
+  - id: ports.firewire
+    name: FireWire
+    when: { any: ["port:firewire-400", "port:firewire-800"] }
+  - id: ports.sd-card
+    name: SD card reader
+    when: { all: ["port:sd-card"] }
+  - id: ports.expresscard
+    name: ExpressCard/34 slot
+    when: { all: ["port:expresscard-34"] }
+
+  # ── Storage ─────────────────────────────────────────────────────────────
+  - id: storage.optical
+    name: Internal optical drive reads discs
+    when: { all: ["feature:optical-drive"] }
+
+  # ── Thermal ─────────────────────────────────────────────────────────────
+  - id: thermal.sensors
+    name: Temperature sensors report under load
+  - id: thermal.fans
+    name: Fans respond to load
+    when: { all: ["feature:fan"] }
+
+  # ── Bridge (T2) ─────────────────────────────────────────────────────────
+  - id: bridge.touch-bar-camera
+    name: Touch Bar and webcam operate concurrently
+    when: { all: ["chip:t2", "feature:touch-bar"] }

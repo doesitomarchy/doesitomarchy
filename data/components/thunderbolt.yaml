@@ -1,0 +1,34 @@
+# Apple firmware often powers the controller down when nothing is attached, so
+# it may be absent from lspci on an idle machine.
+
+- id: thunderbolt/intel-light-ridge
+  name: Intel CV82524 "Light Ridge" Thunderbolt controller
+  vendor: Intel
+  ids: [pci:8086:1513]
+  driver: thunderbolt
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+
+- id: thunderbolt/intel-cactus-ridge
+  name: Intel DSL3510 "Cactus Ridge" Thunderbolt controller
+  vendor: Intel
+  ids: [pci:8086:1547]
+  driver: thunderbolt
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+
+- id: thunderbolt/intel-falcon-ridge
+  name: Intel DSL5520 "Falcon Ridge" Thunderbolt 2 controller
+  vendor: Intel
+  ids: [pci:8086:156c, pci:8086:156d]
+  driver: thunderbolt
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+
+- id: thunderbolt/intel-titan-ridge
+  name: Intel JHL7540 "Titan Ridge" Thunderbolt 3 controller
+  vendor: Intel
+  ids: [pci:8086:15eb, pci:8086:15ea, pci:8086:15ec]
+  driver: thunderbolt
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1

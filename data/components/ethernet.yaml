@@ -1,0 +1,43 @@
+- id: ethernet/marvell-88e8053
+  name: Marvell Yukon 88E8053 Gigabit Ethernet
+  vendor: Marvell
+  ids: [pci:11ab:4362]
+  driver: sky2
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+
+- id: ethernet/nvidia-mcp79
+  name: NVIDIA MCP79 Gigabit Ethernet
+  vendor: NVIDIA
+  ids: [pci:10de:0ab0]
+  driver: forcedeth
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+
+- id: ethernet/broadcom-bcm57765
+  name: Broadcom NetXtreme BCM57765 Gigabit Ethernet
+  vendor: Broadcom
+  ids: [pci:14e4:16b4]
+  driver: tg3
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+
+- id: ethernet/broadcom-bcm57766
+  name: Broadcom NetXtreme BCM57766 Gigabit Ethernet
+  vendor: Broadcom
+  ids: [pci:14e4:1686]
+  driver: tg3
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+
+- id: ethernet/aquantia-aqc107
+  name: Aquantia AQC107 10Gb Ethernet
+  vendor: Aquantia
+  ids: [pci:1d6a:07b1]
+  driver: atlantic
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1

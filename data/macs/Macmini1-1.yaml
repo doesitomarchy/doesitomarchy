@@ -1,0 +1,56 @@
+identifier: Macmini1,1
+line: mac-mini
+efi: 32
+hard_blocker: 32-bit-only CPU (Intel Core Solo / Core Duo "Yonah"). Omarchy and Arch Linux support x86_64 only.
+board_ids: [Mac-F4208EC8]
+research_notes: |
+  Every Macmini1,1 shipped with a 32-bit Yonah processor, so no configuration can run Omarchy. Listed for completeness.
+sources:
+  - https://everymac.com/systems/apple/mac_mini/specs/mac_mini_cs_1.5.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac_mini_cd_1.66.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac_mini_cd_1.83-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM11.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+releases:
+  - id: early-2006
+    name: Mac mini (Early 2006)
+    announced: 2006-02-28
+    discontinued: 2006-09-06
+    model_numbers: [A1176]
+    emc: ["2108"]
+    configs:
+      - id: macmini1-1-early-2006-a
+        label: Core Solo 1.5 GHz or Core Duo 1.66 GHz · GMA 950
+        order_numbers: [MA205LL/A, MA206LL/A]
+        cpu:
+          codename: yonah
+          standard:
+            - { model: Core Solo T1200, ghz: 1.5, cores: 1 }
+            - { model: Core Duo T2300, ghz: 1.66, cores: 2 }
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5], max_gb: 2 }
+        storage: { interface: sata, standard: [60 GB HDD, 80 GB HDD], bto: [100 GB HDD, 120 GB HDD] }
+        components: [gpu/intel-gma-950, wifi/atheros-ar542x, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, ir/apple-05ac-8240]
+        ports: { usb-a-2: 4, firewire-400: 1, dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, ir-receiver, optical-drive, fan]
+        notes: MA205LL/A (Core Solo) has a Combo drive; MA206LL/A (Core Duo) has a SuperDrive.
+  - id: late-2006
+    name: Mac mini (Late 2006)
+    announced: 2006-09-06
+    discontinued: 2007-08-07
+    model_numbers: [A1176]
+    emc: ["2108"]
+    configs:
+      - id: macmini1-1-late-2006-a
+        label: Core Duo 1.66 or 1.83 GHz · GMA 950
+        order_numbers: [MA607LL/A, MA608LL/A]
+        cpu:
+          codename: yonah
+          standard:
+            - { model: Core Duo T2300, ghz: 1.66, cores: 2 }
+            - { model: Core Duo T2400, ghz: 1.83, cores: 2 }
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [0.5], max_gb: 2 }
+        storage: { interface: sata, standard: [60 GB HDD, 80 GB HDD], bto: [120 GB HDD, 160 GB HDD] }
+        components: [gpu/intel-gma-950, wifi/atheros-ar542x, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, ir/apple-05ac-8240]
+        ports: { usb-a-2: 4, firewire-400: 1, dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, ir-receiver, optical-drive, fan]
+        notes: MA607LL/A (1.66 GHz) has a Combo drive; MA608LL/A (1.83 GHz) has a SuperDrive.

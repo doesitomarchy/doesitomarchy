@@ -1,0 +1,9 @@
+- id: card-reader/broadcom-bcm57765-sd
+  name: Broadcom BCM57765 SDXC card reader
+  vendor: Broadcom
+  ids: [pci:14e4:16bc]
+  driver: sdhci-pci
+  notes: A PCI function of the Broadcom Ethernet chip.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1

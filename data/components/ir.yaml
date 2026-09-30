@@ -1,0 +1,15 @@
+- id: ir/apple-05ac-8240
+  name: Apple IR receiver (USB 05ac:8240)
+  vendor: Apple
+  ids: [usb:05ac:8240]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+
+- id: ir/apple-05ac-8242
+  name: Apple IR receiver (USB 05ac:8242)
+  vendor: Apple
+  ids: [usb:05ac:8242]
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1

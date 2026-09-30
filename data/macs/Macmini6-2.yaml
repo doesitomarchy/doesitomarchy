@@ -1,0 +1,34 @@
+identifier: Macmini6,2
+line: mac-mini
+efi: 64
+board_ids: [Mac-F65AE981FFA204ED]
+research_notes: |
+  Quad-core Late 2012 models: the standard MD388 and the Server MD389 share this identifier and all components (the Server adds a second hard drive).
+  Audio is a Cirrus Logic CS4206 codec on every machine observed (not the CS4208 used from 2014).
+sources:
+  - https://support.apple.com/en-us/111926
+  - https://support.apple.com/en-us/102852
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i7-2.3-late-2012-specs.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i7-2.3-late-2012-server-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM62.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C2
+releases:
+  - id: late-2012
+    name: Mac mini (Late 2012)
+    announced: 2012-10-23
+    discontinued: 2014-10-16
+    model_numbers: [A1347]
+    emc: ["2570"]
+    configs:
+      - id: macmini6-2-late-2012-a
+        label: Quad-core Core i7 2.3 GHz · HD Graphics 4000 (standard and Server)
+        order_numbers: [MD388LL/A, MD389LL/A]
+        cpu:
+          codename: ivy-bridge
+          standard: [{ model: Core i7-3615QM, ghz: 2.3, cores: 4 }]
+          bto: [{ model: Core i7-3720QM, ghz: 2.6, cores: 4 }]
+        memory: { type: DDR3-1600 SO-DIMM, standard_gb: [4], max_gb: 16 }
+        storage: { interface: sata, standard: [1 TB HDD, 2 × 1 TB HDD (Server)], bto: [256 GB SSD, 1 TB Fusion Drive, 2 × 256 GB SSD (Server)] }
+        components: [gpu/intel-hd-4000, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828a, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, firewire/lsi-fw643, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, ir/apple-05ac-8242]
+        ports: { thunderbolt-1: 1, usb-a-3: 4, firewire-800: 1, hdmi: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, headset-mic, ir-receiver, fan]

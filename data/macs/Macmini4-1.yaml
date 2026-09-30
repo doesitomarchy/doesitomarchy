@@ -1,0 +1,51 @@
+identifier: Macmini4,1
+line: mac-mini
+efi: 64
+board_ids: [Mac-F2208EC8]
+research_notes: |
+  First unibody Mac mini: adds HDMI (with audio) and an SD card slot.
+sources:
+  - https://support.apple.com/en-us/112588
+  - https://support.apple.com/en-us/102852
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-2.4-mid-2010-specs.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-2.66-mid-2010-server-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM41.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+releases:
+  - id: mid-2010
+    name: Mac mini (Mid 2010)
+    announced: 2010-06-15
+    discontinued: 2011-07-20
+    model_numbers: [A1347]
+    emc: ["2364"]
+    configs:
+      - id: macmini4-1-mid-2010-a
+        label: Core 2 Duo 2.4 GHz · GeForce 320M
+        order_numbers: [MC270LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8600, ghz: 2.4, cores: 2 }]
+          bto: [{ model: Core 2 Duo P8800, ghz: 2.66, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2], max_gb: 8, notes: "Accepts 16 GB." }
+        storage: { interface: sata, standard: [320 GB HDD], bto: [500 GB HDD] }
+        components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-8218, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, card-reader/broadcom-bcm57765-sd, firewire/ti-xio2213, storage/nvidia-mcp89-sata, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, hdmi: 1, mini-displayport: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, headset-mic, ir-receiver, optical-drive, fan]
+        uncertain:
+          - field: features.builtin-speaker
+            note: Neither Apple's nor EveryMac's spec page for Mid 2010 mentions a built-in speaker; the 2009 and 2011 models have one.
+      - id: macmini4-1-mid-2010-server
+        label: Server · Core 2 Duo 2.66 GHz · two HDDs, no optical drive
+        order_numbers: [MC438LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8800, ghz: 2.66, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 8, notes: "Accepts 16 GB." }
+        storage: { interface: sata, standard: [2 × 500 GB HDD] }
+        components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-8218, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, card-reader/broadcom-bcm57765-sd, firewire/ti-xio2213, storage/nvidia-mcp89-sata, ir/apple-05ac-8242]
+        ports: { usb-a-2: 4, firewire-800: 1, hdmi: 1, mini-displayport: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, headset-mic, ir-receiver, fan]
+        notes: Mac mini Server. A second hard drive replaces the optical drive.
+        uncertain:
+          - field: features.builtin-speaker
+            note: Neither Apple's nor EveryMac's spec page for Mid 2010 mentions a built-in speaker; the 2009 and 2011 models have one.

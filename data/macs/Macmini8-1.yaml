@@ -1,0 +1,59 @@
+identifier: Macmini8,1
+line: mac-mini
+efi: 64
+security_chip: t2
+board_ids: [Mac-7BA5B2DFE22DDD8C]
+research_notes: |
+  T2 Mac. Omarchy's manual says its installer automatically sets up the patched linux-t2 kernel, the T2 audio configuration,
+  Apple's Broadcom Wi-Fi/Bluetooth firmware, and fan control via t2fanrd.
+  Before installing, open Startup Security Utility from Recovery and choose "No Security" and "Allow booting from external or removable media".
+  Audio, storage and the T2 bridge all sit behind the T2 chip.
+  No SD card slot, line-in or IR receiver on this model.
+  Omarchy's manual lists this model as "A1998"; Apple and EveryMac give the model number as A1993.
+sources:
+  - https://support.apple.com/en-us/111912
+  - https://support.apple.com/en-us/102852
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i3-3.6-late-2018-specs.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i5-3.0-late-2018-specs.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i7-3.2-late-2018-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM81.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+  - https://omarchy.org/manual/mac-support/
+releases:
+  - id: "2018"
+    name: Mac mini (2018)
+    announced: 2018-10-30
+    discontinued: 2023-01-17
+    model_numbers: [A1993]
+    emc: ["3213"]
+    configs:
+      - id: macmini8-1-2018-a
+        label: Core i3 3.6 GHz, Core i5 3.0 GHz or Core i7 3.2 GHz · Gigabit Ethernet
+        order_numbers: [MRTR2LL/A, MRTT2LL/A, MXNF2LL/A, MXNG2LL/A]
+        cpu:
+          codename: coffee-lake
+          standard:
+            - { model: Core i3-8100B, ghz: 3.6, cores: 4 }
+            - { model: Core i5-8500B, ghz: 3.0, cores: 6 }
+          bto: [{ model: Core i7-8700B, ghz: 3.2, cores: 6 }]
+        memory: { type: DDR4-2666 SO-DIMM, standard_gb: [8], max_gb: 64 }
+        storage: { interface: nvme, standard: [128 GB SSD, 256 GB SSD, 512 GB SSD], bto: [1 TB SSD, 2 TB SSD] }
+        components: [gpu/intel-uhd-630, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, ethernet/broadcom-bcm57766]
+        ports: { thunderbolt-3: 4, usb-a-3: 2, hdmi: 1, ethernet-gbe: 1, audio-out: 1 }
+        features: [builtin-speaker, fan]
+        notes: MXNF2LL/A and MXNG2LL/A are the March 2020 refresh with doubled standard storage; hardware is otherwise identical.
+      - id: macmini8-1-2018-10gbe
+        label: Any CPU · 10Gb Ethernet (build to order)
+        bto_only: true
+        cpu:
+          codename: coffee-lake
+          standard:
+            - { model: Core i3-8100B, ghz: 3.6, cores: 4 }
+            - { model: Core i5-8500B, ghz: 3.0, cores: 6 }
+            - { model: Core i7-8700B, ghz: 3.2, cores: 6 }
+        memory: { type: DDR4-2666 SO-DIMM, standard_gb: [8], max_gb: 64 }
+        storage: { interface: nvme, standard: [128 GB SSD, 256 GB SSD, 512 GB SSD], bto: [1 TB SSD, 2 TB SSD] }
+        components: [gpu/intel-uhd-630, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, ethernet/aquantia-aqc107]
+        ports: { thunderbolt-3: 4, usb-a-3: 2, hdmi: 1, ethernet-10gbe: 1, audio-out: 1 }
+        features: [builtin-speaker, fan]
+        notes: Build-to-order 10Gb Ethernet (Aquantia AQC107, atlantic driver) replaces the Broadcom Gigabit controller.
