@@ -33,6 +33,3 @@ releases:
         components: [gpu/intel-hd-3000, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821f, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, card-reader/apple-usb-8404, thunderbolt/intel-eagle-ridge, storage/intel-6-series-sata, input/apple-mba-13-2011]
         ports: { usb-a-2: 2, thunderbolt-1: 1, sd-card: 1, audio-out: 1 }
         features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
-        uncertain:
-          - field: features.ambient-light-sensor
-            note: "Neither Apple nor EveryMac mentions an ambient light sensor for Mid 2011; the 2008\u20132009 and 2012+ models have one."
