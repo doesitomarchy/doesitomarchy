@@ -1,0 +1,13 @@
+{{define "content"}}{{with .Data}}
+<h1>does your intel mac run omarchy?</h1>
+<p class="muted">Placeholder home page. Search and browsing arrive in Phases 3 and 4.</p>
+<dl class="stats">
+  <dt>Omarchy compatibility coverage</dt>
+  <dd>{{.Coverage.Verified}} / {{.Coverage.Eligible}} configs · {{pct .Coverage.VerifiedPct}}</dd>
+  <dt>Test result coverage</dt>
+  <dd>{{.Coverage.Tested}} / {{.Coverage.Eligible}} configs · {{pct .Coverage.TestedPct}}</dd>
+  <dt>Catalog</dt>
+  <dd>{{.Counts.Macs}} model identifiers · {{.Counts.Releases}} releases · {{.Counts.Configs}} configurations</dd>
+  <dd class="muted">Coverage counts {{.Coverage.Eligible}} configurations. Not counted: {{.Coverage.NotCompatible}} not compatible by design{{range .Exclusions}} · {{.Count}} {{.Reason}}{{end}}.</dd>
+</dl>
+{{end}}{{end}}

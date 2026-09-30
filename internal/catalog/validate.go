@@ -2,7 +2,7 @@ package catalog
 
 import (
 	"fmt"
-	"path/filepath"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -33,11 +33,12 @@ func (l *loader) validate() {
 	l.validateCapabilities()
 	l.validateComponents()
 	l.validateMacs()
+	l.validateCoverage()
 	l.validateLock()
 }
 
 func (l *loader) validateVocab() {
-	v, path := &l.cat.Vocab, filepath.Join(l.dir, "vocabulary.yaml")
+	v, path := &l.cat.Vocab, "vocabulary.yaml"
 	for name, n := range map[string]int{
 		"lines": len(v.Lines), "security_chips": len(v.SecurityChips), "component_kinds": len(v.ComponentKinds),
 		"cpu_codenames": len(v.CPUCodenames), "ports": len(v.Ports), "features": len(v.Features),
@@ -74,7 +75,7 @@ func (l *loader) validateVocab() {
 }
 
 func (l *loader) validateCapabilities() {
-	c, path := l.cat, filepath.Join(l.dir, "capabilities.yaml")
+	c, path := l.cat, "capabilities.yaml"
 	cats := map[string]bool{}
 	for _, cat := range c.Categories {
 		if !reSlug.MatchString(cat.ID) || cat.Name == "" {
@@ -173,13 +174,13 @@ func (l *loader) validateMacs() {
 			l.errf(f, "identifier %q is not a valid Mac model identifier", m.Identifier)
 			continue
 		}
-		if want := FileSlug(m.Identifier) + ".yaml"; filepath.Base(f) != want {
+		if want := FileSlug(m.Identifier) + ".yaml"; path.Base(f) != want {
 			l.errf(f, "file must be named %s", want)
 		}
 		if prev, dup := seenIdent[m.Identifier]; dup {
 			l.errf(f, "identifier %s already defined in %s", m.Identifier, prev)
 		}
-		seenIdent[m.Identifier] = filepath.Base(f)
+		seenIdent[m.Identifier] = path.Base(f)
 
 		line, ok := c.Vocab.Lines[m.Line]
 		switch {
@@ -349,7 +350,7 @@ func (l *loader) validateConfig(m *Mac, r *Release, cfg *Config, seen map[string
 }
 
 func (l *loader) validateLock() {
-	c, path := l.cat, filepath.Join(l.dir, LockFile)
+	c, path := l.cat, LockFile
 	ids, aliases := c.ConfigIDs()
 	known := map[string]bool{}
 	for _, id := range append(append([]string{}, ids...), aliases...) {

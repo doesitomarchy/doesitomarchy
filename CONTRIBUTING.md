@@ -15,6 +15,7 @@
 | `components/<kind>.yaml` | Shared hardware components with their PCI/USB IDs and the Linux driver seen on real machines |
 | `macs/<Identifier>.yaml` | One file per model identifier, using `-` in place of `,` (e.g. `Macmini3-1.yaml`), holding its releases and configurations |
 | `config-ids.lock` | Every configuration ID ever issued |
+| `coverage.yaml` | Rules for configurations that are out of scope for the coverage metrics (e.g. released before 2009). They are still listed and testable; they just aren't counted. This is not the same as a Mac's `hard_blocker`, which marks it Not compatible |
 
 Rules the validator enforces:
 
@@ -37,7 +38,7 @@ make check                                   # everything CI runs
 
 ## Test results
 
-Results are stored in the site database, not in this repo. _The submission process is still to come._
+Results will be stored in the site database, not in this repo. Submission opens with the site's API, in a later phase; until then no results are accepted.
 
 ## Code
 

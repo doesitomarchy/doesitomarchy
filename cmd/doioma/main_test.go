@@ -11,6 +11,8 @@ import (
 func TestRun(t *testing.T) {
 	empty := t.TempDir()
 	bad := t.TempDir()
+	dbDir := t.TempDir()
+	dbPath, dbPath2, dbPath3 := filepath.Join(dbDir, "a.db"), filepath.Join(dbDir, "b.db"), filepath.Join(dbDir, "c.db")
 	if err := os.MkdirAll(filepath.Join(bad, "macs"), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -32,6 +34,11 @@ func TestRun(t *testing.T) {
 		{"validate empty", []string{"validate", "-data", empty}, 1, ""},
 		{"validate bad", []string{"validate", "-data", bad}, 1, ""},
 		{"lock refuses invalid catalog", []string{"lock", "-data", bad}, 1, ""},
+		{"sync embedded catalog", []string{"sync", "-db", dbPath}, 0, "catalog synced: 121 macs"},
+		{"sync again is a no-op", []string{"sync", "-db", dbPath}, 0, "catalog unchanged"},
+		{"sync from a directory", []string{"sync", "-db", dbPath2, "-data", filepath.Join("..", "..", "data")}, 0, "catalog synced"},
+		{"sync refuses invalid catalog", []string{"sync", "-db", dbPath3, "-data", bad}, 1, ""},
+		{"serve bad flag", []string{"serve", "-nope"}, 2, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

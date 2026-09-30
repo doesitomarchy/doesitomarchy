@@ -12,8 +12,9 @@ package catalog
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
-	"path/filepath"
+	"path"
 	"sort"
 	"strings"
 
@@ -22,13 +23,16 @@ import (
 
 // Load reads and validates the catalog in dir. On failure it returns every
 // problem found, one per line, so a contributor can fix them in one pass.
-func Load(dir string) (*Catalog, error) { return load(dir, true) }
+func Load(dir string) (*Catalog, error) { return loadDir(dir, true) }
 
 // LoadUnlocked is Load without the "every config ID is locked" check, for
 // `doioma lock`. Removed IDs are still rejected.
-func LoadUnlocked(dir string) (*Catalog, error) { return load(dir, false) }
+func LoadUnlocked(dir string) (*Catalog, error) { return loadDir(dir, false) }
 
-func load(dir string, requireLocked bool) (*Catalog, error) {
+// LoadFS reads and validates a catalog rooted at fsys (e.g. the embedded data/).
+func LoadFS(fsys fs.FS) (*Catalog, error) { return load(fsys, true) }
+
+func loadDir(dir string, requireLocked bool) (*Catalog, error) {
 	info, err := os.Stat(dir)
 	if err != nil {
 		return nil, fmt.Errorf("catalog dir: %w", err)
@@ -36,8 +40,11 @@ func load(dir string, requireLocked bool) (*Catalog, error) {
 	if !info.IsDir() {
 		return nil, fmt.Errorf("catalog dir: %s is not a directory", dir)
 	}
+	return load(os.DirFS(dir), requireLocked)
+}
 
-	l := &loader{dir: dir, requireLocked: requireLocked, cat: &Catalog{Components: map[string]*Component{}}}
+func load(fsys fs.FS, requireLocked bool) (*Catalog, error) {
+	l := &loader{fsys: fsys, requireLocked: requireLocked, cat: &Catalog{Components: map[string]*Component{}}}
 	l.load()
 	if len(l.problems) == 0 {
 		l.validate()
@@ -49,38 +56,40 @@ func load(dir string, requireLocked bool) (*Catalog, error) {
 	return l.cat, nil
 }
 
+// loader works on slash-separated paths relative to the catalog root.
 type loader struct {
-	dir           string
+	fsys          fs.FS
 	requireLocked bool
 	cat           *Catalog
 	problems      []string
 }
 
 func (l *loader) errf(file, format string, args ...any) {
-	rel, err := filepath.Rel(l.dir, file)
-	if err != nil {
-		rel = file
-	}
-	l.problems = append(l.problems, rel+": "+fmt.Sprintf(format, args...))
+	l.problems = append(l.problems, file+": "+fmt.Sprintf(format, args...))
+}
+
+func (l *loader) exists(name string) bool {
+	_, err := fs.Stat(l.fsys, name)
+	return err == nil
 }
 
 // decode strictly unmarshals a YAML file: unknown fields and duplicate keys are errors.
-func (l *loader) decode(path string, v any) bool {
-	b, err := os.ReadFile(path)
+func (l *loader) decode(name string, v any) bool {
+	b, err := fs.ReadFile(l.fsys, name)
 	if err != nil {
-		l.errf(path, "%v", err)
+		l.errf(name, "%v", err)
 		return false
 	}
 	if err := yaml.UnmarshalWithOptions(b, v, yaml.Strict()); err != nil {
-		l.errf(path, "%v", err)
+		l.errf(name, "%v", err)
 		return false
 	}
 	return true
 }
 
-func yamlFiles(dir string) ([]string, error) {
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
+func (l *loader) yamlFiles(dir string) ([]string, error) {
+	entries, err := fs.ReadDir(l.fsys, dir)
+	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
 	}
 	if err != nil {
@@ -88,9 +97,9 @@ func yamlFiles(dir string) ([]string, error) {
 	}
 	var out []string
 	for _, e := range entries {
-		ext := strings.ToLower(filepath.Ext(e.Name()))
+		ext := strings.ToLower(path.Ext(e.Name()))
 		if !e.IsDir() && (ext == ".yaml" || ext == ".yml") {
-			out = append(out, filepath.Join(dir, e.Name()))
+			out = append(out, path.Join(dir, e.Name()))
 		}
 	}
 	sort.Strings(out)
@@ -99,15 +108,15 @@ func yamlFiles(dir string) ([]string, error) {
 
 func (l *loader) load() {
 	c := l.cat
-	vocabPath := filepath.Join(l.dir, "vocabulary.yaml")
-	if _, err := os.Stat(vocabPath); err != nil {
+	const vocabPath = "vocabulary.yaml"
+	if !l.exists(vocabPath) {
 		l.errf(vocabPath, "missing (required)")
 		return
 	}
 	l.decode(vocabPath, &c.Vocab)
 
-	capPath := filepath.Join(l.dir, "capabilities.yaml")
-	if _, err := os.Stat(capPath); err != nil {
+	const capPath = "capabilities.yaml"
+	if !l.exists(capPath) {
 		l.errf(capPath, "missing (required)")
 	} else {
 		var cf CapabilityFile
@@ -116,33 +125,41 @@ func (l *loader) load() {
 		}
 	}
 
-	compFiles, err := yamlFiles(filepath.Join(l.dir, "components"))
+	compFiles, err := l.yamlFiles("components")
 	if err != nil {
-		l.errf(filepath.Join(l.dir, "components"), "%v", err)
+		l.errf("components", "%v", err)
 	}
-	for _, path := range compFiles {
-		kind := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+	for _, p := range compFiles {
+		kind := strings.TrimSuffix(path.Base(p), path.Ext(p))
 		var comps []*Component
-		if !l.decode(path, &comps) {
+		if !l.decode(p, &comps) {
 			continue
 		}
 		for _, comp := range comps {
-			comp.Kind, comp.File = kind, path
+			comp.Kind, comp.File = kind, p
 			if prev, dup := c.Components[comp.ID]; dup {
-				l.errf(path, "component %q already defined in %s", comp.ID, filepath.Base(prev.File))
+				l.errf(p, "component %q already defined in %s", comp.ID, path.Base(prev.File))
 				continue
 			}
 			c.Components[comp.ID] = comp
 		}
 	}
 
-	macFiles, err := yamlFiles(filepath.Join(l.dir, "macs"))
-	if err != nil {
-		l.errf(filepath.Join(l.dir, "macs"), "%v", err)
+	const covPath = "coverage.yaml" // optional: no file means every config counts
+	if l.exists(covPath) {
+		var cf CoverageFile
+		if l.decode(covPath, &cf) {
+			c.CoverageRules = cf.Exclude
+		}
 	}
-	for _, path := range macFiles {
-		m := &Mac{File: path}
-		if l.decode(path, m) {
+
+	macFiles, err := l.yamlFiles("macs")
+	if err != nil {
+		l.errf("macs", "%v", err)
+	}
+	for _, p := range macFiles {
+		m := &Mac{File: p}
+		if l.decode(p, m) {
 			if m.SecurityChip == "" {
 				m.SecurityChip = "none"
 			}
@@ -150,9 +167,9 @@ func (l *loader) load() {
 		}
 	}
 
-	ids, err := ReadLock(filepath.Join(l.dir, LockFile))
+	ids, err := readLockFS(l.fsys, LockFile)
 	if err != nil {
-		l.errf(filepath.Join(l.dir, LockFile), "%v", err)
+		l.errf(LockFile, "%v", err)
 	}
 	c.LockedIDs = ids
 }
