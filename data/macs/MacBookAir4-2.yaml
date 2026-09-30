@@ -9,6 +9,7 @@ sources:
   - https://support.apple.com/en-us/102869
   - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.7-13-mid-2011-specs.html
   - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.6-13-early-2012-edu-specs.html
+  - https://everymac.com/systems/apple/macbook-air/macbook-air-faq/macbook-air-late-2010-pros-and-cons.html
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA42.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C2
 releases:
