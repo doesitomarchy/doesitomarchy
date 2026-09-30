@@ -79,6 +79,9 @@ details ul a { word-break: break-all }
 .cfg-head .title { display: grid; gap: 2px; min-width: 0 }
 .cfg-head .label-text { font: 500 14px var(--mono) }
 .pill { font: 500 11.5px var(--mono); padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 2px; white-space: nowrap; align-self: start; font-variant-numeric: tabular-nums }
+.pill.criteria-link { color: var(--accent); text-decoration: none }
+.pill.criteria-link:hover { border-color: var(--accent) }
+.matrix th.col:target > span a { color: var(--accent); font-weight: 700 }
 .pill.orders { white-space: normal; overflow-wrap: anywhere }
 .cfg-head .chips { min-width: 0 }
 article.mac, .release { min-width: 0 }
@@ -188,7 +191,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
         </div>
         <div class="chips">
           {{if .BTOOnly}}<span class="pill bto">Build to order only</span>{{else}}<span class="pill orders">{{join .OrderNumbers " · "}}</span>{{end}}
-          <span class="pill">{{.Applies}} criteria apply</span>
+          <a class="pill criteria-link" href="#m-{{.ID}}" title="Show this configuration in the criteria matrix">{{.Applies}} criteria apply</a>
         </div>
       </div>
       <div class="cfg-body">
@@ -231,7 +234,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
   <p class="muted">Derived from each configuration's ports, features and components by the rules in <code>data/capabilities.yaml</code>. A dot means the criterion appears on that configuration's page.</p>
   <div class="scroll matrix-wrap">
   <table class="matrix">
-    <thead><tr><th>Criterion</th>{{range .Matrix.Configs}}<th class="col"><span><a href="#{{.Anchor}}" title="{{.ID}}">{{.Short}}</a></span></th>{{end}}<th class="count-head">Config<br>Count</th></tr></thead>
+    <thead><tr><th>Criterion</th>{{range .Matrix.Configs}}<th class="col" id="m-{{.ID}}"><span><a href="#{{.Anchor}}" title="{{.ID}}">{{.Short}}</a></span></th>{{end}}<th class="count-head">Config<br>Count</th></tr></thead>
     <tbody>
     {{range .Matrix.Groups}}
       <tr class="cat"><td class="cat-cell" colspan="{{len $.Matrix.Configs | printf "%d"}}">{{.Category.Name}}{{if .Category.Blocking}} · failure blocks install{{end}}</td><td class="cat-cell"></td><td class="cat-cell"></td></tr>
