@@ -4,8 +4,8 @@ efi: 64
 security_chip: t2
 board_ids: [Mac-7BA5B2D9E42DDD94]
 research_notes: |
-  First T2 Mac. Omarchy's Mac support manual lists the iMac Pro (2017, A1862) as supported with automatic T2 setup (patched linux-t2 kernel,
-  T2 audio, Apple's Broadcom Wi-Fi/Bluetooth firmware, t2fanrd). Disable Secure Boot in Startup Security Utility before installing.
+  First T2 Mac. Apple T2 chip. The SSD controller, audio, FaceTime camera and ambient light sensor are reached through the T2 bridge (apple-bce binds on real Linux machines).
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
   10Gb Ethernet (Aquantia AQC107, atlantic driver) is standard. Two Alpine Ridge controllers drive the four Thunderbolt 3 ports.
   Real machines show the Radeon Pro Vega 56 (1002:6867) and Vega 64 (1002:6860) as different chips; the later Vega 64X has no probes.
 sources:
@@ -17,7 +17,6 @@ sources:
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMacPro/IMP11.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
   - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/iMacPro1/iMacPro1%2C1
-  - https://omarchy.org/manual/mac-support/
 releases:
   - id: "2017"
     name: "iMac Pro (2017)"

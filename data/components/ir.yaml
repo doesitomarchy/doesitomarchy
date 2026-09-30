@@ -7,6 +7,7 @@
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac5/iMac5%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook2/MacBook2%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
 
 - id: ir/apple-05ac-8242
   name: Apple IR receiver (USB 05ac:8242)
@@ -19,3 +20,4 @@
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac7/iMac7%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac12/iMac12%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2

@@ -12,6 +12,7 @@
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook1/MacBook1%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook4/MacBook4%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
 
 - id: bluetooth/apple-05ac-8216
   name: Apple Bluetooth 2.1+EDR (USB 05ac:8216, Broadcom BCM2046)
@@ -30,6 +31,7 @@
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro6/MacBookPro6%2C2
 
 - id: bluetooth/apple-05ac-8281
   name: Apple Bluetooth 4.0 (USB 05ac:8281)
@@ -54,6 +56,7 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
 
 - id: bluetooth/broadcom-bcm4364
   name: Broadcom BCM4364 Bluetooth 5.0
@@ -122,6 +125,7 @@
   driver: hci_bcm4377
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C3
 
 - id: bluetooth/apple-05ac-8206
   name: Apple Bluetooth 2.0+EDR (USB 05ac:8206)
@@ -140,6 +144,7 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac8/iMac8%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
 
 - id: bluetooth/apple-05ac-8215
   name: Apple Bluetooth 2.1+EDR (USB 05ac:8215)
@@ -195,6 +200,7 @@
   driver: btusb
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
 
 - id: bluetooth/broadcom-bcm4350-uart
   name: Broadcom BCM4350 Bluetooth (UART)
@@ -205,3 +211,64 @@
   sources:
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook9/MacBook9%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook10/MacBook10%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro14/MacBookPro14%2C1
+
+- id: bluetooth/apple-05ac-8217
+  name: Apple Bluetooth 2.1+EDR (USB 05ac:8217)
+  vendor: Apple
+  ids: [usb:05ac:8217]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C2
+
+- id: bluetooth/apple-05ac-821a
+  name: Apple Bluetooth 2.1+EDR (USB 05ac:821a)
+  vendor: Apple
+  ids: [usb:05ac:821a]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C2
+
+- id: bluetooth/apple-05ac-821d
+  name: Apple Bluetooth 4.0 (USB 05ac:821d)
+  vendor: Apple
+  ids: [usb:05ac:821d]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
+
+- id: bluetooth/apple-05ac-8286
+  name: Apple Bluetooth 4.0 (USB 05ac:8286)
+  vendor: Apple
+  ids: [usb:05ac:8286]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C1
+
+- id: bluetooth/apple-05ac-828c
+  name: Apple Bluetooth 4.0 (USB 05ac:828c)
+  vendor: Apple
+  ids: [usb:05ac:828c]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C2
+
+- id: bluetooth/apple-05ac-8290
+  name: Apple Bluetooth 4.0 (USB 05ac:8290)
+  vendor: Apple
+  ids: [usb:05ac:8290]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C4
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro12/MacBookPro12%2C1
+
+- id: bluetooth/broadcom-bcm43602-uart
+  name: Broadcom BCM43602 Bluetooth (UART)
+  vendor: Broadcom
+  ids: []
+  driver: hci_uart
+  notes: On the 2016–2017 15-inch and four-port 13-inch MacBook Pro, Bluetooth is attached over UART (hci_uart), not USB.
+  sources:
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro13/MacBookPro13%2C2
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro14/MacBookPro14%2C3

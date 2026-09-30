@@ -4,13 +4,13 @@ efi: 64
 security_chip: t2
 board_ids: [Mac-AF89B6D9451A490B]
 research_notes: |
-  Last Intel iMac and the only T2 iMac. Omarchy's Mac support manual does not list it among supported T2 Macs, though the same automatic T2 setup should apply.
-  Disable Secure Boot in Startup Security Utility before installing. Very few Linux hardware probes exist for this model.
+  Last Intel iMac and the only T2 iMac. Apple T2 chip. The SSD controller, audio, FaceTime camera and ambient light sensor are reached through the T2 bridge (apple-bce binds on real Linux machines).
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
+  Very few Linux hardware probes exist for this model.
   iMac20,2 covers the Radeon Pro 5700 and 5700 XT build-to-order configurations. No Linux hardware probes exist for it.
 sources:
   - https://support.apple.com/en-us/111913
   - https://support.apple.com/en-us/108054
-  - https://omarchy.org/manual/mac-support/
   - https://everymac.com/systems/apple/imac/specs/imac-core-i7-3.8-8-core-27-inch-retina-5k-2020-20-2-specs.html
   - https://everymac.com/systems/apple/imac/specs/imac-core-i9-3.6-10-core-27-inch-retina-5k-2020-20-2-specs.html
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMac/IM202.yaml

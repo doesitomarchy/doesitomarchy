@@ -4,15 +4,14 @@ efi: 64
 security_chip: t2
 board_ids: [Mac-226CB3C6A851A671]
 research_notes: |
-  T2 Mac. Omarchy's manual lists the MacBook Air 13-inch (2018) A1932 as supported with automatic setup (patched linux-t2 kernel, T2 audio,
-  Apple's Broadcom Wi-Fi/Bluetooth firmware, t2fanrd). Disable Secure Boot in Startup Security Utility before installing.
-  Keyboard, trackpad, camera and ambient light sensor are USB devices behind the T2 bridge (apple-bce). Charging is over USB-C.
+  Apple T2 chip. The SSD controller, audio, FaceTime camera and ambient light sensor are reached through the T2 bridge (apple-bce binds on real Linux machines). Keyboard and trackpad are also USB devices behind the T2.
+  Booting a non-Apple OS requires Startup Security Utility (in Recovery) set to "No Security" and "Allow booting from external or removable media". The Broadcom Wi-Fi/Bluetooth chip needs Apple's firmware files.
+  Charging is over USB-C.
   Adds a True Tone display; hardware is otherwise the 2018 model.
 sources:
   - https://support.apple.com/en-us/111948
   - https://support.apple.com/en-us/102869
   - https://everymac.com/systems/apple/macbook-air/specs/macbook-air-core-i5-1.6-13-retina-display-true-tone-2019-specs.html
-  - https://omarchy.org/manual/mac-support/
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA82.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C2
 releases:

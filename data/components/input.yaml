@@ -94,7 +94,7 @@
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C2
 
 - id: input/apple-mb-unibody
-  name: Apple internal keyboard/glass trackpad (MacBook unibody 2008–2010)
+  name: Apple internal keyboard/glass trackpad (MacBook and MacBook Pro unibody 2008–2010)
   vendor: Apple
   ids: [usb:05ac:0236, usb:05ac:0237, usb:05ac:0238]
   driver: bcm5974
@@ -102,9 +102,11 @@
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook5/MacBook5%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook6/MacBook6%2C1
     - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBook7/MacBook7%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro5/MacBookPro5%2C5
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro7/MacBookPro7%2C1
 
 - id: input/apple-spi-keyboard
-  name: Apple SPI keyboard and Force Touch trackpad (12-inch MacBook)
+  name: Apple SPI keyboard and Force Touch trackpad (12-inch MacBook, 2016–2017 MacBook Pro)
   vendor: Apple
   ids: []
   driver: applespi
@@ -112,3 +114,110 @@
   sources:
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook9/MacBook9%2C1
     - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBook10/MacBook10%2C1
+    - https://github.com/linuxhw/Dmesg/tree/main/Notebook/Apple/MacBookPro14/MacBookPro14%2C1
+
+- id: input/apple-mbp-2006
+  name: Apple internal keyboard/trackpad (MacBook Pro 2006)
+  vendor: Apple
+  ids: [usb:05ac:0217, usb:05ac:0218]
+  driver: usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro1/MacBookPro1%2C1
+
+- id: input/apple-mbp-2006b
+  name: Apple internal keyboard/trackpad (MacBook Pro Core 2 Duo, 2006–2007)
+  vendor: Apple
+  ids: [usb:05ac:021a, usb:05ac:021b]
+  driver: usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro2/MacBookPro2%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro3/MacBookPro3%2C1
+
+- id: input/apple-mbp-2008
+  name: Apple internal keyboard/Multi-Touch trackpad (MacBook Pro Early 2008)
+  vendor: Apple
+  ids: [usb:05ac:0230, usb:05ac:0231]
+  driver: bcm5974, usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro4/MacBookPro4%2C1
+
+- id: input/apple-mbp-2011
+  name: Apple internal keyboard/trackpad (MacBook Pro 2011–2012)
+  vendor: Apple
+  ids: [usb:05ac:0245, usb:05ac:0246, usb:05ac:0252, usb:05ac:0253, usb:05ac:0254]
+  driver: bcm5974, usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro8/MacBookPro8%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro9/MacBookPro9%2C2
+
+- id: input/apple-mbp-retina-15
+  name: Apple internal keyboard/trackpad (Retina MacBook Pro 15-inch, 2012–2014)
+  vendor: Apple
+  ids: [usb:05ac:0262, usb:05ac:0263]
+  driver: bcm5974, usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C3
+
+- id: input/apple-mbp-retina-13
+  name: Apple internal keyboard/trackpad (Retina MacBook Pro 13-inch, 2012–2014)
+  vendor: Apple
+  ids: [usb:05ac:0259, usb:05ac:025a]
+  driver: bcm5974, usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro10/MacBookPro10%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C1
+
+- id: input/apple-mbp-2015-15
+  name: Apple internal keyboard/Force Touch trackpad (MacBook Pro 15-inch, Mid 2015)
+  vendor: Apple
+  ids: [usb:05ac:0274]
+  driver: bcm5974, usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C4
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro11/MacBookPro11%2C5
+
+- id: input/apple-mbp-2015-13
+  name: Apple internal keyboard/Force Touch trackpad (MacBook Pro 13-inch, Early 2015)
+  vendor: Apple
+  ids: [usb:05ac:0273]
+  driver: bcm5974, usbhid
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro12/MacBookPro12%2C1
+
+- id: input/apple-t2-mbp-2018-15
+  name: Apple internal keyboard/trackpad via T2 (MacBook Pro 15-inch, 2018–2019)
+  vendor: Apple
+  ids: [usb:05ac:027c]
+  driver: hid-apple, bcm5974 (via apple-bce)
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C1
+
+- id: input/apple-t2-mbp-2018-13
+  name: Apple internal keyboard/trackpad via T2 (MacBook Pro 13-inch, 2018–2019)
+  vendor: Apple
+  ids: [usb:05ac:027b, usb:05ac:027d]
+  driver: hid-apple, bcm5974 (via apple-bce)
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C2
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C4
+
+- id: input/apple-t2-mbp-2020-13
+  name: Apple internal keyboard/trackpad via T2 (MacBook Pro 13-inch 2020, four Thunderbolt ports)
+  vendor: Apple
+  ids: [usb:05ac:027e]
+  driver: hid-apple, bcm5974 (via apple-bce)
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C2
+
+- id: input/apple-t2-mbp-generic
+  name: Apple internal keyboard/trackpad via T2 (MacBook Pro 16-inch 2019–2020, 13-inch 2020 two-port)
+  vendor: Apple
+  ids: []
+  driver: hid-apple, bcm5974 (via apple-bce)
+  notes: Exposed as a USB device by the T2 bridge (apple-bce).
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C1
+  uncertain:
+    - field: ids
+      note: No probe of these models lists the internal keyboard's USB product ID.
