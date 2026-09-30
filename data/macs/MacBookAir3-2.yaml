@@ -32,6 +32,3 @@ releases:
         components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821b, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, card-reader/apple-usb-8403, storage/nvidia-mcp89-sata, input/apple-mba-13-2010]
         ports: { usb-a-2: 2, mini-displayport: 1, sd-card: 1, audio-out: 1 }
         features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan]
-        uncertain:
-          - field: features.ambient-light-sensor
-            note: "Not listed by Apple or EveryMac for Late 2010 (the keyboard is not backlit); recorded as absent."
