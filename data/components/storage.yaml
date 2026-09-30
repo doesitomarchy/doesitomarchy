@@ -1,0 +1,66 @@
+- id: storage/intel-ich7-sata
+  name: Intel ICH7-M SATA controller
+  vendor: Intel
+  ids: [pci:8086:27c4, pci:8086:27c5]
+  driver: ata_piix, ahci
+  notes: Appears as 27c4 (IDE mode, ata_piix) or 27c5 (AHCI) depending on how the firmware hands it over.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+
+- id: storage/nvidia-mcp79-sata
+  name: NVIDIA MCP79 SATA controller
+  vendor: NVIDIA
+  ids: [pci:10de:0ab9, pci:10de:0ab5]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+
+- id: storage/nvidia-mcp89-sata
+  name: NVIDIA MCP89 SATA controller
+  vendor: NVIDIA
+  ids: [pci:10de:0d88]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+
+- id: storage/intel-6-series-sata
+  name: Intel 6 Series SATA controller
+  vendor: Intel
+  ids: [pci:8086:1c03]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+
+- id: storage/intel-7-series-sata
+  name: Intel 7 Series SATA controller
+  vendor: Intel
+  ids: [pci:8086:1e03]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+
+- id: storage/intel-8-series-sata
+  name: Intel 8 Series SATA controller
+  vendor: Intel
+  ids: [pci:8086:9c03]
+  driver: ahci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+
+- id: storage/apple-pcie-ssd-ahci
+  name: Apple PCIe SSD (Samsung, AHCI)
+  vendor: Samsung
+  ids: [pci:144d:a801, pci:144d:1600]
+  driver: ahci
+  notes: Apple PCIe flash storage used for SSD and Fusion Drive options (2013–2015). Speaks AHCI, not NVMe.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+
+- id: storage/apple-ans2-nvme
+  name: Apple ANS2 NVMe controller (T2)
+  vendor: Apple
+  ids: [pci:106b:2005]
+  driver: nvme
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1

@@ -1,0 +1,57 @@
+# Wi-Fi adapters. `driver` lists the kernel drivers seen bound on real machines.
+
+- id: wifi/atheros-ar542x
+  name: Atheros AR242x/AR542x 802.11a/b/g
+  vendor: Atheros
+  ids: [pci:168c:001c]
+  driver: ath5k
+  notes: Apple AirPort Extreme card (subsystem 106b:0086).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+
+- id: wifi/broadcom-bcm4321
+  name: Broadcom BCM4321 802.11a/b/g/n
+  vendor: Broadcom
+  ids: [pci:14e4:4328]
+  driver: b43-pci-bridge, wl
+  notes: Apple AirPort Extreme card (subsystem 106b:0090). Seen with both the in-kernel b43 (via ssb) and the proprietary wl driver.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+
+- id: wifi/broadcom-bcm43224
+  name: Broadcom BCM43224 802.11a/b/g/n
+  vendor: Broadcom
+  ids: [pci:14e4:4353]
+  driver: bcma-pci-bridge, wl
+  notes: Apple subsystem 106b:0093.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+
+- id: wifi/broadcom-bcm4331
+  name: Broadcom BCM4331 802.11a/b/g/n
+  vendor: Broadcom
+  ids: [pci:14e4:4331]
+  driver: bcma-pci-bridge, wl
+  notes: Apple subsystems 106b:00e4 (Mid 2011) and 106b:010e (Late 2012).
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+
+- id: wifi/broadcom-bcm4360
+  name: Broadcom BCM4360 802.11ac
+  vendor: Broadcom
+  ids: [pci:14e4:43a0]
+  driver: bcma-pci-bridge, wl
+  notes: Apple subsystems 106b:013b and 106b:0112. No in-kernel driver supports 802.11ac on this chip; the proprietary wl driver is the usual choice.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+
+- id: wifi/broadcom-bcm4364
+  name: Broadcom BCM4364 802.11ac
+  vendor: Broadcom
+  ids: [pci:14e4:4464]
+  driver: brcmfmac
+  notes: T2-era combo chip (Wi-Fi + Bluetooth). Needs Apple's Broadcom firmware, which Omarchy's T2 install path sets up.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1

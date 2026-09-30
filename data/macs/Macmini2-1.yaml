@@ -1,0 +1,41 @@
+identifier: Macmini2,1
+line: mac-mini
+efi: 32
+board_ids: [Mac-F4208EAA]
+research_notes: |
+  64-bit Core 2 Duo CPU, but the firmware is believed to be 32-bit EFI, so the stock x86_64 installer is not expected to boot without a 32-bit EFI boot shim.
+  Intel GMA 950 graphics: expect a basic i915 framebuffer but no modern OpenGL, so Hyprland will likely fall back to software rendering.
+  Macmini2,1 is the Macmini1,1 platform with a Merom Core 2 Duo; every other component observed on real machines is identical.
+sources:
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-1.83-specs.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-2.0-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM21.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+uncertain:
+  - field: efi
+    note: >-
+      EveryMac lists "EFI Architecture: 64-Bit", but community 32-bit-EFI lists include Macmini2,1. Linux dmesg shows the
+      same firmware table layout (ACPI …efd000 / SMBIOS …ebf000) as the 32-bit-EFI MacBook2,1 rather than the 64-bit
+      MacBook3,1 layout. Recorded as 32; the first boot test should settle it.
+releases:
+  - id: mid-2007
+    name: Mac mini (Mid 2007)
+    announced: 2007-08-07
+    discontinued: 2009-03-03
+    model_numbers: [A1176]
+    emc: ["2108"]
+    configs:
+      - id: macmini2-1-mid-2007-a
+        label: Core 2 Duo 1.83 or 2.0 GHz · GMA 950
+        order_numbers: [MB138LL/A, MB139LL/A]
+        cpu:
+          codename: merom
+          standard:
+            - { model: Core 2 Duo T5600, ghz: 1.83, cores: 2 }
+            - { model: Core 2 Duo T7200, ghz: 2.0, cores: 2 }
+        memory: { type: DDR2-667 SO-DIMM, standard_gb: [1], max_gb: 2, notes: "Accepts 4 GB, of which about 3 GB is usable." }
+        storage: { interface: sata, standard: [80 GB HDD, 120 GB HDD], bto: [120 GB HDD, 160 GB HDD] }
+        components: [gpu/intel-gma-950, wifi/atheros-ar542x, bluetooth/apple-05ac-8205, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, ir/apple-05ac-8240]
+        ports: { usb-a-2: 4, firewire-400: 1, dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, ir-receiver, optical-drive, fan]
+        notes: MB138LL/A (1.83 GHz) has a Combo drive; MB139LL/A (2.0 GHz) has a SuperDrive.

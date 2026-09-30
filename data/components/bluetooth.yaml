@@ -1,0 +1,73 @@
+# Bluetooth controllers. Most pre-T2 Macs expose Bluetooth as an internal USB
+# device behind a Broadcom BCM2046B1 hub (usb:0a5c:4500). Components are keyed
+# by Apple's USB product ID because the exact Broadcom part is rarely confirmed.
+
+- id: bluetooth/apple-05ac-8205
+  name: Apple Bluetooth 2.0+EDR (USB 05ac:8205)
+  vendor: Apple
+  ids: [usb:05ac:8205]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini2/Macmini2%2C1
+
+- id: bluetooth/apple-05ac-8216
+  name: Apple Bluetooth 2.1+EDR (USB 05ac:8216, Broadcom BCM2046)
+  vendor: Apple
+  ids: [usb:05ac:8216]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+
+- id: bluetooth/apple-05ac-8218
+  name: Apple Bluetooth 2.1+EDR (USB 05ac:8218)
+  vendor: Apple
+  ids: [usb:05ac:8218]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+
+- id: bluetooth/apple-05ac-8281
+  name: Apple Bluetooth 4.0 (USB 05ac:8281)
+  vendor: Apple
+  ids: [usb:05ac:8281]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+  uncertain:
+    - field: name
+      note: Commonly reported as a Broadcom BCM20702 module; not confirmed from a primary source.
+
+- id: bluetooth/apple-05ac-828a
+  name: Apple Bluetooth 4.0 (USB 05ac:828a)
+  vendor: Apple
+  ids: [usb:05ac:828a]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+  uncertain:
+    - field: name
+      note: Commonly reported as a Broadcom BCM20702 module; not confirmed from a primary source.
+
+- id: bluetooth/apple-05ac-8289
+  name: Apple Bluetooth 4.0 (USB 05ac:8289)
+  vendor: Apple
+  ids: [usb:05ac:8289]
+  driver: btusb
+  sources:
+    - https://github.com/linuxhw/LsUSB/tree/master/Mini%20Pc/Apple/Macmini7/Macmini7%2C1
+  uncertain:
+    - field: name
+      note: Commonly reported as a Broadcom BCM20702 module; not confirmed from a primary source.
+
+- id: bluetooth/broadcom-bcm4364
+  name: Broadcom BCM4364 Bluetooth 5.0
+  vendor: Broadcom
+  ids: []
+  driver: ""
+  notes: Bluetooth half of the BCM4364 combo chip. Not attached over USB, so it does not appear in lsusb.
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini8/Macmini8%2C1
+  uncertain:
+    - field: driver
+      note: Attachment (UART vs PCIe) and the Linux driver path for BCM4364 Bluetooth on T2 Macs need confirming by a test.

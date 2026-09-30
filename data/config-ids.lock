@@ -1,0 +1,20 @@
+# Every configuration ID ever issued. Test results reference these IDs.
+# Managed by "doioma lock": new IDs are appended, none are ever removed.
+# A renamed config keeps its old ID in its "aliases" list.
+macmini1-1-early-2006-a
+macmini1-1-late-2006-a
+macmini2-1-mid-2007-a
+macmini3-1-early-2009-a
+macmini3-1-late-2009-a
+macmini3-1-late-2009-server
+macmini4-1-mid-2010-a
+macmini4-1-mid-2010-server
+macmini5-1-mid-2011-a
+macmini5-2-mid-2011-a
+macmini5-3-mid-2011-server
+macmini6-1-late-2012-a
+macmini6-2-late-2012-a
+macmini7-1-late-2014-a
+macmini7-1-late-2014-b
+macmini8-1-2018-10gbe
+macmini8-1-2018-a

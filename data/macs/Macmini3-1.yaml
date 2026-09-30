@@ -1,0 +1,71 @@
+identifier: Macmini3,1
+line: mac-mini
+efi: 64
+board_ids: [Mac-F22C86C8]
+research_notes: |
+  Audio is a Realtek ALC889A codec on every machine observed, not a Cirrus Logic codec as some generation-based lists assume.
+  One of 48 observed machines had a BCM43224 Wi-Fi card (Apple subsystem 106b:0093) instead of the BCM4321, possibly a replacement card.
+sources:
+  - https://support.apple.com/en-us/111345
+  - https://support.apple.com/en-us/112482
+  - https://support.apple.com/en-us/102852
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-2.0-early-2009-nvidia-specs.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-2.26-late-2009-specs.html
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-2-duo-2.53-late-2009-server-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM31.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+releases:
+  - id: early-2009
+    name: Mac mini (Early 2009)
+    announced: 2009-03-03
+    discontinued: 2009-10-20
+    model_numbers: [A1283]
+    emc: ["2264"]
+    configs:
+      - id: macmini3-1-early-2009-a
+        label: Core 2 Duo 2.0 GHz · GeForce 9400M
+        order_numbers: [MB463LL/A, MB464LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P7350, ghz: 2.0, cores: 2 }]
+          bto: [{ model: Core 2 Duo P8400, ghz: 2.26, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [1, 2], max_gb: 4, notes: "Accepts 8 GB with a firmware update." }
+        storage: { interface: sata, standard: [120 GB HDD, 320 GB HDD], bto: [250 GB HDD] }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8216, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, ir/apple-05ac-8242]
+        ports: { usb-a-2: 5, firewire-800: 1, mini-dvi: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, ir-receiver, optical-drive, fan]
+  - id: late-2009
+    name: Mac mini (Late 2009)
+    announced: 2009-10-20
+    discontinued: 2010-06-15
+    model_numbers: [A1283]
+    emc: ["2336"]
+    configs:
+      - id: macmini3-1-late-2009-a
+        label: Core 2 Duo 2.26 or 2.53 GHz · GeForce 9400M
+        order_numbers: [MC238LL/A, MC239LL/A]
+        cpu:
+          codename: penryn
+          standard:
+            - { model: Core 2 Duo P7550, ghz: 2.26, cores: 2 }
+            - { model: Core 2 Duo P8700, ghz: 2.53, cores: 2 }
+          bto:
+            - { model: Core 2 Duo P8700, ghz: 2.53, cores: 2 }
+            - { model: Core 2 Duo P8800, ghz: 2.66, cores: 2 }
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [2, 4], max_gb: 4, notes: "Accepts 8 GB." }
+        storage: { interface: sata, standard: [160 GB HDD, 320 GB HDD], bto: [320 GB HDD, 500 GB HDD] }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8216, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, ir/apple-05ac-8242]
+        ports: { usb-a-2: 5, firewire-800: 1, mini-dvi: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, ir-receiver, optical-drive, fan]
+      - id: macmini3-1-late-2009-server
+        label: Server · Core 2 Duo 2.53 GHz · two HDDs, no optical drive
+        order_numbers: [MC408LL/A]
+        cpu:
+          codename: penryn
+          standard: [{ model: Core 2 Duo P8700, ghz: 2.53, cores: 2 }]
+        memory: { type: DDR3-1066 SO-DIMM, standard_gb: [4], max_gb: 4, notes: "Accepts 8 GB." }
+        storage: { interface: sata, standard: [2 × 500 GB HDD] }
+        components: [gpu/nvidia-geforce-9400m, wifi/broadcom-bcm4321, bluetooth/apple-05ac-8216, audio/realtek-alc889a, ethernet/nvidia-mcp79, firewire/lsi-fw643, storage/nvidia-mcp79-sata, ir/apple-05ac-8242]
+        ports: { usb-a-2: 5, firewire-800: 1, mini-dvi: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, ir-receiver, fan]
+        notes: Mac mini with Snow Leopard Server. A second hard drive replaces the optical drive.

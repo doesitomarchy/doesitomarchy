@@ -1,0 +1,32 @@
+identifier: Macmini5,1
+line: mac-mini
+efi: 64
+board_ids: [Mac-8ED6AF5B48C039E1]
+research_notes: |
+  Mid 2011 Mac minis are three identifiers: 5,1 (i5, HD 3000), 5,2 (i5/i7 with Radeon HD 6630M) and 5,3 (quad-core i7 Server).
+  No optical drive from this generation on.
+sources:
+  - https://support.apple.com/en-us/112007
+  - https://support.apple.com/en-us/102852
+  - https://everymac.com/systems/apple/mac_mini/specs/mac-mini-core-i5-2.3-mid-2011-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/Macmini/MM51.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1
+releases:
+  - id: mid-2011
+    name: Mac mini (Mid 2011)
+    announced: 2011-07-20
+    discontinued: 2012-10-23
+    model_numbers: [A1347]
+    emc: ["2442"]
+    configs:
+      - id: macmini5-1-mid-2011-a
+        label: Core i5 2.3 GHz · HD Graphics 3000
+        order_numbers: [MC815LL/A]
+        cpu:
+          codename: sandy-bridge
+          standard: [{ model: Core i5-2415M, ghz: 2.3, cores: 2 }]
+        memory: { type: DDR3-1333 SO-DIMM, standard_gb: [2], max_gb: 8, notes: "Accepts 16 GB." }
+        storage: { interface: sata, standard: [500 GB HDD], bto: [750 GB HDD] }
+        components: [gpu/intel-hd-3000, wifi/broadcom-bcm4331, bluetooth/apple-05ac-8281, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, card-reader/broadcom-bcm57765-sd, firewire/ti-xio2213, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, ir/apple-05ac-8242]
+        ports: { thunderbolt-1: 1, usb-a-2: 4, firewire-800: 1, hdmi: 1, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        features: [builtin-speaker, headset-mic, ir-receiver, fan]

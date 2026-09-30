@@ -1,0 +1,25 @@
+- id: firewire/lsi-fw322
+  name: LSI FW322/323 FireWire 400 controller
+  vendor: LSI
+  ids: [pci:11c1:5811]
+  driver: firewire_ohci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini1/Macmini1%2C1
+
+- id: firewire/lsi-fw643
+  name: LSI FW643 FireWire 800 controller
+  vendor: LSI
+  ids: [pci:11c1:5901]
+  driver: firewire_ohci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini3/Macmini3%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini6/Macmini6%2C1
+
+- id: firewire/ti-xio2213
+  name: Texas Instruments XIO2213 FireWire 800 controller
+  vendor: Texas Instruments
+  ids: [pci:104c:823f]
+  driver: firewire_ohci
+  sources:
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini4/Macmini4%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Mini%20Pc/Apple/Macmini5/Macmini5%2C1

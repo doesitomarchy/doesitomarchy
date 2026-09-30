@@ -28,8 +28,10 @@ func TestRun(t *testing.T) {
 		{"unknown", []string{"frobnicate"}, 2, ""},
 		{"help", []string{"help"}, 0, "Usage:"},
 		{"version", []string{"version"}, 0, "dev"},
-		{"validate empty", []string{"validate", "-data", empty}, 0, "catalog ok: 0 mac files"},
+		{"validate real data", []string{"validate", "-data", filepath.Join("..", "..", "data")}, 0, "catalog ok:"},
+		{"validate empty", []string{"validate", "-data", empty}, 1, ""},
 		{"validate bad", []string{"validate", "-data", bad}, 1, ""},
+		{"lock refuses invalid catalog", []string{"lock", "-data", bad}, 1, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

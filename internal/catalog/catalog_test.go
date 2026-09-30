@@ -7,62 +7,289 @@ import (
 	"testing"
 )
 
-func write(t *testing.T, path, body string) {
+// ── Real catalog ────────────────────────────────────────────────────────────
+
+func loadReal(t *testing.T) *Catalog {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestLoadEmptyCatalog(t *testing.T) {
-	dir := t.TempDir()
-	s, err := Load(dir)
+	c, err := Load(filepath.Join("..", "..", "data"))
 	if err != nil {
-		t.Fatalf("empty catalog should validate, got %v", err)
+		t.Fatalf("data/ must validate:\n%v", err)
 	}
-	if s != (Summary{}) {
-		t.Fatalf("expected zero summary, got %+v", s)
-	}
+	return c
 }
 
-func TestLoadCountsFiles(t *testing.T) {
-	dir := t.TempDir()
-	write(t, filepath.Join(dir, "capabilities.yaml"), "- id: boot.efi64\n")
-	write(t, filepath.Join(dir, "components", "gpu.yaml"), "- id: gpu/x\n")
-	write(t, filepath.Join(dir, "macs", "MacBookPro5-1.yaml"), "identifier: MacBookPro5,1\n")
-	write(t, filepath.Join(dir, "macs", "README.md"), "not yaml, ignored")
-
-	s, err := Load(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := Summary{Capabilities: 1, Components: 1, Macs: 1}
-	if s != want {
-		t.Fatalf("got %+v, want %+v", s, want)
-	}
-}
-
-func TestLoadReportsAllInvalidFiles(t *testing.T) {
-	dir := t.TempDir()
-	write(t, filepath.Join(dir, "macs", "a.yaml"), "key: [unclosed\n")
-	write(t, filepath.Join(dir, "components", "b.yaml"), "a: 1\n  b: 2\n")
-
-	_, err := Load(dir)
-	if err == nil {
-		t.Fatal("expected error for invalid YAML")
-	}
-	for _, name := range []string{"a.yaml", "b.yaml"} {
-		if !strings.Contains(err.Error(), name) {
-			t.Errorf("error should mention %s, got:\n%v", name, err)
+func findConfig(t *testing.T, c *Catalog, id string) (*Mac, *Config) {
+	t.Helper()
+	for _, m := range c.Macs {
+		for ri := range m.Releases {
+			for ci := range m.Releases[ri].Configs {
+				if cfg := &m.Releases[ri].Configs[ci]; cfg.ID == id {
+					return m, cfg
+				}
+			}
 		}
+	}
+	t.Fatalf("config %s not found", id)
+	return nil, nil
+}
+
+func capSet(c *Catalog, m *Mac, cfg *Config) map[string]bool {
+	out := map[string]bool{}
+	for _, cap := range c.Applicable(m, cfg) {
+		out[cap.ID] = true
+	}
+	return out
+}
+
+func TestRealCatalogApplicability(t *testing.T) {
+	c := loadReal(t)
+	tests := []struct {
+		config   string
+		has, not []string
+	}{
+		{"macmini2-1-mid-2007-a",
+			[]string{"boot.installer-efi32", "graphics.integrated", "ports.firewire", "storage.optical", "input.ir-receiver"},
+			[]string{"boot.installer-efi64", "graphics.discrete", "ports.sd-card", "audio.display-out"}},
+		{"macmini3-1-late-2009-a", []string{"storage.optical", "audio.optical-out"}, nil},
+		{"macmini3-1-late-2009-server", nil, []string{"storage.optical"}},
+		{"macmini5-2-mid-2011-a",
+			[]string{"graphics.discrete", "ports.thunderbolt", "audio.display-out", "audio.headset-mic"},
+			[]string{"graphics.integrated", "graphics.switching"}},
+		{"macmini8-1-2018-a",
+			[]string{"boot.installer-efi64", "ports.usb-c", "ports.thunderbolt", "network.ethernet", "network.wifi", "audio.headphone"},
+			[]string{"ports.sd-card", "input.ir-receiver", "audio.line-in", "ports.firewire", "bridge.touch-bar-camera"}},
+	}
+	laptopOnly := []string{"power.battery-status", "power.lid", "input.keyboard", "input.trackpad", "display.brightness", "camera.builtin"}
+	for _, tt := range tests {
+		t.Run(tt.config, func(t *testing.T) {
+			m, cfg := findConfig(t, c, tt.config)
+			got := capSet(c, m, cfg)
+			for _, id := range tt.has {
+				if !got[id] {
+					t.Errorf("expected %s to apply", id)
+				}
+			}
+			for _, id := range append(tt.not, laptopOnly...) {
+				if got[id] {
+					t.Errorf("expected %s NOT to apply", id)
+				}
+			}
+			if !got["boot.install"] || !got["power.sleep-wake"] {
+				t.Error("universal capabilities must always apply")
+			}
+		})
+	}
+}
+
+func TestRealCatalogHardBlocker(t *testing.T) {
+	c := loadReal(t)
+	for _, m := range c.Macs {
+		if m.Identifier == "Macmini1,1" && m.HardBlocker == "" {
+			t.Error("Macmini1,1 (Yonah) must have a hard_blocker")
+		}
+	}
+}
+
+// ── Validation rules, against a minimal fixture ─────────────────────────────
+
+var fixture = map[string]string{
+	"vocabulary.yaml": `
+lines:
+  mac-mini: { name: Mac mini, form: desktop, identifier_prefix: Macmini }
+security_chips:
+  none: { name: None }
+component_kinds:
+  gpu: { name: Graphics }
+  wifi: { name: Wi-Fi }
+cpu_codenames:
+  yonah: { name: Yonah, family: yonah, bits: 32 }
+  penryn: { name: Penryn, family: core, bits: 64 }
+ports:
+  usb-a-2: { name: USB 2.0 }
+  hdmi: { name: HDMI, video: true }
+features:
+  fan: { name: Fan }
+  builtin-display: { name: Built-in display }
+`,
+	"capabilities.yaml": `
+categories:
+  - { id: boot, name: Boot, blocking: true }
+  - { id: graphics, name: Graphics }
+capabilities:
+  - { id: boot.install, name: Install completes }
+  - id: graphics.external-display
+    name: External display
+    when: { all: ["video-out"] }
+`,
+	"components/gpu.yaml": `
+- id: gpu/test-gpu
+  name: Test GPU
+  vendor: Intel
+  role: integrated
+  ids: [pci:8086:0001]
+  sources: [https://example.com/gpu]
+`,
+	"macs/Macmini9-9.yaml": `
+identifier: Macmini9,9
+line: mac-mini
+efi: 64
+sources: [https://example.com/mini]
+releases:
+  - id: mid-2099
+    name: Mac mini (Mid 2099)
+    announced: 2099-06-01
+    model_numbers: [A1234]
+    emc: ["1234"]
+    configs:
+      - id: macmini9-9-mid-2099-a
+        label: Test config
+        order_numbers: [MB463LL/A]
+        cpu: { codename: penryn, standard: [{ model: Core 2 Duo P7350, ghz: 2.0, cores: 2 }] }
+        memory: { type: DDR3, standard_gb: [2], max_gb: 8 }
+        storage: { interface: sata, standard: [120 GB HDD] }
+        components: [gpu/test-gpu]
+        ports: { usb-a-2: 2, hdmi: 1 }
+        features: [fan]
+`,
+	"config-ids.lock": "macmini9-9-mid-2099-a\n",
+}
+
+// writeFixture writes the fixture with optional edits: file → (old → new).
+func writeFixture(t *testing.T, edits map[string][2]string) string {
+	t.Helper()
+	dir := t.TempDir()
+	for name, body := range fixture {
+		if e, ok := edits[name]; ok {
+			if !strings.Contains(body, e[0]) {
+				t.Fatalf("fixture %s does not contain %q", name, e[0])
+			}
+			body = strings.Replace(body, e[0], e[1], 1)
+		}
+		path := filepath.Join(dir, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
+func TestFixtureIsValid(t *testing.T) {
+	c, err := Load(writeFixture(t, nil))
+	if err != nil {
+		t.Fatalf("fixture should validate:\n%v", err)
+	}
+	m, cfg := c.Macs[0], &c.Macs[0].Releases[0].Configs[0]
+	if got := capSet(c, m, cfg); !got["graphics.external-display"] || !got["boot.install"] {
+		t.Errorf("unexpected applicability: %v", got)
+	}
+}
+
+func TestValidationRules(t *testing.T) {
+	const mac = "macs/Macmini9-9.yaml"
+	tests := []struct {
+		name  string
+		file  string
+		old   string
+		new   string
+		wants string
+	}{
+		{"unknown field", mac, "efi: 64", "efi: 64\nfirmware: 64", "unknown field"},
+		{"unknown component", mac, "components: [gpu/test-gpu]", "components: [gpu/test-gpu, wifi/nope]", `unknown component "wifi/nope"`},
+		{"no gpu", mac, "components: [gpu/test-gpu]", "components: []", "at least one gpu"},
+		{"bad order number", mac, "MB463LL/A", "MB463", "must look like MB463LL/A"},
+		{"missing mac source", mac, "sources: [https://example.com/mini]", "sources: []", "at least one source"},
+		{"bad date", mac, "announced: 2099-06-01", "announced: June 2099", "YYYY-MM-DD"},
+		{"32-bit cpu without blocker", mac, "codename: penryn", "codename: yonah", "requires hard_blocker"},
+		{"identifier/line mismatch", mac, "identifier: Macmini9,9", "identifier: iMac9,9", "does not match"},
+		{"config id prefix", mac, "id: macmini9-9-mid-2099-a", "id: imac-mid-2099-a", "starting with"},
+		{"unknown port", mac, "usb-a-2: 2", "usb-z: 2", `unknown port class "usb-z"`},
+		{"unknown feature", mac, "features: [fan]", "features: [fan, jetpack]", `unknown feature "jetpack"`},
+		{"display without feature", mac, "features: [fan]", "features: [fan]\n        display: { inches: 13, resolution: 1280x800 }", "display is required exactly"},
+		{"unlocked config", "config-ids.lock", "macmini9-9-mid-2099-a\n", "", "not locked yet"},
+		{"removed config", "config-ids.lock", "macmini9-9-mid-2099-a\n", "macmini9-9-mid-2099-a\nmacmini9-9-old\n", "was removed"},
+		{"unknown tag", "capabilities.yaml", `["video-out"]`, `["feature:jetpack"]`, `unknown tag "feature:jetpack"`},
+		{"gpu without role", "components/gpu.yaml", "role: integrated", "role: ''", "gpu role"},
+		{"bad hardware id", "components/gpu.yaml", "pci:8086:0001", "8086:0001", "must look like pci:"},
+		{"duplicate key", mac, "efi: 64", "efi: 64\nefi: 32", "already defined"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Load(writeFixture(t, map[string][2]string{tt.file: {tt.old, tt.new}}))
+			if err == nil {
+				t.Fatalf("expected an error containing %q", tt.wants)
+			}
+			if !strings.Contains(err.Error(), tt.wants) {
+				t.Fatalf("error should contain %q, got:\n%v", tt.wants, err)
+			}
+		})
+	}
+}
+
+func TestMisnamedMacFile(t *testing.T) {
+	dir := writeFixture(t, nil)
+	if err := os.Rename(filepath.Join(dir, "macs", "Macmini9-9.yaml"), filepath.Join(dir, "macs", "mini.yaml")); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Load(dir)
+	if err == nil || !strings.Contains(err.Error(), "file must be named Macmini9-9.yaml") {
+		t.Fatalf("expected file-name error, got %v", err)
+	}
+}
+
+func TestLoadUnlockedStillRejectsRemovedIDs(t *testing.T) {
+	dir := writeFixture(t, map[string][2]string{"config-ids.lock": {"macmini9-9-mid-2099-a\n", "gone-id\n"}})
+	_, err := LoadUnlocked(dir)
+	if err == nil || !strings.Contains(err.Error(), "was removed") || strings.Contains(err.Error(), "not locked yet") {
+		t.Fatalf("LoadUnlocked should only report the removed ID, got %v", err)
 	}
 }
 
 func TestLoadMissingDir(t *testing.T) {
 	if _, err := Load(filepath.Join(t.TempDir(), "nope")); err == nil {
 		t.Fatal("expected error for missing dir")
+	}
+}
+
+// ── Lock file ───────────────────────────────────────────────────────────────
+
+func TestWriteLockIsAppendOnly(t *testing.T) {
+	path := filepath.Join(t.TempDir(), LockFile)
+	added, err := WriteLock(path, []string{"b", "a"})
+	if err != nil || strings.Join(added, ",") != "a,b" {
+		t.Fatalf("first write: added=%v err=%v", added, err)
+	}
+	added, err = WriteLock(path, []string{"c"}) // "a" and "b" no longer passed in
+	if err != nil || strings.Join(added, ",") != "c" {
+		t.Fatalf("second write: added=%v err=%v", added, err)
+	}
+	ids, err := ReadLock(path)
+	if err != nil || strings.Join(ids, ",") != "a,b,c" {
+		t.Fatalf("lock must keep every ID ever written, got %v (err %v)", ids, err)
+	}
+}
+
+// ── Conditions ──────────────────────────────────────────────────────────────
+
+func TestConditionMatches(t *testing.T) {
+	tags := map[string]bool{"efi:64": true, "port:hdmi": true}
+	tests := []struct {
+		cond *Condition
+		want bool
+	}{
+		{nil, true},
+		{&Condition{All: []string{"efi:64"}}, true},
+		{&Condition{All: []string{"efi:64", "port:sd-card"}}, false},
+		{&Condition{Any: []string{"port:sd-card", "port:hdmi"}}, true},
+		{&Condition{Any: []string{"port:sd-card"}}, false},
+		{&Condition{None: []string{"port:hdmi"}}, false},
+		{&Condition{All: []string{"efi:64"}, None: []string{"chip:t2"}}, true},
+	}
+	for i, tt := range tests {
+		if got := tt.cond.Matches(tags); got != tt.want {
+			t.Errorf("case %d: got %v, want %v", i, got, tt.want)
+		}
 	}
 }

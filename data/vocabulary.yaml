@@ -1,0 +1,112 @@
+# Controlled vocabulary for the catalog. `doioma validate` rejects any value
+# used in data/macs/ or data/capabilities.yaml that is not listed here.
+# Keys are stable identifiers; `name` is what the site displays.
+
+# Product lines. `form` drives grouping and search (form:laptop etc.).
+lines:
+  macbook:     { name: MacBook,     form: laptop,     identifier_prefix: MacBook }
+  macbook-air: { name: MacBook Air, form: laptop,     identifier_prefix: MacBookAir }
+  macbook-pro: { name: MacBook Pro, form: laptop,     identifier_prefix: MacBookPro }
+  imac:        { name: iMac,        form: all-in-one, identifier_prefix: iMac }
+  imac-pro:    { name: iMac Pro,    form: all-in-one, identifier_prefix: iMacPro }
+  mac-mini:    { name: Mac mini,    form: desktop,    identifier_prefix: Macmini }
+  mac-pro:     { name: Mac Pro,     form: desktop,    identifier_prefix: MacPro }
+  xserve:      { name: Xserve,      form: server,     identifier_prefix: Xserve }
+
+# Security co-processors. `none` is the default.
+security_chips:
+  none: { name: None }
+  t1:   { name: Apple T1 }
+  t2:   { name: Apple T2 }
+
+# Component kinds. Each data/components/<kind>.yaml holds one kind.
+component_kinds:
+  gpu:         { name: Graphics }
+  wifi:        { name: Wi-Fi }
+  bluetooth:   { name: Bluetooth }
+  audio:       { name: Audio codec }
+  camera:      { name: Camera }
+  ethernet:    { name: Ethernet }
+  storage:     { name: Storage controller }
+  thunderbolt: { name: Thunderbolt controller }
+  card-reader: { name: SD card reader }
+  firewire:    { name: FireWire controller }
+  ir:          { name: IR receiver }
+  input:       { name: Keyboard / trackpad }
+  bridge:      { name: Apple bridge chip }
+
+# CPU codenames → microarchitecture family (for search, e.g. cpu:sandy-bridge).
+cpu_codenames:
+  yonah:          { name: Yonah,          family: yonah,          bits: 32 }
+  merom:          { name: Merom,          family: core,           bits: 64 }
+  penryn:         { name: Penryn,         family: core,           bits: 64 }
+  woodcrest:      { name: Woodcrest,      family: core,           bits: 64 }
+  clovertown:     { name: Clovertown,     family: core,           bits: 64 }
+  harpertown:     { name: Harpertown,     family: core,           bits: 64 }
+  bloomfield:     { name: Bloomfield,     family: nehalem,        bits: 64 }
+  gainestown:     { name: Gainestown,     family: nehalem,        bits: 64 }
+  lynnfield:      { name: Lynnfield,      family: nehalem,        bits: 64 }
+  clarkdale:      { name: Clarkdale,      family: westmere,       bits: 64 }
+  arrandale:      { name: Arrandale,      family: westmere,       bits: 64 }
+  gulftown:       { name: Gulftown,       family: westmere,       bits: 64 }
+  westmere-ep:    { name: Westmere-EP,    family: westmere,       bits: 64 }
+  sandy-bridge:   { name: Sandy Bridge,   family: sandy-bridge,   bits: 64 }
+  ivy-bridge:     { name: Ivy Bridge,     family: ivy-bridge,     bits: 64 }
+  ivy-bridge-ep:  { name: Ivy Bridge-EP,  family: ivy-bridge,     bits: 64 }
+  haswell:        { name: Haswell,        family: haswell,        bits: 64 }
+  crystal-well:   { name: Crystal Well,   family: haswell,        bits: 64 }
+  broadwell:      { name: Broadwell,      family: broadwell,      bits: 64 }
+  skylake:        { name: Skylake,        family: skylake,        bits: 64 }
+  skylake-sp:     { name: Skylake-SP,     family: skylake,        bits: 64 }
+  kaby-lake:      { name: Kaby Lake,      family: kaby-lake,      bits: 64 }
+  amber-lake:     { name: Amber Lake,     family: kaby-lake,      bits: 64 }
+  coffee-lake:    { name: Coffee Lake,    family: coffee-lake,    bits: 64 }
+  cascade-lake:   { name: Cascade Lake,   family: cascade-lake,   bits: 64 }
+  comet-lake:     { name: Comet Lake,     family: comet-lake,     bits: 64 }
+  ice-lake:       { name: Ice Lake,       family: ice-lake,       bits: 64 }
+
+# Port classes. A config lists the classes it has, with a count.
+ports:
+  usb-a-2:            { name: USB 2.0 (Type-A) }
+  usb-a-3:            { name: USB 3 (Type-A) }
+  usb-c:              { name: USB-C (non-Thunderbolt), video: true }
+  thunderbolt-1:      { name: Thunderbolt, video: true }
+  thunderbolt-2:      { name: Thunderbolt 2, video: true }
+  thunderbolt-3:      { name: Thunderbolt 3 (USB-C), video: true }
+  hdmi:               { name: HDMI, video: true }
+  mini-displayport:   { name: Mini DisplayPort, video: true }
+  mini-dvi:           { name: Mini-DVI, video: true }
+  dvi:                { name: DVI, video: true }
+  firewire-400:       { name: FireWire 400 }
+  firewire-800:       { name: FireWire 800 }
+  ethernet-fast:      { name: Fast Ethernet (100 Mb/s) }
+  ethernet-gbe:       { name: Gigabit Ethernet }
+  ethernet-10gbe:     { name: 10Gb Ethernet }
+  sd-card:            { name: SD card slot }
+  expresscard-34:     { name: ExpressCard/34 }
+  audio-out:          { name: Headphone / line out (analog) }
+  audio-out-optical:  { name: Optical digital audio out }
+  audio-in:           { name: Line in (analog) }
+  audio-in-optical:   { name: Optical digital audio in }
+
+# Physical features that decide which test criteria apply.
+features:
+  builtin-display:      { name: Built-in display }
+  builtin-keyboard:     { name: Built-in keyboard }
+  keyboard-backlight:   { name: Keyboard backlight }
+  trackpad:             { name: Built-in trackpad }
+  force-touch:          { name: Force Touch trackpad }
+  touch-bar:            { name: Touch Bar }
+  touch-id:             { name: Touch ID }
+  ambient-light-sensor: { name: Ambient light sensor }
+  builtin-speaker:      { name: Built-in speaker(s) }
+  builtin-mic:          { name: Built-in microphone }
+  headset-mic:          { name: Headset microphone via headphone jack }
+  ir-receiver:          { name: IR receiver (Apple Remote) }
+  optical-drive:        { name: Internal optical drive }
+  battery:              { name: Battery }
+  lid:                  { name: Lid (sleep on close) }
+  gpu-switching:        { name: Switchable graphics (two GPUs) }
+  displayport-audio:    { name: Audio over Mini DisplayPort / Thunderbolt }
+  usb-c-charging:       { name: Charging over USB-C }
+  fan:                  { name: Cooling fan }
