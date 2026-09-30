@@ -75,15 +75,15 @@ details ul a { word-break: break-all }
 .release { display: grid; gap: 10px }
 .release-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline }
 .cfg { background: var(--panel); border: 1px solid var(--line); display: grid; min-width: 0 }
-.cfg-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line) }
-.cfg-head .title { display: grid; gap: 2px; min-width: 0 }
+.cfg-head { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 6px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line) }
+.cfg-head .title { display: grid; gap: 2px; min-width: 0; flex: 0 0 55% }
 .cfg-head .label-text { font: 500 14px var(--mono) }
 .pill { font: 500 11.5px var(--mono); padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 2px; white-space: nowrap; align-self: start; font-variant-numeric: tabular-nums }
 .pill.criteria-link { color: var(--link); border-color: var(--link); text-decoration: none }
 .pill.criteria-link:hover { background: color-mix(in srgb, var(--link) 12%, transparent) }
 .matrix th.col:target > span a { color: var(--link); font-weight: 700 }
 .pill.orders { white-space: normal; overflow-wrap: anywhere }
-.cfg-head .chips { min-width: 0 }
+.cfg-head .chips { min-width: 0; flex: 1 1 0; flex-wrap: nowrap; justify-content: flex-end; align-self: start }
 article.mac, .release { min-width: 0 }
 .pill.bto { border-color: var(--accent); color: var(--accent) }
 .cfg-body { display: grid; gap: 14px; padding: 14px 16px 16px; min-width: 0 }
@@ -99,13 +99,14 @@ article.mac, .release { min-width: 0 }
 
 .matrix { width: auto }
 .matrix thead th { border-bottom: 1px solid var(--line-strong) }
-.matrix th.col { height: 130px; min-width: 28px; padding: 0; position: relative; vertical-align: bottom }
+.matrix th.col { min-width: 28px; padding: 0; position: relative; vertical-align: bottom }
 /* Heading borders lean 30° right of vertical, matching the labels; body cells keep straight borders below. */
 .matrix th.col::before, .matrix th.count-head::before { content: ""; position: absolute; inset: 0; border-left: 1px solid var(--line); transform-origin: 0 100%; transform: skewX(-30deg); pointer-events: none }
 /* Label centerline runs from the column's bottom-center at the same 30° lean as the borders:
    translateY(50%) puts the text's middle (not its bottom edge) on that line before rotating. */
-.matrix th.col > span { position: absolute; left: 50%; bottom: 0; transform-origin: 0 100%; transform: rotate(-60deg) translateY(50%); padding-left: 10px; line-height: 14px; white-space: nowrap; text-transform: none; letter-spacing: 0; font-size: 11px }
+.matrix th.col > span { position: absolute; z-index: 1; left: 50%; bottom: 0; transform-origin: 0 100%; transform: rotate(-60deg) translateY(50%); padding-left: 10px; line-height: 14px; white-space: nowrap; text-transform: none; letter-spacing: 0; font-size: 11px }
 .matrix th.col a { color: var(--fg); text-decoration: none }
+.matrix th.col a:hover { color: var(--fg); text-decoration: underline }
 /* Left padding keeps the right-aligned text clear of the tilted border crossing this cell (≈0.58px right per 1px up). */
 .matrix th.count-head { position: relative; width: 1%; text-align: right; vertical-align: bottom; padding: 4px 6px 4px 30px; line-height: 1.3 }
 .matrix-wrap { padding-right: 80px }
@@ -119,6 +120,7 @@ article.mac, .release { min-width: 0 }
 .matrix tr:hover td:not(.cat-cell) { background: color-mix(in srgb, var(--accent) 7%, transparent) }
 
 footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var(--muted); font-size: 13px }
+@media (max-width: 700px) { .cfg-head { flex-wrap: wrap } .cfg-head .title { flex-basis: 100% } .cfg-head .chips { flex-wrap: wrap; justify-content: flex-start } }
 @media (max-width: 560px) { .kv { grid-template-columns: 1fr } .kv dt { line-height: 1.4 } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } }
 </style>
@@ -234,7 +236,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
   <p class="muted">Derived from each configuration's ports, features and components by the rules in <code>data/capabilities.yaml</code>. A dot means the criterion appears on that configuration's page.</p>
   <div class="scroll matrix-wrap">
   <table class="matrix">
-    <thead><tr><th>Criterion</th>{{range .Matrix.Configs}}<th class="col" id="m-{{.ID}}"><span><a href="#{{.Anchor}}" title="{{.ID}}">{{.Short}}</a></span></th>{{end}}<th class="count-head">Config<br>Count</th></tr></thead>
+    <thead><tr><th>Criterion</th>{{range .Matrix.Configs}}<th class="col" id="m-{{.ID}}" style="height: {{$.Matrix.HeadPx}}px"><span><a href="#{{.Anchor}}" title="{{.ID}}">{{.Short}}</a></span></th>{{end}}<th class="count-head">Config<br>Count</th></tr></thead>
     <tbody>
     {{range .Matrix.Groups}}
       <tr class="cat"><td class="cat-cell" colspan="{{len $.Matrix.Configs | printf "%d"}}">{{.Category.Name}}{{if .Category.Blocking}} · failure blocks install{{end}}</td><td class="cat-cell"></td><td class="cat-cell"></td></tr>

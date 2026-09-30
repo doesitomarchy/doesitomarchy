@@ -70,6 +70,7 @@ type uncertainView struct{ Where, Anchor, Field, Note string }
 type matrix struct {
 	Configs []matrixCol
 	Groups  []matrixGroup
+	HeadPx  int // header height that fits the longest tilted label
 }
 
 type matrixCol struct{ ID, Short, Anchor string }
@@ -165,6 +166,7 @@ func Render(w io.Writer, c *catalog.Catalog, opt Options) error {
 	}
 	p.Stats.Capabilities = len(c.Capabilities)
 	p.Matrix.Groups = buildMatrix(c, macs)
+	p.Matrix.HeadPx = headHeight(p.Matrix.Configs)
 
 	t, err := template.New("page").Funcs(template.FuncMap{
 		"join":  strings.Join,
@@ -231,6 +233,19 @@ func buildMatrix(c *catalog.Catalog, macs []*catalog.Mac) []matrixGroup {
 		groups = append(groups, g)
 	}
 	return groups
+}
+
+// headHeight is the header height for labels tilted 60° from horizontal:
+// label length × sin 60°, plus the label's own height and some padding.
+// 11px JetBrains Mono advances about 6.6px per character.
+func headHeight(cols []matrixCol) int {
+	longest := 0
+	for _, c := range cols {
+		if n := len([]rune(c.Short)); n > longest {
+			longest = n
+		}
+	}
+	return int(float64(longest)*6.6*0.866) + 10 + 7 + 12
 }
 
 // shortID turns "macmini3-1-late-2009-server" into "3,1 late-2009 server" for matrix headers.
