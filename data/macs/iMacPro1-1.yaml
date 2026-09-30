@@ -1,0 +1,66 @@
+identifier: iMacPro1,1
+line: imac-pro
+efi: 64
+security_chip: t2
+board_ids: [Mac-7BA5B2D9E42DDD94]
+research_notes: |
+  First T2 Mac. Omarchy's Mac support manual lists the iMac Pro (2017, A1862) as supported with automatic T2 setup (patched linux-t2 kernel,
+  T2 audio, Apple's Broadcom Wi-Fi/Bluetooth firmware, t2fanrd). Disable Secure Boot in Startup Security Utility before installing.
+  10Gb Ethernet (Aquantia AQC107, atlantic driver) is standard. Two Alpine Ridge controllers drive the four Thunderbolt 3 ports.
+  Real machines show the Radeon Pro Vega 56 (1002:6867) and Vega 64 (1002:6860) as different chips; the later Vega 64X has no probes.
+sources:
+  - https://support.apple.com/en-us/111995
+  - https://everymac.com/systems/apple/imac-pro/specs/imac-pro-eight-core-3.2-xeon-27-inch-late-2017-specs.html
+  - https://everymac.com/systems/apple/imac-pro/specs/imac-pro-ten-core-3.0-xeon-27-inch-late-2017-specs.html
+  - https://everymac.com/systems/apple/imac-pro/specs/imac-pro-14-core-2.5-xeon-27-inch-late-2017-specs.html
+  - https://everymac.com/systems/apple/imac-pro/specs/imac-pro-18-core-2.3-xeon-27-inch-late-2017-specs.html
+  - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/iMacPro/IMP11.yaml
+  - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
+  - https://github.com/linuxhw/Dmesg/tree/main/Desktop/Apple/iMacPro1/iMacPro1%2C1
+  - https://omarchy.org/manual/mac-support/
+releases:
+  - id: "2017"
+    name: "iMac Pro (2017)"
+    announced: 2017-12-14
+    discontinued: 2021-03-19
+    model_numbers: [A1862]
+    emc: ["3144"]
+    configs:
+      - id: imacpro1-1-2017-a
+        label: "8-, 10-, 14- or 18-core Xeon W · Radeon Pro Vega 56"
+        order_numbers: [MQ2Y2LL/A, MHLV3LL/A]
+        cpu:
+          codename: skylake-sp
+          standard: [{ model: Xeon W-2140B, ghz: 3.2, cores: 8 }, { model: Xeon W-2150B, ghz: 3.0, cores: 10 }]
+          bto: [{ model: Xeon W-2170B, ghz: 2.5, cores: 14 }, { model: Xeon W-2191B, ghz: 2.3, cores: 18 }]
+        memory: { type: DDR4-2666 ECC, standard_gb: [32], max_gb: 256, notes: "Upgradeable only by Apple (memory is behind the display)." }
+        storage: { interface: nvme, standard: ["1 TB SSD"], bto: ["2 TB SSD", "4 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-pro-vega-56, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, card-reader/apple-usb-8408, thunderbolt/intel-alpine-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p]
+        ports: { usb-a-3: 4, thunderbolt-3: 4, sd-card: 1, ethernet-10gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        notes: "MQ2Y2LL/A is the original 8-core model; MHLV3LL/A the 10-core model that replaced it in August 2020."
+      - id: imacpro1-1-2017-vega64
+        label: "Any Xeon W · Radeon Pro Vega 64 (build to order)"
+        bto_only: true
+        cpu:
+          codename: skylake-sp
+          standard: [{ model: Xeon W-2140B, ghz: 3.2, cores: 8 }, { model: Xeon W-2150B, ghz: 3.0, cores: 10 }, { model: Xeon W-2170B, ghz: 2.5, cores: 14 }, { model: Xeon W-2191B, ghz: 2.3, cores: 18 }]
+        memory: { type: DDR4-2666 ECC, standard_gb: [32], max_gb: 256, notes: "Upgradeable only by Apple (memory is behind the display)." }
+        storage: { interface: nvme, standard: ["1 TB SSD"], bto: ["2 TB SSD", "4 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-pro-vega-64, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, card-reader/apple-usb-8408, thunderbolt/intel-alpine-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p]
+        ports: { usb-a-3: 4, thunderbolt-3: 4, sd-card: 1, ethernet-10gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+      - id: imacpro1-1-2017-vega64x
+        label: "Any Xeon W · Radeon Pro Vega 64X (build to order)"
+        bto_only: true
+        cpu:
+          codename: skylake-sp
+          standard: [{ model: Xeon W-2140B, ghz: 3.2, cores: 8 }, { model: Xeon W-2150B, ghz: 3.0, cores: 10 }, { model: Xeon W-2170B, ghz: 2.5, cores: 14 }, { model: Xeon W-2191B, ghz: 2.3, cores: 18 }]
+        memory: { type: DDR4-2666 ECC, standard_gb: [32], max_gb: 256, notes: "Upgradeable only by Apple (memory is behind the display)." }
+        storage: { interface: nvme, standard: ["1 TB SSD"], bto: ["2 TB SSD", "4 TB SSD"] }
+        display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
+        components: [gpu/amd-radeon-pro-vega-64x, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, card-reader/apple-usb-8408, thunderbolt/intel-alpine-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p]
+        ports: { usb-a-3: 4, thunderbolt-3: 4, sd-card: 1, ethernet-10gbe: 1, audio-out: 1 }
+        features: [builtin-display, builtin-speaker, builtin-mic, fan]

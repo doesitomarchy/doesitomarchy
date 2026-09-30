@@ -82,6 +82,7 @@
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir8/MacBookAir8%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir9/MacBookAir9%2C1
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
+    - https://github.com/linuxhw/LsPCI/tree/master/Desktop/Apple/iMacPro1/iMacPro1%2C1
 
 - id: storage/intel-ich8m-sata
   name: Intel ICH8M SATA controller
