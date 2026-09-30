@@ -91,9 +91,12 @@ details ul a { word-break: break-all }
 .matrix th.col { height: 130px; min-width: 28px; padding: 0; position: relative; vertical-align: bottom }
 /* Heading borders lean 30° right of vertical, matching the labels; body cells keep straight borders below. */
 .matrix th.col::before, .matrix th.count-head::before { content: ""; position: absolute; inset: 0; border-left: 1px solid var(--line); transform-origin: 0 100%; transform: skewX(-30deg); pointer-events: none }
-.matrix th.col > span { position: absolute; left: 50%; bottom: 8px; transform-origin: 0 100%; transform: rotate(-60deg); white-space: nowrap; text-transform: none; letter-spacing: 0; font-size: 11px }
+/* Label centerline runs from the column's bottom-center at the same 30° lean as the borders:
+   translateY(50%) puts the text's middle (not its bottom edge) on that line before rotating. */
+.matrix th.col > span { position: absolute; left: 50%; bottom: 0; transform-origin: 0 100%; transform: rotate(-60deg) translateY(50%); padding-left: 10px; line-height: 14px; white-space: nowrap; text-transform: none; letter-spacing: 0; font-size: 11px }
 .matrix th.col a { color: var(--fg); text-decoration: none }
-.matrix th.count-head { position: relative; width: 1%; text-align: right; vertical-align: bottom; padding: 4px 6px; line-height: 1.3 }
+/* Left padding keeps the right-aligned text clear of the tilted border crossing this cell (≈0.58px right per 1px up). */
+.matrix th.count-head { position: relative; width: 1%; text-align: right; vertical-align: bottom; padding: 4px 6px 4px 30px; line-height: 1.3 }
 .matrix-wrap { padding-right: 80px }
 .matrix td.cell { border-left: 1px solid var(--line) }
 .matrix td.count { border-left: 1px solid var(--line) }
