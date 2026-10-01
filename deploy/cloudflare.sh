@@ -4,13 +4,14 @@
 #
 #   tunnel "doiomad" → http://127.0.0.1:8080, DNS for the apex and www,
 #   www → apex redirect, HTML cache rule, search rate limit, zone settings,
-#   Cloudflare Access (private until launch), and the tunnel token on the droplet.
+#   Cloudflare Access (only with ACCESS=on), and the tunnel token on the droplet.
 #
 # Environment:
 #   CF_API_TOKEN    API token (permissions in deploy/RUNBOOK.md)
 #   CF_ACCOUNT_ID   Cloudflare account ID
-#   ACCESS_EMAILS   space-separated emails allowed through Access before launch
-#   ACCESS=off      remove the Access application (the Phase 6 launch switch)
+#   ACCESS=on       put the site behind Cloudflare Access (private). The default,
+#                   since launch on 2026-10-01, is public: any Access app is removed.
+#   ACCESS_EMAILS   with ACCESS=on: space-separated emails allowed through
 #   DROPLET         droplet name (default doiomad-1); ADMIN_USER, ADMIN_KEY, DO_CONTEXT as in provision.sh
 set -euo pipefail
 
@@ -98,15 +99,15 @@ rules http_ratelimit "$(jq -nc '[{
 	expression: "starts_with(http.request.uri.path, \"/search\")",
 	ratelimit: {characteristics: ["ip.src", "cf.colo.id"], period: 10, requests_per_period: 60, mitigation_timeout: 10}}]')"
 
-step "Access (private until launch)"
+step "Access"
 app=$(cf GET "$ACCT/access/apps" | jq -r --arg z "$ZONE_NAME" '.[] | select(.domain == $z) | .id' | head -n1)
-if [ "${ACCESS:-on}" = off ]; then
+if [ "${ACCESS:-off}" != on ]; then
 	[ -z "$app" ] || cf DELETE "$ACCT/access/apps/$app" >/dev/null
 	echo "    removed: the site is public"
 else
-	: "${ACCESS_EMAILS:?set ACCESS_EMAILS (who may see the site before launch)}"
+	: "${ACCESS_EMAILS:?set ACCESS_EMAILS (who may see the site while it is private)}"
 	body=$(jq -nc --arg z "$ZONE_NAME" --arg e "$ACCESS_EMAILS" '{
-		name: "DoesItOmarchy (pre-launch)", type: "self_hosted", domain: $z,
+		name: "DoesItOmarchy (private)", type: "self_hosted", domain: $z,
 		destinations: [{type: "public", uri: $z}, {type: "public", uri: ("www." + $z)}],
 		session_duration: "720h", app_launcher_visible: false,
 		policies: [{name: "maintainers", decision: "allow",
