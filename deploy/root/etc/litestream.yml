@@ -9,7 +9,9 @@ dbs:
     replica:
       type: s3
       bucket: ${LITESTREAM_BUCKET}
-      path: doesitomarchy.db
+      # "live/" since 2026-10-01: the original "doesitomarchy.db" path was
+      # written to by a restore-rehearsal spare and is no longer used.
+      path: live/doesitomarchy.db
       endpoint: ${LITESTREAM_ENDPOINT}
       region: auto
       access-key-id: ${LITESTREAM_ACCESS_KEY_ID}
