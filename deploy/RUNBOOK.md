@@ -56,7 +56,9 @@ pre-deploy copy from `backups/` when rolling back.
    the nameservers to the two Cloudflare gives you. The zone shows *Active*
    once they propagate (minutes to hours).
 2. **Zero Trust.** Open Zero Trust once, choose a team name and the Free plan.
-   One-time PIN login is on by default; it is how you get past Access before launch.
+   Then go to Integrations → Identity providers → Add new identity provider → **One-time PIN**.
+   It is not always on by default, and without it Access can't email you a code.
+   `deploy/access-check.sh` shows the login methods.
 3. **R2.** Enable R2 and create the bucket `doesitomarchy-db` (location: automatic).
    Create an R2 API token with *Object Read & Write* on that bucket only. Note
    its access key ID and secret, and the S3 endpoint
