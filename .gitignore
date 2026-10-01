@@ -13,3 +13,6 @@
 *.swp
 .idea/
 .vscode/
+
+# uicheck dependencies
+node_modules/

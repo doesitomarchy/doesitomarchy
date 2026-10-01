@@ -2,7 +2,7 @@
 
 The source of truth for which **Intel Macs (2006–2020)** run [Omarchy](https://omarchy.org) 4+, and which hardware components are still holding them back. Coverage is tracked per model identifier and per hardware configuration.
 
-> **Status: early development.** The site is not live yet. The catalog covers every Intel Mac identifier; the web UI and search are being built. Test result submission opens with the API (a later phase).
+> **Status: early development.** The site is not live yet. The catalog covers every Intel Mac identifier, with search and the web UI built; deployment comes next. Test result submission opens with the API (a later phase).
 
 ## How it works
 
@@ -20,6 +20,8 @@ make build      # → bin/doiomad
 ./bin/doiomad validate
 ./bin/doiomad serve -data data   # http://127.0.0.1:8080, catalog read from data/ (restart to reload)
 ./bin/doiomad sync               # create or update ./doesitomarchy.db without serving
+./bin/doiomad serve -demo        # design review only: a few configs carry made-up results
+make uicheck                     # accessibility and layout checks (needs Node and Chromium)
 ```
 
 `-db FILE` (or `$DOIOMAD_DB`) picks the database; the default is `./doesitomarchy.db`. Without `-data`, `serve` and `sync` use the catalog built into the binary.

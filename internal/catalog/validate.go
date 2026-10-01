@@ -35,6 +35,7 @@ func (l *loader) validate() {
 	l.validateMacs()
 	l.validateCoverage()
 	l.validateAliases()
+	l.validateChangelog()
 	l.validateLock()
 }
 

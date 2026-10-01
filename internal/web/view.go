@@ -32,7 +32,9 @@ type Options struct {
 	Version     string
 	CatalogHash string // short content hash of the catalog
 	CatalogDate string // last catalog change (YYYY-MM-DD), stamped at build time
-	Demo        bool   // design-review mode: a few configs carry made-up results
+	// CatalogCommit is the git commit of that change; "" links to main.
+	CatalogCommit string
+	Demo          bool // design-review mode: a few configs carry made-up results
 }
 
 type site struct {
@@ -47,6 +49,7 @@ type site struct {
 	Lines       []lineStat
 	CatalogHash string
 	CatalogDate string
+	CatalogURL  string // GitHub tree of data/ at the catalog's commit
 	Demo        bool
 }
 
@@ -259,6 +262,11 @@ func buildView(c *catalog.Catalog, opt Options) *catalogView {
 	st := c.Stats()
 	s.Macs, s.Releases, s.Configs, s.Components, s.Criteria = st.Macs, st.Releases, st.Configs, st.Components, st.Capabilities
 	s.Themes, s.CatalogHash, s.CatalogDate, s.Demo = themeChoices, opt.CatalogHash, opt.CatalogDate, opt.Demo
+	ref := opt.CatalogCommit
+	if ref == "" {
+		ref = "main"
+	}
+	s.CatalogURL = RepoURL + "/tree/" + ref + "/data"
 	counts := map[string]int{}
 	for _, mv := range v.macs {
 		for _, cv := range mv.Configs {

@@ -29,6 +29,9 @@ var staticFS embed.FS
 // BaseURL is the public origin, for the sitemap and canonical links.
 const BaseURL = "https://doesitomarchy.com"
 
+// RepoURL is the public source repository.
+const RepoURL = "https://github.com/doesitomarchy/doesitomarchy"
+
 // Server serves the site.
 type Server struct {
 	store   *store.Store
@@ -68,7 +71,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"v":       func(s string) status.Verdict { return status.Verdict(s) },
 	}
 	for _, p := range []string{"home", "mac", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
-		"criteria", "releases", "configs", "components", "attribution"} {
+		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
 			return nil, fmt.Errorf("template %s: %w", p, err)
@@ -101,6 +104,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /configs", s.configList)
 	mux.HandleFunc("GET /components", s.componentList)
 	mux.HandleFunc("GET /attribution", s.attribution)
+	mux.HandleFunc("GET /changelog", s.changelog)
 	mux.HandleFunc("/api/v1/", apiNotFound) // reserved until the API ships (Phase 7)
 	mux.HandleFunc("/", s.notFound)
 	return s.recoverer(logRequests(s.log, securityHeaders(compress(mux))))

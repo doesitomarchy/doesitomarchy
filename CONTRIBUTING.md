@@ -16,6 +16,7 @@
 | `macs/<Identifier>.yaml` | One file per model identifier, using `-` in place of `,` (e.g. `Macmini3-1.yaml`), holding its releases and configurations |
 | `config-ids.lock` | Every configuration ID ever issued |
 | `aliases.yaml` | Search nicknames: phrases such as `mbp` or `trash can` and the query they stand for. `doiomad validate` checks each one parses and finds something |
+| `changelog.yaml` | The public catalog changelog shown at `/changelog`, newest first. Add an entry for notable additions or corrections, especially where the catalog differs from Apple, EveryMac or OpenCore |
 | `coverage.yaml` | Rules for configurations that are out of scope for the coverage metrics (e.g. released before 2009). They are still listed and testable; they just aren't counted. This is not the same as a Mac's `hard_blocker`, which marks it Not compatible |
 
 Rules the validator enforces:

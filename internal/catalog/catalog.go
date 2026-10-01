@@ -158,6 +158,11 @@ func (l *loader) load() {
 		l.decode(aliasPath, &c.Aliases)
 	}
 
+	const changelogPath = "changelog.yaml" // optional: public changelog
+	if l.exists(changelogPath) {
+		l.decode(changelogPath, &c.Changelog)
+	}
+
 	macFiles, err := l.yamlFiles("macs")
 	if err != nil {
 		l.errf("macs", "%v", err)

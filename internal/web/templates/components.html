@@ -1,7 +1,7 @@
 {{define "content"}}{{with .Data}}
 <h1>Components</h1>
 <p class="muted">{{len .}} components with their PCI/USB hardware IDs, the Linux driver seen on real machines, and the Macs that use them. Search a hardware ID with <a href="{{query "hw:10de:0647"}}"><code>hw:10de:0647</code></a>.</p>
-<div class="table-wrap"><table class="browse comps">
+<div class="table-wrap" tabindex="0" role="region" aria-label="Table (scrolls sideways)"><table class="browse comps">
   <thead><tr><th scope="col">Kind</th><th scope="col">Component</th><th scope="col">Hardware IDs</th><th scope="col">Driver</th><th scope="col" class="num">Configs</th><th scope="col">Macs</th></tr></thead>
   <tbody>{{$kind := ""}}{{range .}}
     {{if ne .KindName $kind}}{{$kind = .KindName}}<tr class="line-break"><th colspan="6" scope="rowgroup">{{.KindName}}</th></tr>{{end}}

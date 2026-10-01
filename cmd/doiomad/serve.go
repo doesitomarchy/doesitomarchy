@@ -36,6 +36,10 @@ func dbFlags(fs *flag.FlagSet) (db, dataDir *string) {
 // -ldflags "-X main.catalogDate=YYYY-MM-DD".
 var catalogDate = "unknown"
 
+// catalogCommit is the git commit of the last catalog change, set at build
+// time (-X main.catalogCommit=<sha>); the footer links the hash to it.
+var catalogCommit = ""
+
 func catalogFS(dataDir string) fs.FS {
 	if dataDir != "" {
 		return os.DirFS(dataDir)
@@ -119,7 +123,7 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	if len(hash) > 10 {
 		hash = hash[:10]
 	}
-	srv, err := web.New(st, c, log, web.Options{Version: version, CatalogHash: hash, CatalogDate: catalogDate, Demo: *demo})
+	srv, err := web.New(st, c, log, web.Options{Version: version, CatalogHash: hash, CatalogDate: catalogDate, CatalogCommit: catalogCommit, Demo: *demo})
 	log.Info("views and search index built", "ms", time.Since(start).Milliseconds(), "demo", *demo)
 	if err != nil {
 		log.Error("templates", "err", err)

@@ -27,6 +27,8 @@ body {
 main { flex: 1; width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 1.5rem var(--gutter) 3rem; }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
+/* Links inside running text are underlined, so they don't rely on colour alone (WCAG 1.4.1). */
+:where(p, .paper li, .crit td, .changelog li, .why, .legal) a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 h1, h2, h3 { color: var(--heading); font-weight: 700; line-height: 1.25; text-wrap: balance; margin: 0 0 0.5rem; }
 h1 { font-size: 1.5rem; } h2 { font-size: 1.1rem; } h3 { font-size: 0.95rem; }
@@ -83,8 +85,8 @@ a.cfgref:hover { border-color: var(--accent); text-decoration: none; }
 a.slotted:hover { text-decoration: none; }
 a.slotted:hover .cfgref { border-color: var(--accent); }
 .cfgref.big { font-size: 13px; color: var(--heading); font-weight: 500; }
-.oos { opacity: 0.62; }
-.oos:hover, .oos:focus-within { opacity: 1; }
+/* Out-of-scope rows are dimmed by swapping in the muted colour (opacity would break text contrast). */
+.oos { --text: var(--muted); --heading: var(--muted); --ident: var(--muted); --release: var(--muted); --link: var(--muted); color: var(--muted); }
 
 /* ── coverage bars ──────────────────────────────────────────────────── */
 .coverage { display: grid; gap: 0.9rem; }
@@ -121,13 +123,13 @@ svg.bar.ok rect { fill: var(--ok); }
 .suggest a { display: inline-block; border: 1px solid var(--line); padding: 0.05rem 0.45rem; color: var(--text); }
 .suggest [data-kind="field"] a { color: var(--accent); }
 .suggest [data-kind="id"] a { color: var(--ident); }
-.suggest a:hover, .suggest a[aria-selected="true"] { border-color: var(--accent); text-decoration: none; }
+.suggest a:hover, .suggest a.sel { border-color: var(--accent); text-decoration: none; }
 .chip-error { display: inline-block; border: 1px solid var(--bad); color: var(--bad); padding: 0 0.45rem; margin: 0.4rem 0.4rem 0 0; font-size: 13px; }
 .results-meta { color: var(--muted); font-size: 12px; margin: 1rem 0 0.4rem; }
 .results { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
 .results > li { border-bottom: 1px solid var(--line); }
 .results .hit { display: grid; grid-template-columns: minmax(9rem, 12rem) 1fr auto; gap: 0.25rem 1rem; padding: 0.55rem 0.35rem; color: var(--text); }
-.results .hit:hover, .results .hit[aria-selected="true"] { background: var(--panel); text-decoration: none; }
+.results .hit:hover, .results .hit.sel { background: var(--panel); text-decoration: none; }
 .results .facts { color: var(--muted); font-size: 12px; grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 0.3rem 0.6rem; align-items: center; }
 .results .hits { list-style: none; margin: 0 0 0.55rem; padding: 0 0.35rem 0 calc(min(12rem, 30%) + 1.35rem); font-size: 12px; display: grid; gap: 0.3rem; }
 .results .hits .release { margin-left: 0.2rem; }
@@ -204,7 +206,8 @@ details.more ul { font-size: 13px; overflow-wrap: anywhere; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 0.3rem 0.55rem; border-bottom: 1px solid var(--line); vertical-align: top; }
 thead th { color: var(--muted); font-weight: 500; font-size: 12px; }
-.matrix-wrap { overflow-x: auto; margin-top: 1rem; padding-right: 90px; }
+/* position: relative keeps the absolutely placed slanted labels inside the scroll container. */
+.matrix-wrap { overflow-x: auto; margin-top: 1rem; padding-right: 90px; position: relative; }
 .matrix { width: auto; }
 .matrix thead th { border-bottom: 1px solid var(--line-strong); vertical-align: bottom; }
 .matrix th.cap-head { padding-bottom: 0.4rem; }
@@ -331,3 +334,10 @@ body.flash > * { visibility: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 .nowrap { white-space: nowrap; }
+.changelog { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1.5rem; max-width: 80ch; }
+.changelog > li { border-left: 2px solid var(--line-strong); padding-left: 1rem; }
+.changelog h2 { font-size: 1rem; }
+.changelog time { color: var(--muted); font-weight: 400; }
+.changelog .summary { font: 15px/1.6 var(--sans); }
+.changelog ul { font: 14px/1.6 var(--sans); padding-left: 1.2rem; }
+.super .legal a { color: var(--link); }

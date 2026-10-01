@@ -76,10 +76,10 @@
     });
 
     function items() { return Array.prototype.slice.call(scope.querySelectorAll(".suggest a[data-query], .results a.hit")); }
-    function current(all) { return all.findIndex(function (a) { return a.getAttribute("aria-selected") === "true"; }); }
+    function current(all) { return all.findIndex(function (a) { return a.classList.contains("sel"); }); }
     function select(all, i) {
-      all.forEach(function (a) { a.removeAttribute("aria-selected"); });
-      if (i >= 0 && all[i]) { all[i].setAttribute("aria-selected", "true"); all[i].scrollIntoView({ block: "nearest" }); }
+      all.forEach(function (a) { a.classList.remove("sel"); });
+      if (i >= 0 && all[i]) { all[i].classList.add("sel"); all[i].scrollIntoView({ block: "nearest" }); }
     }
     input.addEventListener("keydown", function (e) {
       var all = items(), i = current(all);

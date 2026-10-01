@@ -457,6 +457,10 @@ func (s *Server) componentList(w http.ResponseWriter, r *http.Request) {
 	s.render(w, r, http.StatusOK, "components", page{Title: "Components", Data: s.view.components})
 }
 
+func (s *Server) changelog(w http.ResponseWriter, r *http.Request) {
+	s.render(w, r, http.StatusOK, "changelog", page{Title: "Catalog changelog", Data: s.cat.Changelog})
+}
+
 func (s *Server) attribution(w http.ResponseWriter, r *http.Request) {
 	s.render(w, r, http.StatusOK, "attribution", page{Title: "Attribution"})
 }
@@ -488,7 +492,7 @@ func (s *Server) sitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n" + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
-	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution"} {
+	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution", "/changelog"} {
 		fmt.Fprintf(&b, "  <url><loc>%s%s</loc></url>\n", BaseURL, p)
 	}
 	for _, m := range s.view.macs {
