@@ -116,7 +116,11 @@ func (s *Server) search(w http.ResponseWriter, r *http.Request) {
 	if q != "" {
 		title = q + " · search"
 	}
-	s.render(w, r, http.StatusOK, "search", page{Title: title, Data: d})
+	canonical := BaseURL + "/search"
+	if q != "" {
+		canonical += "?q=" + url.QueryEscape(q) // each query is its own page
+	}
+	s.render(w, r, http.StatusOK, "search", page{Title: title, Canonical: canonical, Data: d})
 }
 
 // suggest serves GET /search/suggest?q=&cursor=: an HTML list of completions.
@@ -154,7 +158,7 @@ func (s *Server) mac(w http.ResponseWriter, r *http.Request) {
 	}
 	desc := fmt.Sprintf("%s (%s): Omarchy compatibility for %d configuration%s, %s.", m.Identifier, m.Title,
 		len(m.Configs), map[bool]string{true: "", false: "s"}[len(m.Configs) == 1], m.Years)
-	s.render(w, r, http.StatusOK, "mac", page{Title: m.Identifier + " · " + m.Title, Description: desc,
+	s.render(w, r, http.StatusOK, "mac", page{Title: m.Identifier + " · " + m.Title, Description: desc, Canonical: BaseURL + "/mac/" + url.PathEscape(m.Slug),
 		Data: macData{Mac: m, Matrix: r.URL.Query().Get("view") == "matrix"}})
 }
 
