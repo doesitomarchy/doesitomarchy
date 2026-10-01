@@ -8,6 +8,9 @@
 @font-face { font-family: Inter; font-weight: 600; font-display: swap; src: url(fonts/inter-latin-600.woff2) format("woff2"); }
 
 :root {
+  /* Unsupported is the same dark maroon in every theme: a deliberate, rare, final state. */
+  --unsup: #6b1d2a;
+  --unsup-fg: #fde8ec;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --wrap: 76rem;
@@ -58,12 +61,13 @@ svg.i { width: 1em; height: 1em; vertical-align: -0.125em; flex: none; }
 svg.v { width: 1.05em; height: 1.05em; }
 .v-supported { color: var(--ok); }
 .v-partial, .v-stale, .v-conflict { color: var(--warn); }
-.v-unsupported, .v-not-compatible { color: var(--bad); }
+.v-failed, .v-not-compatible { color: var(--bad); }
 .v-untested { color: var(--unk); }
 .verdict { display: inline-flex; gap: 0.35rem; align-items: center; white-space: nowrap; font-size: 12px; border: 1px solid var(--line); padding: 0.05rem 0.45rem 0.05rem 0.3rem; color: var(--text); }
 .verdict.supported { border-color: var(--ok); color: var(--ok); }
 .verdict.partial { border-color: var(--warn); color: var(--warn); }
-.verdict.unsupported, .verdict.not-compatible { border-color: var(--bad); color: var(--bad); }
+.verdict.failed, .verdict.not-compatible { border-color: var(--bad); color: var(--bad); }
+.verdict.unsupported { background: var(--unsup); border-color: var(--unsup); color: var(--unsup-fg); }
 .verdict.untested { color: var(--muted); }
 .vs { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
 svg.badge { width: 1em; height: 1em; vertical-align: -0.12em; margin-right: 0.4em; flex: none; }
@@ -154,7 +158,10 @@ svg.bar.ok rect { fill: var(--ok); }
 .card-head .right { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
 .blocker-line { margin: 0; padding: 0.35rem 0.8rem; border-bottom: 1px solid var(--line); color: var(--bad); font-size: 13px; }
 .caps details { border-bottom: 1px solid var(--line); }
-.caps summary { cursor: pointer; padding: 0.35rem 0.8rem; display: flex; gap: 0.5rem; align-items: center; list-style: none; }
+.caps summary { cursor: pointer; padding: 0.35rem 0.8rem; display: flex; gap: 0.5rem; align-items: center; list-style: none; position: relative; }
+.caps summary > :not(svg.catprog) { position: relative; }
+.caps summary svg.catprog { position: absolute; inset: 0; width: 100%; height: 100%; }
+.caps summary svg.catprog rect { fill: color-mix(in srgb, var(--ok) 12%, transparent); }
 .caps summary::-webkit-details-marker, details.hw > summary::-webkit-details-marker { display: none; }
 .caps summary::before, details.hw > summary::before { content: "▸"; color: var(--muted); width: 0.8rem; }
 .caps details[open] summary::before, details.hw[open] > summary::before { content: "▾"; }
@@ -165,7 +172,13 @@ svg.bar.ok rect { fill: var(--ok); }
 .caps ul { list-style: none; margin: 0; padding: 0 0.8rem 0.5rem 2.1rem; font-size: 13px; }
 .caps li { display: flex; gap: 0.5rem; padding: 0.12rem 0; align-items: center; }
 .caps li .st { margin-left: auto; color: var(--muted); font-size: 12px; }
-.caps li .st-supported { color: var(--ok); } .caps li .st-unsupported { color: var(--bad); } .caps li .st-partial { color: var(--warn); }
+.caps li { flex-wrap: wrap; }
+.caps li .st-supported { color: var(--ok); } .caps li .st-failed { color: var(--bad); } .caps li .st-partial { color: var(--warn); }
+.caps li .st-unsupported { color: var(--unsup-fg); background: var(--unsup); padding: 0 0.4rem; }
+.caps li .why { flex-basis: 100%; margin: 0.15rem 0 0.35rem 1.55rem; padding: 0.35rem 0.6rem; border-left: 2px solid var(--bad); background: var(--bg); font-size: 12px; }
+.caps li .why p { margin: 0.1rem 0; }
+.caps li .why .lbl { color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; margin-right: 0.4rem; }
+.caps li .why code { color: var(--text); overflow-wrap: anywhere; }
 details.hw > summary { cursor: pointer; padding: 0.5rem 0.8rem; color: var(--heading); font-weight: 500; list-style: none; display: flex; gap: 0.5rem 0.8rem; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); }
 details.hw > summary:hover { background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
 details.hw > summary::before { content: none; }
@@ -215,7 +228,7 @@ thead th { color: var(--muted); font-weight: 500; font-size: 12px; }
 .matrix tr.cat th svg.i { margin-right: 0.4rem; }
 /* Category rows double as progress bars: the dimmed green fill is the share of the group's cells that passed. */
 .matrix tr.cat svg.catprog { position: absolute; inset: 0; width: 100%; height: 100%; }
-.matrix tr.cat svg.catprog rect { fill: color-mix(in srgb, var(--ok) 24%, var(--panel)); }
+.matrix tr.cat svg.catprog rect { fill: color-mix(in srgb, var(--ok) 12%, var(--panel)); }
 .matrix tr.cat .catlabel, .matrix tr.cat .catcount { position: relative; }
 .matrix tr.cat .catcount { float: right; color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 1.5rem; }
 .matrix tbody tr:not(.cat):hover > * { background: color-mix(in srgb, var(--accent) 7%, transparent); }
@@ -252,6 +265,8 @@ thead th { color: var(--muted); font-weight: 500; font-size: 12px; }
 .verdict-list { list-style: none; padding: 0; display: grid; gap: 0.4rem; }
 .verdict-list .verdict { margin-right: 0.4rem; }
 h2#criteria { margin-top: 2rem; }
+h2.sources-h { margin-top: 2.5rem; }
+p.sources { font: 11px/1.55 var(--sans); color: var(--muted); max-width: 110ch; }
 .crit th.catcell { white-space: nowrap; color: var(--heading); background: var(--panel); font-weight: 500; }
 .crit tbody td { font: 13.5px/1.45 var(--sans); }
 .crit tbody td:first-of-type { font-family: var(--mono); font-size: 13px; color: var(--text); }

@@ -14,8 +14,9 @@
 <ol class="verdict-list">
   <li>{{template "verdict" (v "not-compatible")}} the Mac can never run Omarchy by design. Today that means the 2006 Macs with a 32-bit-only Core Duo CPU, since Omarchy and Arch Linux support x86_64 only.</li>
   <li>{{template "verdict" (v "untested")}} no test result yet.</li>
-  <li>{{template "verdict" (v "unsupported")}} a Boot capability fails.</li>
-  <li>{{template "verdict" (v "partial")}} something else fails or only partly works, or reports conflict.</li>
+  <li>{{template "verdict" (v "unsupported")}} a Boot capability was given up on: maintainers mark a capability Unsupported only as a last resort, after repeated attempts to fix a failure made no progress.</li>
+  <li>{{template "verdict" (v "failed")}} a Boot capability failed. A failure is something to fix, not a final answer: each one records why it failed and who is working on it.</li>
+  <li>{{template "verdict" (v "partial")}} something else failed, was given up on, only partly works, or reports conflict.</li>
   <li>{{template "verdict" (v "supported")}} every tested capability works, shown with how many were tested.</li>
 </ol>
 <p>A configuration whose every applicable capability has passed earns the Omarchy mark {{template "badge"}}. So does a model identifier whose every configuration has passed. The newest Omarchy version's result wins. Results from an older Omarchy major version are marked stale. Two results for the same Omarchy version that disagree are shown as conflicting.</p>
@@ -40,6 +41,6 @@
 </table>
 </div>
 
-<h2>Sources</h2>
-<p class="wide-p">Hardware facts come from Apple's identification and Tech Specs pages, EveryMac, the OpenCore model database, and real-machine Linux hardware probes from <a href="https://github.com/linuxhw" rel="noopener">linuxhw</a>. Chips and hardware IDs seen on real machines count as evidence. Where sources disagree, the model page's research notes say so. Every model page lists its sources. See <a href="/attribution">attribution</a> for credits.</p>
+<h2 class="sources-h">Sources</h2>
+<p class="sources">Hardware facts come from Apple's identification and Tech Specs pages, EveryMac, the OpenCore model database, and real-machine Linux hardware probes from <a href="https://github.com/linuxhw" rel="noopener">linuxhw</a>. Chips and hardware IDs seen on real machines count as evidence. Where sources disagree, the model page's research notes say so. Every model page lists its sources. See <a href="/attribution">attribution</a> for credits.</p>
 {{end}}

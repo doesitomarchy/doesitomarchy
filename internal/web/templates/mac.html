@@ -45,9 +45,10 @@
   {{with .Status.Blocker}}<p class="blocker-line">Blocked by: {{.}}</p>{{end}}
   <div class="caps">
   {{range .Categories}}
-    <details>
-      <summary>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Caps}}{{template "vicon" .Verdict}}{{end}}</span><span class="count">{{.Passed}}/{{len .Caps}} passed</span></summary>
-      <ul>{{range .Caps}}<li>{{template "vicon" .Verdict}}<span title="{{.Description}}">{{.Name}}</span><span class="st st-{{.Verdict}}">{{.Verdict.Label}}</span></li>{{end}}</ul>
+    <details{{if .Problem}} open{{end}}>
+      <summary><svg class="catprog" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true"><rect width="{{.Pct}}" height="1"/></svg>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Caps}}{{template "vicon" .Verdict}}{{end}}</span><span class="count">{{.Passed}}/{{len .Caps}} passed</span></summary>
+      <ul>{{range .Caps}}<li>{{template "vicon" .Verdict}}<span title="{{.Description}}">{{.Name}}</span><span class="st st-{{.Verdict}}">{{.Verdict.Label}}</span>
+        {{if or .Error .Fix}}<div class="why">{{with .Error}}<p><span class="lbl">Why it failed</span> <code>{{.}}</code></p>{{end}}{{with .Fix}}<p><span class="lbl">Fix</span> {{.}}</p>{{end}}{{if eq .Verdict "failed"}}<p><a href="/contribute">Help fix it →</a></p>{{end}}</div>{{end}}</li>{{end}}</ul>
     </details>
   {{end}}
   </div>

@@ -73,7 +73,7 @@ var fields = map[string]fieldSpec{
 	"chip":  {kKey, "chip", "none, t1 or t2"},
 	"efi":   {kKey, "efi", "32 or 64"},
 	"port":  {kKey, "port", ""}, "feature": {kKey, "feature", ""},
-	"status": {kKey, "status", "untested, supported, partial, unsupported or not-compatible"},
+	"status": {kKey, "status", "untested, supported, partial, failed, unsupported or not-compatible"},
 	"scope":  {kKey, "scope", "in or out"},
 	"tested": {kKey, "tested", "yes or no"},
 	"order":  {kNumberID, "order", ""}, "a": {kNumberID, "a", ""}, "emc": {kNumberID, "emc", ""},

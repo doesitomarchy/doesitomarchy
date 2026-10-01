@@ -141,9 +141,25 @@ type categoryView struct {
 	Passed         int
 }
 
+// Problem reports a failed, given-up or partial capability: such categories
+// start open so the reason is visible.
+func (c categoryView) Problem() bool {
+	for _, x := range c.Caps {
+		if x.Verdict == status.Failed || x.Verdict == status.Unsupported || x.Verdict == status.Partial {
+			return true
+		}
+	}
+	return false
+}
+
+// Pct is the share of the category's capabilities that passed (0–100).
+func (c categoryView) Pct() string { return fmt.Sprintf("%.2f", pctOf(c.Passed, len(c.Caps))) }
+
 type capView struct {
 	ID, Name, Description string
 	Verdict               status.Verdict // Untested until Phase 7 (or demo data)
+	Error                 string         // why it failed, as reported by the doioma test tool
+	Fix                   string         // who is working on it / where it's tracked (Phase 7 design)
 }
 
 // matrixView is a criteria × configurations table (model page and /criteria).
@@ -198,10 +214,13 @@ type componentUse struct {
 	Macs                                           []*macView
 }
 
-// state is a config's current status plus per-capability verdicts.
+// state is a config's current status plus per-capability verdicts and,
+// for failures, the reported error and fix tracking.
 type state struct {
 	status status.ConfigStatus
 	caps   map[string]status.Verdict
+	errors map[string]string
+	fixes  map[string]string
 }
 
 func buildView(c *catalog.Catalog, opt Options) *catalogView {
@@ -261,38 +280,78 @@ func buildView(c *catalog.Catalog, opt Options) *catalogView {
 	return v
 }
 
-// demoVerified and demoPartial are the made-up results shown with -demo.
+// Made-up results shown with -demo (design review only). They exercise every
+// verdict: Supported, Partial (with a Failed and an Unsupported capability),
+// Failed (a Boot test failed) and Unsupported (a Boot test given up on).
 var (
 	demoVerified = map[string]bool{"MacBookPro8,2": true, "imac12-2-27-mid-2011-a": true}
-	demoPartial  = map[string]string{"MacBookPro15,1": "audio.speakers"}
+	demoCases    = map[string]struct {
+		verdict status.Verdict
+		caps    map[string]status.Verdict
+		errors  map[string]string
+		fixes   map[string]string
+		blocker string
+	}{
+		"MacBookPro15,1": {status.Partial,
+			map[string]status.Verdict{"audio.speakers": status.Failed, "bridge.touch-bar-camera": status.Unsupported},
+			map[string]string{"audio.speakers": "snd_hda_intel 0000:00:1f.3: no codecs found (T2 audio needs the apple-bce aaudio driver)"},
+			map[string]string{"audio.speakers": "Nobody has claimed this fix yet.", "bridge.touch-bar-camera": "Marked unsupported after 3 fix attempts made no progress."},
+			"Audio → Built-in speakers"},
+		"MacBookPro15,2": {status.Failed,
+			map[string]status.Verdict{"boot.install": status.Failed},
+			map[string]string{"boot.install": "nvme0n1 not found: the installer kernel has no apple-bce module, so the T2 SSD is invisible"},
+			map[string]string{"boot.install": "Being worked on by @example in issue #42."},
+			"Boot → Internal storage detected and installation completes"},
+		"MacBookPro16,2": {status.Unsupported,
+			map[string]status.Verdict{"boot.installer-efi64": status.Unsupported},
+			map[string]string{"boot.installer-efi64": "Firmware refuses the installer image (Secure Boot policy cannot be relaxed on this unit)"},
+			map[string]string{"boot.installer-efi64": "Marked unsupported after 4 fix attempts made no progress."},
+			"Boot → Stock installer boots via 64-bit EFI"},
+	}
 )
 
 func demoState(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) (state, bool) {
-	st := state{caps: map[string]status.Verdict{}}
+	st := state{caps: map[string]status.Verdict{}, errors: map[string]string{}, fixes: map[string]string{}}
 	n := len(applicable)
-	switch {
-	case demoVerified[m.Identifier] || demoVerified[cfg.ID]:
+	if demoVerified[m.Identifier] || demoVerified[cfg.ID] {
 		for _, cp := range applicable {
 			st.caps[cp.ID] = status.Supported
 		}
 		st.status = status.ConfigStatus{Verdict: status.Supported, Excluded: excl, Applicable: n, Tested: n, Counts: status.Counts{Supported: n}}
-	case demoPartial[m.Identifier] != "":
-		bad := demoPartial[m.Identifier]
-		tested := 0
-		for i, cp := range applicable {
-			if i%2 == 0 || cp.ID == bad {
-				tested++
-				st.caps[cp.ID] = status.Supported
-				if cp.ID == bad {
-					st.caps[cp.ID] = status.Unsupported
-				}
-			}
-		}
-		st.status = status.ConfigStatus{Verdict: status.Partial, Excluded: excl, Applicable: n, Tested: tested,
-			Blocker: "Audio → Built-in speakers", Counts: status.Counts{Supported: tested - 1, Unsupported: 1, Untested: n - tested}}
-	default:
+		return st, true
+	}
+	dc, ok := demoCases[m.Identifier]
+	if !ok {
 		return state{}, false
 	}
+	var c status.Counts
+	tested := 0
+	for i, cp := range applicable {
+		v, special := dc.caps[cp.ID]
+		switch {
+		case special:
+		case i%3 != 2:
+			v = status.Supported
+		default:
+			v = status.Untested
+		}
+		st.caps[cp.ID] = v
+		switch v {
+		case status.Supported:
+			c.Supported++
+		case status.Failed:
+			c.Failed++
+		case status.Unsupported:
+			c.Unsupported++
+		default:
+			c.Untested++
+		}
+		if v != status.Untested {
+			tested++
+		}
+	}
+	st.errors, st.fixes = dc.errors, dc.fixes
+	st.status = status.ConfigStatus{Verdict: dc.verdict, Excluded: excl, Applicable: n, Tested: tested, Blocker: dc.blocker, Counts: c}
 	return st, true
 }
 
@@ -406,7 +465,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc) *macView {
 	if last != first {
 		mv.Years = fmt.Sprintf("%d–%d", first, last)
 	}
-	for _, v := range []status.Verdict{status.Supported, status.Partial, status.Unsupported, status.Untested, status.NotCompatible} {
+	for _, v := range []status.Verdict{status.Supported, status.Partial, status.Failed, status.Unsupported, status.Untested, status.NotCompatible} {
 		if verdicts[v] {
 			mv.Verdicts = append(mv.Verdicts, v)
 		}
@@ -508,7 +567,7 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		if v == status.Supported {
 			cat.Passed++
 		}
-		cat.Caps = append(cat.Caps, capView{cp.ID, cp.Name, cp.Description, v})
+		cat.Caps = append(cat.Caps, capView{ID: cp.ID, Name: cp.Name, Description: cp.Description, Verdict: v, Error: st.errors[cp.ID], Fix: st.fixes[cp.ID]})
 	}
 	for _, k := range c.Categories {
 		if cat := byCat[k.ID]; cat != nil {
