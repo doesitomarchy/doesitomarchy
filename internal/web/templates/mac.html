@@ -52,7 +52,7 @@
   {{end}}
   </div>
   <details class="hw">
-    <summary>Hardware Configuration Details <span class="muted">{{.ID}}</span></summary>
+    <summary><span class="hw-title">{{template "icon" "chip"}}Hardware Configuration Details</span><span class="muted">{{.ID}}</span><span class="hw-toggle" aria-hidden="true"></span></summary>
     <dl class="specs">
       <div><dt>CPU</dt><dd>{{join .CPU "; "}}{{with .CPUBTO}}<br><span class="alt">BTO: {{join . "; "}}</span>{{end}}{{with .Codename}} <span class="alt">({{.}})</span>{{end}}</dd></div>
       <div><dt>Memory</dt><dd>{{.Memory}}{{with .MemoryNote}}<br><span class="alt">{{.}}</span>{{end}}</dd></div>

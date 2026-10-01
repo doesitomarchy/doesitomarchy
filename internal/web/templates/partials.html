@@ -6,6 +6,9 @@
 
 {{define "badge"}}<svg class="badge" role="img" aria-label="Passed every test"><title>Passed every applicable test</title><use href="{{asset "icons.svg"}}#omarchy-logo"></use></svg>{{end}}
 
+{{/* slot reserves the badge's width so names line up whether or not a row earned it. Pass a bool. */}}
+{{define "slot"}}<span class="slot">{{if .}}{{template "badge"}}{{end}}</span>{{end}}
+
 {{define "scope"}}<span class="tag scope" title="Listed and testable, but not counted in the coverage figures">Out of coverage scope · {{.}}</span>{{end}}
 
 {{/* Two coverage rows: pass the site. data-* feed the Konami easter egg. */}}
@@ -26,6 +29,7 @@
 
 {{define "superfooter"}}
 <footer class="super">
+  <div class="inner">
   <div class="cols">
     <section class="c-site" aria-labelledby="f-site">
       <h2 id="f-site">Site</h2>
@@ -43,22 +47,25 @@
       <h2 id="f-cat">Catalog</h2>
       <dl>
         <dt>{{.Site.Macs}}</dt><dd><a href="/macs">model identifiers</a></dd>
-        <dt>{{.Site.Releases}}</dt><dd><a href="/releases">releases</a></dd>
         <dt>{{.Site.Configs}}</dt><dd><a href="/configs">hardware configurations</a></dd>
+        <dt>{{.Site.Coverage.Eligible}}</dt><dd><a href="/configs?scope=in">counted in coverage</a></dd>
+        <dt>{{.Site.Releases}}</dt><dd><a href="/releases">releases</a></dd>
         <dt>{{.Site.Components}}</dt><dd><a href="/components">components with hardware IDs</a></dd>
         <dt>{{.Site.Criteria}}</dt><dd><a href="/methodology#criteria">test criteria</a></dd>
-        <dt>{{.Site.Coverage.Eligible}}</dt><dd><a href="/configs?scope=in">counted in coverage</a></dd>
+        {{range $i, $e := .Site.Exclusions}}{{if eq $i 0}}<dt>{{$e.Count}}</dt><dd><a href="/configs?excluded={{$e.Reason}}">out of scope: {{$e.Reason}}</a></dd>{{end}}{{end}}
         <dt>{{.Site.Coverage.NotCompatible}}</dt><dd><a href="/configs?status=not-compatible">not compatible by design (32-bit CPU)</a></dd>
-        {{range .Site.Exclusions}}<dt>{{.Count}}</dt><dd><a href="/configs?excluded={{.Reason}}">out of scope: {{.Reason}}</a></dd>{{end}}
+        {{range $i, $e := .Site.Exclusions}}{{if gt $i 0}}<dt>{{$e.Count}}</dt><dd><a href="/configs?excluded={{$e.Reason}}">out of scope: {{$e.Reason}}</a></dd>{{end}}{{end}}
       </dl>
     </section>
     <section class="c-cov" aria-label="Coverage">
       <div class="coverage compact">{{template "coverage-rows" .Site}}</div>
+      <p class="rally"><span class="tagline">#WeCanFixEverything!</span> <a class="help" href="/contribute">You can help!</a></p>
     </section>
   </div>
   <div class="legal">
-    <p><strong>A community site. Not officially affiliated with Omarchy or the Omacom Foundation.</strong></p>
+    <p><strong>A community site. Not officially affiliated with <a href="https://omarchy.org" rel="noopener">Omarchy</a> or the <a href="https://omarchy.org/foundation/" rel="noopener">Omacom Foundation</a>.</strong></p>
     <p>Code MIT · catalog data CC BY-SA 4.0 · catalog {{.Site.CatalogHash}} ({{.Site.CatalogDate}}) · doiomad {{.Version}} · <a href="/attribution">attribution</a></p>
+  </div>
   </div>
 </footer>
 {{end}}
@@ -89,13 +96,13 @@
 {{range .Results}}{{$r := .}}
   <li{{if .Mac.OutOfScope}} class="oos"{{end}}>
     <a class="hit" href="/mac/{{.Slug}}">
-      <span class="ident">{{if .Mac.AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</span>
+      <span class="ident slotted">{{template "slot" .Mac.AllVerified}}{{.Identifier}}</span>
       <span>{{.Mac.Title}}</span>
       <span class="vs">{{range .Mac.Verdicts}}{{template "verdict" .}}{{end}}</span>
       <span class="facts">{{.Mac.Years}} · {{joinlim .Mac.GPUs 2}}{{with .Mac.Chip}} · {{.}}{{end}} · {{len .Mac.Configs}} {{plural (len .Mac.Configs) "config" "configs"}}{{with .Mac.OutOfScope}} {{template "scope" .}}{{end}}</span>
     </a>
     {{if not .AllConfigs}}<ul class="hits">{{$slug := .Slug}}{{range .Scoped}}
-      <li{{if .OutOfScope}} class="oos"{{end}}><a class="cfgref" href="/mac/{{$slug}}#cfg-{{.ID}}">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</a> <span class="muted">{{.Label}}</span> <span class="release">{{.ReleaseName}}</span>{{with .OutOfScope}}{{if not $r.Mac.OutOfScope}} {{template "scope" .}}{{end}}{{end}}</li>{{end}}
+      <li{{if .OutOfScope}} class="oos"{{end}}><a class="slotted" href="/mac/{{$slug}}#cfg-{{.ID}}">{{template "slot" .Verified}}<span class="cfgref">{{.Diff}}</span></a> <span class="muted">{{.Label}}</span> <span class="release">{{.ReleaseName}}</span>{{with .OutOfScope}}{{if not $r.Mac.OutOfScope}} {{template "scope" .}}{{end}}{{end}}</li>{{end}}
     </ul>{{end}}
   </li>
 {{end}}
@@ -120,12 +127,15 @@
 <table class="matrix">
   <thead><tr>
     <th scope="col" class="cap-head">Criterion</th>
-    {{range .Cols}}<th scope="col" class="col {{$.HeadClass}}{{if .OutOfScope}} oos{{end}}" id="m-{{.ID}}"><span><a href="{{.Href}}" title="{{.Title}}">{{if .Verified}}{{template "badge"}}{{end}}{{.Label}}</a></span></th>{{end}}
+    {{range .Cols}}<th scope="col" class="col {{$.HeadClass}}{{if .OutOfScope}} oos{{end}}" id="m-{{.ID}}"><span><a class="slotted" href="{{.Href}}" title="{{.Title}}">{{template "slot" .Verified}}{{.Label}}</a></span></th>{{end}}
     <th scope="col" class="count-head">Config<br>count</th>
   </tr></thead>
   <tbody>
   {{range .Groups}}
-    <tr class="cat"><th colspan="{{add (len $.Cols) 2}}" scope="rowgroup">{{template "icon" .Icon}}{{.Name}}{{if .Blocking}} <span class="muted">· a failure here makes a config Unsupported</span>{{end}}</th></tr>
+    <tr class="cat"><th colspan="{{add (len $.Cols) 2}}" scope="rowgroup">
+      <svg class="catprog" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true"><rect width="{{.Pct}}" height="1"/></svg>
+      <span class="catlabel">{{template "icon" .Icon}}{{.Name}}{{if .Blocking}} <span class="muted">· a failure here makes a config Unsupported</span>{{end}}</span>
+      <span class="catcount">{{.Passed}} of {{.Total}} passed</span></th></tr>
     {{range .Rows}}<tr>
       <th scope="row" class="cap" title="{{.Description}}">{{.Name}}</th>
       {{range .Cells}}{{if not .Applies}}<td class="cell"></td>{{else if eq .Verdict "untested"}}<td class="cell u"><i>Untested</i></td>{{else}}<td class="cell">{{template "vicon" .Verdict}}<span class="sr-only">{{.Verdict.Label}}</span></td>{{end}}{{end}}

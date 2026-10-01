@@ -160,10 +160,14 @@ type matrixCol struct {
 }
 
 type matrixGroup struct {
-	Name, Icon string
-	Blocking   bool
-	Rows       []matrixRow
+	Name, Icon    string
+	Blocking      bool
+	Rows          []matrixRow
+	Passed, Total int // applicable cells in the group, and how many have passed
 }
+
+// Pct is the share of the group's applicable cells that passed (0–100).
+func (g matrixGroup) Pct() string { return fmt.Sprintf("%.2f", pctOf(g.Passed, g.Total)) }
 
 type matrixRow struct {
 	ID, Name, Description string
@@ -721,6 +725,10 @@ func buildMatrix(c *catalog.Catalog, cfgs []*configView, withMac bool) *matrixVi
 				}
 				if cell.Applies {
 					row.Count++
+					g.Total++
+					if cell.Verdict == status.Supported {
+						g.Passed++
+					}
 				}
 				row.Cells = append(row.Cells, cell)
 			}

@@ -4,8 +4,8 @@
 <div class="table-wrap"><table class="browse">
   <thead><tr><th scope="col">Identifier</th><th scope="col">Configuration</th><th scope="col">Details</th><th scope="col">Release</th><th scope="col">Status</th></tr></thead>
   <tbody>{{range .Rows}}{{$row := .}}<tr{{if .OutOfScope}} class="oos"{{end}}>
-    <td><a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a></td>
-    <td><a class="cfgref" href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</a></td>
+    <td><a class="ident slotted" href="/mac/{{.Mac.Slug}}">{{template "slot" .Mac.AllVerified}}{{.Mac.Identifier}}</a></td>
+    <td><a class="slotted" href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}">{{template "slot" .Verified}}<span class="cfgref">{{.Diff}}</span></a></td>
     <td>{{.Label}}</td><td class="release">{{.ReleaseName}}</td>
     <td class="vs">{{template "verdict" .Status.Verdict}}{{with .OutOfScope}}{{if ne $row.Status.Verdict "not-compatible"}}{{template "scope" .}}{{end}}{{end}}</td>
   </tr>{{end}}</tbody>

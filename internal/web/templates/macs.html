@@ -25,8 +25,8 @@
   {{range .Rows}}
     {{if and $grouped (ne .LineName $line)}}{{$line = .LineName}}<tr class="line-break"><th colspan="8" scope="rowgroup">{{.LineName}}</th></tr>{{end}}
     <tr{{if .OutOfScope}} class="oos"{{end}}>
-      <td><a class="ident" href="/mac/{{.Slug}}">{{if .AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</a></td>
-      <td>{{.Title}}</td>
+      <td><a class="ident slotted" href="/mac/{{.Slug}}">{{template "slot" .AllVerified}}{{.Identifier}}</a></td>
+      <td class="nowrap">{{.Title}}</td>
       <td>{{.Years}}</td>
       <td>{{joinlim .GPUs 2}}</td>
       <td>{{join .Arch ", "}}</td>
