@@ -4,7 +4,7 @@
 <nav class="index" aria-label="Product lines">{{range .Lines}}<a href="#line-{{.Key}}">{{.Name}} <span class="muted">({{len .Matrix.Cols}})</span></a>{{end}}</nav>
 {{range .Lines}}
 <section class="line-matrix" id="line-{{.Key}}">
-  <h2>{{.Name}} <span class="muted">· {{len .Matrix.Cols}} configurations</span></h2>
+  <h2 class="gh">{{template "machine" .Key}}<span>{{.Name}} <span class="muted">· {{len .Matrix.Cols}} configurations</span></span></h2>
   {{template "matrix" .Matrix}}
 </section>
 {{end}}

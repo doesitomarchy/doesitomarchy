@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
@@ -58,17 +59,18 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 	view := buildView(c, opt)
 	s := &Server{store: st, index: search.Build(c, view.states), view: view, cat: c, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{}}
 	funcs := template.FuncMap{
-		"asset":   a.URL,
-		"pct":     formatPct,
-		"barw":    func(n, d int) string { return fmt.Sprintf("%.2f", pctOf(n, d)) },
-		"query":   func(q string) string { return "/search?q=" + url.QueryEscape(q) },
-		"plural":  func(n int, one, many string) string { return map[bool]string{true: one, false: many}[n == 1] },
-		"join":    strings.Join,
-		"joinlim": joinLimit,
-		"dots":    func(n int) string { return strings.Repeat("·", n) },
-		"add":     func(a, b int) int { return a + b },
-		"applies": s.appliesText,
-		"v":       func(s string) status.Verdict { return status.Verdict(s) },
+		"asset":      a.URL,
+		"pct":        formatPct,
+		"barw":       func(n, d int) string { return fmt.Sprintf("%.2f", pctOf(n, d)) },
+		"query":      func(q string) string { return "/search?q=" + url.QueryEscape(q) },
+		"plural":     func(n int, one, many string) string { return map[bool]string{true: one, false: many}[n == 1] },
+		"join":       strings.Join,
+		"joinlim":    joinLimit,
+		"dots":       func(n int) string { return strings.Repeat("·", n) },
+		"add":        func(a, b int) int { return a + b },
+		"applies":    s.appliesText,
+		"v":          func(s string) status.Verdict { return status.Verdict(s) },
+		"releaseURL": releaseURL,
 	}
 	for _, p := range []string{"home", "mac", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
@@ -177,8 +179,11 @@ func (s *Server) writeHTML(w http.ResponseWriter, r *http.Request, code int, b [
 	h := w.Header()
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	if code == http.StatusOK {
-		// Browsers revalidate; Cloudflare may cache for 5 minutes (purged on deploy).
-		h.Set("Cache-Control", "public, max-age=0, s-maxage=300")
+		// Browsers revalidate; Cloudflare may cache for 5 minutes (purged on
+		// deploy). A handler that set its own policy keeps it.
+		if h.Get("Cache-Control") == "" {
+			h.Set("Cache-Control", "public, max-age=0, s-maxage=300")
+		}
 	} else {
 		h.Set("Cache-Control", "no-store")
 	}
@@ -187,6 +192,17 @@ func (s *Server) writeHTML(w http.ResponseWriter, r *http.Request, code int, b [
 		w.Write(b)
 	}
 }
+
+// releaseURL links a release version (v0.5.1) to its GitHub release; dev
+// builds ("dev", "2522443-dirty") have none.
+func releaseURL(version string) string {
+	if !releaseTag.MatchString(version) {
+		return ""
+	}
+	return RepoURL + "/releases/tag/" + version
+}
+
+var releaseTag = regexp.MustCompile(`^v\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$`)
 
 func pctOf(n, d int) float64 {
 	if d == 0 {

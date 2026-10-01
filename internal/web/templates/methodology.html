@@ -6,22 +6,33 @@
 <h2>Only tests count</h2>
 <p>Every capability starts as <strong>Untested</strong>. A status only changes when someone runs Omarchy on that configuration and reports the result. Research notes on model pages come from spec sheets and Linux hardware probes. They are labelled <em>unverified</em> and never change a status.</p>
 <h2>Configurations</h2>
-<p>A release is split into configurations when the parts Linux cares about differ: the GPU, Wi-Fi, Bluetooth, Ethernet, audio codec, storage controller or security chip, or the ports and features that decide which tests apply. CPU speed, RAM and disk size are attributes of a configuration, not separate ones. Rebadges of the same chip share a configuration. Each configuration is named by what sets it apart from its siblings, such as its GPU, screen size or release.</p>
+<p>A release is split into configurations when the parts Omarchy Linux cares about differ: the GPU, Wi-Fi, Bluetooth, Ethernet, audio codec, storage controller or security chip, or the ports and features that decide which tests apply. CPU speed, RAM and disk size are attributes of a configuration, not separate ones. Rebadges of the same chip share a configuration. Each configuration is named by what sets it apart from its siblings, such as its GPU, screen size or release.</p>
 </section>
 <section>
 <h2>Verdicts</h2>
-<p>Each configuration gets one verdict, applied in this order:</p>
-<ol class="verdict-list">
-  <li>{{template "verdict" (v "not-compatible")}} the Mac can never run Omarchy by design. Today that means the 2006 Macs with a 32-bit-only Core Duo CPU, since Omarchy and Arch Linux support x86_64 only.</li>
-  <li>{{template "verdict" (v "untested")}} no test result yet.</li>
-  <li>{{template "verdict" (v "unsupported")}} a Boot capability was given up on: maintainers mark a capability Unsupported only as a last resort, after repeated attempts to fix a failure made no progress.</li>
-  <li>{{template "verdict" (v "failed")}} a Boot capability failed. A failure is something to fix, not a final answer: each one records why it failed and who is working on it.</li>
-  <li>{{template "verdict" (v "partial")}} something else failed, was given up on, only partly works, or reports conflict.</li>
-  <li>{{template "verdict" (v "supported")}} every tested capability works, shown with how many were tested.</li>
-</ol>
-<p>A configuration whose every applicable capability has passed earns the Omarchy mark {{template "badge"}}. So does a model identifier whose every configuration has passed. The newest Omarchy version's result wins. Results from an older Omarchy major version are marked stale. Two results for the same Omarchy version that disagree are shown as conflicting.</p>
+<p>Each configuration gets one verdict.</p>
+<table class="defs">
+  <thead><tr><th scope="col">Verdict</th><th scope="col">Meaning</th></tr></thead>
+  <tbody>
+    <tr><th scope="row"><span class="mark-label">{{template "badge"}}Omarchy mark</span></th><td>Every applicable capability has passed. A model identifier earns it when every one of its configurations has.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "supported")}}</th><td>Every tested capability works, shown with how many were tested.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "partial")}}</th><td>Something other than Boot failed, was given up on, only partly works, or has conflicting reports.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "failed")}}</th><td>A Boot capability failed. A failure is something to fix, not a final answer: each one records why it failed and who is working on it.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "untested")}}</th><td>No test result yet.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "unsupported")}}</th><td>A Boot capability was given up on. Maintainers mark a capability Unsupported only as a last resort, after repeated attempts to fix a failure made no progress.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "not-compatible")}}</th><td>The Mac can never run Omarchy by design. Today that means the 2006 Macs with a 32-bit-only Core Duo CPU, since Omarchy and Arch Linux support x86_64 only.</td></tr>
+  </tbody>
+</table>
+<p>The newest Omarchy version's result wins. Results from an older Omarchy major version are marked stale. Two results for the same Omarchy version that disagree are shown as conflicting.</p>
 <h2>Coverage</h2>
-<p><strong>Compatibility coverage</strong> counts configurations where every applicable capability has passed. <strong>Test result coverage</strong> counts those with at least one result. Both leave out configurations that are not compatible by design, and those outside the coverage scope: Macs released before 2009 and the Xserve. Out-of-scope Macs are still listed and can still be tested.</p>
+<table class="defs">
+  <thead><tr><th scope="col">Figure</th><th scope="col">What it counts</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Compatibility coverage</th><td>Configurations where every applicable capability has passed.</td></tr>
+    <tr><th scope="row">Test result coverage</th><td>Configurations with at least one test result.</td></tr>
+    <tr><th scope="row">Not counted</th><td>Configurations that are not compatible by design, and those outside the coverage scope: Macs released before 2009 and the Xserve. Out-of-scope Macs are still listed and can still be tested.</td></tr>
+  </tbody>
+</table>
 </section>
 </div>
 

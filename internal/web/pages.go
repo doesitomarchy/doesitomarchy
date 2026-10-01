@@ -105,6 +105,9 @@ func (s *Server) search(w http.ResponseWriter, r *http.Request) {
 	d := s.runSearch(q, r.URL.Query().Get("sort"))
 	w.Header().Set("Vary", "HX-Request")
 	if isHTMX(r) {
+		// The fragment and the full page share this URL. Cloudflare ignores
+		// Vary, so a cached fragment would be served as an unstyled page.
+		w.Header().Set("Cache-Control", "private, no-store")
 		s.renderPartial(w, r, "search", "results", d)
 		return
 	}
@@ -221,6 +224,7 @@ type countRow struct {
 	Label string
 	Count int
 	Max   int
+	URL   string // the matching configurations
 }
 
 type statsData struct {
@@ -241,7 +245,7 @@ func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
 		maxLine = max(maxLine, l.Configs)
 	}
 	for _, l := range s.view.site.Lines {
-		d.Lines = append(d.Lines, countRow{l.Name, l.Configs, maxLine})
+		d.Lines = append(d.Lines, countRow{l.Name, l.Configs, maxLine, "/configs?line=" + url.QueryEscape(l.Key)})
 	}
 	years := map[int]int{}
 	comps := map[string]map[string]int{}
@@ -271,12 +275,12 @@ func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Ints(ys)
 	for _, y := range ys {
-		d.Years = append(d.Years, countRow{strconv.Itoa(y), years[y], maxYear})
+		d.Years = append(d.Years, countRow{strconv.Itoa(y), years[y], maxYear, "/configs?year=" + strconv.Itoa(y)})
 	}
 	for _, k := range []struct{ kind, title string }{{"gpu", "Most common GPUs"}, {"wifi", "Most common Wi-Fi chips"}, {"audio", "Most common audio codecs"}} {
 		var rows []countRow
 		for name, n := range comps[k.kind] {
-			rows = append(rows, countRow{Label: name, Count: n})
+			rows = append(rows, countRow{Label: name, Count: n, URL: "/configs?" + k.kind + "=" + url.QueryEscape(name)})
 		}
 		sort.Slice(rows, func(i, j int) bool {
 			if rows[i].Count != rows[j].Count {
@@ -432,6 +436,46 @@ func (s *Server) configList(w http.ResponseWriter, r *http.Request) {
 		reason := qs.Get("excluded")
 		d.Title, d.Note = "Out of coverage scope: "+reason, "Listed and testable, but not counted in the coverage figures."
 		keep = func(c *configView) bool { return c.OutOfScope == reason && c.Status.Verdict != status.NotCompatible }
+	case qs.Get("line") != "":
+		key := qs.Get("line")
+		d.Title = "Configurations by product line: " + key
+		for _, l := range s.view.site.Lines {
+			if l.Key == key {
+				d.Title = l.Name + " configurations"
+			}
+		}
+		keep = func(c *configView) bool { return c.Mac.LineKey == key }
+	case qs.Get("year") != "":
+		y := qs.Get("year")
+		d.Title = "Configurations released in " + y
+		in := map[string]bool{}
+		for _, m := range s.view.macs {
+			for _, rel := range m.Releases {
+				if strings.HasPrefix(rel.Announced, y+"-") {
+					for _, c := range rel.Configs {
+						in[c.ID] = true
+					}
+				}
+			}
+		}
+		keep = func(c *configView) bool { return in[c.ID] }
+	case qs.Get("gpu") != "" || qs.Get("wifi") != "" || qs.Get("audio") != "":
+		kind, name := "gpu", qs.Get("gpu")
+		if name == "" {
+			kind, name = "wifi", qs.Get("wifi")
+		}
+		if name == "" {
+			kind, name = "audio", qs.Get("audio")
+		}
+		d.Title = "Configurations with " + name
+		keep = func(c *configView) bool {
+			for _, comp := range c.Components {
+				if comp.Kind == kind && comp.Name == name {
+					return true
+				}
+			}
+			return false
+		}
 	case strings.TrimSpace(qs.Get("q")) != "":
 		q := queryParam(r)
 		d.Title = "Configurations matching " + q

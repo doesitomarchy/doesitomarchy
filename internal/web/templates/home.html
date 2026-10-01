@@ -2,9 +2,9 @@
 <div class="hero">
   <h1>Does Your Intel Mac Run <span class="q">Omarchy?</span></h1>
   {{template "searchbox" .Data}}
-  <div class="coverage hero-cov">{{template "coverage-rows" .Site}}</div>
   <p class="hints">Try <a href="{{query "mbp 2015"}}"><code>mbp 2015</code></a>, <a href="{{query "imac 27 5k"}}"><code>imac 27 5k</code></a>,
     <a href="{{query "gpu:nvidia year:<2011"}}"><code>gpu:nvidia year:&lt;2011</code></a>, an order number like <a href="{{query "MC374LL/A"}}"><code>MC374LL/A</code></a>,
     or a hardware ID from <code>lspci -nn</code> like <a href="{{query "10de:0647"}}"><code>10de:0647</code></a>. Press <kbd>Ctrl K</kbd> anywhere to search.</p>
+  <div class="coverage hero-cov">{{template "coverage-rows" .Site}}</div>
 </div>
 {{end}}

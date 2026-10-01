@@ -123,33 +123,121 @@
   var konami = document.getElementById("konami");
   var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // An original 8-bit "power-up": rising square-wave arpeggios, synthesised
+  // here (no audio file, nothing third-party).
+  function powerUp() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try {
+      var ac = new AC(), t = ac.currentTime + 0.02, gain = ac.createGain();
+      gain.gain.value = 0.06;
+      gain.connect(ac.destination);
+      var notes = [60, 64, 67, 72, 62, 66, 69, 74, 64, 68, 71, 76, 79, 84];
+      notes.forEach(function (n, i) {
+        var o = ac.createOscillator(), g = ac.createGain(), at = t + i * 0.055, len = i === notes.length - 1 ? 0.32 : 0.05;
+        o.type = "square";
+        o.frequency.value = 440 * Math.pow(2, (n - 69) / 12);
+        g.gain.setValueAtTime(1, at);
+        g.gain.exponentialRampToValueAtTime(0.001, at + len);
+        o.connect(g); g.connect(gain);
+        o.start(at); o.stop(at + len + 0.02);
+      });
+      setTimeout(function () { ac.close(); }, 1500);
+    } catch (e) {}
+  }
+
+  var ease = function (x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+
+  // tween runs fn(progress 0→1) over ms with easing, then done.
+  function tween(ms, fn, done) {
+    if (calm || ms <= 0) { fn(1); if (done) done(); return; }
+    var t0 = performance.now();
+    requestAnimationFrame(function step(now) {
+      var x = Math.min(1, (now - t0) / ms);
+      fn(ease(x));
+      if (x < 1) requestAnimationFrame(step); else if (done) done();
+    });
+  }
+
+  function scrollToY(y, ms, done) {
+    var from = window.scrollY;
+    tween(Math.abs(y - from) < 2 ? 0 : ms, function (k) { window.scrollTo({ top: from + (y - from) * k, behavior: "instant" }); }, done);
+  }
+
   function celebrate() {
     active = true;
-    var saved = [];
-    document.querySelectorAll(".stat").forEach(function (st) {
-      var rect = st.querySelector("svg.bar rect"), n = st.querySelector(".figure .n"), p = st.querySelector(".figure .p");
-      var total = st.querySelector(".figure").getAttribute("data-total");
-      saved.push([rect, rect.getAttribute("width"), n, n.textContent, p, p.textContent]);
-      rect.setAttribute("width", "100");
-      n.textContent = total;
-      p.textContent = "100.0%";
-    });
-    konami.hidden = false;
-    var armed = false, timer;
-    setTimeout(function () { armed = true; }, 1000); // ignore the hand still on the keyboard or mouse
-    function reset() {
-      if (!armed) return;
-      clearTimeout(timer);
-      saved.forEach(function (s) { s[0].setAttribute("width", s[1]); s[2].textContent = s[3]; s[4].textContent = s[5]; });
-      konami.hidden = true;
-      ["keydown", "mousemove", "mousedown", "touchstart", "wheel"].forEach(function (ev) { removeEventListener(ev, reset, true); });
-      active = false;
+    var body = document.body, startY = window.scrollY, armed = false, timers = [];
+    var lit = document.querySelector(".super .c-cov"), footer = document.querySelector(".super");
+    var msg = konami.querySelector(".konami-msg");
+    var later = function (ms, fn) { timers.push(setTimeout(fn, ms)); };
+
+    // Nothing interrupts the sequence until it has played; after that, any input clears it.
+    function input(e) {
+      if (!armed) {
+        if (e.type !== "mousemove") { e.preventDefault(); e.stopPropagation(); }
+        return;
+      }
+      reset();
     }
-    ["keydown", "mousemove", "mousedown", "touchstart", "wheel"].forEach(function (ev) { addEventListener(ev, reset, true); });
-    timer = setTimeout(function () { armed = true; reset(); }, 10000);
+    var events = ["keydown", "mousemove", "mousedown", "touchstart", "touchmove", "wheel"];
+    events.forEach(function (ev) { addEventListener(ev, input, { capture: true, passive: false }); });
+
+    // 1. Down to the very bottom, so the whole footer is in view.
+    scrollToY(document.documentElement.scrollHeight - window.innerHeight, 700, function () {
+      // 2. Dim everything but the footer's coverage column.
+      body.classList.add("konami-lit");
+      konami.hidden = false;
+      void konami.offsetWidth;
+      konami.classList.add("on");
+      later(calm ? 0 : 450, function () {
+        // 3. The message, in the dimmed space above the footer.
+        var room = footer.getBoundingClientRect().top;
+        if (room < 120 && lit) room = lit.getBoundingClientRect().top - 16;
+        msg.style.height = Math.max(room, 80) + "px";
+        msg.style.setProperty("--fit", "1");
+        var box = msg.firstElementChild, w = msg.clientWidth - 32;
+        var fit = Math.min(1, room / (box.scrollHeight + 32), w / box.scrollWidth);
+        msg.style.setProperty("--fit", String(Math.max(0.45, fit)));
+        konami.classList.add("msg");
+        fill();
+        later(calm ? 0 : 2900, function () { armed = true; });
+      });
+    });
+
+    // 4. Every coverage bar climbs to 100%, the figures counting along.
+    var saved = [];
+    function fill() {
+      document.querySelectorAll(".stat").forEach(function (st) {
+        var rect = st.querySelector("svg.bar rect"), fig = st.querySelector(".figure");
+        var n = fig.querySelector(".n"), p = fig.querySelector(".p"), total = +fig.getAttribute("data-total");
+        var from = +n.textContent, w0 = parseFloat(rect.getAttribute("width")) || 0;
+        saved.push([rect, n, n.textContent, p, p.textContent]);
+        tween(2600, function (k) {
+          rect.style.width = (w0 + (100 - w0) * k) + "px";
+          n.textContent = Math.round(from + (total - from) * k);
+          p.textContent = (100 * (from + (total - from) * k) / (total || 1)).toFixed(1) + "%";
+        });
+      });
+    }
+
+    function reset() {
+      if (!active) return;
+      active = false;
+      timers.forEach(clearTimeout);
+      events.forEach(function (ev) { removeEventListener(ev, input, { capture: true, passive: false }); });
+      konami.classList.remove("on", "msg");
+      setTimeout(function () {
+        konami.hidden = true;
+        body.classList.remove("konami-lit");
+        saved.forEach(function (s) { s[0].style.width = ""; s[1].textContent = s[2]; s[3].textContent = s[4]; });
+        scrollToY(startY, 500);
+      }, calm ? 0 : 400);
+    }
+    later(15000, function () { armed = true; reset(); });
   }
 
   function flashThenCelebrate() {
+    powerUp();
     if (calm) { celebrate(); return; } // no flashing for visitors who ask for reduced motion
     // Two flashes ~400ms apart: well under WCAG's three-flashes-per-second limit.
     var body = document.body, steps = [[0, true], [180, false], [400, true], [580, false]];
