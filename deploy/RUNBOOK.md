@@ -88,7 +88,7 @@ export LITESTREAM_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
 export LITESTREAM_ACCESS_KEY_ID=...  LITESTREAM_SECRET_ACCESS_KEY=...
 SET_GITHUB_SECRETS=1 deploy/provision.sh          # droplet, firewall, setup.sh, deploy secrets
 
-export CF_API_TOKEN=... CF_ACCOUNT_ID=... ACCESS_EMAILS="you@example.com"
+export CF_API_TOKEN=... CF_ACCOUNT_ID=...
 deploy/cloudflare.sh                              # tunnel, DNS, rules, Access, tunnel token
 gh secret set CF_ZONE_ID -R doesitomarchy/doesitomarchy      # value printed by cloudflare.sh
 gh secret set CF_CACHE_TOKEN -R doesitomarchy/doesitomarchy  # paste the cache-purge token
@@ -101,13 +101,18 @@ under `deploy/root/`, run `deploy/provision.sh` again to apply it.
 same steps rebuild a lost server: provision, run cloudflare.sh (it moves the
 tunnel token to the new droplet), and tag or re-deploy a release.
 
-## Launch (Phase 6)
+## Public or private
+
+The site went public on 2026-10-01 (Phase 6). `cloudflare.sh` keeps it public
+by default and removes any Access application it finds. To make it private
+again, for example during an incident, run:
 
 ```sh
-ACCESS=off deploy/cloudflare.sh
+ACCESS=on ACCESS_EMAILS="you@example.com" deploy/cloudflare.sh
 ```
 
-This removes the Access application, so the site becomes public.
+This puts it behind Cloudflare Access (one-time email code). Run the script
+again without `ACCESS=on` to reopen it.
 
 ## Restore rehearsal
 
