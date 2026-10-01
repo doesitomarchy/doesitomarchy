@@ -19,7 +19,17 @@ flock -n 9 || { echo "another deploy is running" >&2; exit 1; }
 
 log() { echo "doiomad-deploy: $*" >&2; logger -t doiomad-deploy -- "$*"; }
 
-live() { basename "$(readlink -f $BASE/current 2>/dev/null || echo none)"; }
+# live: the live release's version, or "none" before the first deploy.
+live() {
+	if [ -L $BASE/current ]; then basename "$(readlink $BASE/current)"; else echo none; fi
+}
+
+# others: installed releases other than the live one, newest first.
+others() {
+	local cur
+	cur=$(live)
+	ls -1t $RELEASES | { grep -vxF "$cur" || true; }
+}
 
 # switch VERSION: point current at a release and restart the server.
 switch() {
@@ -41,18 +51,15 @@ healthy() {
 
 # previous: the newest installed release that isn't live.
 previous() {
-	local cur
-	cur=$(live)
-	ls -1t $RELEASES | grep -vxF "$cur" | head -n1
+	others | head -n1
 }
 
+# prune: keep the live release plus the KEEP-1 newest others, and KEEP backups.
 prune() {
-	local cur
-	cur=$(live)
-	ls -1t $RELEASES | grep -vxF "$cur" | tail -n +$KEEP | while read -r v; do
+	others | tail -n +$KEEP | while read -r v; do
 		rm -rf "${RELEASES:?}/$v"
 	done
-	ls -1t $BACKUPS/*.db 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
+	{ ls -1t $BACKUPS/*.db 2>/dev/null || true; } | tail -n +$((KEEP + 1)) | xargs -r rm -f
 }
 
 case "${1:-}" in
