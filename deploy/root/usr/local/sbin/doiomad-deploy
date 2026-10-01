@@ -31,11 +31,15 @@ others() {
 	ls -1t $RELEASES | { grep -vxF "$cur" || true; }
 }
 
-# switch VERSION: point current at a release and restart the server.
+# switch VERSION: point current at a release and restart the server. A
+# crashing release trips systemd's start limit within seconds, after which
+# systemd refuses even a manual restart, so clear that first. Whether the
+# restart worked is judged by healthy, not by systemctl's exit status.
 switch() {
 	ln -sfn "releases/$1" $BASE/current.new
 	mv -T $BASE/current.new $BASE/current
-	systemctl restart doiomad
+	systemctl reset-failed doiomad 2>/dev/null || true
+	systemctl restart doiomad || log "systemctl restart failed for $1"
 }
 
 # healthy VERSION: wait up to 20 s for /healthz to report that version.
