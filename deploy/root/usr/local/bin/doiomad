@@ -1,0 +1,4 @@
+#!/bin/sh
+# Admin wrapper: run the live doiomad binary as the service user against the
+# production database, e.g. "doiomad version", "doiomad sync".
+exec sudo -u doiomad env DOIOMAD_DB=/var/lib/doiomad/doesitomarchy.db /opt/doiomad/current/doiomad "$@"

@@ -1,0 +1,14 @@
+#!/bin/sh
+# Forced command for the deploy SSH key (see ~deploy/.ssh/authorized_keys).
+# Accepts exactly: "install vX.Y.Z <sha256>" (binary on stdin), "rollback",
+# or "status".
+set -eu
+set -f
+# shellcheck disable=SC2086
+set -- ${SSH_ORIGINAL_COMMAND:-}
+case "${1:-} $#" in
+"install 3") exec sudo -n /usr/local/sbin/doiomad-deploy install "$2" "$3" ;;
+"rollback 1" | "status 1") exec sudo -n /usr/local/sbin/doiomad-deploy "$1" ;;
+esac
+echo "usage: install VERSION SHA256 | rollback | status" >&2
+exit 2

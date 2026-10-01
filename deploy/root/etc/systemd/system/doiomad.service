@@ -1,0 +1,45 @@
+# DoesItOmarchy web server. Listens on loopback only; Cloudflare Tunnel is the
+# only way in (PLAN.md §18). /opt/doiomad/current points at the live release.
+[Unit]
+Description=DoesItOmarchy web server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=doiomad
+Group=doiomad
+Environment=DOIOMAD_DB=/var/lib/doiomad/doesitomarchy.db
+ExecStart=/opt/doiomad/current/doiomad serve -addr 127.0.0.1:8080
+WorkingDirectory=/var/lib/doiomad
+Restart=always
+RestartSec=2
+TimeoutStopSec=15
+UMask=0027
+MemoryHigh=300M
+MemoryMax=450M
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/doiomad
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

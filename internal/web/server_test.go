@@ -70,7 +70,7 @@ func TestRoutes(t *testing.T) {
 		body         string
 		ctype        string
 	}{
-		{"GET", "/healthz", 200, "", "ok", "text/plain"},
+		{"GET", "/healthz", 200, "", "ok test", "text/plain"},
 		{"GET", "/", 200, "", "<span class=\"n\">0</span> / " + strconv.Itoa(eligible(t)), "text/html"},
 		{"GET", "/mac/MacBookPro5-1", 200, "", "MacBook Pro (15-inch, Late 2008)", "text/html"},
 		{"GET", "/mac/MacBookPro5-1", 200, "", "#v-untested\"></use></svg>Untested</span>", "text/html"},

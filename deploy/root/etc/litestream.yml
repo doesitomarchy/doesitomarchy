@@ -1,0 +1,16 @@
+# Continuous replication of the DoesItOmarchy database to Cloudflare R2.
+# Credentials come from /etc/doiomad/litestream.env.
+snapshot:
+  interval: 24h
+  retention: 720h # 30 days
+
+dbs:
+  - path: /var/lib/doiomad/doesitomarchy.db
+    replica:
+      type: s3
+      bucket: ${LITESTREAM_BUCKET}
+      path: doesitomarchy.db
+      endpoint: ${LITESTREAM_ENDPOINT}
+      region: auto
+      access-key-id: ${LITESTREAM_ACCESS_KEY_ID}
+      secret-access-key: ${LITESTREAM_SECRET_ACCESS_KEY}
