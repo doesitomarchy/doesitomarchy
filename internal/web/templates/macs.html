@@ -1,6 +1,6 @@
 {{define "content"}}{{with .Data}}
 <h1>All Intel Macs</h1>
-<p class="muted">{{len .Rows}} of {{.Total}} model identifiers{{if .Q}} matching <code>{{.Q}}</code>{{end}}. Filter with the search syntax, e.g. <code>chip:t2</code>, <code>year:2012..2015</code>, <code>gpu:amd</code>.</p>
+<p class="muted">{{len .Rows}} of {{.Total}} model identifiers{{if .Q}} matching <code>{{.Q}}</code>{{end}}. Filter with the search syntax, e.g. <code>chip:t2</code>, <code>year:2012..2015</code>, <code>gpu:amd</code>. Dimmed rows are outside the coverage scope.</p>
 <form class="searchbox filter" action="/macs" method="get" role="search">
   {{template "icon" "search"}}
   <input type="search" name="q" value="{{.Q}}" aria-label="Filter Macs" placeholder="filter: mbp · year:>=2012 · chip:t2">
@@ -24,15 +24,15 @@
   {{$line := ""}}{{$grouped := .Grouped}}
   {{range .Rows}}
     {{if and $grouped (ne .LineName $line)}}{{$line = .LineName}}<tr class="line-break"><th colspan="8" scope="rowgroup">{{.LineName}}</th></tr>{{end}}
-    <tr>
-      <td><a class="ident" href="/mac/{{.Slug}}">{{.Identifier}}</a></td>
+    <tr{{if .OutOfScope}} class="oos"{{end}}>
+      <td><a class="ident" href="/mac/{{.Slug}}">{{if .AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</a></td>
       <td>{{.Title}}</td>
       <td>{{.Years}}</td>
       <td>{{joinlim .GPUs 2}}</td>
       <td>{{join .Arch ", "}}</td>
       <td>{{if .Chip}}{{.Chip}}{{else}}<span class="muted">—</span>{{end}}</td>
       <td class="num">{{len .Configs}}</td>
-      <td>{{range .Verdicts}}{{template "verdict" .}} {{end}}{{with .OutOfScope}}<span class="tag scope" title="Out of coverage scope: {{.}}">out of scope</span>{{end}}</td>
+      <td class="vs">{{range .Verdicts}}{{template "verdict" .}}{{end}}{{with .OutOfScope}}{{template "scope" .}}{{end}}</td>
     </tr>
   {{end}}
   </tbody>

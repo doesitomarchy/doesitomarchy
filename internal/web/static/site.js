@@ -1,4 +1,4 @@
-// doesitomarchy: progressive enhancement only. Every feature below has a
+// DoesItOmarchy: progressive enhancement only. Every feature below has a
 // no-JS fallback (plain links and forms), and nothing here uses eval.
 (function () {
   "use strict";
@@ -94,4 +94,77 @@
       }
     });
   });
+
+  // ── criteria matrices: highlight the hovered column ───────────────────
+  document.querySelectorAll("table.matrix").forEach(function (table) {
+    var heads = table.tHead ? table.tHead.rows[0].cells : [];
+    function rows() { return Array.prototype.filter.call(table.tBodies[0].rows, function (r) { return r.cells.length === heads.length; }); }
+    function mark(cls, i) {
+      table.querySelectorAll("td." + cls).forEach(function (td) { td.classList.remove(cls); });
+      if (i > 0 && i < heads.length - 1) rows().forEach(function (r) { r.cells[i].classList.add(cls); });
+    }
+    table.addEventListener("mouseover", function (e) {
+      var cell = e.target.closest("td, th");
+      mark("col-hover", cell && cell.parentElement.cells.length === heads.length ? cell.cellIndex : -1);
+    });
+    table.addEventListener("mouseleave", function () { mark("col-hover", -1); });
+    function target() {
+      var id = location.hash.slice(1);
+      var i = Array.prototype.findIndex.call(heads, function (h) { return h.id === id; });
+      mark("col-target", i);
+    }
+    window.addEventListener("hashchange", target);
+    target();
+  });
+
+  // ── easter egg: ↑ ↑ ↓ ↓ ← → ← → B A Enter ─────────────────────────────
+  var code = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a", "Enter"];
+  var pos = 0, active = false;
+  var konami = document.getElementById("konami");
+  var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function celebrate() {
+    active = true;
+    var saved = [];
+    document.querySelectorAll(".stat").forEach(function (st) {
+      var rect = st.querySelector("svg.bar rect"), n = st.querySelector(".figure .n"), p = st.querySelector(".figure .p");
+      var total = st.querySelector(".figure").getAttribute("data-total");
+      saved.push([rect, rect.getAttribute("width"), n, n.textContent, p, p.textContent]);
+      rect.setAttribute("width", "100");
+      n.textContent = total;
+      p.textContent = "100.0%";
+    });
+    konami.hidden = false;
+    var armed = false, timer;
+    setTimeout(function () { armed = true; }, 1000); // ignore the hand still on the keyboard or mouse
+    function reset() {
+      if (!armed) return;
+      clearTimeout(timer);
+      saved.forEach(function (s) { s[0].setAttribute("width", s[1]); s[2].textContent = s[3]; s[4].textContent = s[5]; });
+      konami.hidden = true;
+      ["keydown", "mousemove", "mousedown", "touchstart", "wheel"].forEach(function (ev) { removeEventListener(ev, reset, true); });
+      active = false;
+    }
+    ["keydown", "mousemove", "mousedown", "touchstart", "wheel"].forEach(function (ev) { addEventListener(ev, reset, true); });
+    timer = setTimeout(function () { armed = true; reset(); }, 10000);
+  }
+
+  function flashThenCelebrate() {
+    if (calm) { celebrate(); return; } // no flashing for visitors who ask for reduced motion
+    // Two flashes ~400ms apart: well under WCAG's three-flashes-per-second limit.
+    var body = document.body, steps = [[0, true], [180, false], [400, true], [580, false]];
+    steps.forEach(function (s) { setTimeout(function () { body.classList.toggle("flash", s[1]); }, s[0]); });
+    setTimeout(celebrate, 600);
+  }
+
+  if (konami) {
+    document.addEventListener("keydown", function (e) {
+      if (active) return;
+      var typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable || (overlay && overlay.open);
+      if (typing) { pos = 0; return; }
+      var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      pos = key === code[pos] ? pos + 1 : (key === code[0] ? 1 : 0);
+      if (pos === code.length) { pos = 0; e.preventDefault(); flashThenCelebrate(); }
+    });
+  }
 })();

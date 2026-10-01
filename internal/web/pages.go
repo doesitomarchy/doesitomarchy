@@ -10,6 +10,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
+	"github.com/doesitomarchy/doesitomarchy/internal/status"
 )
 
 // preset is one of the quick searches under the home search bar (PLAN §17.7).
@@ -18,6 +19,7 @@ type preset struct {
 }
 
 var presets = []preset{
+	{"All Compatible", "status:supported", ""},
 	{"MacBook Pros", "line:macbook-pro", ""},
 	{"iMacs", "line:imac", ""},
 	{"MacBook", "line:macbook", ""},
@@ -25,7 +27,6 @@ var presets = []preset{
 	{"iMac Pros", "line:imac-pro", ""},
 	{"Mac Minis", "line:mac-mini", ""},
 	{"Mac Pros", "line:mac-pro", ""},
-	{"All Compatible", "status:supported", ""},
 	{"Latest with Test", "tested:yes", "recent"},
 }
 
@@ -299,10 +300,14 @@ func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
 type methodologyData struct {
 	Categories []catalog.Category
 	Caps       map[string][]catalog.Capability
+	Icons      map[string]string // category ID → sprite icon
 }
 
 func (s *Server) methodology(w http.ResponseWriter, r *http.Request) {
-	d := methodologyData{Categories: s.cat.Categories, Caps: map[string][]catalog.Capability{}}
+	d := methodologyData{Categories: s.cat.Categories, Caps: map[string][]catalog.Capability{}, Icons: map[string]string{}}
+	for _, k := range s.cat.Categories {
+		d.Icons[k.ID] = iconFor[k.Icon]
+	}
 	for _, c := range s.cat.Capabilities {
 		d.Caps[c.Category()] = append(d.Caps[c.Category()], c)
 	}
@@ -360,15 +365,116 @@ func (s *Server) tagText(t string) string {
 	case "form":
 		return "a " + v + " form factor"
 	case "feature":
-		return strings.ToLower(voc.Features[v].Name)
+		return lowerFirst(voc.Features[v].Name)
 	case "port":
 		return "a " + voc.Ports[v].Name + " port"
 	case "has":
-		return "a " + strings.ToLower(voc.ComponentKinds[v].Name)
+		return article(lowerFirst(voc.ComponentKinds[v].Name))
 	case "gpu":
-		return "a " + v + " GPU"
+		return article(v + " GPU")
 	}
 	return t
+}
+
+// ── criteria matrix, catalog lists, attribution ───────────────────────────
+
+type lineMatrix struct {
+	Key, Name string
+	Matrix    *matrixView
+}
+
+type criteriaData struct{ Lines []lineMatrix }
+
+// criteria serves /criteria: one review-report-style matrix per product line.
+func (s *Server) criteria(w http.ResponseWriter, r *http.Request) {
+	byLine := map[string][]*configView{}
+	names := map[string]string{}
+	for _, m := range s.view.macs {
+		byLine[m.LineKey] = append(byLine[m.LineKey], m.Configs...)
+		names[m.LineKey] = m.LineName
+	}
+	var d criteriaData
+	for _, k := range orderedLines(byLine) {
+		d.Lines = append(d.Lines, lineMatrix{k, names[k], buildMatrix(s.cat, byLine[k], true)})
+	}
+	s.render(w, r, http.StatusOK, "criteria", page{Title: "Criteria matrix", Nav: "criteria", Data: d})
+}
+
+func (s *Server) releases(w http.ResponseWriter, r *http.Request) {
+	var rows []*releaseView
+	for _, m := range s.view.macs {
+		rows = append(rows, m.Releases...)
+	}
+	sort.SliceStable(rows, func(i, j int) bool { return rows[i].Announced > rows[j].Announced })
+	s.render(w, r, http.StatusOK, "releases", page{Title: "Releases", Data: rows})
+}
+
+type configsData struct {
+	Title, Note string
+	Rows        []*configView
+}
+
+// configList serves /configs, optionally filtered: ?scope=in, ?status=…,
+// ?excluded=<coverage reason>, or ?q= (search syntax).
+func (s *Server) configList(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+	d := configsData{Title: "All configurations"}
+	keep := func(*configView) bool { return true }
+	switch {
+	case qs.Get("scope") == "in":
+		d.Title, d.Note = "Configurations counted in coverage", "These make up N in both coverage figures."
+		keep = func(c *configView) bool { return c.OutOfScope == "" && c.Status.Verdict != status.NotCompatible }
+	case qs.Get("status") != "":
+		v := status.Verdict(qs.Get("status"))
+		d.Title = v.Label() + " configurations"
+		keep = func(c *configView) bool { return c.Status.Verdict == v }
+	case qs.Get("excluded") != "":
+		reason := qs.Get("excluded")
+		d.Title, d.Note = "Out of coverage scope: "+reason, "Listed and testable, but not counted in the coverage figures."
+		keep = func(c *configView) bool { return c.OutOfScope == reason && c.Status.Verdict != status.NotCompatible }
+	case strings.TrimSpace(qs.Get("q")) != "":
+		q := queryParam(r)
+		d.Title = "Configurations matching " + q
+		hit := map[string]bool{}
+		for _, res := range s.index.Search(q).Results {
+			for _, c := range res.Configs {
+				hit[c.ID] = true
+			}
+		}
+		keep = func(c *configView) bool { return hit[c.ID] }
+	}
+	for _, m := range s.view.macs {
+		for _, c := range m.Configs {
+			if keep(c) {
+				d.Rows = append(d.Rows, c)
+			}
+		}
+	}
+	s.render(w, r, http.StatusOK, "configs", page{Title: d.Title, Data: d})
+}
+
+func (s *Server) componentList(w http.ResponseWriter, r *http.Request) {
+	s.render(w, r, http.StatusOK, "components", page{Title: "Components", Data: s.view.components})
+}
+
+func (s *Server) attribution(w http.ResponseWriter, r *http.Request) {
+	s.render(w, r, http.StatusOK, "attribution", page{Title: "Attribution"})
+}
+
+// lowerFirst lower-cases the first letter only ("Switchable graphics (two GPUs)").
+func lowerFirst(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToLower(s[:1]) + s[1:]
+}
+
+// article prefixes "a" or "an".
+func article(s string) string {
+	if s != "" && strings.ContainsRune("aeiouAEIOU", rune(s[0])) {
+		return "an " + s
+	}
+	return "a " + s
 }
 
 // ── robots / sitemap ──────────────────────────────────────────────────────
@@ -382,7 +488,7 @@ func (s *Server) sitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n" + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
-	for _, p := range []string{"/", "/macs", "/stats", "/methodology", "/contribute"} {
+	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution"} {
 		fmt.Fprintf(&b, "  <url><loc>%s%s</loc></url>\n", BaseURL, p)
 	}
 	for _, m := range s.view.macs {

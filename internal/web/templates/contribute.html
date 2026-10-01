@@ -1,17 +1,26 @@
 {{define "content"}}
-<div class="prose">
 <h1>Contribute</h1>
+<section class="cta">
+  <h2>Report a test result</h2>
+  <p class="lead">Run Omarchy on your Intel Mac and tell everyone what works. One test fills in a whole configuration, and every result helps the next person decide.</p>
+  <p>Results arrive through <strong>doioma</strong>, the DoesItOmarchy test tool. It identifies your exact configuration, walks you through each check, and submits the result for review. It's being built now; this page will link to it when it's ready.</p>
+  <p class="cta-actions"><a class="btn-cta" href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">{{template "icon" "github"}}Follow progress on GitHub</a>
+    <a class="btn-cta ghost" href="/macs">Find your Mac</a></p>
+</section>
+<div class="paper">
+<section>
+<h2>Check your Mac's page</h2>
+<p>Until the tool is ready, the most useful thing you can do is check that your Mac's model page matches your hardware. If it doesn't, open an issue on GitHub with the output of <code>lspci -nn</code> and <code>lsusb</code>.</p>
+</section>
+<section>
 <h2>Fix or improve the catalog</h2>
-<p>The catalog is plain YAML in the <a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">doesitomarchy repository</a>: one file per model identifier in <code>data/macs/</code>, shared components in <code>data/components/</code>. Corrections come in as pull requests. <code>doiomad validate</code> checks every change in CI.</p>
+<p>The catalog is plain YAML in the <a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">DoesItOmarchy repository</a>: one file per model identifier in <code>data/macs/</code>, shared components in <code>data/components/</code>. Corrections come in as pull requests, and <code>doiomad validate</code> checks every change in CI.</p>
 <ul>
   <li>Cite a source for every fact: Apple Tech Specs, EveryMac, or a hardware probe from a real machine.</li>
   <li>If you're unsure, record your best value with an <code>uncertain</code> note rather than guessing.</li>
   <li>Configuration IDs are permanent. Rename one by moving the old ID to <code>aliases</code>, never by deleting it.</li>
 </ul>
 <p>See <a href="https://github.com/doesitomarchy/doesitomarchy/blob/main/CONTRIBUTING.md" rel="noopener">CONTRIBUTING.md</a> for the full rules.</p>
-
-<h2>Report a test result</h2>
-<p>Test results open with the site's submission API, which is still being built. Once it's ready you'll be able to report how Omarchy runs on your Mac, capability by capability, and every result will be reviewed before it counts.</p>
-<p>Until then, the most useful thing you can do is check that your Mac's model page matches your hardware. If it doesn't, open an issue with the output of <code>lspci -nn</code> and <code>lsusb</code>.</p>
+</section>
 </div>
 {{end}}

@@ -1,0 +1,8 @@
+{{define "content"}}{{with .Data}}
+<h1>Releases</h1>
+<p class="muted">{{len .}} releases, newest first. A release is one model Apple announced; a model identifier can span several.</p>
+<div class="table-wrap"><table class="browse">
+  <thead><tr><th scope="col">Announced</th><th scope="col">Release</th><th scope="col">Identifier</th><th scope="col">Model no.</th><th scope="col" class="num">Configs</th></tr></thead>
+  <tbody>{{range .}}<tr{{if .Mac.OutOfScope}} class="oos"{{end}}><td>{{.Announced}}</td><td class="release">{{.Name}}</td><td><a class="ident" href="/mac/{{.Mac.Slug}}#rel-{{.ID}}">{{.Mac.Identifier}}</a></td><td>{{join .ModelNumbers ", "}}</td><td class="num">{{len .Configs}}</td></tr>{{end}}</tbody>
+</table></div>
+{{end}}{{end}}

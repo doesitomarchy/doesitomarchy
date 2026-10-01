@@ -16,6 +16,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
+	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
@@ -40,8 +41,9 @@ type Server struct {
 	pages   map[string]*template.Template
 }
 
-// New builds the page views from the catalog and parses templates.
-func New(st *store.Store, c *catalog.Catalog, ix *search.Index, log *slog.Logger, version string) (*Server, error) {
+// New builds the page views and the search index from the catalog, and
+// parses templates.
+func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*Server, error) {
 	static, err := fs.Sub(staticFS, "static")
 	if err != nil {
 		return nil, err
@@ -50,7 +52,8 @@ func New(st *store.Store, c *catalog.Catalog, ix *search.Index, log *slog.Logger
 	if err != nil {
 		return nil, err
 	}
-	s := &Server{store: st, index: ix, view: buildView(c), cat: c, assets: a, log: log, version: version, pages: map[string]*template.Template{}}
+	view := buildView(c, opt)
+	s := &Server{store: st, index: search.Build(c, view.states), view: view, cat: c, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{}}
 	funcs := template.FuncMap{
 		"asset":   a.URL,
 		"pct":     formatPct,
@@ -62,8 +65,10 @@ func New(st *store.Store, c *catalog.Catalog, ix *search.Index, log *slog.Logger
 		"dots":    func(n int) string { return strings.Repeat("·", n) },
 		"add":     func(a, b int) int { return a + b },
 		"applies": s.appliesText,
+		"v":       func(s string) status.Verdict { return status.Verdict(s) },
 	}
-	for _, p := range []string{"home", "mac", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error"} {
+	for _, p := range []string{"home", "mac", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+		"criteria", "releases", "configs", "components", "attribution"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
 			return nil, fmt.Errorf("template %s: %w", p, err)
@@ -91,6 +96,11 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /stats", s.stats)
 	mux.HandleFunc("GET /methodology", s.methodology)
 	mux.HandleFunc("GET /contribute", s.contribute)
+	mux.HandleFunc("GET /criteria", s.criteria)
+	mux.HandleFunc("GET /releases", s.releases)
+	mux.HandleFunc("GET /configs", s.configList)
+	mux.HandleFunc("GET /components", s.componentList)
+	mux.HandleFunc("GET /attribution", s.attribution)
 	mux.HandleFunc("/api/v1/", apiNotFound) // reserved until the API ships (Phase 7)
 	mux.HandleFunc("/", s.notFound)
 	return s.recoverer(logRequests(s.log, securityHeaders(compress(mux))))

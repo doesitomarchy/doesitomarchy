@@ -1,5 +1,6 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-LDFLAGS := -s -w -X main.version=$(VERSION)
+CATALOG_DATE ?= $(shell git log -1 --format=%cs -- data 2>/dev/null || echo unknown)
+LDFLAGS := -s -w -X main.version=$(VERSION) -X main.catalogDate=$(CATALOG_DATE)
 
 .PHONY: build test check validate clean
 

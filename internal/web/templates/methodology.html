@@ -1,36 +1,45 @@
 {{define "content"}}
-<div class="prose">
 <h1>Methodology</h1>
-<p>doesitomarchy tracks whether <a href="https://omarchy.org" rel="noopener">Omarchy</a> works on every Intel Mac Apple sold from 2006 to 2020. Each Mac is identified by its <strong>model identifier</strong> (for example <code>MacBookPro8,2</code>, shown in System Information). Every official hardware configuration of each identifier is listed as a complete computer.</p>
-
+<div class="paper">
+<section>
+<p>DoesItOmarchy tracks whether <a href="https://omarchy.org" rel="noopener">Omarchy</a> works on every Intel Mac Apple sold from 2006 to 2020. Each Mac is identified by its <strong>model identifier</strong> (for example <code>MacBookPro8,2</code>, shown in System Information). Every official hardware configuration of each identifier is listed as a complete computer.</p>
 <h2>Only tests count</h2>
 <p>Every capability starts as <strong>Untested</strong>. A status only changes when someone runs Omarchy on that configuration and reports the result. Research notes on model pages come from spec sheets and Linux hardware probes. They are labelled <em>unverified</em> and never change a status.</p>
-
 <h2>Configurations</h2>
-<p>A release is split into configurations when the parts Linux cares about differ: the GPU, Wi-Fi, Bluetooth, Ethernet, audio codec, storage controller or security chip, or the ports and features that decide which tests apply. CPU speed, RAM and disk size are attributes of a configuration, not separate ones. Rebadges of the same chip share a configuration.</p>
-
+<p>A release is split into configurations when the parts Linux cares about differ: the GPU, Wi-Fi, Bluetooth, Ethernet, audio codec, storage controller or security chip, or the ports and features that decide which tests apply. CPU speed, RAM and disk size are attributes of a configuration, not separate ones. Rebadges of the same chip share a configuration. Each configuration is named by what sets it apart from its siblings, such as its GPU, screen size or release.</p>
+</section>
+<section>
 <h2>Verdicts</h2>
 <p>Each configuration gets one verdict, applied in this order:</p>
-<ol>
-  <li><strong>⛔ Not compatible</strong>: the Mac can never run Omarchy by design. Today that means the 2006 Macs with a 32-bit-only Core Duo CPU, since Omarchy and Arch Linux support x86_64 only.</li>
-  <li><strong>· Untested</strong>: no test result yet.</li>
-  <li><strong>○ Unsupported</strong>: a Boot capability fails.</li>
-  <li><strong>◐ Partial</strong>: something else fails or only partly works, or reports conflict.</li>
-  <li><strong>● Supported</strong>: every tested capability works, shown with how many were tested.</li>
+<ol class="verdict-list">
+  <li>{{template "verdict" (v "not-compatible")}} the Mac can never run Omarchy by design. Today that means the 2006 Macs with a 32-bit-only Core Duo CPU, since Omarchy and Arch Linux support x86_64 only.</li>
+  <li>{{template "verdict" (v "untested")}} no test result yet.</li>
+  <li>{{template "verdict" (v "unsupported")}} a Boot capability fails.</li>
+  <li>{{template "verdict" (v "partial")}} something else fails or only partly works, or reports conflict.</li>
+  <li>{{template "verdict" (v "supported")}} every tested capability works, shown with how many were tested.</li>
 </ol>
-<p>The newest Omarchy version's result wins. Results from an older Omarchy major version are marked stale. Two results for the same Omarchy version that disagree are shown as conflicting.</p>
-
+<p>A configuration whose every applicable capability has passed earns the Omarchy mark {{template "badge"}}. So does a model identifier whose every configuration has passed. The newest Omarchy version's result wins. Results from an older Omarchy major version are marked stale. Two results for the same Omarchy version that disagree are shown as conflicting.</p>
 <h2>Coverage</h2>
-<p>The two coverage figures count configurations. <strong>Compatibility coverage</strong> counts those where every applicable capability has passed. <strong>Test result coverage</strong> counts those with at least one result. Both leave out configurations that are not compatible by design, and those outside the coverage scope: Macs released before 2009 and the Xserve. Out-of-scope Macs are still listed and can still be tested.</p>
+<p><strong>Compatibility coverage</strong> counts configurations where every applicable capability has passed. <strong>Test result coverage</strong> counts those with at least one result. Both leave out configurations that are not compatible by design, and those outside the coverage scope: Macs released before 2009 and the Xserve. Out-of-scope Macs are still listed and can still be tested.</p>
+</section>
+</div>
 
-<h2>Test criteria</h2>
-<p>Each configuration shows only the criteria that apply to its hardware. They are generalised from Boyd's Vintage Mac Compatibility Test Criteria.</p>
-{{range .Data.Categories}}{{$caps := index $.Data.Caps .ID}}
-<h3>{{.Name}}{{if .Blocking}} <span class="tag">a failure here makes a config Unsupported</span>{{end}}</h3>
-<ul>{{range $caps}}<li><strong>{{.Name}}</strong>{{with .Description}}: {{.}}{{end}} <span class="muted">Applies to {{applies .}}.</span></li>{{end}}</ul>
-{{end}}
+<h2 id="criteria">Test criteria</h2>
+<p class="muted">Each configuration shows only the criteria that apply to its hardware. They are generalised from Boyd's Vintage Mac Compatibility Test Criteria. The <a href="/criteria">criteria matrix</a> shows which configurations each one applies to.</p>
+<div class="table-wrap">
+<table class="crit">
+  <thead><tr><th scope="col">Category</th><th scope="col">Criterion</th><th scope="col">What passing means</th><th scope="col">Applies to</th></tr></thead>
+  <tbody>
+  {{range .Data.Categories}}{{$caps := index $.Data.Caps .ID}}{{$cat := .}}
+    {{range $i, $c := $caps}}<tr>
+      {{if eq $i 0}}<th scope="rowgroup" rowspan="{{len $caps}}" class="catcell">{{template "icon" (index $.Data.Icons $cat.ID)}} {{$cat.Name}}{{if $cat.Blocking}}<br><span class="muted">failure blocks install</span>{{end}}</th>{{end}}
+      <td>{{$c.Name}}</td><td>{{with $c.Description}}{{.}}{{else}}<span class="muted">—</span>{{end}}</td><td class="muted">{{applies $c}}</td>
+    </tr>{{end}}
+  {{end}}
+  </tbody>
+</table>
+</div>
 
 <h2>Sources</h2>
-<p>Hardware facts come from Apple's identification and Tech Specs pages, EveryMac, the OpenCore model database, and real-machine Linux hardware probes from <a href="https://github.com/linuxhw" rel="noopener">linuxhw</a>. Chips and hardware IDs seen on real machines count as evidence. Where sources disagree, the model page's research notes say so. Every model page lists its sources.</p>
-</div>
+<p class="wide-p">Hardware facts come from Apple's identification and Tech Specs pages, EveryMac, the OpenCore model database, and real-machine Linux hardware probes from <a href="https://github.com/linuxhw" rel="noopener">linuxhw</a>. Chips and hardware IDs seen on real machines count as evidence. Where sources disagree, the model page's research notes say so. Every model page lists its sources. See <a href="/attribution">attribution</a> for credits.</p>
 {{end}}

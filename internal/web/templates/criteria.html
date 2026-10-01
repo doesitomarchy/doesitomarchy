@@ -1,0 +1,11 @@
+{{define "content"}}{{with .Data}}
+<h1>Criteria matrix</h1>
+<p class="muted">Every test criterion and the configurations it applies to, by product line. Hover a column to follow a configuration; the icon in each cell is that criterion's current status. Out-of-scope configurations are dimmed.</p>
+<nav class="index" aria-label="Product lines">{{range .Lines}}<a href="#line-{{.Key}}">{{.Name}} <span class="muted">({{len .Matrix.Cols}})</span></a>{{end}}</nav>
+{{range .Lines}}
+<section class="line-matrix" id="line-{{.Key}}">
+  <h2>{{.Name}} <span class="muted">· {{len .Matrix.Cols}} configurations</span></h2>
+  {{template "matrix" .Matrix}}
+</section>
+{{end}}
+{{end}}{{end}}

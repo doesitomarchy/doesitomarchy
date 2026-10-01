@@ -1,31 +1,27 @@
 {{define "content"}}{{$d := .Data}}{{with .Data.Mac}}
 <article>
 <header class="mac-head">
-  <h1>{{.Identifier}}</h1>
-  <p class="sub"><span><b>{{.Title}}</b></span><span>{{.LineName}}</span><span>{{.Years}}</span>
-    <span>EFI {{.EFI}}-bit</span><span>{{if .Chip}}{{.Chip}}{{else}}no security chip{{end}}</span>
-    <span>{{len .Configs}} {{plural (len .Configs) "configuration" "configurations"}}</span></p>
-  <p class="sub">{{range .Verdicts}}{{template "verdict" .}} {{end}}<span class="muted">0 of {{len .Configs}} tested</span></p>
+  <h1>{{if .AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</h1>
+  <p class="sub slash"><b>{{.Title}}</b><span>{{.LineName}}</span><span>{{.Years}}</span><span>EFI {{.EFI}}-bit</span><span>{{if .Chip}}{{.Chip}}{{else}}no security chip{{end}}</span></p>
+  <p class="sub">{{range .Verdicts}}{{template "verdict" .}} {{end}}<span class="muted">{{.Tested}} of {{len .Configs}} {{plural (len .Configs) "configuration" "configurations"}} tested</span></p>
 </header>
-{{if .HardBlocker}}<p class="notice"><strong>⛔ Not compatible:</strong> {{.HardBlocker}}</p>{{end}}
+{{if .HardBlocker}}<p class="notice">{{template "vicon" "not-compatible"}}<strong>Not compatible:</strong> {{.HardBlocker}}</p>{{end}}
 {{if .OutOfScope}}<p class="notice scope">{{template "scope" .OutOfScope}} This Mac is listed and can be tested, but it isn't counted in the site's coverage figures.</p>{{end}}
-{{if or (gt (len .Releases) 1) (gt (len .Configs) 1)}}
-<nav class="index" aria-label="Releases">{{range .Releases}}<a class="release" href="#rel-{{.ID}}">{{.Name}}</a>{{end}}</nav>
-{{end}}
+{{if gt (len .Releases) 1}}<nav class="index" aria-label="Releases">{{range .Releases}}<a class="release" href="#rel-{{.ID}}">{{.Name}}</a>{{end}}</nav>{{end}}
 <div class="minibar">
   <span class="ident">{{.Identifier}}</span>
-  <span class="jump">{{$slug := .Slug}}{{range .Configs}}<a href="/mac/{{$slug}}#cfg-{{.ID}}" title="{{.Label}}">Config {{.Letter}}</a>{{end}}</span>
+  <span class="jump">{{$slug := .Slug}}{{range .Configs}}<a class="cfgref" href="/mac/{{$slug}}#cfg-{{.ID}}" title="{{.Label}} ({{.ReleaseName}})">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</a>{{end}}</span>
   <span class="views">
     <a href="/mac/{{.Slug}}" hx-get="/mac/{{.Slug}}" hx-select="#view" hx-target="#view" hx-swap="outerHTML" hx-push-url="true"{{if not $d.Matrix}} aria-current="true"{{end}}>{{template "icon" "cards"}}Cards</a>
     <a href="/mac/{{.Slug}}?view=matrix" hx-get="/mac/{{.Slug}}?view=matrix" hx-select="#view" hx-target="#view" hx-swap="outerHTML" hx-push-url="true"{{if $d.Matrix}} aria-current="true"{{end}}>{{template "icon" "matrix"}}Matrix</a>
   </span>
 </div>
 <div id="view">
-{{if $d.Matrix}}{{template "matrix" .}}{{else}}
+{{if $d.Matrix}}{{template "matrix" .Matrix}}{{else}}
 {{range .Releases}}
 <section id="rel-{{.ID}}">
   <div class="rel-head"><h2>{{.Name}}</h2>
-    <span class="meta">announced {{.Announced}}{{with .Discontinued}} · discontinued {{.}}{{end}}{{with .ModelNumbers}} · {{join . ", "}}{{end}}{{with .EMC}} · EMC {{join . ", "}}{{end}}</span></div>
+    <span class="meta">announced <b>{{.Announced}}</b>{{with .Discontinued}} · discontinued <b>{{.}}</b>{{end}}{{with .ModelNumbers}} · <b>{{join . ", "}}</b>{{end}}{{with .EMC}} · EMC <b>{{join . ", "}}</b>{{end}}</span></div>
   {{range .Configs}}{{template "card" .}}{{end}}
 </section>
 {{end}}{{end}}
@@ -39,48 +35,36 @@
 {{end}}{{end}}
 
 {{define "card"}}
-<section class="card" id="cfg-{{.ID}}">
+<section class="card{{if .OutOfScope}} oos-card{{end}}" id="cfg-{{.ID}}">
   <div class="card-head">
-    <span class="letter">{{.Letter}}</span>
+    <span class="cfgref big">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</span>
     <span class="title">{{.Label}}</span>
-    <span class="id">{{.ID}}</span>
     <span class="right">{{if .BTOOnly}}<span class="tag bto">build to order</span>{{end}}{{with .OutOfScope}}{{if ne $.Status.Verdict "not-compatible"}}{{template "scope" .}}{{end}}{{end}}
-      {{template "verdict" .Status.Verdict}}<span class="muted">0/{{.Status.Applicable}}</span></span>
+      {{template "verdict" .Status.Verdict}}<span class="muted">{{.Status.Tested}}/{{.Status.Applicable}} tested</span></span>
   </div>
-  <dl class="specs">
-    <div><dt>CPU</dt><dd>{{join .CPU "; "}}{{with .CPUBTO}}<br><span class="alt">BTO: {{join . "; "}}</span>{{end}}{{with .Codename}} <span class="alt">({{.}})</span>{{end}}</dd></div>
-    <div><dt>Memory</dt><dd>{{.Memory}}{{with .MemoryNote}}<br><span class="alt">{{.}}</span>{{end}}</dd></div>
-    <div><dt>Storage</dt><dd>{{.Storage}}</dd></div>
-    {{with .Display}}<div><dt>Display</dt><dd>{{.}}</dd></div>{{end}}
-    {{range .Components}}<div class="comp"><dt>{{.KindName}}</dt><dd>{{.Name}}{{if .BTO}} <span class="tag bto">BTO</span>{{end}}{{range .Uncertain}} <span class="q-mark" title="{{.Field}}: {{.Note}}">?</span>{{end}}
-      {{with .IDs}}<br><span class="hw">{{join . " · "}}</span>{{end}}</dd></div>{{end}}
-    <div class="wide"><dt>Ports</dt><dd>{{join .Ports " · "}}</dd></div>
-    <div class="wide"><dt>Features</dt><dd>{{join .Features " · "}}</dd></div>
-    {{with .OrderNumbers}}<div class="wide"><dt>Order no.</dt><dd>{{join . " · "}}</dd></div>{{end}}
-  </dl>
+  {{with .Status.Blocker}}<p class="blocker-line">Blocked by: {{.}}</p>{{end}}
   <div class="caps">
   {{range .Categories}}
     <details>
-      <summary>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{dots (len .Caps)}}</span><span class="count">0/{{len .Caps}} tested</span></summary>
-      <ul>{{range .Caps}}<li><span class="g" aria-hidden="true">·</span><span title="{{.Description}}">{{.Name}}</span><span class="st">Untested</span></li>{{end}}</ul>
+      <summary>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Caps}}{{template "vicon" .Verdict}}{{end}}</span><span class="count">{{.Passed}}/{{len .Caps}} passed</span></summary>
+      <ul>{{range .Caps}}<li>{{template "vicon" .Verdict}}<span title="{{.Description}}">{{.Name}}</span><span class="st st-{{.Verdict}}">{{.Verdict.Label}}</span></li>{{end}}</ul>
     </details>
   {{end}}
   </div>
-  {{if or .Notes .Uncertain}}<div class="extras">{{with .Notes}}<p>{{.}}</p>{{end}}{{range .Uncertain}}<p><span class="q-mark">?</span> {{.Field}}: {{.Note}}</p>{{end}}</div>{{end}}
+  <details class="hw">
+    <summary>Hardware Configuration Details <span class="muted">{{.ID}}</span></summary>
+    <dl class="specs">
+      <div><dt>CPU</dt><dd>{{join .CPU "; "}}{{with .CPUBTO}}<br><span class="alt">BTO: {{join . "; "}}</span>{{end}}{{with .Codename}} <span class="alt">({{.}})</span>{{end}}</dd></div>
+      <div><dt>Memory</dt><dd>{{.Memory}}{{with .MemoryNote}}<br><span class="alt">{{.}}</span>{{end}}</dd></div>
+      <div><dt>Storage</dt><dd>{{.Storage}}</dd></div>
+      {{with .Display}}<div><dt>Display</dt><dd>{{.}}</dd></div>{{end}}
+      {{range .Components}}<div class="comp"><dt>{{.KindName}}</dt><dd>{{.Name}}{{if .BTO}} <span class="tag bto">BTO</span>{{end}}{{range .Uncertain}} <span class="q-mark" title="{{.Field}}: {{.Note}}">?</span>{{end}}
+        {{with .IDs}}<br><span class="hw-id">{{join . " · "}}</span>{{end}}</dd></div>{{end}}
+      <div class="wide"><dt>Ports</dt><dd>{{join .Ports " · "}}</dd></div>
+      <div class="wide"><dt>Features</dt><dd>{{join .Features " · "}}</dd></div>
+      {{with .OrderNumbers}}<div class="wide"><dt>Order no.</dt><dd>{{join . " · "}}</dd></div>{{end}}
+    </dl>
+    {{if or .Notes .Uncertain}}<div class="extras">{{with .Notes}}<p>{{.}}</p>{{end}}{{range .Uncertain}}<p><span class="q-mark">?</span> {{.Field}}: {{.Note}}</p>{{end}}</div>{{end}}
+  </details>
 </section>
-{{end}}
-
-{{define "matrix"}}
-<div class="matrix-wrap">
-<table class="matrix">
-  <thead><tr><th scope="col">Capability</th>{{$slug := .Slug}}{{range .Configs}}<th scope="col" class="cfg"><a href="/mac/{{$slug}}#cfg-{{.ID}}" title="{{.Label}} ({{.ReleaseName}})">{{.Letter}}</a></th>{{end}}</tr></thead>
-  <tbody>
-  {{$cat := ""}}{{range .Matrix}}
-    {{if ne .Category $cat}}{{$cat = .Category}}<tr class="cat"><th colspan="{{add (len .Cells) 1}}" scope="rowgroup">{{template "icon" .Icon}} {{.Category}}</th></tr>{{end}}
-    <tr><th scope="row">{{.Name}}</th>{{range .Cells}}{{if .}}<td class="cell" title="Untested">·</td>{{else}}<td class="cell na" title="Not applicable">–</td>{{end}}{{end}}</tr>
-  {{end}}
-  </tbody>
-</table>
-</div>
-<p class="muted">· untested · – not applicable to that configuration. Columns: {{range .Configs}}<b>{{.Letter}}</b> {{.Label}}; {{end}}</p>
 {{end}}

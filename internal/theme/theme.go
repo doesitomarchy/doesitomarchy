@@ -120,9 +120,68 @@ func ensure(c RGB, dark bool, min float64, bgs ...RGB) RGB {
 	return target
 }
 
+// HSL returns hue (0–360), saturation and lightness (0–1).
+func (c RGB) HSL() (h, s, l float64) {
+	r, g, b := float64(c.R)/255, float64(c.G)/255, float64(c.B)/255
+	mx, mn := math.Max(r, math.Max(g, b)), math.Min(r, math.Min(g, b))
+	l = (mx + mn) / 2
+	if mx == mn {
+		return 0, 0, l
+	}
+	d := mx - mn
+	if l > 0.5 {
+		s = d / (2 - mx - mn)
+	} else {
+		s = d / (mx + mn)
+	}
+	switch mx {
+	case r:
+		h = math.Mod((g-b)/d+6, 6)
+	case g:
+		h = (b-r)/d + 2
+	default:
+		h = (r-g)/d + 4
+	}
+	return h * 60, s, l
+}
+
+// statusHues: a status colour must keep its meaning in every theme. Some
+// Omarchy themes are monochrome or use non-red "red"; those fall back to a
+// true red, amber or green before the contrast fix.
+var statusHues = map[string]struct {
+	lo, hi          float64 // acceptable hue range (lo > hi wraps through 0)
+	darkFB, lightFB string  // fallbacks for dark and light themes
+}{
+	"bad":  {340, 20, "#ff6b5a", "#b3261e"},
+	"warn": {28, 62, "#ffb000", "#8a5a00"},
+	"ok":   {80, 165, "#4ade80", "#1a7f37"},
+}
+
+// hueOK checks hue and a minimum saturation (stricter when choosing a
+// fallback than when re-checking a colour already darkened for contrast).
+func hueOK(c RGB, lo, hi, minSat float64) bool {
+	h, s, _ := c.HSL()
+	if s < minSat {
+		return false
+	}
+	if lo > hi {
+		return h >= lo || h <= hi
+	}
+	return h >= lo && h <= hi
+}
+
 // finish derives the computed tokens and fixes contrast.
 func finish(t *Theme) {
 	c := t.Colors
+	for k, sh := range statusHues {
+		if !hueOK(c[k], sh.lo, sh.hi, 0.3) {
+			if t.Dark {
+				c[k] = must(sh.darkFB)
+			} else {
+				c[k] = must(sh.lightFB)
+			}
+		}
+	}
 	if _, ok := c["line"]; !ok {
 		c["line"] = Mix(c["bg"], c["text"], 0.16)
 	}
@@ -150,6 +209,11 @@ func (t *Theme) Problems() []string {
 			}
 		}
 	}
+	for k, sh := range statusHues {
+		if !hueOK(t.Colors[k], sh.lo, sh.hi, 0.2) {
+			out = append(out, fmt.Sprintf("%s: --%s %s does not read as its status colour", t.Key, k, t.Colors[k]))
+		}
+	}
 	if r := Contrast(t.Colors["accent-contrast"], t.Colors["accent"]); r < 3 {
 		out = append(out, fmt.Sprintf("%s: --accent-contrast on --accent is %.2f:1", t.Key, r))
 	}
@@ -158,13 +222,13 @@ func (t *Theme) Problems() []string {
 
 // Defaults returns the site's own pair (the review-report palette).
 func Defaults() (light, dark *Theme) {
-	light = &Theme{Key: "light", Name: "doesitomarchy light", Source: "site default", Colors: map[string]RGB{
+	light = &Theme{Key: "light", Name: "DoesItOmarchy light", Source: "site default", Colors: map[string]RGB{
 		"bg": must("#f8f8f6"), "panel": must("#f0f0ed"), "line": must("#d9d9d4"), "line-strong": must("#b5b5b0"),
 		"text": must("#121214"), "muted": must("#5d5d64"), "heading": must("#000000"),
 		"accent": must("#c6371c"), "link": must("#6a3fd1"), "ident": must("#a15c00"), "release": must("#1d6f82"),
 		"ok": must("#1a7f37"), "warn": must("#8a5a00"), "bad": must("#a3170b"), "unk": must("#5d5d64"),
 	}}
-	dark = &Theme{Key: "dark", Name: "doesitomarchy dark", Dark: true, Source: "site default", Colors: map[string]RGB{
+	dark = &Theme{Key: "dark", Name: "DoesItOmarchy dark", Dark: true, Source: "site default", Colors: map[string]RGB{
 		"bg": must("#000000"), "panel": must("#0c0c0e"), "line": must("#26262a"), "line-strong": must("#3b3b40"),
 		"text": must("#ececee"), "muted": must("#a0a0a8"), "heading": must("#ffffff"),
 		"accent": must("#ff5a36"), "link": must("#b594ff"), "ident": must("#f5b53f"), "release": must("#5fc3d6"),

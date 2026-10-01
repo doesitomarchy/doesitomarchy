@@ -1,0 +1,13 @@
+{{define "content"}}{{with .Data}}
+<h1>{{.Title}}</h1>
+<p class="muted">{{len .Rows}} configurations.{{with .Note}} {{.}}{{end}} <a href="/configs">All configurations</a> · <a href="/configs?scope=in">counted in coverage</a> · <a href="/configs?status=not-compatible">not compatible</a>{{range $.Site.Exclusions}} · <a href="/configs?excluded={{.Reason}}">{{.Reason}}</a>{{end}}</p>
+<div class="table-wrap"><table class="browse">
+  <thead><tr><th scope="col">Identifier</th><th scope="col">Configuration</th><th scope="col">Details</th><th scope="col">Release</th><th scope="col">Status</th></tr></thead>
+  <tbody>{{range .Rows}}{{$row := .}}<tr{{if .OutOfScope}} class="oos"{{end}}>
+    <td><a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a></td>
+    <td><a class="cfgref" href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</a></td>
+    <td>{{.Label}}</td><td class="release">{{.ReleaseName}}</td>
+    <td class="vs">{{template "verdict" .Status.Verdict}}{{with .OutOfScope}}{{if ne $row.Status.Verdict "not-compatible"}}{{template "scope" .}}{{end}}{{end}}</td>
+  </tr>{{end}}</tbody>
+</table></div>
+{{end}}{{end}}

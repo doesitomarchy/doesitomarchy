@@ -2,11 +2,13 @@ package web
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 )
 
@@ -25,16 +27,27 @@ var iconFor = map[string]string{"power": "power", "gpu": "gpu", "monitor": "moni
 	"battery": "battery", "speaker": "speaker", "camera": "camera", "wifi": "wifi", "plug": "plug",
 	"disk": "disk", "fan": "fan", "chip": "chip"}
 
+// Options are startup facts the pages show.
+type Options struct {
+	Version     string
+	CatalogHash string // short content hash of the catalog
+	CatalogDate string // last catalog change (YYYY-MM-DD), stamped at build time
+	Demo        bool   // design-review mode: a few configs carry made-up results
+}
+
 type site struct {
-	Coverage   status.Coverage
-	Macs       int
-	Releases   int
-	Configs    int
-	Components int
-	Criteria   int
-	Exclusions []exclusion
-	Themes     []themeChoice
-	Lines      []lineStat
+	Coverage    status.Coverage
+	Macs        int
+	Releases    int
+	Configs     int
+	Components  int
+	Criteria    int
+	Exclusions  []exclusion
+	Themes      []themeChoice
+	Lines       []lineStat
+	CatalogHash string
+	CatalogDate string
+	Demo        bool
 }
 
 type exclusion struct {
@@ -45,8 +58,6 @@ type exclusion struct {
 type lineStat struct {
 	Key, Name     string
 	Macs, Configs int
-	FirstYear     int
-	LastYear      int
 }
 
 type macView struct {
@@ -70,18 +81,22 @@ type macView struct {
 	Arch          []string
 	Verdicts      []status.Verdict // distinct, in rank order
 	OutOfScope    string           // reason, when every config is out of coverage scope
-	Matrix        []matrixRow
+	AllVerified   bool             // every config passed every applicable test: earns the Omarchy badge
+	Tested        int              // configs with at least one result
+	Matrix        *matrixView
 }
 
 type releaseView struct {
 	ID, Name, Announced, Discontinued string
 	ModelNumbers, EMC                 []string
 	Configs                           []*configView
+	Mac                               *macView
 }
 
 type configView struct {
 	ID           string
 	Letter       string
+	Diff         string // what sets this config apart from its siblings ("HD 6490M", "17-inch")
 	Label        string
 	ReleaseName  string
 	OrderNumbers []string
@@ -98,12 +113,15 @@ type configView struct {
 	Features     []string
 	Categories   []categoryView
 	Status       status.ConfigStatus
+	Verified     bool // every applicable capability passed, no conflicts
 	OutOfScope   string
 	Notes        string
 	Uncertain    []uncertainView
+	Mac          *macView
 }
 
 type compView struct {
+	ID        string
 	Kind      string
 	KindName  string
 	Name      string
@@ -118,41 +136,89 @@ type uncertainView struct{ Field, Note string }
 
 type categoryView struct {
 	ID, Name, Icon string
+	Blocking       bool
 	Caps           []capView
+	Passed         int
 }
 
 type capView struct {
 	ID, Name, Description string
-	Verdict               status.Verdict // per-capability status: Untested until Phase 7
+	Verdict               status.Verdict // Untested until Phase 7 (or demo data)
+}
+
+// matrixView is a criteria × configurations table (model page and /criteria).
+type matrixView struct {
+	Cols      []matrixCol
+	Groups    []matrixGroup
+	HeadClass string // stepped header height for the slanted labels
+}
+
+type matrixCol struct {
+	ID, Label, Title, Href string
+	Verified               bool
+	OutOfScope             bool
+}
+
+type matrixGroup struct {
+	Name, Icon string
+	Blocking   bool
+	Rows       []matrixRow
 }
 
 type matrixRow struct {
-	Category string
-	Icon     string
-	Name     string
-	ID       string
-	Cells    []bool // applicable per config, in macView.Configs order
+	ID, Name, Description string
+	Cells                 []matrixCell
+	Count                 int
+}
+
+type matrixCell struct {
+	Applies bool
+	Verdict status.Verdict
 }
 
 // catalogView holds everything the pages render.
 type catalogView struct {
-	site    site
-	macs    []*macView
-	bySlug  map[string]*macView    // lower-case slug → mac
-	configs map[string]*configView // config ID → config
+	site       site
+	macs       []*macView
+	bySlug     map[string]*macView    // lower-case slug → mac
+	configs    map[string]*configView // config ID → config
+	components []componentUse
+	states     search.States
 }
 
-func buildView(c *catalog.Catalog) *catalogView {
-	v := &catalogView{bySlug: map[string]*macView{}, configs: map[string]*configView{}}
+// componentUse is one component and the configs that use it (/components).
+type componentUse struct {
+	ID, Kind, KindName, Name, Vendor, Role, Driver string
+	IDs                                            []string
+	Configs                                        int
+	Macs                                           []*macView
+}
+
+// state is a config's current status plus per-capability verdicts.
+type state struct {
+	status status.ConfigStatus
+	caps   map[string]status.Verdict
+}
+
+func buildView(c *catalog.Catalog, opt Options) *catalogView {
+	v := &catalogView{bySlug: map[string]*macView{}, configs: map[string]*configView{}, states: search.States{}}
 	var statuses []status.ConfigStatus
 	lineStats := map[string]*lineStat{}
+	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) state {
+		if opt.Demo {
+			if st, ok := demoState(m, cfg, excl, applicable); ok {
+				return st
+			}
+		}
+		return state{status: status.Config(status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Applicable: len(applicable)})}
+	}
 	for _, m := range c.Macs {
-		mv := buildMac(c, m)
+		mv := buildMac(c, m, stateOf)
 		v.macs = append(v.macs, mv)
 		v.bySlug[strings.ToLower(mv.Slug)] = mv
 		ls := lineStats[m.Line]
 		if ls == nil {
-			ls = &lineStat{Key: m.Line, Name: c.Vocab.Lines[m.Line].Name, FirstYear: 9999}
+			ls = &lineStat{Key: m.Line, Name: c.Vocab.Lines[m.Line].Name}
 			lineStats[m.Line] = ls
 		}
 		ls.Macs++
@@ -160,11 +226,7 @@ func buildView(c *catalog.Catalog) *catalogView {
 			statuses = append(statuses, cv.Status)
 			v.configs[cv.ID] = cv
 			ls.Configs++
-		}
-		for _, r := range mv.Releases {
-			y, _ := strconv.Atoi(r.Announced[:4])
-			ls.FirstYear = min(ls.FirstYear, y)
-			ls.LastYear = max(ls.LastYear, y)
+			v.states[cv.ID] = search.State{Verdict: cv.Status.Verdict, Tested: cv.Status.Tested > 0}
 		}
 	}
 	sort.SliceStable(v.macs, func(i, j int) bool { return lessMac(v.macs[i], v.macs[j]) })
@@ -173,7 +235,7 @@ func buildView(c *catalog.Catalog) *catalogView {
 	s.Coverage = status.Summarize(statuses)
 	st := c.Stats()
 	s.Macs, s.Releases, s.Configs, s.Components, s.Criteria = st.Macs, st.Releases, st.Configs, st.Components, st.Capabilities
-	s.Themes = themeChoices
+	s.Themes, s.CatalogHash, s.CatalogDate, s.Demo = themeChoices, opt.CatalogHash, opt.CatalogDate, opt.Demo
 	counts := map[string]int{}
 	for _, mv := range v.macs {
 		for _, cv := range mv.Configs {
@@ -191,25 +253,52 @@ func buildView(c *catalog.Catalog) *catalogView {
 	for _, k := range orderedLines(lineStats) {
 		s.Lines = append(s.Lines, *lineStats[k])
 	}
+	v.components = buildComponents(c, v)
 	return v
 }
 
-func orderedLines[V any](m map[string]V) []string {
-	rank := map[string]int{}
-	for i, k := range lineOrder {
-		rank[k] = i
+// demoVerified and demoPartial are the made-up results shown with -demo.
+var (
+	demoVerified = map[string]bool{"MacBookPro8,2": true, "imac12-2-27-mid-2011-a": true}
+	demoPartial  = map[string]string{"MacBookPro15,1": "audio.speakers"}
+)
+
+func demoState(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) (state, bool) {
+	st := state{caps: map[string]status.Verdict{}}
+	n := len(applicable)
+	switch {
+	case demoVerified[m.Identifier] || demoVerified[cfg.ID]:
+		for _, cp := range applicable {
+			st.caps[cp.ID] = status.Supported
+		}
+		st.status = status.ConfigStatus{Verdict: status.Supported, Excluded: excl, Applicable: n, Tested: n, Counts: status.Counts{Supported: n}}
+	case demoPartial[m.Identifier] != "":
+		bad := demoPartial[m.Identifier]
+		tested := 0
+		for i, cp := range applicable {
+			if i%2 == 0 || cp.ID == bad {
+				tested++
+				st.caps[cp.ID] = status.Supported
+				if cp.ID == bad {
+					st.caps[cp.ID] = status.Unsupported
+				}
+			}
+		}
+		st.status = status.ConfigStatus{Verdict: status.Partial, Excluded: excl, Applicable: n, Tested: tested,
+			Blocker: "Audio → Built-in speakers", Counts: status.Counts{Supported: tested - 1, Unsupported: 1, Untested: n - tested}}
+	default:
+		return state{}, false
 	}
+	return st, true
+}
+
+func orderedLines[V any](m map[string]V) []string {
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
 	}
 	sort.Slice(keys, func(i, j int) bool {
-		ri, iok := rank[keys[i]]
-		rj, jok := rank[keys[j]]
-		if iok != jok {
-			return iok
-		}
-		if ri != rj {
+		if ri, rj := lineRank(keys[i]), lineRank(keys[j]); ri != rj {
 			return ri < rj
 		}
 		return keys[i] < keys[j]
@@ -257,7 +346,9 @@ func lessIdentifier(a, b string) bool {
 	return na < nb
 }
 
-func buildMac(c *catalog.Catalog, m *catalog.Mac) *macView {
+type stateFunc func(*catalog.Mac, *catalog.Config, string, []catalog.Capability) state
+
+func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc) *macView {
 	mv := &macView{
 		Identifier: m.Identifier, Slug: catalog.FileSlug(m.Identifier), LineKey: m.Line, LineName: c.Vocab.Lines[m.Line].Name,
 		EFI: m.EFI, HardBlocker: m.HardBlocker, ResearchNotes: m.ResearchNotes, BoardIDs: m.BoardIDs, Sources: m.Sources,
@@ -272,23 +363,27 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac) *macView {
 	gpus, archs := map[string]bool{}, map[string]bool{}
 	verdicts := map[status.Verdict]bool{}
 	scopes := map[string]bool{}
-	letter := 0
+	var raw []*catalog.Config
 	for ri := range m.Releases {
 		r := &m.Releases[ri]
-		rv := &releaseView{ID: r.ID, Name: r.Name, Announced: r.Announced, Discontinued: r.Discontinued, ModelNumbers: r.ModelNumbers, EMC: r.EMC}
+		rv := &releaseView{ID: r.ID, Name: r.Name, Announced: r.Announced, Discontinued: r.Discontinued, ModelNumbers: r.ModelNumbers, EMC: r.EMC, Mac: mv}
 		y, _ := strconv.Atoi(r.Announced[:4])
 		first, last = min(first, y), max(last, y)
 		mv.Title = r.Name
 		excl := c.CoverageExclusion(m, r)
 		for ci := range r.Configs {
 			cfg := &r.Configs[ci]
-			cv := buildConfig(c, m, r, cfg, excl)
-			cv.Letter = string(rune('A' + letter%26))
-			letter++
+			cv := buildConfig(c, m, r, cfg, excl, stateOf)
+			cv.Mac = mv
+			cv.Letter = string(rune('A' + len(mv.Configs)%26))
 			rv.Configs = append(rv.Configs, cv)
 			mv.Configs = append(mv.Configs, cv)
+			raw = append(raw, cfg)
 			verdicts[cv.Status.Verdict] = true
 			scopes[excl] = true
+			if cv.Status.Tested > 0 {
+				mv.Tested++
+			}
 			for _, comp := range cv.Components {
 				if comp.Kind == "gpu" && !gpus[comp.Name] {
 					gpus[comp.Name] = true
@@ -317,11 +412,16 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac) *macView {
 			mv.OutOfScope = k
 		}
 	}
-	mv.Matrix = buildMatrix(c, mv)
+	mv.AllVerified = len(mv.Configs) > 0
+	for _, cv := range mv.Configs {
+		mv.AllVerified = mv.AllVerified && cv.Verified
+	}
+	diffLabels(c, mv, raw)
+	mv.Matrix = buildMatrix(c, mv.Configs, false)
 	return mv
 }
 
-func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string) *configView {
+func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc) *configView {
 	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
 		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl}
 	for _, p := range cfg.CPU.Standard {
@@ -349,7 +449,7 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 			if comp == nil {
 				continue
 			}
-			v := compView{Kind: comp.Kind, KindName: c.Vocab.ComponentKinds[comp.Kind].Name, Name: comp.Name, Role: comp.Role,
+			v := compView{ID: comp.ID, Kind: comp.Kind, KindName: c.Vocab.ComponentKinds[comp.Kind].Name, Name: comp.Name, Role: comp.Role,
 				IDs: comp.IDs, Driver: comp.Driver, BTO: bto}
 			for _, u := range comp.Uncertain {
 				v.Uncertain = append(v.Uncertain, uncertainView{u.Field, u.Note})
@@ -378,7 +478,10 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		cv.Uncertain = append(cv.Uncertain, uncertainView{u.Field, u.Note})
 	}
 	applicable := c.Applicable(m, cfg)
-	cv.Status = status.Config(status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Applicable: len(applicable)})
+	st := stateOf(m, cfg, excl, applicable)
+	cv.Status = st.status
+	cv.Verified = cv.Status.Verdict == status.Supported && cv.Status.Applicable > 0 &&
+		cv.Status.Counts.Supported == cv.Status.Applicable && cv.Status.Conflicts == 0
 	byCat := map[string]*categoryView{}
 	for _, cp := range applicable {
 		cat := byCat[cp.Category()]
@@ -386,12 +489,22 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 			cat = &categoryView{ID: cp.Category()}
 			for _, k := range c.Categories {
 				if k.ID == cat.ID {
-					cat.Name, cat.Icon = k.Name, iconFor[k.Icon]
+					cat.Name, cat.Icon, cat.Blocking = k.Name, iconFor[k.Icon], k.Blocking
 				}
 			}
 			byCat[cat.ID] = cat
 		}
-		cat.Caps = append(cat.Caps, capView{cp.ID, cp.Name, cp.Description, status.Untested})
+		v := status.Untested
+		if cv.Status.Verdict == status.NotCompatible {
+			v = status.NotCompatible
+		}
+		if x, ok := st.caps[cp.ID]; ok {
+			v = x
+		}
+		if v == status.Supported {
+			cat.Passed++
+		}
+		cat.Caps = append(cat.Caps, capView{cp.ID, cp.Name, cp.Description, v})
 	}
 	for _, k := range c.Categories {
 		if cat := byCat[k.ID]; cat != nil {
@@ -401,33 +514,277 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 	return cv
 }
 
-// buildMatrix lists every capability applicable to any config of the Mac.
-func buildMatrix(c *catalog.Catalog, mv *macView) []matrixRow {
-	var rows []matrixRow
+// ── difference labels ────────────────────────────────────────────────────
+
+var gpuNoise = regexp.MustCompile(`(?i)\b(AMD|ATI|NVIDIA|Intel|Radeon|GeForce|Graphics|Mobility|Apple)\b\s*|\s*\([^)]*\)`)
+
+// shortGPU trims vendor and family words: "AMD Radeon HD 6490M" → "HD 6490M".
+func shortGPU(name string) string {
+	s := strings.Join(strings.Fields(gpuNoise.ReplaceAllString(name, "")), " ")
+	if s == "" {
+		return name
+	}
+	return s
+}
+
+// shortRelease takes the season/year part of a release name:
+// "MacBook Pro (15-inch, Late 2011)" → "Late 2011".
+func shortRelease(name string) string {
+	i, j := strings.Index(name, "("), strings.Index(name, ")")
+	if i < 0 || j < i {
+		return name
+	}
+	inner := name[i+1 : j]
+	if k := strings.LastIndex(inner, ","); k >= 0 {
+		inner = inner[k+1:]
+	}
+	return strings.TrimSpace(inner)
+}
+
+// diffLabels names each config of a Mac by what differs from its siblings:
+// GPU, display size, release, BTO-only, other components, then the label's
+// lead word (e.g. "Server"). Facts are added in that order until every
+// config's label is unique; a Mac with one config gets its release.
+func diffLabels(c *catalog.Catalog, mv *macView, raw []*catalog.Config) {
+	n := len(mv.Configs)
+	if n == 1 {
+		mv.Configs[0].Diff = shortRelease(mv.Configs[0].ReleaseName)
+		return
+	}
+	facts := make([][]string, 6) // gpu, size, resolution, release, bto, other components
+	for i := range facts {
+		facts[i] = make([]string, n)
+	}
+	for i, cv := range mv.Configs {
+		var gpus, others []string
+		for _, comp := range cv.Components {
+			if comp.Kind == "gpu" {
+				gpus = append(gpus, shortGPU(comp.Name))
+			} else if !comp.BTO {
+				w := strings.Fields(comp.Name)
+				others = append(others, strings.Join(w[max(0, len(w)-2):], " ")) // "Gigabit Ethernet", "10Gb Ethernet"
+			}
+		}
+		facts[0][i] = strings.Join(gpus, " + ")
+		if d := raw[i].Display; d != nil {
+			facts[1][i] = num(d.Inches) + "-inch"
+			facts[2][i] = strings.ReplaceAll(d.Resolution, "x", "×")
+			for _, r := range []string{"Retina 4K", "Retina 5K"} {
+				if strings.Contains(cv.ReleaseName, r) {
+					facts[2][i] = r
+				}
+			}
+		}
+		facts[3][i] = shortRelease(cv.ReleaseName)
+		if cv.BTOOnly {
+			facts[4][i] = "BTO"
+		}
+		facts[5][i] = strings.Join(others, "\x00")
+	}
+	// GPU facts drop the GPU shared by every sibling (the integrated one).
+	common := map[string]int{}
+	for i := 0; i < n; i++ {
+		for _, g := range strings.Split(facts[0][i], " + ") {
+			common[g]++
+		}
+	}
+	for i := 0; i < n; i++ {
+		var keep []string
+		for _, g := range strings.Split(facts[0][i], " + ") {
+			if common[g] < n {
+				keep = append(keep, g)
+			}
+		}
+		facts[0][i] = strings.Join(keep, " + ")
+	}
+	// Other components: keep only those not shared by every sibling.
+	shared := map[string]int{}
+	for i := 0; i < n; i++ {
+		for _, o := range strings.Split(facts[5][i], "\x00") {
+			shared[o]++
+		}
+	}
+	for i := 0; i < n; i++ {
+		var keep []string
+		for _, o := range strings.Split(facts[5][i], "\x00") {
+			if o != "" && shared[o] < n {
+				keep = append(keep, o)
+			}
+		}
+		facts[5][i] = strings.Join(keep, ", ")
+	}
+	labels := make([][]string, n)
+	unique := func() bool {
+		seen := map[string]bool{}
+		for _, l := range labels {
+			k := strings.Join(l, " · ")
+			if k == "" || seen[k] {
+				return false
+			}
+			seen[k] = true
+		}
+		return true
+	}
+	// distinct scores a labelling: more distinct groups first, then more
+	// configs with a non-empty label.
+	distinct := func(ls [][]string) int {
+		seen := map[string]bool{}
+		nonEmpty := 0
+		for _, l := range ls {
+			seen[strings.Join(l, " · ")] = true
+			if len(l) > 0 {
+				nonEmpty++
+			}
+		}
+		return len(seen)*1000 + nonEmpty
+	}
+	// Add a fact only when it separates more configs than before.
+	for f := 0; f < len(facts) && !unique(); f++ {
+		varies := false
+		for i := 1; i < n; i++ {
+			varies = varies || facts[f][i] != facts[f][0]
+		}
+		if !varies {
+			continue
+		}
+		next := make([][]string, n)
+		for i := range labels {
+			next[i] = append([]string{}, labels[i]...)
+			if facts[f][i] != "" {
+				next[i] = append(next[i], facts[f][i])
+			}
+		}
+		if distinct(next) > distinct(labels) {
+			labels = next
+		}
+	}
+	if !unique() { // fall back to the label's lead phrase; a Server sibling makes the rest "Standard"
+		server := false
+		for _, cv := range mv.Configs {
+			server = server || strings.HasPrefix(cv.Label, "Server")
+		}
+		for i, cv := range mv.Configs {
+			lead, _, _ := strings.Cut(cv.Label, " · ")
+			switch {
+			case strings.HasPrefix(lead, "Server"):
+				lead = "Server"
+			case server:
+				lead = "Standard"
+			}
+			labels[i] = append(labels[i], lead)
+		}
+	}
+	for i, cv := range mv.Configs {
+		cv.Diff = strings.Join(labels[i], " · ")
+		if !unique() || cv.Diff == "" {
+			cv.Diff = cv.Label
+		}
+	}
+}
+
+// ── matrix ───────────────────────────────────────────────────────────────
+
+// buildMatrix lists every capability applicable to any of the configs. With
+// withMac the column labels carry the identifier (the /criteria page).
+func buildMatrix(c *catalog.Catalog, cfgs []*configView, withMac bool) *matrixView {
+	mx := &matrixView{}
+	longest := 0
+	for _, cv := range cfgs {
+		label, href := cv.Diff, "#cfg-"+cv.ID
+		if withMac {
+			label = cv.Mac.Identifier + " · " + cv.Diff
+			href = "/mac/" + cv.Mac.Slug + "#cfg-" + cv.ID
+		}
+		if r := []rune(label); len(r) > 34 {
+			label = string(r[:33]) + "…"
+		}
+		longest = max(longest, len([]rune(label)))
+		mx.Cols = append(mx.Cols, matrixCol{ID: cv.ID, Label: label, Title: cv.Label + " (" + cv.ReleaseName + ")", Href: href,
+			Verified: cv.Verified, OutOfScope: cv.OutOfScope != "" && cv.Status.Verdict != status.NotCompatible})
+	}
+	mx.HeadClass = headClass(longest)
 	for _, k := range c.Categories {
+		g := matrixGroup{Name: k.Name, Icon: iconFor[k.Icon], Blocking: k.Blocking}
 		for _, cp := range c.Capabilities {
 			if cp.Category() != k.ID {
 				continue
 			}
-			row := matrixRow{Category: k.Name, Icon: iconFor[k.Icon], Name: cp.Name, ID: cp.ID}
-			any := false
-			for _, cv := range mv.Configs {
-				has := false
+			row := matrixRow{ID: cp.ID, Name: cp.Name, Description: cp.Description}
+			for _, cv := range cfgs {
+				cell := matrixCell{}
 				for _, cat := range cv.Categories {
 					for _, x := range cat.Caps {
-						has = has || x.ID == cp.ID
+						if x.ID == cp.ID {
+							cell = matrixCell{Applies: true, Verdict: x.Verdict}
+						}
 					}
 				}
-				row.Cells = append(row.Cells, has)
-				any = any || has
+				if cell.Applies {
+					row.Count++
+				}
+				row.Cells = append(row.Cells, cell)
 			}
-			if any {
-				rows = append(rows, row)
+			if row.Count > 0 {
+				g.Rows = append(g.Rows, row)
+			}
+		}
+		if len(g.Rows) > 0 {
+			mx.Groups = append(mx.Groups, g)
+		}
+	}
+	return mx
+}
+
+// headClass picks a header height class for slanted labels of n characters:
+// n × 6.6px × sin 60° plus padding, rounded up to a 20px step (site.css
+// defines .mh-60 … .mh-260; inline styles are blocked by the CSP).
+func headClass(n int) string {
+	px := int(float64(n)*6.6*0.866) + 34
+	step := ((px + 19) / 20) * 20
+	return fmt.Sprintf("mh-%d", min(max(step, 60), 260))
+}
+
+// ── components ───────────────────────────────────────────────────────────
+
+func buildComponents(c *catalog.Catalog, v *catalogView) []componentUse {
+	uses := map[string]*componentUse{}
+	for _, mv := range v.macs {
+		seenMac := map[string]bool{}
+		for _, cv := range mv.Configs {
+			for _, comp := range cv.Components {
+				u := uses[comp.ID]
+				if u == nil {
+					cc := c.Components[comp.ID]
+					u = &componentUse{ID: comp.ID, Kind: comp.Kind, KindName: comp.KindName, Name: comp.Name, Vendor: cc.Vendor,
+						Role: comp.Role, Driver: comp.Driver, IDs: comp.IDs}
+					uses[comp.ID] = u
+				}
+				u.Configs++
+				if !seenMac[comp.ID] {
+					seenMac[comp.ID] = true
+					u.Macs = append(u.Macs, mv)
+				}
 			}
 		}
 	}
-	return rows
+	rank := map[string]int{}
+	for i, k := range kindOrder {
+		rank[k] = i
+	}
+	var out []componentUse
+	for _, u := range uses {
+		out = append(out, *u)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if rank[out[i].Kind] != rank[out[j].Kind] {
+			return rank[out[i].Kind] < rank[out[j].Kind]
+		}
+		return out[i].Name < out[j].Name
+	})
+	return out
 }
+
+// ── helpers ──────────────────────────────────────────────────────────────
 
 func processor(p catalog.Processor) string {
 	s := fmt.Sprintf("%s %s GHz", p.Model, num(p.GHz))

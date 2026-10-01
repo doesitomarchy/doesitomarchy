@@ -1,9 +1,9 @@
 {{define "content"}}{{with .Data}}
 <h1>Stats</h1>
 <p class="muted">Every figure comes from the catalog and the results database. The site has no analytics.</p>
-<div class="grid2">
-  <section class="panel"><h2>Coverage</h2><div class="coverage">{{template "coverage-rows" $.Site}}</div>
-    <p class="muted">N = {{$.Site.Coverage.Eligible}} configurations. Not counted: {{$.Site.Coverage.NotCompatible}} not compatible by design{{range $.Site.Exclusions}} · {{.Count}} {{.Reason}}{{end}}.</p></section>
+<section class="panel cov-wide"><h2>Coverage</h2><div class="coverage">{{template "coverage-rows" $.Site}}</div>
+  <p class="muted">N = {{$.Site.Coverage.Eligible}} configurations. Not counted: <a href="/configs?status=not-compatible">{{$.Site.Coverage.NotCompatible}} not compatible by design</a>{{range $.Site.Exclusions}} · <a href="/configs?excluded={{.Reason}}">{{.Count}} {{.Reason}}</a>{{end}}.</p></section>
+<div class="grid3">
   <section class="panel"><h2>Test results</h2><p>No results yet. Testing opens with the submission API.</p>
     <p class="muted">Once results arrive, this panel shows results accepted, most-tested models and the capabilities that fail most often.</p></section>
   <section class="panel"><h2>Configurations by product line</h2>

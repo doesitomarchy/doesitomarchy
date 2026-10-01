@@ -4,8 +4,8 @@ package web
 
 // themeChoices are the picker entries: our pair first, then Omarchy's themes.
 var themeChoices = []themeChoice{
-	{"light", "doesitomarchy light", false},
-	{"dark", "doesitomarchy dark", true},
+	{"light", "DoesItOmarchy light", false},
+	{"dark", "DoesItOmarchy dark", true},
 	{"catppuccin-latte", "Catppuccin Latte", false},
 	{"catppuccin", "Catppuccin", true},
 	{"ethereal", "Ethereal", true},

@@ -1,20 +1,24 @@
 {{define "icon"}}<svg class="i" aria-hidden="true"><use href="{{asset "icons.svg"}}#i-{{.}}"></use></svg>{{end}}
 
-{{define "verdict"}}<span class="verdict {{.}}"><span class="g" aria-hidden="true">{{.Glyph}}</span>{{.Label}}</span>{{end}}
+{{define "vicon"}}<svg class="i v v-{{.}}" aria-hidden="true"><use href="{{asset "icons.svg"}}#v-{{.}}"></use></svg>{{end}}
 
-{{define "scope"}}<span class="tag scope" title="Listed and testable, but not counted in the coverage figures">Out of coverage scope: {{.}}</span>{{end}}
+{{define "verdict"}}<span class="verdict {{.}}">{{template "vicon" .}}{{.Label}}</span>{{end}}
 
-{{/* Two coverage rows: pass the site. */}}
+{{define "badge"}}<svg class="badge" role="img" aria-label="Passed every test"><title>Passed every applicable test</title><use href="{{asset "icons.svg"}}#omarchy-logo"></use></svg>{{end}}
+
+{{define "scope"}}<span class="tag scope" title="Listed and testable, but not counted in the coverage figures">Out of coverage scope · {{.}}</span>{{end}}
+
+{{/* Two coverage rows: pass the site. data-* feed the Konami easter egg. */}}
 {{define "coverage-rows"}}
 <div class="stat" role="group" aria-label="Omarchy compatibility coverage">
   <div class="row"><a class="label" href="/stats">Omarchy compatibility coverage</a>
-    <span class="figure">{{.Coverage.Verified}} / {{.Coverage.Eligible}} <span class="pct">configs · {{pct .Coverage.VerifiedPct}}</span></span></div>
+    <span class="figure" data-total="{{.Coverage.Eligible}}"><span class="n">{{.Coverage.Verified}}</span> / {{.Coverage.Eligible}} <span class="pct">configs · <span class="p">{{pct .Coverage.VerifiedPct}}</span></span></span></div>
   <svg class="bar ok" viewBox="0 0 100 10" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="{{.Coverage.Eligible}}" aria-valuenow="{{.Coverage.Verified}}" aria-label="{{.Coverage.Verified}} of {{.Coverage.Eligible}} eligible configurations verified compatible"><rect width="{{barw .Coverage.Verified .Coverage.Eligible}}" height="10"/></svg>
   <div class="sub">100% verified: every applicable test passed{{if .Coverage.StaleVerified}} · {{.Coverage.StaleVerified}} on an older Omarchy{{end}}</div>
 </div>
 <div class="stat" role="group" aria-label="Test result coverage">
   <div class="row"><a class="label" href="/stats">Test result coverage</a>
-    <span class="figure">{{.Coverage.Tested}} / {{.Coverage.Eligible}} <span class="pct">configs · {{pct .Coverage.TestedPct}}</span></span></div>
+    <span class="figure" data-total="{{.Coverage.Eligible}}"><span class="n">{{.Coverage.Tested}}</span> / {{.Coverage.Eligible}} <span class="pct">configs · <span class="p">{{pct .Coverage.TestedPct}}</span></span></span></div>
   <svg class="bar" viewBox="0 0 100 10" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="{{.Coverage.Eligible}}" aria-valuenow="{{.Coverage.Tested}}" aria-label="{{.Coverage.Tested}} of {{.Coverage.Eligible}} eligible configurations have a test result"><rect width="{{barw .Coverage.Tested .Coverage.Eligible}}" height="10"/></svg>
   <div class="sub">configurations with at least one test result</div>
 </div>
@@ -22,42 +26,44 @@
 
 {{define "superfooter"}}
 <footer class="super">
-  <div class="wrap">
-    <section aria-labelledby="f-cov">
-      <h2 id="f-cov">Coverage</h2>
-      <div class="coverage compact">{{template "coverage-rows" .Site}}</div>
-    </section>
-    <section aria-labelledby="f-cat">
-      <h2 id="f-cat">Catalog</h2>
-      <dl>
-        <dt>{{.Site.Macs}}</dt><dd>model identifiers</dd>
-        <dt>{{.Site.Releases}}</dt><dd>releases</dd>
-        <dt>{{.Site.Configs}}</dt><dd>hardware configurations</dd>
-        <dt>{{.Site.Components}}</dt><dd>components with hardware IDs</dd>
-        <dt>{{.Site.Criteria}}</dt><dd>test criteria</dd>
-        <dt>{{.Site.Coverage.Eligible}}</dt><dd>counted in coverage</dd>
-        <dt>{{.Site.Coverage.NotCompatible}}</dt><dd>not compatible by design (32-bit CPU)</dd>
-        {{range .Site.Exclusions}}<dt>{{.Count}}</dt><dd>out of scope: {{.Reason}}</dd>{{end}}
-      </dl>
-    </section>
-    <section aria-labelledby="f-site">
+  <div class="cols">
+    <section class="c-site" aria-labelledby="f-site">
       <h2 id="f-site">Site</h2>
       <ul>
         <li><a href="/macs">Browse all Intel Macs</a></li>
+        <li><a href="/criteria">Criteria matrix</a></li>
         <li><a href="/stats">Stats</a></li>
         <li><a href="/methodology">Methodology</a></li>
         <li><a href="/contribute">Contribute</a></li>
+        <li><a href="/attribution">Attribution</a></li>
         <li><a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">Source on GitHub</a></li>
       </ul>
     </section>
-    <div class="legal">
-      <strong>A community site. Not officially affiliated with Omarchy or the Omacom Foundation.</strong>
-      <span>Code MIT · catalog data CC BY-SA 4.0 · themes from Omarchy (MIT)</span>
-      <span>doiomad {{.Version}}</span>
-    </div>
+    <section class="c-cat" aria-labelledby="f-cat">
+      <h2 id="f-cat">Catalog</h2>
+      <dl>
+        <dt>{{.Site.Macs}}</dt><dd><a href="/macs">model identifiers</a></dd>
+        <dt>{{.Site.Releases}}</dt><dd><a href="/releases">releases</a></dd>
+        <dt>{{.Site.Configs}}</dt><dd><a href="/configs">hardware configurations</a></dd>
+        <dt>{{.Site.Components}}</dt><dd><a href="/components">components with hardware IDs</a></dd>
+        <dt>{{.Site.Criteria}}</dt><dd><a href="/methodology#criteria">test criteria</a></dd>
+        <dt>{{.Site.Coverage.Eligible}}</dt><dd><a href="/configs?scope=in">counted in coverage</a></dd>
+        <dt>{{.Site.Coverage.NotCompatible}}</dt><dd><a href="/configs?status=not-compatible">not compatible by design (32-bit CPU)</a></dd>
+        {{range .Site.Exclusions}}<dt>{{.Count}}</dt><dd><a href="/configs?excluded={{.Reason}}">out of scope: {{.Reason}}</a></dd>{{end}}
+      </dl>
+    </section>
+    <section class="c-cov" aria-label="Coverage">
+      <div class="coverage compact">{{template "coverage-rows" .Site}}</div>
+    </section>
+  </div>
+  <div class="legal">
+    <p><strong>A community site. Not officially affiliated with Omarchy or the Omacom Foundation.</strong></p>
+    <p>Code MIT · catalog data CC BY-SA 4.0 · catalog {{.Site.CatalogHash}} ({{.Site.CatalogDate}}) · doiomad {{.Version}} · <a href="/attribution">attribution</a></p>
   </div>
 </footer>
 {{end}}
+
+{{define "presets"}}<ul class="presets" aria-label="Quick searches">{{range .}}<li><a href="{{.URL}}">{{.Label}}</a></li>{{end}}</ul>{{end}}
 
 {{define "searchbox"}}
 <div data-search-scope>
@@ -69,8 +75,8 @@
   <button type="submit">Search</button>
 </form>
 <ul class="suggest" id="suggest" aria-label="Suggestions"></ul>
-{{if .Presets}}<ul class="presets" aria-label="Quick searches">{{range .Presets}}<li><a href="{{.URL}}">{{.Label}}</a></li>{{end}}</ul>{{end}}
-{{if .Results}}{{template "results" .}}{{else if .Q}}{{template "results" .}}{{else}}<div id="results"></div>{{end}}
+{{if .Presets}}{{template "presets" .Presets}}{{end}}
+{{if .OnSearchPage}}{{template "results" .}}{{else}}<div id="results"></div>{{end}}
 </div>
 {{end}}
 
@@ -80,22 +86,22 @@
 {{if .Results}}
 <p class="results-meta">{{len .Results}} model {{plural (len .Results) "identifier" "identifiers"}}{{if eq .Sort "recent"}} · most recently tested first{{end}}</p>
 <ol class="results">
-{{range .Results}}
-  <li>
+{{range .Results}}{{$r := .}}
+  <li{{if .Mac.OutOfScope}} class="oos"{{end}}>
     <a class="hit" href="/mac/{{.Slug}}">
-      <span class="ident">{{.Identifier}}</span>
+      <span class="ident">{{if .Mac.AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</span>
       <span>{{.Mac.Title}}</span>
-      <span>{{range .Mac.Verdicts}}{{template "verdict" .}} {{end}}</span>
-      <span class="facts">{{.Mac.Years}} · {{joinlim .Mac.GPUs 2}}{{with .Mac.Chip}} · {{.}}{{end}} · {{len .Mac.Configs}} {{plural (len .Mac.Configs) "config" "configs"}}{{with .Mac.OutOfScope}} · out of coverage scope{{end}}</span>
+      <span class="vs">{{range .Mac.Verdicts}}{{template "verdict" .}}{{end}}</span>
+      <span class="facts">{{.Mac.Years}} · {{joinlim .Mac.GPUs 2}}{{with .Mac.Chip}} · {{.}}{{end}} · {{len .Mac.Configs}} {{plural (len .Mac.Configs) "config" "configs"}}{{with .Mac.OutOfScope}} {{template "scope" .}}{{end}}</span>
     </a>
     {{if not .AllConfigs}}<ul class="hits">{{$slug := .Slug}}{{range .Scoped}}
-      <li><a href="/mac/{{$slug}}#cfg-{{.ID}}">{{.Letter}} · {{.Label}}</a><span class="release">{{.ReleaseName}}</span>{{with .OutOfScope}} {{template "scope" .}}{{end}}</li>{{end}}
+      <li{{if .OutOfScope}} class="oos"{{end}}><a class="cfgref" href="/mac/{{$slug}}#cfg-{{.ID}}">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</a> <span class="muted">{{.Label}}</span> <span class="release">{{.ReleaseName}}</span>{{with .OutOfScope}}{{if not $r.Mac.OutOfScope}} {{template "scope" .}}{{end}}{{end}}</li>{{end}}
     </ul>{{end}}
   </li>
 {{end}}
 </ol>
 {{else if .NoResults}}
-<p class="empty">No test results yet. Testing opens with the submission API; until then every configuration is ⚪ Untested.</p>
+<p class="empty">No test results yet. Testing opens with the submission API; until then every configuration is Untested.</p>
 {{else if .Q}}
 <p class="empty">No Macs match <code>{{.Q}}</code>.{{with .Resp.DidYouMean}} Did you mean <a href="{{query .}}">{{.}}</a>?{{end}}</p>
 {{end}}
@@ -106,4 +112,27 @@
 <ul class="suggest" role="listbox">
 {{range .}}<li role="option" data-kind="{{.Kind}}"><a href="{{query .Query}}" data-query="{{.Query}}" data-cursor="{{.Cursor}}">{{.Label}}</a></li>
 {{end}}</ul>
+{{end}}
+
+{{/* Criteria × configurations matrix, review-report style. Pass a *matrixView. */}}
+{{define "matrix"}}
+<div class="matrix-wrap" data-matrix>
+<table class="matrix">
+  <thead><tr>
+    <th scope="col" class="cap-head">Criterion</th>
+    {{range .Cols}}<th scope="col" class="col {{$.HeadClass}}{{if .OutOfScope}} oos{{end}}" id="m-{{.ID}}"><span><a href="{{.Href}}" title="{{.Title}}">{{if .Verified}}{{template "badge"}}{{end}}{{.Label}}</a></span></th>{{end}}
+    <th scope="col" class="count-head">Config<br>count</th>
+  </tr></thead>
+  <tbody>
+  {{range .Groups}}
+    <tr class="cat"><th colspan="{{add (len $.Cols) 2}}" scope="rowgroup">{{template "icon" .Icon}}{{.Name}}{{if .Blocking}} <span class="muted">· a failure here makes a config Unsupported</span>{{end}}</th></tr>
+    {{range .Rows}}<tr>
+      <th scope="row" class="cap" title="{{.Description}}">{{.Name}}</th>
+      {{range .Cells}}{{if not .Applies}}<td class="cell"></td>{{else if eq .Verdict "untested"}}<td class="cell u"><i>Untested</i></td>{{else}}<td class="cell">{{template "vicon" .Verdict}}<span class="sr-only">{{.Verdict.Label}}</span></td>{{end}}{{end}}
+      <td class="count">{{.Count}}</td>
+    </tr>{{end}}
+  {{end}}
+  </tbody>
+</table>
+</div>
 {{end}}
