@@ -160,7 +160,7 @@ func TestSecurityHeaders(t *testing.T) {
 		if !strings.Contains(csp, "default-src 'self'") || !strings.Contains(csp, "frame-ancestors 'none'") {
 			t.Errorf("%s: CSP %q", path, csp)
 		}
-		for h, want := range map[string]string{"X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY"} {
+		for h, want := range map[string]string{"X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Strict-Transport-Security": "max-age=86400"} {
 			if got := res.Header.Get(h); got != want {
 				t.Errorf("%s: %s = %q", path, h, got)
 			}
@@ -279,6 +279,38 @@ func TestMachineIcons(t *testing.T) {
 	for _, m := range c.Macs {
 		if id := `id="m-` + machineIcon(m) + `"`; !strings.Contains(string(sprite), id) {
 			t.Errorf("%s: icons.svg has no %s", m.Identifier, id)
+		}
+	}
+}
+
+// Each page names one canonical URL: no query (filters and views are the same
+// page), the hyphenated slug for model pages, the query for search, none on errors.
+func TestCanonical(t *testing.T) {
+	ts := newTestServer(t)
+	canon := regexp.MustCompile(`<link rel="canonical" href="([^"]*)">`)
+	for path, want := range map[string]string{
+		"/":                              BaseURL + "/",
+		"/macs?q=chip%3At2&sort=year":    BaseURL + "/macs",
+		"/configs?year=2018":             BaseURL + "/configs",
+		"/mac/MacBookPro8-2?view=matrix": BaseURL + "/mac/MacBookPro8-2",
+		"/mac/MacBookPro8,2":             BaseURL + "/mac/MacBookPro8-2",
+		"/search?q=mbp+2011":             BaseURL + "/search?q=mbp+2011",
+		"/search":                        BaseURL + "/search",
+		"/methodology":                   BaseURL + "/methodology",
+		"/nothing":                       "",
+	} {
+		res, err := ts.Client().Get(ts.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		got := ""
+		if m := canon.FindStringSubmatch(string(b)); m != nil {
+			got = html.UnescapeString(m[1])
+		}
+		if got != want {
+			t.Errorf("%s: canonical %q, want %q", path, got, want)
 		}
 	}
 }

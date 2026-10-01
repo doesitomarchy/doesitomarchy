@@ -20,6 +20,9 @@ func securityHeaders(next http.Handler) http.Handler {
 		h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		h.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), interest-cohort=()")
 		h.Set("Cross-Origin-Opener-Policy", "same-origin")
+		// HTTPS only. Browsers ignore HSTS over plain HTTP (local dev). Start
+		// short (one day); raise to a year once proven (PLAN.md §19).
+		h.Set("Strict-Transport-Security", "max-age=86400")
 		next.ServeHTTP(w, r)
 	})
 }

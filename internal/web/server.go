@@ -146,12 +146,20 @@ type page struct {
 	Nav         string // current section: "macs", "stats", "methodology", "contribute"
 	Site        *site
 	Version     string
+	Canonical   string // absolute URL for <link rel="canonical">; empty on error pages
 	Data        any
 }
 
 // render executes into a buffer first so a template error never sends half a page.
 func (s *Server) render(w http.ResponseWriter, r *http.Request, code int, name string, p page) {
 	p.Site, p.Version = &s.view.site, s.version
+	// Canonical: the path without its query (filters and views are the same
+	// page), unless the handler chose one. Error pages have none.
+	if code != http.StatusOK {
+		p.Canonical = ""
+	} else if p.Canonical == "" {
+		p.Canonical = BaseURL + r.URL.EscapedPath()
+	}
 	if p.Description == "" {
 		p.Description = "Which Intel Macs (2006–2020) run Omarchy, per model identifier and hardware configuration."
 	}
