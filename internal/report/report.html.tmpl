@@ -141,7 +141,7 @@ footer { border-top: 1px solid var(--line-strong); padding-top: 16px; color: var
     <span><b>{{.Stats.Capabilities}}</b> test criteria</span>
     <span><b>{{.Stats.Uncertain}}</b> uncertain fields</span>
   </div>
-  <div class="muted mono" style="font-size:12px">Generated {{.Generated}} by <code>doioma report</code></div>
+  <div class="muted mono" style="font-size:12px">Generated {{.Generated}} by <code>doiomad report</code></div>
   <nav class="jump" aria-label="Jump to identifier">
     {{range .Macs}}<a href="#{{.Anchor}}">{{.Identifier}}</a>{{end}}
     <a href="#uncertain">Uncertain</a><a href="#matrix">Criteria matrix</a>

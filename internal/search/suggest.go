@@ -165,7 +165,7 @@ func quoteIfNeeded(s string) string {
 }
 
 // ValidateAliases checks every alias in the catalog parses cleanly and
-// matches at least one configuration (run by `doioma validate`).
+// matches at least one configuration (run by `doiomad validate`).
 func ValidateAliases(c *catalog.Catalog) []string {
 	ix := Build(c, nil)
 	var problems []string

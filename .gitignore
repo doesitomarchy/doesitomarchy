@@ -1,5 +1,6 @@
 # build output
 /bin/
+/doiomad
 /doioma
 
 # local databases (results live in SQLite, never in git)

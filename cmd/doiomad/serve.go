@@ -24,9 +24,9 @@ import (
 
 // dbFlags registers the flags shared by commands that open the database.
 func dbFlags(fs *flag.FlagSet) (db, dataDir *string) {
-	def := os.Getenv("DOIOMA_DB")
+	def := os.Getenv("DOIOMAD_DB")
 	if def == "" {
-		def = "doioma.db"
+		def = "doesitomarchy.db"
 	}
 	db = fs.String("db", def, "SQLite database file")
 	dataDir = fs.String("data", "", "catalog directory (default: the catalog built into this binary)")

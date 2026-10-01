@@ -26,7 +26,7 @@ import (
 func Load(dir string) (*Catalog, error) { return loadDir(dir, true) }
 
 // LoadUnlocked is Load without the "every config ID is locked" check, for
-// `doioma lock`. Removed IDs are still rejected.
+// `doiomad lock`. Removed IDs are still rejected.
 func LoadUnlocked(dir string) (*Catalog, error) { return loadDir(dir, false) }
 
 // LoadFS reads and validates a catalog rooted at fsys (e.g. the embedded data/).

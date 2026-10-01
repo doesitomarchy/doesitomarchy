@@ -7,7 +7,7 @@ import (
 
 // Alias is one entry of data/aliases.yaml: search phrases that stand for a
 // query fragment, e.g. "trash can" → `id:"MacPro6,1"`. The search package
-// checks that every Means parses and matches something (doioma validate).
+// checks that every Means parses and matches something (doiomad validate).
 type Alias struct {
 	Match []string `yaml:"match" json:"match"`
 	Means string   `yaml:"means" json:"means"`

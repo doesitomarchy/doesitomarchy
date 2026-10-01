@@ -15,13 +15,13 @@
 | `components/<kind>.yaml` | Shared hardware components with their PCI/USB IDs and the Linux driver seen on real machines |
 | `macs/<Identifier>.yaml` | One file per model identifier, using `-` in place of `,` (e.g. `Macmini3-1.yaml`), holding its releases and configurations |
 | `config-ids.lock` | Every configuration ID ever issued |
-| `aliases.yaml` | Search nicknames: phrases such as `mbp` or `trash can` and the query they stand for. `doioma validate` checks each one parses and finds something |
+| `aliases.yaml` | Search nicknames: phrases such as `mbp` or `trash can` and the query they stand for. `doiomad validate` checks each one parses and finds something |
 | `coverage.yaml` | Rules for configurations that are out of scope for the coverage metrics (e.g. released before 2009). They are still listed and testable; they just aren't counted. This is not the same as a Mac's `hard_blocker`, which marks it Not compatible |
 
 Rules the validator enforces:
 
 - **One configuration per distinct Linux-relevant hardware set.** Split a release into configurations only when components (GPU, Wi‑Fi, Ethernet chip…) or the applicable test criteria (ports, features) differ. CPU speed, RAM and disk size are attributes, not new configurations.
-- **Configuration IDs are permanent.** They look like `<identifier-slug>-<release>-<letter>` (e.g. `macmini3-1-late-2009-a`). To rename one, move the old ID into `aliases`. Never delete or reuse an ID. After adding configurations, run `doioma lock`.
+- **Configuration IDs are permanent.** They look like `<identifier-slug>-<release>-<letter>` (e.g. `macmini3-1-late-2009-a`). To rename one, move the old ID into `aliases`. Never delete or reuse an ID. After adding configurations, run `doiomad lock`.
 - **Every model and component needs a source.** Apple Tech Specs and EveryMac are the sources for releases, order numbers, specs and ports.
 - **Real hardware reports count as evidence.** Chips, hardware IDs and features observed on real machines (e.g. linuxhw probes) are recorded as known facts, even when Apple's pages don't list them. Flag them `uncertain` only when another source contradicts them.
 - **Test results belong to a configuration**, never just to a model identifier, because one identifier can span several releases.
@@ -32,9 +32,9 @@ Commands:
 
 ```sh
 make check                                   # everything CI runs
-./bin/doioma validate                        # check the catalog
-./bin/doioma lock                            # record new configuration IDs
-./bin/doioma report -line mac-mini -o r.html # review page for one product line
+./bin/doiomad validate                        # check the catalog
+./bin/doiomad lock                            # record new configuration IDs
+./bin/doiomad report -line mac-mini -o r.html # review page for one product line
 ```
 
 ## Test results

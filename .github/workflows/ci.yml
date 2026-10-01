@@ -23,6 +23,6 @@ jobs:
       - name: test
         run: go test -race ./...
       - name: build
-        run: CGO_ENABLED=0 go build -trimpath -o bin/doioma ./cmd/doioma
+        run: CGO_ENABLED=0 go build -trimpath -o bin/doiomad ./cmd/doiomad
       - name: validate catalog
-        run: ./bin/doioma validate
+        run: ./bin/doiomad validate

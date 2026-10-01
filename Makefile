@@ -4,14 +4,14 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 .PHONY: build test check validate clean
 
 build:
-	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/doioma ./cmd/doioma
+	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/doiomad ./cmd/doiomad
 
 test:
 	go test -race ./...
 	go test -count=1 -run TestLatency ./internal/search   # p99 budget, without the race detector's overhead
 
 validate:
-	go run ./cmd/doioma validate
+	go run ./cmd/doiomad validate
 
 # Everything CI runs, in the same order.
 check:
@@ -19,7 +19,7 @@ check:
 	go vet ./...
 	$(MAKE) test
 	$(MAKE) build
-	./bin/doioma validate
+	./bin/doiomad validate
 
 clean:
 	rm -rf bin
