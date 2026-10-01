@@ -1,0 +1,3 @@
+# The deploy SSH key can run the deploy script as root, and nothing else.
+# The script validates its own arguments.
+deploy ALL=(root) NOPASSWD: /usr/local/sbin/doiomad-deploy

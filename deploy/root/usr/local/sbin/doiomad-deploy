@@ -1,0 +1,125 @@
+#!/bin/bash
+# Installs a doiomad release and switches to it, rolling back if the new
+# release fails its health check (PLAN.md §18.5).
+#
+#   doiomad-deploy install vX.Y.Z SHA256 < doiomad   binary on stdin
+#   doiomad-deploy rollback                          back to the previous release
+#   doiomad-deploy status                            live version and releases
+set -euo pipefail
+
+BASE=/opt/doiomad
+RELEASES=$BASE/releases
+DB=/var/lib/doiomad/doesitomarchy.db
+BACKUPS=/var/lib/doiomad/backups
+KEEP=5
+HEALTH=http://127.0.0.1:8080/healthz
+
+exec 9>/run/lock/doiomad-deploy.lock
+flock -n 9 || { echo "another deploy is running" >&2; exit 1; }
+
+log() { echo "doiomad-deploy: $*" >&2; logger -t doiomad-deploy -- "$*"; }
+
+live() { basename "$(readlink -f $BASE/current 2>/dev/null || echo none)"; }
+
+# switch VERSION: point current at a release and restart the server.
+switch() {
+	ln -sfn "releases/$1" $BASE/current.new
+	mv -T $BASE/current.new $BASE/current
+	systemctl restart doiomad
+}
+
+# healthy VERSION: wait up to 20 s for /healthz to report that version.
+healthy() {
+	for _ in $(seq 40); do
+		if [ "$(curl -fsS --max-time 2 $HEALTH 2>/dev/null)" = "ok $1" ]; then
+			return 0
+		fi
+		sleep 0.5
+	done
+	return 1
+}
+
+# previous: the newest installed release that isn't live.
+previous() {
+	local cur
+	cur=$(live)
+	ls -1t $RELEASES | grep -vxF "$cur" | head -n1
+}
+
+prune() {
+	local cur
+	cur=$(live)
+	ls -1t $RELEASES | grep -vxF "$cur" | tail -n +$KEEP | while read -r v; do
+		rm -rf "${RELEASES:?}/$v"
+	done
+	ls -1t $BACKUPS/*.db 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f
+}
+
+case "${1:-}" in
+install)
+	ver=${2:-} sum=${3:-}
+	[[ $ver =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]] || { log "bad version: $ver"; exit 2; }
+	[[ $sum =~ ^[0-9a-f]{64}$ ]] || { log "bad checksum"; exit 2; }
+	tmp=$(mktemp -p $BASE .upload.XXXXXX)
+	trap 'rm -f "$tmp"' EXIT
+	head -c 200000000 >"$tmp" # 200 MB cap
+	echo "$sum  $tmp" | sha256sum -c --quiet - || { log "checksum mismatch for $ver"; exit 1; }
+	chmod 0755 "$tmp"
+	got=$("$tmp" version)
+	[ "$got" = "$ver" ] || { log "binary reports $got, expected $ver"; exit 1; }
+
+	prev=$(live)
+	if [ "$prev" = "$ver" ]; then
+		log "$ver is already live"
+		exit 0
+	fi
+	mkdir -p "$RELEASES/$ver"
+	mv "$tmp" "$RELEASES/$ver/doiomad"
+	trap - EXIT
+
+	# A copy of the database from before any migration the new release runs.
+	if [ -f $DB ]; then
+		install -d -o doiomad -g doiomad -m 0750 $BACKUPS
+		sudo -u doiomad sqlite3 $DB ".backup '$BACKUPS/pre-$ver.db'"
+	fi
+
+	log "switching $prev → $ver"
+	switch "$ver"
+	if healthy "$ver"; then
+		log "$ver is live"
+		prune
+		exit 0
+	fi
+	log "$ver failed its health check; recent log:"
+	journalctl -u doiomad -n 30 --no-pager >&2 || true
+	if [ "$prev" != none ]; then
+		switch "$prev"
+		if healthy "$prev"; then
+			log "rolled back to $prev"
+		else
+			log "rollback to $prev is ALSO unhealthy"
+		fi
+	fi
+	rm -rf "${RELEASES:?}/$ver"
+	exit 1
+	;;
+rollback)
+	prev=$(previous)
+	[ -n "$prev" ] || { log "no previous release"; exit 1; }
+	cur=$(live)
+	log "rolling back $cur → $prev"
+	switch "$prev"
+	healthy "$prev" || { log "$prev is unhealthy"; exit 1; }
+	log "$prev is live"
+	;;
+status)
+	echo "live: $(live)"
+	echo "health: $(curl -fsS --max-time 2 $HEALTH 2>&1 || true)"
+	echo "releases (newest first):"
+	ls -1t $RELEASES | sed 's/^/  /'
+	;;
+*)
+	echo "usage: doiomad-deploy install VERSION SHA256 < binary | rollback | status" >&2
+	exit 2
+	;;
+esac

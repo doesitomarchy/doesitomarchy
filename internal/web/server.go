@@ -117,7 +117,8 @@ func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	w.Write([]byte("ok\n"))
+	// The version lets a deploy confirm the new release is the one serving.
+	w.Write([]byte("ok " + s.version + "\n"))
 }
 
 func apiNotFound(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,77 @@
+name: release
+
+# Pushing a version tag (git tag v0.5.0 && git push origin v0.5.0) runs every
+# CI check, publishes a GitHub Release with the binary, deploys it to the
+# droplet and purges Cloudflare's cache (PLAN.md §18.5).
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the catalog date and commit come from git history
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: build
+        run: |
+          make build VERSION="$GITHUB_REF_NAME"
+          test "$(./bin/doiomad version)" = "$GITHUB_REF_NAME"
+          cp bin/doiomad doiomad-linux-amd64
+          sha256sum doiomad-linux-amd64 > doiomad-linux-amd64.sha256
+      - name: publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" doiomad-linux-amd64 doiomad-linux-amd64.sha256 --verify-tag --generate-notes
+
+  deploy:
+    needs: release
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: download release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" -p 'doiomad-linux-amd64*'
+          sha256sum -c doiomad-linux-amd64.sha256
+      - name: deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          sum=$(cut -d' ' -f1 doiomad-linux-amd64.sha256)
+          # The deploy key's forced command installs the binary, switches to it and
+          # rolls back on its own if /healthz doesn't report the new version.
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes "deploy@$DEPLOY_HOST" \
+            "install $GITHUB_REF_NAME $sum" < doiomad-linux-amd64
+      - name: purge Cloudflare cache
+        env:
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+          CF_CACHE_TOKEN: ${{ secrets.CF_CACHE_TOKEN }}
+        run: |
+          if [ -z "$CF_ZONE_ID" ]; then echo "Cloudflare not configured yet; skipping"; exit 0; fi
+          curl -fsS -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
+            -H "Authorization: Bearer $CF_CACHE_TOKEN" -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' | jq -e .success
