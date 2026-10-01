@@ -79,14 +79,18 @@ rules http_request_dynamic_redirect "$(jq -nc --arg z "$ZONE_NAME" '[{
 		target_url: {expression: ("concat(\"https://" + $z + "\", http.request.uri.path)")}}}}]')"
 
 step "cache rules"
-# HTML is cacheable for the s-maxage the origin sends (300 s); /healthz and
-# the future API are never cached. Static files cache by their own headers.
-rules http_request_cache_settings "$(jq -nc --arg z "$ZONE_NAME" '[
-	{description: "no cache: health and API", action: "set_cache_settings", action_parameters: {cache: false},
-	 expression: ("http.host eq \"" + $z + "\" and (http.request.uri.path eq \"/healthz\" or starts_with(http.request.uri.path, \"/api/\"))")},
+# HTML is cacheable for the s-maxage the origin sends (300 s); /healthz, the
+# future API and HTMX requests are never cached. HTMX fragments share their
+# URL with the full page and Cloudflare ignores Vary, so a cached full page
+# would be swapped into the page as a "fragment" (and vice versa).
+# Static files cache by their own headers.
+nocache='http.request.uri.path eq "/healthz" or starts_with(http.request.uri.path, "/api/") or any(http.request.headers["hx-request"][*] eq "true")'
+rules http_request_cache_settings "$(jq -nc --arg z "$ZONE_NAME" --arg nc "$nocache" '[
+	{description: "no cache: health, API, HTMX fragments", action: "set_cache_settings", action_parameters: {cache: false},
+	 expression: ("http.host eq \"" + $z + "\" and (" + $nc + ")")},
 	{description: "cache pages per origin headers", action: "set_cache_settings",
 	 action_parameters: {cache: true, edge_ttl: {mode: "respect_origin"}, browser_ttl: {mode: "respect_origin"}},
-	 expression: ("http.host eq \"" + $z + "\" and not (http.request.uri.path eq \"/healthz\" or starts_with(http.request.uri.path, \"/api/\"))")}]')"
+	 expression: ("http.host eq \"" + $z + "\" and not (" + $nc + ")")}]')"
 
 step "rate limit on search"
 rules http_ratelimit "$(jq -nc '[{
