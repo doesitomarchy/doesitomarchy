@@ -1,5 +1,5 @@
 # Every configuration ID ever issued. Test results reference these IDs.
-# Managed by "doioma lock": new IDs are appended, none are ever removed.
+# Managed by "doiomad lock": new IDs are appended, none are ever removed.
 # A renamed config keeps its old ID in its "aliases" list.
 imac10-1-21-late-2009-a
 imac10-1-21-late-2009-b

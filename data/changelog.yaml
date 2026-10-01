@@ -1,0 +1,65 @@
+# Public catalog changelog, newest first. Shown at /changelog.
+# Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
+# findings, especially where the catalog differs from a common source).
+
+- date: "2026-09-30"
+  title: MacBook Pro
+  summary: "All 41 Intel MacBook Pro identifiers (2006–2020), 55 releases and 57 configurations, split by graphics chip and screen size."
+  notes:
+    - "The 2006 Core Duo models (MacBookPro1,1 and 1,2) can't run Omarchy (32-bit CPU); MacBookPro2,1 and 2,2 have 32-bit EFI and need a boot shim."
+    - "The Apple T1 chip is only on the 2016–2017 Touch Bar models (13,2, 13,3, 14,2, 14,3); the two-port 13-inch models have no T1."
+    - "Apple's identification page files the MC118 (2.53 GHz, Mid 2009) under MacBookPro5,3; it is MacBookPro5,4, the GeForce 9400M-only model."
+    - "OpenCore's database lists the Radeon Pro 555X/560X for MacBookPro15,3; real machines and EveryMac show the Vega 16/20 only."
+    - "MacBookPro3,1 to 5,2 use a Realtek ALC889A audio codec; the 2016–2017 models use a Cirrus Logic CS8409."
+
+- date: "2026-09-30"
+  title: Xserve
+  summary: "All 3 Intel Xserve identifiers (2006–2009). They are listed and testable but outside the coverage scope."
+  notes:
+    - "No Xserve has audio outputs, Wi-Fi or Bluetooth, so those criteria don't apply."
+    - "Xserve1,1 has 32-bit EFI and needs a boot shim."
+
+- date: "2026-09-30"
+  title: Mac Pro
+  summary: "All 7 Intel Mac Pro identifiers (2006–2019), one configuration per graphics card Apple sold, 25 in all."
+  notes:
+    - "Every 2006–2012 Mac Pro uses a Realtek ALC889A audio codec; the 2013 model uses a Cirrus Logic CS4208."
+    - "Same-chip cards share a configuration (Vega II and Vega II Duo; W6800X and W6800X Duo)."
+    - "The 2019 tower and rack models are one release; their internals are identical."
+
+- date: "2026-09-30"
+  title: iMac Pro
+  summary: "The iMac Pro (2017), with a configuration per graphics chip."
+  notes:
+    - "The Radeon Pro Vega 56 and Vega 64 are different chips, so the Vega 64 upgrade is its own configuration."
+    - "10Gb Ethernet (Aquantia AQC107) is standard."
+
+- date: "2026-09-30"
+  title: MacBook
+  summary: "All 11 Intel MacBook identifiers (2006–2017), 14 configurations."
+  notes:
+    - "Only the 2.4 GHz aluminum Late 2008 MacBook (MB467) has a backlit keyboard, so it is its own configuration."
+    - "The 12-inch MacBook's keyboard and trackpad use SPI and its Bluetooth uses UART, not USB."
+
+- date: "2026-09-30"
+  title: iMac
+  summary: "All 32 Intel iMac identifiers (2006–2020), 45 releases and 67 configurations."
+  notes:
+    - "The iMac6,1 (24-inch, Late 2006) has an NVIDIA GeForce 7300 GT or 7600 GT; OpenCore's database lists a Radeon."
+    - "2017–2019 iMacs use a Cirrus Logic CS8409 audio codec, which Linux often drives with a generic fallback."
+
+- date: "2026-09-30"
+  title: MacBook Air
+  summary: "All 15 Intel MacBook Air identifiers (2008–2020), 20 configurations."
+  notes:
+    - "Apple's identification page lists the MC505 under Mid 2009; it is the 11-inch Late 2010 model."
+    - "The 2020 model is two configurations, by graphics (Iris Plus G4 with the Core i3, G7 with the Core i5 and i7)."
+    - "The Late 2010 models have no keyboard backlight."
+
+- date: "2026-09-30"
+  title: Mac mini
+  summary: "All 11 Intel Mac mini identifiers (2006–2018), the first batch of the catalog."
+  notes:
+    - "Mid 2011 is three identifiers; the quad-core Server (Macmini5,3) has HD Graphics 3000."
+    - "The Late 2014 model is two configurations: HD Graphics 5000 on the 1.4 GHz model and Iris 5100 on the others."
+    - "Macmini3,1 uses a Realtek ALC889A audio codec and the Late 2012 models a Cirrus Logic CS4206."

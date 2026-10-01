@@ -1,4 +1,5 @@
 {{define "content"}}
 <h1>404 · not found</h1>
-<p>No page here. Model pages look like <a href="/mac/MacBookPro5-1">/mac/MacBookPro5-1</a>.</p>
+<p>No page here. Search for a Mac below, or browse <a href="/macs">all Intel Macs</a>.</p>
+<form class="searchbox" action="/search" method="get" role="search">{{template "icon" "search"}}<input type="search" name="q" aria-label="Search Intel Macs" placeholder="mbp 2015"><button type="submit">Search</button></form>
 {{end}}

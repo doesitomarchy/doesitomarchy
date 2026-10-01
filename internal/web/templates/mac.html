@@ -1,20 +1,71 @@
-{{define "content"}}{{with .Data}}{{$st := .Statuses}}{{with .Mac}}
-<h1>{{.Identifier}}</h1>
-<p class="meta">{{.LineName}} · EFI{{.EFI}}{{if ne .SecurityChip "none"}} · Apple {{.SecurityChip}}{{end}}{{range .BoardIDs}} · {{.}}{{end}}</p>
-{{if .HardBlocker}}<p class="blocker">⛔ Not compatible: {{.HardBlocker}}</p>{{end}}
+{{define "content"}}{{$d := .Data}}{{with .Data.Mac}}
+<article>
+<header class="mac-head">
+  <h1>{{if .AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</h1>
+  <p class="sub slash"><b>{{.Title}}</b><span>{{.LineName}}</span><span>{{.Years}}</span><span>EFI {{.EFI}}-bit</span><span>{{if .Chip}}{{.Chip}}{{else}}no security chip{{end}}</span></p>
+  <p class="sub">{{range .Verdicts}}{{template "verdict" .}} {{end}}<span class="muted">{{.Tested}} of {{len .Configs}} {{plural (len .Configs) "configuration" "configurations"}} tested</span></p>
+</header>
+{{if .HardBlocker}}<p class="notice">{{template "vicon" "not-compatible"}}<strong>Not compatible:</strong> {{.HardBlocker}}</p>{{end}}
+{{if .OutOfScope}}<p class="notice scope">{{template "scope" .OutOfScope}} This Mac is listed and can be tested, but it isn't counted in the site's coverage figures.</p>{{end}}
+{{if gt (len .Releases) 1}}<nav class="index" aria-label="Releases">{{range .Releases}}<a class="release" href="#rel-{{.ID}}">{{.Name}}</a>{{end}}</nav>{{end}}
+<div class="minibar">
+  <span class="ident">{{.Identifier}}</span>
+  <span class="jump">{{$slug := .Slug}}{{range .Configs}}<a class="cfgref" href="/mac/{{$slug}}#cfg-{{.ID}}" title="{{.Label}} ({{.ReleaseName}})">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</a>{{end}}</span>
+  <span class="views">
+    <a href="/mac/{{.Slug}}" hx-get="/mac/{{.Slug}}" hx-select="#view" hx-target="#view" hx-swap="outerHTML" hx-push-url="true"{{if not $d.Matrix}} aria-current="true"{{end}}>{{template "icon" "cards"}}Cards</a>
+    <a href="/mac/{{.Slug}}?view=matrix" hx-get="/mac/{{.Slug}}?view=matrix" hx-select="#view" hx-target="#view" hx-swap="outerHTML" hx-push-url="true"{{if $d.Matrix}} aria-current="true"{{end}}>{{template "icon" "matrix"}}Matrix</a>
+  </span>
+</div>
+<div id="view">
+{{if $d.Matrix}}{{template "matrix" .Matrix}}{{else}}
 {{range .Releases}}
-<section class="release" id="rel-{{.ID}}">
-  <h2>{{.Name}}</h2>
-  <p class="meta">announced {{.Announced}}{{if .Discontinued}} · discontinued {{.Discontinued}}{{end}}{{range .ModelNumbers}} · {{.}}{{end}}</p>
-  <ul class="configs">
-  {{range .Configs}}{{$s := index $st .ID}}
-    <li id="cfg-{{.ID}}"><span class="glyph" aria-hidden="true">{{$s.Verdict.Glyph}}</span> {{$s.Verdict.Label}} · <strong>{{.Label}}</strong>
-      <span class="muted">{{.ID}}{{if .BTOOnly}} · build to order{{end}}{{range .OrderNumbers}} · {{.}}{{end}} · {{$s.Applicable}} criteria apply</span>{{if and $s.Excluded (ne $s.Verdict "not-compatible")}}
-      <br><span class="muted">Not counted in coverage: {{$s.Excluded}}</span>{{end}}</li>
+<section id="rel-{{.ID}}">
+  <div class="rel-head"><h2>{{.Name}}</h2>
+    <span class="meta">announced <b>{{.Announced}}</b>{{with .Discontinued}} · discontinued <b>{{.}}</b>{{end}}{{with .ModelNumbers}} · <b>{{join . ", "}}</b>{{end}}{{with .EMC}} · EMC <b>{{join . ", "}}</b>{{end}}</span></div>
+  {{range .Configs}}{{template "card" .}}{{end}}
+</section>
+{{end}}{{end}}
+</div>
+{{if .ResearchNotes}}<details class="more"><summary>Research notes (unverified)</summary><pre>{{.ResearchNotes}}</pre>
+  {{with .Uncertain}}<ul>{{range .}}<li><span class="q-mark">?</span> {{.Field}}: {{.Note}}</li>{{end}}</ul>{{end}}</details>{{end}}
+<details class="more"><summary>Sources ({{len .Sources}}) and identifiers</summary>
+  <p class="muted">Board IDs: {{join .BoardIDs ", "}}</p>
+  <ul>{{range .Sources}}<li><a href="{{.}}" rel="noopener">{{.}}</a></li>{{end}}</ul></details>
+</article>
+{{end}}{{end}}
+
+{{define "card"}}
+<section class="card{{if .OutOfScope}} oos-card{{end}}" id="cfg-{{.ID}}">
+  <div class="card-head">
+    <span class="cfgref big">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</span>
+    <span class="title">{{.Label}}</span>
+    <span class="right">{{if .BTOOnly}}<span class="tag bto">build to order</span>{{end}}{{with .OutOfScope}}{{if ne $.Status.Verdict "not-compatible"}}{{template "scope" .}}{{end}}{{end}}
+      {{template "verdict" .Status.Verdict}}<span class="muted">{{.Status.Tested}}/{{.Status.Applicable}} tested</span></span>
+  </div>
+  {{with .Status.Blocker}}<p class="blocker-line">Blocked by: {{.}}</p>{{end}}
+  <div class="caps">
+  {{range .Categories}}
+    <details{{if .Problem}} open{{end}}>
+      <summary><svg class="catprog" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true"><rect width="{{.Pct}}" height="1"/></svg>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Caps}}{{template "vicon" .Verdict}}{{end}}</span><span class="count">{{.Passed}}/{{len .Caps}} passed</span></summary>
+      <ul>{{range .Caps}}<li>{{template "vicon" .Verdict}}<span title="{{.Description}}">{{.Name}}</span><span class="st st-{{.Verdict}}">{{.Verdict.Label}}</span>
+        {{if or .Error .Fix}}<div class="why">{{with .Error}}<p><span class="lbl">Why it failed</span> <code>{{.}}</code></p>{{end}}{{with .Fix}}<p><span class="lbl">Fix</span> {{.}}</p>{{end}}{{if eq .Verdict "failed"}}<p><a href="/contribute">Help fix it →</a></p>{{end}}</div>{{end}}</li>{{end}}</ul>
+    </details>
   {{end}}
-  </ul>
+  </div>
+  <details class="hw">
+    <summary><span class="hw-title">{{template "icon" "chip"}}Hardware Configuration Details</span><span class="muted">{{.ID}}</span><span class="hw-toggle" aria-hidden="true"></span></summary>
+    <dl class="specs">
+      <div><dt>CPU</dt><dd>{{join .CPU "; "}}{{with .CPUBTO}}<br><span class="alt">BTO: {{join . "; "}}</span>{{end}}{{with .Codename}} <span class="alt">({{.}})</span>{{end}}</dd></div>
+      <div><dt>Memory</dt><dd>{{.Memory}}{{with .MemoryNote}}<br><span class="alt">{{.}}</span>{{end}}</dd></div>
+      <div><dt>Storage</dt><dd>{{.Storage}}</dd></div>
+      {{with .Display}}<div><dt>Display</dt><dd>{{.}}</dd></div>{{end}}
+      {{range .Components}}<div class="comp"><dt>{{.KindName}}</dt><dd>{{.Name}}{{if .BTO}} <span class="tag bto">BTO</span>{{end}}{{range .Uncertain}} <span class="q-mark" title="{{.Field}}: {{.Note}}">?</span>{{end}}
+        {{with .IDs}}<br><span class="hw-id">{{join . " · "}}</span>{{end}}</dd></div>{{end}}
+      <div class="wide"><dt>Ports</dt><dd>{{join .Ports " · "}}</dd></div>
+      <div class="wide"><dt>Features</dt><dd>{{join .Features " · "}}</dd></div>
+      {{with .OrderNumbers}}<div class="wide"><dt>Order no.</dt><dd>{{join . " · "}}</dd></div>{{end}}
+    </dl>
+    {{if or .Notes .Uncertain}}<div class="extras">{{with .Notes}}<p>{{.}}</p>{{end}}{{range .Uncertain}}<p><span class="q-mark">?</span> {{.Field}}: {{.Note}}</p>{{end}}</div>{{end}}
+  </details>
 </section>
 {{end}}
-{{if .ResearchNotes}}<details><summary>Research notes (unverified)</summary><pre class="notes">{{.ResearchNotes}}</pre></details>{{end}}
-{{if .Sources}}<details><summary>Sources ({{len .Sources}})</summary><ul>{{range .Sources}}<li><a href="{{.}}" rel="noopener">{{.}}</a></li>{{end}}</ul></details>{{end}}
-{{end}}{{end}}{{end}}

@@ -248,6 +248,14 @@ releases:
         features: [fan]
 `,
 	"config-ids.lock": "macmini9-9-mid-2099-a\n",
+	"changelog.yaml": `
+- date: "2099-06-02"
+  title: Test
+  summary: "A test entry."
+- date: "2099-06-01"
+  title: Older
+  summary: "An older entry."
+`,
 	"coverage.yaml": `
 exclude:
   - reason: Old
@@ -327,6 +335,9 @@ func TestValidationRules(t *testing.T) {
 		{"coverage unknown line", "coverage.yaml", `announced_before: "2000-01-01"`, "line: toaster", `unknown line "toaster"`},
 		{"coverage unknown identifier", "coverage.yaml", `announced_before: "2000-01-01"`, `identifiers: ["Nope1,1"]`, `unknown identifier "Nope1,1"`},
 		{"coverage unknown field", "coverage.yaml", `announced_before: "2000-01-01"`, `year: 2000`, "unknown field"},
+		{"changelog bad date", "changelog.yaml", `"2099-06-02"`, `"June 2099"`, "must be YYYY-MM-DD"},
+		{"changelog order", "changelog.yaml", `"2099-06-01"`, `"2099-07-01"`, "newest first"},
+		{"changelog no summary", "changelog.yaml", `summary: "An older entry."`, `summary: ""`, "title and summary are required"},
 		{"bad emc", mac, `emc: ["1234"]`, `emc: ["1234-12"]`, "must be four digits"},
 	}
 	for _, tt := range tests {

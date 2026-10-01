@@ -178,4 +178,5 @@ type Catalog struct {
 	LockedIDs     []string       // data/config-ids.lock
 	CoverageRules []CoverageRule // data/coverage.yaml (optional)
 	Aliases       []Alias        // data/aliases.yaml (optional)
+	Changelog     []ChangeEntry  // data/changelog.yaml (optional)
 }

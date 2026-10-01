@@ -1,4 +1,4 @@
-# Controlled vocabulary for the catalog. `doioma validate` rejects any value
+# Controlled vocabulary for the catalog. `doiomad validate` rejects any value
 # used in data/macs/ or data/capabilities.yaml that is not listed here.
 # Keys are stable identifiers; `name` is what the site displays.
 

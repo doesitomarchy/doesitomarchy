@@ -12,11 +12,11 @@ import (
 
 // LockFile records every config ID ever issued. Test results reference config
 // IDs, so an ID may be renamed (keeping the old one in `aliases`) but never
-// removed or reused. `doioma lock` appends new IDs; nothing ever deletes them.
+// removed or reused. `doiomad lock` appends new IDs; nothing ever deletes them.
 const LockFile = "config-ids.lock"
 
 const lockHeader = `# Every configuration ID ever issued. Test results reference these IDs.
-# Managed by "doioma lock": new IDs are appended, none are ever removed.
+# Managed by "doiomad lock": new IDs are appended, none are ever removed.
 # A renamed config keeps its old ID in its "aliases" list.
 `
 

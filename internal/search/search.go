@@ -30,6 +30,7 @@ type Result struct {
 	// them adds nothing.
 	AllConfigs bool
 	Score      int
+	Latest     string // newest accepted result among matched configs ("" if none)
 	newest     string
 }
 
@@ -47,6 +48,13 @@ type Response struct {
 	Errors     []string // parse problems, shown as chips; the rest of the query still runs
 	DidYouMean string   // a corrected query, only when there are no results
 	Took       time.Duration
+}
+
+// SortRecent orders results by their newest accepted test result, newest
+// first (the "Latest with Test" preset); untested Macs keep relevance order
+// after the tested ones.
+func SortRecent(rs []Result) {
+	sort.SliceStable(rs, func(i, j int) bool { return rs[i].Latest > rs[j].Latest })
 }
 
 // Search runs a query. An empty query returns no results and no errors.
@@ -83,6 +91,9 @@ func (ix *Index) Search(raw string) Response {
 		}
 		if d.Announced > g.res.newest {
 			g.res.newest = d.Announced
+		}
+		if d.Latest > g.res.Latest {
+			g.res.Latest = d.Latest
 		}
 	}
 	for _, m := range order {

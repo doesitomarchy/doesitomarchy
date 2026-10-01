@@ -53,7 +53,7 @@ func TestSummarize(t *testing.T) {
 }
 
 func TestVerdictText(t *testing.T) {
-	for _, v := range []Verdict{NotCompatible, Untested, Unsupported, Partial, Supported} {
+	for _, v := range []Verdict{NotCompatible, Untested, Unsupported, Failed, Partial, Supported} {
 		if v.Glyph() == "" || v.Label() == "" {
 			t.Errorf("%s: missing glyph or label", v)
 		}

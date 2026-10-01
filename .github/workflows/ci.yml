@@ -23,6 +23,35 @@ jobs:
       - name: test
         run: go test -race ./...
       - name: build
-        run: CGO_ENABLED=0 go build -trimpath -o bin/doioma ./cmd/doioma
+        run: CGO_ENABLED=0 go build -trimpath -o bin/doiomad ./cmd/doiomad
       - name: validate catalog
-        run: ./bin/doioma validate
+        run: ./bin/doiomad validate
+
+  # Accessibility (axe-core) and layout checks against a running server, at
+  # phone and desktop widths and in every theme (PLAN.md §17.5).
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tools/uicheck/package-lock.json
+      - name: build
+        run: CGO_ENABLED=0 go build -trimpath -o bin/doiomad ./cmd/doiomad
+      - name: start server
+        run: |
+          ./bin/doiomad serve -demo -db "$RUNNER_TEMP/ui.db" -addr 127.0.0.1:8080 &
+          for i in $(seq 1 50); do curl -fs 127.0.0.1:8080/healthz && exit 0; sleep 0.2; done; exit 1
+      - name: install checker
+        working-directory: tools/uicheck
+        run: npm ci --no-audit --no-fund
+      - name: accessibility and layout
+        working-directory: tools/uicheck
+        env:
+          BASE: http://127.0.0.1:8080
+        run: CHROME="$(command -v google-chrome || command -v chromium)" node check.mjs

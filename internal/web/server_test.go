@@ -13,7 +13,6 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
-	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
@@ -33,7 +32,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 	if _, err := st.SyncCatalog(ctx, c, h); err != nil {
 		t.Fatal(err)
 	}
-	srv, err := New(st, search.Build(c, nil), slog.New(slog.NewTextHandler(io.Discard, nil)), "test")
+	srv, err := New(st, c, slog.New(slog.NewTextHandler(io.Discard, nil)), Options{Version: "test"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,12 +71,12 @@ func TestRoutes(t *testing.T) {
 		ctype        string
 	}{
 		{"GET", "/healthz", 200, "", "ok", "text/plain"},
-		{"GET", "/", 200, "", "0 / " + strconv.Itoa(eligible(t)) + " configs", "text/html"},
+		{"GET", "/", 200, "", "<span class=\"n\">0</span> / " + strconv.Itoa(eligible(t)), "text/html"},
 		{"GET", "/mac/MacBookPro5-1", 200, "", "MacBook Pro (15-inch, Late 2008)", "text/html"},
-		{"GET", "/mac/MacBookPro5-1", 200, "", "</span> Untested", "text/html"},
-		{"GET", "/mac/MacBookPro1-1", 200, "", "⛔ Not compatible", "text/html"},
-		{"GET", "/mac/MacBookPro5-1", 200, "", "Not counted in coverage: Released before 2009", "text/html"},
-		{"GET", "/mac/Xserve3-1", 200, "", "Not counted in coverage: Xserve (rack server)", "text/html"},
+		{"GET", "/mac/MacBookPro5-1", 200, "", "#v-untested\"></use></svg>Untested</span>", "text/html"},
+		{"GET", "/mac/MacBookPro1-1", 200, "", "<strong>Not compatible:</strong>", "text/html"},
+		{"GET", "/mac/MacBookPro5-1", 200, "", "Out of coverage scope · Released before 2009", "text/html"},
+		{"GET", "/mac/Xserve3-1", 200, "", "Out of coverage scope · Xserve (rack server)", "text/html"},
 		{"GET", "/", 200, "", "Released before 2009", "text/html"},
 		{"GET", "/mac/MacBookPro5,1", 301, "/mac/MacBookPro5-1", "", ""},
 		{"GET", "/mac/MacBookPro5%2C1", 301, "/mac/MacBookPro5-1", "", ""},
@@ -89,6 +88,25 @@ func TestRoutes(t *testing.T) {
 		{"POST", "/mac/MacBookPro5-1", 404, "", "", ""},
 		{"GET", "/static/site.css", 200, "", "--accent", "text/css"},
 		{"HEAD", "/", 200, "", "", "text/html"},
+		{"GET", "/criteria", 200, "", `id="line-macbook-pro"`, "text/html"},
+		{"GET", "/releases", 200, "", "MacBook Pro (16-inch, 2019)", "text/html"},
+		{"GET", "/configs", 200, "", "macbookpro8-2-15-late-2011-b", "text/html"},
+		{"GET", "/configs?scope=in", 200, "", "Configurations counted in coverage", "text/html"},
+		{"GET", "/configs?status=not-compatible", 200, "", "macbookpro1-1-15-early-2006-a", "text/html"},
+		{"GET", "/configs?excluded=Xserve+%28rack+server%29", 200, "", "xserve3-1", "text/html"},
+		{"GET", "/configs?q=gpu%3A6770m", 200, "", "imac12-2", "text/html"},
+		{"GET", "/components", 200, "", "pci:10de:0647", "text/html"},
+		{"GET", "/attribution", 200, "", "Omacom Foundation", "text/html"},
+		{"GET", "/changelog", 200, "", "MC118", "text/html"},
+		{"GET", "/", 200, "", `href="/changelog" title="Catalog changelog"`, "text/html"},
+		{"GET", "/", 200, "", "https://github.com/doesitomarchy/doesitomarchy/tree/main/data", "text/html"},
+		{"GET", "/methodology", 200, "", `id="criteria"`, "text/html"},
+		{"GET", "/mac/MacBookPro8-2", 200, "", "HD 6490M · Early 2011", "text/html"},
+		{"GET", "/mac/MacBookPro8-2?view=matrix", 200, "", `class="count-head"`, "text/html"},
+		{"GET", "/", 200, "", `Not officially affiliated with <a href="https://omarchy.org" rel="noopener">Omarchy</a> or the <a href="https://omarchy.org/foundation/" rel="noopener">Omacom Foundation</a>.`, "text/html"},
+		{"GET", "/", 200, "", `#WeCanFixEverything!</span> <a class="help" href="/contribute">You can help!</a>`, "text/html"},
+		{"GET", "/sitemap.xml", 200, "", "/mac/MacBookPro16-4", "application/xml"},
+		{"GET", "/robots.txt", 200, "", "Sitemap:", "text/plain"},
 		{"GET", "/search?q=mbp+2011", 200, "", `href="/mac/MacBookPro8-2"`, "text/html"},
 		{"GET", "/search?q=mbp+2011", 200, "", "<html", "text/html"},
 		{"GET", "/search?q=gpu%3A6770m", 200, "", `href="/mac/MacBookPro8-2#cfg-macbookpro8-2-15-late-2011-b"`, "text/html"},
@@ -96,8 +114,8 @@ func TestRoutes(t *testing.T) {
 		{"GET", "/search?q=chip%3At3", 200, "", "chip: expected none, t1 or t2", "text/html"},
 		{"GET", "/search?q=%3Cscript%3E", 200, "", "&lt;script&gt;", "text/html"},
 		{"GET", "/search", 200, "", `role="search"`, "text/html"},
-		{"GET", "/search/suggest?q=gp", 200, "", `href="/search?q=gpu%3a"`, "text/html"},
-		{"GET", "/search/suggest?q=gp+year%3A2012&cursor=2", 200, "", "gpu%3a%20year%3a2012", "text/html"},
+		{"GET", "/search/suggest?q=gp", 200, "", `href="/search?q=gpu%3A"`, "text/html"},
+		{"GET", "/search/suggest?q=gp+year%3A2012&cursor=2", 200, "", `data-query="gpu: year:2012"`, "text/html"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.method+" "+tt.path, func(t *testing.T) {

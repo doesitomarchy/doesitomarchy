@@ -1,7 +1,7 @@
 # Search nicknames. Each phrase stands for a query fragment (the search
 # syntax: field:value, values ORed with |, quoted when they contain commas or
 # spaces). Phrases are matched case-insensitively against consecutive words of
-# a query. `doioma validate` checks every entry parses and matches something.
+# a query. `doiomad validate` checks every entry parses and matches something.
 
 - match: [mbp, macbookpro, "macbook pro"]
   means: "line:macbook-pro"

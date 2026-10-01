@@ -1,4 +1,4 @@
-// Command doioma is the DoesItOmarchy.com server and admin tool.
+// Command doiomad is the DoesItOmarchy.com server and admin tool.
 package main
 
 import (
@@ -19,10 +19,10 @@ import (
 // version is set at build time: -ldflags "-X main.version=..."
 var version = "dev"
 
-const usage = `doioma — DoesItOmarchy.com server and admin tool
+const usage = `doiomad — DoesItOmarchy.com server and admin tool
 
 Usage:
-  doioma <command> [flags]
+  doiomad <command> [flags]
 
 Commands:
   serve      Run the web server (-addr :8080, -db FILE, -data DIR)
@@ -33,7 +33,7 @@ Commands:
   version    Print the version
   help       Show this help
 
--db defaults to $DOIOMA_DB, else ./doioma.db. serve and sync use the catalog
+-db defaults to $DOIOMAD_DB, else ./doesitomarchy.db. serve and sync use the catalog
 built into the binary unless -data DIR is given.
 `
 
@@ -64,7 +64,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprint(stdout, usage)
 		return 0
 	default:
-		fmt.Fprintf(stderr, "doioma: unknown command %q\n\n%s", cmd, usage)
+		fmt.Fprintf(stderr, "doiomad: unknown command %q\n\n%s", cmd, usage)
 		return 2
 	}
 }

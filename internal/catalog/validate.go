@@ -35,6 +35,7 @@ func (l *loader) validate() {
 	l.validateMacs()
 	l.validateCoverage()
 	l.validateAliases()
+	l.validateChangelog()
 	l.validateLock()
 }
 
@@ -366,7 +367,7 @@ func (l *loader) validateLock() {
 	}
 	for _, id := range ids {
 		if l.requireLocked && !locked[id] {
-			l.errf(path, "config ID %q is not locked yet; run: doioma lock", id)
+			l.errf(path, "config ID %q is not locked yet; run: doiomad lock", id)
 		}
 	}
 }

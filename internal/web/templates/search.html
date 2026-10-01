@@ -1,7 +1,4 @@
-{{define "content"}}{{with .Data}}
-<form action="/search" method="get" role="search">
-  <input type="search" name="q" value="{{.Q}}" aria-label="Search Intel Macs" placeholder="mbp 2015 gpu:amd" autofocus>
-  <button type="submit">Search</button>
-</form>
-{{template "results" .}}
-{{end}}{{end}}
+{{define "content"}}
+<h1 class="sr-only">Search</h1>
+{{template "searchbox" .Data}}
+{{end}}

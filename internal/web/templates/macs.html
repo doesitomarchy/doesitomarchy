@@ -1,0 +1,41 @@
+{{define "content"}}{{with .Data}}
+<h1>All Intel Macs</h1>
+<p class="muted">{{len .Rows}} of {{.Total}} model identifiers{{if .Q}} matching <code>{{.Q}}</code>{{end}}. Filter with the search syntax, e.g. <code>chip:t2</code>, <code>year:2012..2015</code>, <code>gpu:amd</code>. Dimmed rows are outside the coverage scope.</p>
+<form class="searchbox filter" action="/macs" method="get" role="search">
+  {{template "icon" "search"}}
+  <input type="search" name="q" value="{{.Q}}" aria-label="Filter Macs" placeholder="filter: mbp · year:>=2012 · chip:t2">
+  {{with .Sort}}<input type="hidden" name="sort" value="{{.}}">{{end}}
+  <button type="submit">Filter</button>
+</form>
+{{range .Errors}}<span class="chip-error" role="alert">{{.}}</span>{{end}}
+<div class="table-wrap" tabindex="0" role="region" aria-label="Table (scrolls sideways)">
+<table class="browse">
+  <thead><tr>
+    <th scope="col"><a href="/macs?q={{.Q}}&amp;sort=id"{{if eq .Sort "id"}} aria-sort="ascending"{{end}}>Identifier</a></th>
+    <th scope="col">Name</th>
+    <th scope="col"><a href="/macs?q={{.Q}}&amp;sort={{if eq .Sort "year"}}-year{{else}}year{{end}}"{{if eq .Sort "year"}} aria-sort="ascending"{{else if eq .Sort "-year"}} aria-sort="descending"{{end}}>Year</a></th>
+    <th scope="col">GPU</th>
+    <th scope="col">CPU</th>
+    <th scope="col">Chip</th>
+    <th scope="col" class="num"><a href="/macs?q={{.Q}}&amp;sort={{if eq .Sort "-configs"}}configs{{else}}-configs{{end}}"{{if eq .Sort "configs"}} aria-sort="ascending"{{else if eq .Sort "-configs"}} aria-sort="descending"{{end}}>Configs</a></th>
+    <th scope="col">Status</th>
+  </tr></thead>
+  <tbody>
+  {{$line := ""}}{{$grouped := .Grouped}}
+  {{range .Rows}}
+    {{if and $grouped (ne .LineName $line)}}{{$line = .LineName}}<tr class="line-break"><th colspan="8" scope="rowgroup">{{.LineName}}</th></tr>{{end}}
+    <tr{{if .OutOfScope}} class="oos"{{end}}>
+      <td><a class="ident slotted" href="/mac/{{.Slug}}">{{template "slot" .AllVerified}}{{.Identifier}}</a></td>
+      <td class="nowrap">{{.Title}}</td>
+      <td>{{.Years}}</td>
+      <td>{{joinlim .GPUs 2}}</td>
+      <td>{{join .Arch ", "}}</td>
+      <td>{{if .Chip}}{{.Chip}}{{else}}<span class="muted">—</span>{{end}}</td>
+      <td class="num">{{len .Configs}}</td>
+      <td class="vs">{{range .Verdicts}}{{template "verdict" .}}{{end}}{{with .OutOfScope}}<span class="tag scope" title="Out of coverage scope: {{.}}. Listed and testable, but not counted in the coverage figures.">Out of scope</span>{{end}}</td>
+    </tr>
+  {{end}}
+  </tbody>
+</table>
+</div>
+{{end}}{{end}}

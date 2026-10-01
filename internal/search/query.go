@@ -73,15 +73,16 @@ var fields = map[string]fieldSpec{
 	"chip":  {kKey, "chip", "none, t1 or t2"},
 	"efi":   {kKey, "efi", "32 or 64"},
 	"port":  {kKey, "port", ""}, "feature": {kKey, "feature", ""},
-	"status": {kKey, "status", "untested, supported, partial, unsupported or not-compatible"},
+	"status": {kKey, "status", "untested, supported, partial, failed, unsupported or not-compatible"},
 	"scope":  {kKey, "scope", "in or out"},
+	"tested": {kKey, "tested", "yes or no"},
 	"order":  {kNumberID, "order", ""}, "a": {kNumberID, "a", ""}, "emc": {kNumberID, "emc", ""},
 }
 
 // FieldNames lists the canonical field names, for suggestions and help.
 var FieldNames = []string{"id", "line", "form", "year", "release", "size", "display", "cpu", "arch", "cores",
 	"gpu", "wifi", "bt", "audio", "camera", "storage", "ethernet", "thunderbolt", "firewire", "reader", "input", "bridge",
-	"hw", "board", "chip", "efi", "port", "feature", "status", "scope", "order", "a", "emc"}
+	"hw", "board", "chip", "efi", "port", "feature", "status", "scope", "tested", "order", "a", "emc"}
 
 // token is one lexed piece of the query.
 type token struct {

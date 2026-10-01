@@ -1,0 +1,13 @@
+{{define "content"}}
+<h1>Catalog changelog</h1>
+<p class="muted">What changed in the catalog, newest first, and where it differs from common sources. Every change is in the <a href="{{.Site.CatalogURL}}" rel="noopener">catalog's history on GitHub</a>; this site is serving catalog <code>{{.Site.CatalogHash}}</code> from {{.Site.CatalogDate}}.</p>
+<ol class="changelog">
+{{range .Data}}
+  <li>
+    <h2><time datetime="{{.Date}}">{{.Date}}</time> · {{.Title}}</h2>
+    <p class="summary">{{.Summary}}</p>
+    {{with .Notes}}<ul>{{range .}}<li>{{.}}</li>{{end}}</ul>{{end}}
+  </li>
+{{end}}
+</ol>
+{{end}}

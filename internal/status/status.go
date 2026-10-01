@@ -7,13 +7,19 @@
 // Coverage stay the same, so the web UI does not change.
 package status
 
-// Verdict is a configuration's overall status.
+// Verdict is a configuration's overall status, and also a single
+// capability's status (every value except NotCompatible applies to both).
+//
+// Failed is what a failing test produces: something to fix, in keeping with
+// #WeCanFixEverything. Unsupported is a last resort that only maintainers
+// set, after repeated attempts to fix a failure have made no progress.
 type Verdict string
 
 const (
 	NotCompatible Verdict = "not-compatible"
 	Untested      Verdict = "untested"
 	Unsupported   Verdict = "unsupported"
+	Failed        Verdict = "failed"
 	Partial       Verdict = "partial"
 	Supported     Verdict = "supported"
 )
@@ -27,8 +33,10 @@ func (v Verdict) Glyph() string {
 		return "●"
 	case Partial:
 		return "◐"
+	case Failed:
+		return "✕"
 	case Unsupported:
-		return "○"
+		return "⚑"
 	default:
 		return "·"
 	}
@@ -43,6 +51,8 @@ func (v Verdict) Label() string {
 		return "Supported"
 	case Partial:
 		return "Partial"
+	case Failed:
+		return "Failed"
 	case Unsupported:
 		return "Unsupported"
 	default:
@@ -52,7 +62,7 @@ func (v Verdict) Label() string {
 
 // Counts tallies applicable capabilities by their current status.
 type Counts struct {
-	Supported, Partial, Unsupported, Untested int
+	Supported, Partial, Failed, Unsupported, Untested int
 }
 
 // ConfigInput is what the engine knows about one configuration.

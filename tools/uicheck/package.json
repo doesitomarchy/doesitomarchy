@@ -1,0 +1,11 @@
+{
+  "name": "doesitomarchy-uicheck",
+  "private": true,
+  "description": "Accessibility (axe-core) and layout checks for the DoesItOmarchy web UI. See README.md.",
+  "type": "module",
+  "scripts": { "check": "node check.mjs" },
+  "dependencies": {
+    "axe-core": "^4.10.0",
+    "puppeteer-core": "^24.0.0"
+  }
+}

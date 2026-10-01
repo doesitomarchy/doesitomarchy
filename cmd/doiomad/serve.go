@@ -17,29 +17,40 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
-	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 	"github.com/doesitomarchy/doesitomarchy/internal/web"
 )
 
 // dbFlags registers the flags shared by commands that open the database.
 func dbFlags(fs *flag.FlagSet) (db, dataDir *string) {
-	def := os.Getenv("DOIOMA_DB")
+	def := os.Getenv("DOIOMAD_DB")
 	if def == "" {
-		def = "doioma.db"
+		def = "doesitomarchy.db"
 	}
 	db = fs.String("db", def, "SQLite database file")
 	dataDir = fs.String("data", "", "catalog directory (default: the catalog built into this binary)")
 	return db, dataDir
 }
 
+// catalogDate is the date of the last catalog change, set at build time:
+// -ldflags "-X main.catalogDate=YYYY-MM-DD".
+var catalogDate = "unknown"
+
+// catalogCommit is the git commit of the last catalog change, set at build
+// time (-X main.catalogCommit=<sha>); the footer links the hash to it.
+var catalogCommit = ""
+
+func catalogFS(dataDir string) fs.FS {
+	if dataDir != "" {
+		return os.DirFS(dataDir)
+	}
+	return data.FS
+}
+
 // openSynced loads the catalog (embedded unless dataDir is set), opens and
 // migrates the database, and syncs the catalog into it.
 func openSynced(ctx context.Context, dbPath, dataDir string) (*store.Store, *catalog.Catalog, bool, error) {
-	var fsys fs.FS = data.FS
-	if dataDir != "" {
-		fsys = os.DirFS(dataDir)
-	}
+	fsys := catalogFS(dataDir)
 	c, err := catalog.LoadFS(fsys)
 	if err != nil {
 		return nil, nil, false, fmt.Errorf("catalog invalid:\n%w", err)
@@ -93,6 +104,7 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	db, dataDir := dbFlags(fs)
 	addr := fs.String("addr", "127.0.0.1:8080", "listen address")
+	demo := fs.Bool("demo", false, "design review only: show made-up results on a few configurations")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -107,9 +119,12 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	}
 	defer st.Close()
 	start := time.Now()
-	ix := search.Build(c, nil)
-	log.Info("search index built", "ms", time.Since(start).Milliseconds())
-	srv, err := web.New(st, ix, log, version)
+	hash, _ := catalog.HashFS(catalogFS(*dataDir))
+	if len(hash) > 10 {
+		hash = hash[:10]
+	}
+	srv, err := web.New(st, c, log, web.Options{Version: version, CatalogHash: hash, CatalogDate: catalogDate, CatalogCommit: catalogCommit, Demo: *demo})
+	log.Info("views and search index built", "ms", time.Since(start).Milliseconds(), "demo", *demo)
 	if err != nil {
 		log.Error("templates", "err", err)
 		return 1

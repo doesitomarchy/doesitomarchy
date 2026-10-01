@@ -3,14 +3,62 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Title}} · doesitomarchy</title>
-<link rel="stylesheet" href="/static/site.css">
+<title>{{.Title}} · DoesItOmarchy</title>
+<meta name="description" content="{{.Description}}">
+<meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false}'>
+<script src="{{asset "theme.js"}}"></script>
+<link rel="stylesheet" href="{{asset "themes.css"}}">
+<link rel="stylesheet" href="{{asset "site.css"}}">
+<link rel="icon" href="{{asset "favicon.svg"}}" type="image/svg+xml">
+<script src="{{asset "vendor/htmx.min.js"}}" defer></script>
+<script src="{{asset "site.js"}}" defer></script>
 </head>
 <body>
-<header><a href="/" class="brand">▣ doesitomarchy</a></header>
-<main>
+<a class="skip" href="#main">Skip to content</a>
+{{if .Site.Demo}}<div class="demo-banner" role="note">Design review: MacBookPro8,2, one iMac12,2 config, MacBookPro15,1, MacBookPro15,2 and MacBookPro16,2 show made-up results so every verdict is visible.</div>{{end}}
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true">▣</span>DoesItOmarchy</a>
+    <nav aria-label="Main">
+      <a href="/macs"{{if eq .Nav "macs"}} aria-current="page"{{end}}>Browse</a>
+      <a href="/criteria"{{if eq .Nav "criteria"}} aria-current="page"{{end}}>Criteria</a>
+      <a href="/stats"{{if eq .Nav "stats"}} aria-current="page"{{end}}>Stats</a>
+      <a href="/methodology"{{if eq .Nav "methodology"}} aria-current="page"{{end}}>Methodology</a>
+      <a href="/contribute"{{if eq .Nav "contribute"}} aria-current="page"{{end}}>Contribute</a>
+      <a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">{{template "icon" "github"}}GitHub</a>
+    </nav>
+    <div class="tools">
+      <a class="btn search-open" href="/search" data-open-search>{{template "icon" "search"}}Search <kbd>Ctrl K</kbd></a>
+      <label class="sr-only" for="theme">Theme</label>
+      <select class="btn" id="theme" hidden>
+        <option value="system">Theme: system</option>
+        {{range .Site.Themes}}<option value="{{.Key}}">{{.Name}}</option>
+        {{end}}
+      </select>
+    </div>
+  </div>
+</header>
+<main id="main">
 {{template "content" .}}
 </main>
-<footer>catalog data CC BY-SA 4.0 · code MIT · doioma {{.Version}}</footer>
+{{template "superfooter" .}}
+<dialog class="overlay" id="overlay" aria-label="Search Intel Macs">
+  <div data-search-scope>
+    <form class="searchbox" action="/search" method="get" role="search">
+      {{template "icon" "search"}}
+      <input type="search" name="q" autocomplete="off" spellcheck="false" aria-label="Search" placeholder="mbp 2015 · imac 27 · gpu:nvidia · A1278"
+        data-suggest="#overlay-suggest" hx-get="/search" hx-trigger="input changed delay:150ms, search" hx-target="#overlay-results" hx-swap="innerHTML">
+    </form>
+    <div class="body">
+      <ul class="suggest" id="overlay-suggest" aria-label="Suggestions"></ul>
+      <div id="overlay-results"></div>
+    </div>
+    <div class="foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Tab</kbd> complete</span><span><kbd>Esc</kbd> close</span></div>
+  </div>
+</dialog>
+<div class="konami" id="konami" hidden aria-live="assertive">
+  <p class="konami-tag">#WeCanFixEverything …</p>
+  <p class="konami-sub">Help contribute by submitting your Mac test via <a href="/contribute">doioma, the DoesItOmarchy test tool (coming soon)</a>!</p>
+</div>
 </body>
 </html>

@@ -41,6 +41,7 @@ type doc struct {
 	Label       string
 	ReleaseName string
 	Announced   string
+	Latest      string // newest accepted result date, "" if untested
 	year        float64
 	sizes       []float64
 	cores       []float64
@@ -51,12 +52,20 @@ type doc struct {
 	names       map[string][]string   // display values per field, for suggestions
 }
 
-// Verdicts gives each config's current verdict; Build falls back to the
-// catalog-only status (Untested / Not compatible) for configs not in it.
-type Verdicts map[string]status.Verdict
+// State is what the site currently knows about a config beyond the catalog.
+// Until Phase 7 every config is untested.
+type State struct {
+	Verdict status.Verdict
+	Tested  bool   // at least one accepted result
+	Latest  string // date of the newest accepted result (YYYY-MM-DD), for sort=recent
+}
+
+// States gives each config's state; Build falls back to the catalog-only
+// status (Untested / Not compatible) for configs not in it.
+type States map[string]State
 
 // Build indexes the catalog. Aliases come from c.Aliases.
-func Build(c *catalog.Catalog, verdicts Verdicts) *Index {
+func Build(c *catalog.Catalog, states States) *Index {
 	ix := &Index{
 		aliases: map[string]string{}, ids: map[string]bool{}, idFamilies: map[string]bool{},
 		keys: map[string]map[string]bool{}, dictSet: map[string]bool{}, suggest: map[string][]suggestion{},
@@ -78,11 +87,11 @@ func Build(c *catalog.Catalog, verdicts Verdicts) *Index {
 			for ci := range r.Configs {
 				cfg := &r.Configs[ci]
 				mi.configs++
-				v, ok := verdicts[cfg.ID]
+				st, ok := states[cfg.ID]
 				if !ok {
-					v = status.Config(status.ConfigInput{HardBlocker: m.HardBlocker}).Verdict
+					st.Verdict = status.Config(status.ConfigInput{HardBlocker: m.HardBlocker}).Verdict
 				}
-				ix.docs = append(ix.docs, ix.newDoc(c, m, mi, r, cfg, line, v))
+				ix.docs = append(ix.docs, ix.newDoc(c, m, mi, r, cfg, line, st))
 			}
 		}
 	}
@@ -129,7 +138,7 @@ func releaseSeason(name string) string {
 }
 
 func (ix *Index) newDoc(c *catalog.Catalog, m *catalog.Mac, mi *macInfo, r *catalog.Release, cfg *catalog.Config,
-	line catalog.Line, v status.Verdict) *doc {
+	line catalog.Line, st State) *doc {
 	d := &doc{
 		mac: mi, ConfigID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, Announced: r.Announced,
 		id: normID(m.Identifier), keys: map[string][]string{}, text: map[string][][]string{}, names: map[string][]string{},
@@ -161,7 +170,13 @@ func (ix *Index) newDoc(c *catalog.Catalog, m *catalog.Mac, mi *macInfo, r *cata
 	addKey("chip", m.SecurityChip)
 	addKey("efi", strconv.Itoa(m.EFI))
 	addKey("release", releaseSeason(r.Name))
-	addKey("status", string(v))
+	addKey("status", string(st.Verdict))
+	d.Latest = st.Latest
+	if st.Tested {
+		addKey("tested", "yes")
+	} else {
+		addKey("tested", "no")
+	}
 	if c.CoverageExclusion(m, r) != "" {
 		addKey("scope", "out")
 	} else {

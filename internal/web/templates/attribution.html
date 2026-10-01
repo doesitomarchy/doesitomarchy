@@ -1,0 +1,27 @@
+{{define "content"}}
+<h1>Attribution</h1>
+<p class="muted">DoesItOmarchy is a community site, not affiliated with Omarchy or the Omacom Foundation. It is built on the work of others; thank you.</p>
+<div class="paper">
+<section>
+<h2>Brand and design</h2>
+<ul>
+  <li><strong>Omarchy logo</strong> {{template "badge"}}: from <a href="https://omarchy.org/brand/" rel="noopener">omarchy.org/brand</a>. Omarchy is a pending trademark of its owners. The mark is shown on configurations that passed every test.</li>
+  <li><strong>Colour themes</strong>: palettes from the 22 <a href="https://github.com/basecamp/omarchy/tree/master/themes" rel="noopener">Omarchy themes</a> (MIT), adjusted where needed to meet WCAG AA contrast.</li>
+  <li><strong>Icons</strong>: <a href="https://lucide.dev" rel="noopener">Lucide</a> (ISC) for categories and interface; the GitHub mark from <a href="https://primer.style/octicons" rel="noopener">Primer Octicons</a> (MIT); verdict icons drawn for this site.</li>
+  <li><strong>Fonts</strong>: <a href="https://www.jetbrains.com/lp/mono/" rel="noopener">JetBrains Mono</a> and <a href="https://rsms.me/inter/" rel="noopener">Inter</a>, both under the SIL Open Font License.</li>
+  <li><strong>HTMX</strong>: <a href="https://htmx.org" rel="noopener">htmx.org</a> (0BSD).</li>
+</ul>
+</section>
+<section>
+<h2>Data</h2>
+<ul>
+  <li><strong>Test criteria</strong>: generalised from Boyd's Vintage Mac Compatibility Test Criteria.</li>
+  <li><strong>Hardware probes</strong>: <a href="https://github.com/linuxhw" rel="noopener">linuxhw</a> LsPCI, LsUSB and Dmesg datasets, from real Linux machines.</li>
+  <li><strong>Board IDs and model metadata</strong>: the <a href="https://github.com/acidanthera/OpenCorePkg/tree/master/AppleModels" rel="noopener">OpenCore AppleModels database</a> (BSD-3-Clause).</li>
+  <li><strong>Specifications</strong>: Apple Support identification and Tech Specs pages, and <a href="https://everymac.com" rel="noopener">EveryMac</a>; each model page links its sources.</li>
+  <li><strong>PCI device names</strong>: the <a href="https://pci-ids.ucw.cz" rel="noopener">PCI ID Repository</a>.</li>
+</ul>
+<p>The catalog itself is published under CC BY-SA 4.0 and the site's code under MIT, in the <a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">DoesItOmarchy repository</a>.</p>
+</section>
+</div>
+{{end}}
