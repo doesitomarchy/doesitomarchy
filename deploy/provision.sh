@@ -7,6 +7,8 @@
 # Environment:
 #   DO_CONTEXT     doctl profile (default: doesitomarchy)
 #   DO_PROJECT     DigitalOcean project for the droplet (default: DoesItOmarchy; must exist)
+#   PRIMARY        the production droplet's name (default: doiomad-1). Only it
+#                  replicates to R2; any other NAME restores from R2 and stops there.
 #   ADMIN_USER     admin login on the droplet (default: $USER)
 #   ADMIN_KEY      admin public key (default: ~/.ssh/ThinkPad_om_key.pub)
 #   DEPLOY_KEY     deploy private key, created if missing (default: ~/.ssh/doesitomarchy_deploy)
@@ -16,7 +18,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-NAME=${1:-doiomad-1}
+PRIMARY=${PRIMARY:-doiomad-1}
+NAME=${1:-$PRIMARY}
+REPLICATE=0
+[ "$NAME" = "$PRIMARY" ] && REPLICATE=1
 CTX=${DO_CONTEXT:-doesitomarchy}
 ADMIN_USER=${ADMIN_USER:-$USER}
 ADMIN_KEY=${ADMIN_KEY:-$HOME/.ssh/ThinkPad_om_key.pub}
@@ -86,7 +91,7 @@ fi
 step "running setup.sh"
 tar -czf - setup.sh root | ssh "${ssh_opts[@]}" "$ADMIN_USER@$ip" \
 	"rm -rf /tmp/doiomad-setup && mkdir /tmp/doiomad-setup && tar -xzf - -C /tmp/doiomad-setup &&
-	 sudo ADMIN_USER='$ADMIN_USER' DEPLOY_PUBKEY='$(cat "$DEPLOY_KEY.pub")' /tmp/doiomad-setup/setup.sh &&
+	 sudo ADMIN_USER='$ADMIN_USER' REPLICATE=$REPLICATE DEPLOY_PUBKEY='$(cat "$DEPLOY_KEY.pub")' /tmp/doiomad-setup/setup.sh &&
 	 rm -rf /tmp/doiomad-setup"
 
 if [ "${SET_GITHUB_SECRETS:-}" = 1 ]; then

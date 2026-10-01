@@ -114,7 +114,9 @@ This removes the Access application, so the site becomes public.
 Do this once in Phase 5 and after any change to backups. Record the results below.
 
 1. Provision a spare: `deploy/provision.sh doiomad-restore` (same R2 env vars,
-   no `SET_GITHUB_SECRETS`). setup.sh restores the database from R2.
+   no `SET_GITHUB_SECRETS`). setup.sh restores the database from R2. Only the
+   primary (`doiomad-1`) runs Litestream; a spare must never write to the
+   replica, so the script leaves it off on any other name.
 2. Install the live release on it:
    `gh release download <tag> -p 'doiomad-linux-amd64*'`, then copy the binary
    over and run `sudo doiomad-deploy install <tag> <sha256> < doiomad-linux-amd64`
@@ -126,7 +128,7 @@ Do this once in Phase 5 and after any change to backups. Record the results belo
 
 | Date | Release | Provision → restored | Restored → healthy | Notes |
 |---|---|---|---|---|
-| | | | | |
+| 2026-10-01 | v0.5.1 | 3 min 40 s (droplet create + setup, restore included) | 2 s (install → `ok v0.5.1`) | integrity_check ok; schema 2; counts match production. The spare's Litestream ran for 10 s and wrote to the replica (fixed: spares no longer replicate; production moved to a fresh `live/` path). |
 
 ## Rotating secrets
 

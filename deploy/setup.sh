@@ -5,6 +5,9 @@
 #
 #   ADMIN_USER   the admin login created by cloud-init (required)
 #   DEPLOY_PUBKEY public key for the deploy user (required on first run)
+#   REPLICATE=1   run Litestream (the primary only). Any other server, such as a
+#                 restore-rehearsal spare, restores from R2 but must never
+#                 write to the same replica.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -90,7 +93,10 @@ fi
 step "services"
 systemctl enable doiomad.service
 [ -e /opt/doiomad/current ] && systemctl restart doiomad.service || echo "  doiomad: no release yet; the first deploy starts it"
-if [ -f /etc/doiomad/litestream.env ]; then
+if [ "${REPLICATE:-}" != 1 ]; then
+	systemctl disable --now -q litestream.service 2>/dev/null || true
+	echo "  litestream: off (not the primary; restore only)"
+elif [ -f /etc/doiomad/litestream.env ]; then
 	systemctl enable litestream.service
 	systemctl restart litestream.service
 else
