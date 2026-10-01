@@ -18,7 +18,8 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+/* Always reserve the scrollbar's width, so short and long pages line up. */
+html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
   font: 14px/1.5 var(--mono); font-variant-numeric: tabular-nums;
@@ -104,7 +105,7 @@ svg.bar.ok rect { fill: var(--ok); }
 .hero { max-width: 54rem; margin: 1rem auto 0; }
 .hero h1 { font-size: clamp(1.4rem, 3.5vw, 2rem); margin-bottom: 1.25rem; }
 .hero h1 .q { color: var(--accent); }
-.hero-cov { margin-top: 2rem; }
+.hero-cov { margin-top: 2.75rem; }
 .searchbox { display: flex; border: 1px solid var(--line-strong); background: var(--panel); }
 .searchbox:focus-within { border-color: var(--accent); }
 .searchbox svg.i { margin: 0 0.6rem; align-self: center; color: var(--muted); width: 1.1em; height: 1.1em; }
@@ -114,7 +115,7 @@ svg.bar.ok rect { fill: var(--ok); }
 .presets { display: flex; flex-wrap: wrap; gap: 0.3rem 0; margin: 0.7rem 0 0; padding: 0; list-style: none; font-size: 12px; letter-spacing: -0.01em; }
 .presets li { white-space: nowrap; }
 .presets li + li::before { content: "/"; color: var(--line-strong); margin: 0 0.4rem; }
-.hints { margin-top: 2rem; font-size: 12px; color: var(--muted); }
+.hints { margin: 1.25rem 0 0; font-size: 12px; color: var(--muted); }
 .hints code { color: var(--text); }
 
 /* ── suggestions / results ──────────────────────────────────────────── */
@@ -246,7 +247,16 @@ thead th { color: var(--muted); font-weight: 500; font-size: 12px; }
 .browse th a { color: var(--muted); } .browse th a[aria-sort] { color: var(--text); }
 .browse tbody tr:hover { background: var(--panel); }
 .browse td.num { text-align: right; }
-.browse tr.line-break th { background: var(--bg); color: var(--heading); font-size: 13px; padding-top: 0.9rem; }
+.browse tr.line-break th { background: var(--bg); color: var(--heading); font-size: 17px; padding-top: 1.1rem; }
+/* Product-line icons (m-* in icons.svg): drawn for 28px and up, used sparingly. */
+svg.machine { width: 28px; height: 28px; flex: none; color: var(--heading); }
+.gh { display: flex; align-items: center; gap: 0.65rem; }
+h2.gh { font-size: 17px; }
+.mac-head h1 svg.machine { width: 40px; height: 40px; margin-right: 0.6rem; color: var(--text); }
+/* Row links: the identifier link stretches over its whole row, like a search result. */
+.rowlinks tbody tr { position: relative; }
+.rowlinks tbody td:first-child a::after { content: ""; position: absolute; inset: 0; }
+.rowlinks tbody tr:hover td:first-child a { text-decoration: underline; }
 .browse td.vs { display: table-cell; }
 .browse td.vs > * { margin: 0 0.25rem 0.2rem 0; }
 .comps td.macs { font-size: 12px; max-width: 26rem; }
@@ -259,17 +269,22 @@ thead th { color: var(--muted); font-weight: 500; font-size: 12px; }
 .hbar svg { display: block; width: 100%; height: 8px; background: var(--bg); border: 1px solid var(--line); }
 .hbar svg rect { fill: var(--accent); }
 .hbar .n { text-align: right; color: var(--muted); }
+a.hbar { color: var(--text); margin: 0 -0.35rem; padding: 0.1rem 0.35rem; }
+a.hbar:hover { background: var(--bg); text-decoration: none; }
+a.hbar:hover span:first-child { text-decoration: underline; }
 
 /* ── prose pages: two columns, like a paper ─────────────────────────── */
 .paper { display: grid; grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr)); gap: 0 2.5rem; font: 15px/1.6 var(--sans); }
 .paper h2 { font-family: var(--mono); margin-top: 1.25rem; }
 .paper code, .paper kbd { font-family: var(--mono); font-size: 13px; }
 .wide-p { font: 15px/1.6 var(--sans); }
-.verdict-list { list-style: none; padding: 0; display: grid; gap: 0.4rem; }
-.verdict-list .verdict { margin-right: 0.4rem; }
+/* Definition tables (verdicts, coverage) inside the methodology's prose. */
+table.defs { margin: 0.25rem 0 1rem; font: 14px/1.5 var(--sans); }
+table.defs th[scope="row"] { white-space: nowrap; color: var(--heading); font: 500 13px/1.5 var(--mono); width: 1%; }
+.mark-label { display: inline-flex; align-items: center; }
 h2#criteria { margin-top: 2rem; }
 h2.sources-h { margin-top: 2.5rem; }
-p.sources { font: 11px/1.55 var(--sans); color: var(--muted); max-width: 110ch; }
+p.sources { font: 11px/1.55 var(--sans); color: var(--muted); }
 .crit th.catcell { white-space: nowrap; color: var(--heading); background: var(--panel); font-weight: 500; }
 .crit tbody td { font: 13.5px/1.45 var(--sans); }
 .crit tbody td:first-of-type { font-family: var(--mono); font-size: 13px; color: var(--text); }
@@ -311,14 +326,22 @@ dialog.overlay .foot { border-top: 1px solid var(--line); padding: 0.35rem 0.7re
 .rally .help:hover { text-decoration: none; filter: brightness(1.08); }
 
 /* ── Konami easter egg ──────────────────────────────────────────────── */
-.konami { position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; text-align: center; padding: 2rem; background: color-mix(in srgb, var(--bg) 82%, transparent); }
+.konami { position: fixed; inset: 0; z-index: 100; background: color-mix(in srgb, var(--bg) 86%, transparent); opacity: 0; transition: opacity 0.45s ease; }
+.konami.on { opacity: 1; }
 .konami[hidden] { display: none; }
-.konami-tag { font: 700 clamp(2rem, 7vw, 4.5rem)/1.1 var(--mono); color: var(--accent); margin: 0 0 1rem; }
+/* The message sits in the dimmed space above the footer; --fit shrinks it on short screens. */
+.konami-msg { position: absolute; inset: 0 0 auto; display: grid; place-content: center; text-align: center; padding: 1rem 2rem; opacity: 0; transition: opacity 0.4s ease; }
+.konami.msg .konami-msg { opacity: 1; }
+.konami-msg > div { transform: scale(var(--fit, 1)); display: grid; justify-items: center; }
+.konami-tag { font: 700 clamp(2rem, 7vw, 4.5rem)/1.1 var(--mono); color: var(--accent); margin: 0 0 1rem; white-space: nowrap; }
 .konami-sub { font: 500 clamp(1rem, 2.4vw, 1.4rem)/1.5 var(--mono); color: var(--heading); max-width: 40ch; margin: 0 auto; }
+/* The coverage column stays lit above the dimmed page. */
+body.konami-lit .super .c-cov { position: relative; z-index: 101; background: var(--panel); box-shadow: 0 0 0 0.9rem var(--panel); }
 body.flash { background: var(--accent); }
 body.flash > * { visibility: hidden; }
 
 @media (max-width: 760px) {
+  .konami { background: color-mix(in srgb, var(--bg) 94%, transparent); }
   .super .cols { grid-template-columns: 1fr 1fr; }
   .super .c-cov { grid-column: 1 / -1; }
 }

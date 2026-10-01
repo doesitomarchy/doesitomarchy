@@ -2,11 +2,14 @@ package web
 
 import (
 	"context"
+	"html"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -183,6 +186,13 @@ func TestSearchPartial(t *testing.T) {
 	if v := res.Header.Get("Vary"); v != "HX-Request" {
 		t.Errorf("Vary = %q", v)
 	}
+	// Cloudflare ignores Vary: a cached fragment would be served as an unstyled page.
+	if cc := res.Header.Get("Cache-Control"); !strings.Contains(cc, "no-store") {
+		t.Errorf("fragment Cache-Control = %q, want no-store", cc)
+	}
+	if full, err := ts.Client().Get(ts.URL + "/search?q=xserve"); err != nil || !strings.Contains(full.Header.Get("Cache-Control"), "s-maxage") {
+		t.Errorf("full page should stay cacheable: %v %q", err, full.Header.Get("Cache-Control"))
+	}
 	long := strings.Repeat("a", 5000)
 	if res, err := ts.Client().Get(ts.URL + "/search?q=" + long); err != nil || res.StatusCode != 200 {
 		t.Fatalf("long query: %v %v", err, res.StatusCode)
@@ -203,8 +213,72 @@ func TestEveryMacPageRenders(t *testing.T) {
 		}
 		body, _ := io.ReadAll(res.Body)
 		res.Body.Close()
-		if res.StatusCode != 200 || !strings.Contains(string(body), "<h1>"+m.Identifier+"</h1>") {
+		if res.StatusCode != 200 || !strings.Contains(string(body), m.Identifier+"</h1>") {
 			t.Errorf("%s: status %d", m.Identifier, res.StatusCode)
+		}
+		icon := "#m-" + m.Line + `"`
+		if m.Identifier == "MacPro6,1" {
+			icon = "#m-mac-pro-2013" + `"`
+		}
+		if h1 := string(body)[strings.Index(string(body), "<h1>"):]; !strings.Contains(h1[:strings.Index(h1, "</h1>")], icon) {
+			t.Errorf("%s: heading should use icon %s", m.Identifier, icon)
+		}
+	}
+}
+
+// Every row on the stats page links to a configuration list with exactly
+// the number of rows the stats page shows.
+func TestStatsLinksMatchCounts(t *testing.T) {
+	ts := newTestServer(t)
+	get := func(path string) string {
+		t.Helper()
+		res, err := ts.Client().Get(ts.URL + path)
+		if err != nil || res.StatusCode != 200 {
+			t.Fatalf("%s: %v %v", path, err, res.StatusCode)
+		}
+		b, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		return string(b)
+	}
+	stats := get("/stats")
+	rows := regexp.MustCompile(`<a class="hbar" href="([^"]+)"><span>([^<]*)</span>.*?<span class="n">(\d+)</span></a>`).FindAllStringSubmatch(stats, -1)
+	if len(rows) < 20 {
+		t.Fatalf("only %d linked stats rows", len(rows))
+	}
+	count := regexp.MustCompile(`<p class="muted">(\d+) configurations\.`)
+	for _, r := range rows {
+		href := html.UnescapeString(r[1])
+		m := count.FindStringSubmatch(get(href))
+		if m == nil || m[1] != r[3] {
+			t.Errorf("%s (%s): stats shows %s, list shows %v", r[2], href, r[3], m)
+		}
+	}
+}
+
+func TestFooterReleaseLink(t *testing.T) {
+	for v, want := range map[string]string{
+		"v0.5.1": RepoURL + "/releases/tag/v0.5.1", "v1.0.0-rc.1": RepoURL + "/releases/tag/v1.0.0-rc.1",
+		"dev": "", "2522443-dirty": "", "v0.5": "",
+	} {
+		if got := releaseURL(v); got != want {
+			t.Errorf("releaseURL(%q) = %q, want %q", v, got, want)
+		}
+	}
+}
+
+// Every product line (and every per-identifier override) has an icon in the sprite.
+func TestMachineIcons(t *testing.T) {
+	c, err := catalog.LoadFS(data.FS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sprite, err := fs.ReadFile(staticFS, "static/icons.svg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range c.Macs {
+		if id := `id="m-` + machineIcon(m) + `"`; !strings.Contains(string(sprite), id) {
+			t.Errorf("%s: icons.svg has no %s", m.Identifier, id)
 		}
 	}
 }

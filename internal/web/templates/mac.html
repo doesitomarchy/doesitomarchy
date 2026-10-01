@@ -1,7 +1,7 @@
 {{define "content"}}{{$d := .Data}}{{with .Data.Mac}}
 <article>
 <header class="mac-head">
-  <h1>{{if .AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</h1>
+  <h1>{{template "machine" .Icon}}{{if .AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</h1>
   <p class="sub slash"><b>{{.Title}}</b><span>{{.LineName}}</span><span>{{.Years}}</span><span>EFI {{.EFI}}-bit</span><span>{{if .Chip}}{{.Chip}}{{else}}no security chip{{end}}</span></p>
   <p class="sub">{{range .Verdicts}}{{template "verdict" .}} {{end}}<span class="muted">{{.Tested}} of {{len .Configs}} {{plural (len .Configs) "configuration" "configurations"}} tested</span></p>
 </header>

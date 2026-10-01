@@ -7,11 +7,11 @@
   <section class="panel"><h2>Test results</h2><p>No results yet. Testing opens with the submission API.</p>
     <p class="muted">Once results arrive, this panel shows results accepted, most-tested models and the capabilities that fail most often.</p></section>
   <section class="panel"><h2>Configurations by product line</h2>
-    {{range .Lines}}<div class="hbar"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></div>{{end}}</section>
+    {{range .Lines}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}</section>
   <section class="panel"><h2>Configurations by release year</h2>
-    {{range .Years}}<div class="hbar"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></div>{{end}}</section>
+    {{range .Years}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}</section>
   {{range .Top}}<section class="panel"><h2>{{.Title}}</h2>
-    {{range .Rows}}<div class="hbar"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></div>{{end}}
-    <p class="muted">Counted per configuration.</p></section>{{end}}
+    {{range .Rows}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}
+    <p class="muted">Counted per configuration. Select a row to list them.</p></section>{{end}}
 </div>
 {{end}}{{end}}

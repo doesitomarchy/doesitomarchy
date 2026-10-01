@@ -68,6 +68,7 @@ type macView struct {
 	Slug          string
 	LineKey       string
 	LineName      string
+	Icon          string // product-line icon in icons.svg (m-<Icon>)
 	Title         string // newest release name
 	Years         string // "2009" or "2009–2010"
 	FirstYear     int
@@ -417,6 +418,15 @@ func lessIdentifier(a, b string) bool {
 	return na < nb
 }
 
+// machineIcon is a Mac's icon: its product line's, except where one
+// identifier looks nothing like the rest of its line.
+func machineIcon(m *catalog.Mac) string {
+	if m.Identifier == "MacPro6,1" { // the 2013 cylinder, among cheese-grater towers
+		return "mac-pro-2013"
+	}
+	return m.Line
+}
+
 type stateFunc func(*catalog.Mac, *catalog.Config, string, []catalog.Capability) state
 
 func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc) *macView {
@@ -424,6 +434,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc) *macView {
 		Identifier: m.Identifier, Slug: catalog.FileSlug(m.Identifier), LineKey: m.Line, LineName: c.Vocab.Lines[m.Line].Name,
 		EFI: m.EFI, HardBlocker: m.HardBlocker, ResearchNotes: m.ResearchNotes, BoardIDs: m.BoardIDs, Sources: m.Sources,
 	}
+	mv.Icon = machineIcon(m)
 	if m.SecurityChip != "none" {
 		mv.Chip = c.Vocab.SecurityChips[m.SecurityChip].Name
 	}
