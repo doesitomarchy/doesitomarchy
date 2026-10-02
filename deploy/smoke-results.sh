@@ -28,28 +28,31 @@ sqlite3 /var/lib/doiomad/doesitomarchy.db ".backup '$T/smoke.db'"
 PID=$!
 for _ in $(seq 50); do curl -fs 127.0.0.1:$PORT/healthz >/dev/null && break; sleep 0.2; done
 page() { curl -fs "127.0.0.1:$PORT$1"; }
+# has PATH TEXT: the page contains TEXT. The page is fetched in full first:
+# piping curl into grep -q under pipefail fails whenever grep stops early.
+has() { local b; b=$(page "$1") || return 1; grep -qF -- "$2" <<<"$b"; }
 wait_for() { # wait_for PATH TEXT [absent]
 	for _ in $(seq 40); do
-		if page "$1" | grep -q "$2"; then [ "${3:-}" != absent ] && return 0; else [ "${3:-}" = absent ] && return 0; fi
+		if has "$1" "$2"; then [ "${3:-}" != absent ] && return 0; else [ "${3:-}" = absent ] && return 0; fi
 		sleep 0.5
 	done
 	echo "FAIL: $1 ${3:-has} '$2'" >&2; exit 1
 }
-tested_before=$(page / | grep -o 'class="n">[0-9]*</span> /' | sed -n 2p)
+tested_before=$(b=$(page /); grep -o 'class="n">[0-9]*</span> /' <<<"$b" | sed -n 2p)
 ID=$(cat "$T/fixture.yaml" | "$BIN" reports import -db "$T/smoke.db" - | awk '/^report [0-9a-f]+ · pending/ {print $2}')
 [ -n "$ID" ] || { echo "FAIL: import" >&2; exit 1; }
 sleep 2
-page /mac/MacBookPro15-2 | grep -q 'href="/report/'"$ID"'"' && { echo "FAIL: a pending report is visible" >&2; exit 1; }
+has /mac/MacBookPro15-2 'href="/report/'"$ID"'"' && { echo "FAIL: a pending report is visible" >&2; exit 1; }
 echo "ok   import $ID: pending, nothing visible"
 DOIOMAD_DB="$T/smoke.db" "$BIN" reports accept "$ID" >/dev/null
 wait_for /mac/MacBookPro15-2 'href="/report/'"$ID"'"'
-page /mac/MacBookPro15-2 | grep -q 'Blocked by: Graphics → External display output' || { echo "FAIL: blocker" >&2; exit 1; }
-page /report/$ID | grep -q "Diagnostic Report" || { echo "FAIL: report page" >&2; exit 1; }
-page /report/$ID | grep -q 'C02XG0FDH7JY' && { echo "FAIL: serial number on the report page" >&2; exit 1; }
+has /mac/MacBookPro15-2 'Blocked by: Graphics → External display output' || { echo "FAIL: blocker" >&2; exit 1; }
+has /report/$ID "Diagnostic Report" || { echo "FAIL: report page" >&2; exit 1; }
+has /report/$ID 'C02XG0FDH7JY' && { echo "FAIL: serial number on the report page" >&2; exit 1; }
 echo "ok   accept: model page, blocker and report page updated without a restart"
 DOIOMAD_DB="$T/smoke.db" "$BIN" reports retract "$ID" -reason "smoke test" >/dev/null
 wait_for /mac/MacBookPro15-2 'Latest diagnostic report <a href="/report/'"$ID"'"' absent
-tested_after=$(page / | grep -o 'class="n">[0-9]*</span> /' | sed -n 2p)
+tested_after=$(b=$(page /); grep -o 'class="n">[0-9]*</span> /' <<<"$b" | sed -n 2p)
 [ "$tested_before" = "$tested_after" ] || { echo "FAIL: coverage did not return ($tested_before → $tested_after)" >&2; exit 1; }
 echo "ok   retract: back to the previous state"
 cmp -s <(sqlite3 /var/lib/doiomad/doesitomarchy.db "SELECT count(*) FROM results") <(echo 0) || echo "note: production holds real results (untouched)"
