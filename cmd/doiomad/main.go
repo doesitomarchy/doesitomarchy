@@ -13,6 +13,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/report"
+	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 )
 
@@ -101,6 +102,11 @@ func cmdValidate(args []string, stdout, stderr io.Writer) int {
 	}
 	c, err := catalog.Load(dir)
 	if err != nil {
+		fmt.Fprintf(stderr, "catalog invalid:\n%v\n", err)
+		return 1
+	}
+	// Each source's mapping must name real criteria.
+	if _, err := results.LoadMapping(catalogFS(dir), "omacdiag", c); err != nil {
 		fmt.Fprintf(stderr, "catalog invalid:\n%v\n", err)
 		return 1
 	}

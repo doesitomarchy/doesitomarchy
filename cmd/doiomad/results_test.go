@@ -185,3 +185,19 @@ func TestSharesCLI(t *testing.T) {
 		t.Errorf("reviewed group still listed:\n%s", out)
 	}
 }
+
+func TestImportOmacDiag(t *testing.T) {
+	db := filepath.Join(t.TempDir(), "o.db")
+	t.Setenv("SUDO_USER", "carl")
+	var out, errb bytes.Buffer
+	fixture := "../../internal/results/fixtures/omacdiag-mbp113.json"
+	if code := run([]string{"reports", "import", "-db", db, "-format", "omacdiag", fixture}, &out, &errb); code == 0 || !strings.Contains(errb.String(), "-omarchy") {
+		t.Fatalf("without -omarchy: exit %d\n%s", code, errb.String())
+	}
+	out.Reset()
+	errb.Reset()
+	code := run([]string{"reports", "import", "-db", db, "-format", "omacdiag", "-omarchy", "4.0.4", "-tester", "carl", fixture}, &out, &errb)
+	if code != 0 || !strings.Contains(out.String(), "macbookpro11-3-15-late-2013-a") || !strings.Contains(out.String(), "flag: driver_missing") {
+		t.Fatalf("import: exit %d\n%s%s", code, out.String(), errb.String())
+	}
+}

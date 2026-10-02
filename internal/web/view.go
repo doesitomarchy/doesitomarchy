@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"io/fs"
 	"regexp"
 	"sort"
 	"strconv"
@@ -46,6 +47,9 @@ type Options struct {
 	// AdminInsecure opens /admin without Access, for local development only
 	// (serve refuses it unless listening on a loopback address).
 	AdminInsecure bool
+	// CatalogFS holds the catalog's data files, for source mappings
+	// (data/sources); nil means the catalog built into the binary.
+	CatalogFS fs.FS
 }
 
 type site struct {

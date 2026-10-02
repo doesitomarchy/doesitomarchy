@@ -193,3 +193,12 @@ func (s *Store) Maintainers(ctx context.Context) ([]Maintainer, error) {
 	}
 	return out, rows.Err()
 }
+
+// EnsureSource registers a source without a key, if it isn't already, so a
+// maintainer can import its native reports (PLAN §24). It can't submit
+// through the API until it's given a key (sources rotate).
+func (s *Store) EnsureSource(ctx context.Context, id, name, homepage string) error {
+	_, err := s.db.ExecContext(ctx, "INSERT INTO sources (id, name, homepage, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
+		NormalizeSourceID(id), name, homepage, now())
+	return err
+}

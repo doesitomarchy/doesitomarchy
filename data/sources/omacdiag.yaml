@@ -1,0 +1,80 @@
+# OmacDiag (https://github.com/sonique6784/omacdiag): how its checks map to
+# DoesItOmarchy criteria (PLAN.md §22.10, §24). Reviewed by PR like the rest
+# of the catalog.
+#
+# OmacDiag builds check IDs per machine from Linux device names, so checks are
+# matched by rules: the first rule whose conditions all hold wins.
+#   kind      the device kind (gpu, camera, speaker, …)
+#   probe     the check type in OmacDiag's plan (camera, speaker, manual, …)
+#   check     the check's name: the part of its ID after the device ("capture")
+#   attrs     device attributes that must equal these values
+#   contains  device attributes that must contain these strings
+#   excludes  device attributes that must not contain these strings
+#   to        the criterion; "extra" keeps the check as an unmapped extra
+#   method    fixture, when the check verifies known media; otherwise the
+#             method is observed (a technician recorded a verdict) or automatic
+# Checks no rule matches are kept as extras.
+id: omacdiag
+name: OmacDiag
+homepage: https://github.com/sonique6784/omacdiag
+format: omacdiag/report/v1
+
+rules:
+  # Graphics: Intel Macs have Intel integrated graphics; any other GPU is discrete.
+  - { kind: gpu, check: render, attrs: { vendor: "0x8086" }, to: graphics.integrated }
+  - { kind: gpu, check: render, to: graphics.discrete }
+  # Displays: the built-in panel, or an external connector.
+  - { kind: display, attrs: { internal: "true" }, to: display.native-resolution }
+  - { kind: display, to: graphics.external-display }
+  # Input.
+  - { kind: keyboard, check: keys, to: input.keyboard }
+  - { kind: trackpad, check: input, to: input.trackpad }
+  - { kind: keyboard_backlight, to: input.keyboard-backlight }
+  - { kind: touch_bar, to: input.touch-bar }
+  # Power.
+  - { kind: battery, check: health, to: power.battery-status }
+  - { kind: battery, check: charging, to: power.charging }
+  # Audio: analog outputs are the speakers; HDMI/DisplayPort outputs are display audio.
+  - { kind: speaker, attrs: { playback_route: analog }, to: audio.speakers }
+  - { kind: speaker, attrs: { playback_route: display }, to: audio.display-out }
+  - { kind: microphone, attrs: { physical_input: "true" }, to: audio.microphone }
+  - { kind: audio_jack, check: headset, to: audio.headphone }
+  # Camera.
+  - { kind: camera, to: camera.builtin }
+  # Networking: real interfaces only (not virtual or USB adapters).
+  - { kind: network, attrs: { wireless: "true" }, contains: { sysfs_target: /pci }, excludes: { sysfs_target: /usb }, to: network.wifi }
+  - { kind: network, attrs: { wireless: "false" }, contains: { sysfs_target: /pci }, excludes: { sysfs_target: /usb }, to: network.ethernet }
+  - { kind: bluetooth, to: network.bluetooth }
+  # Ports. USB connectors: USB-A or USB-C, from the configuration's ports.
+  - { kind: usb, check: port, to: ports.usb, method: fixture }
+  - { kind: sd_reader, check: card, to: ports.sd-card, method: fixture }
+  - { kind: firewire, check: device, to: ports.firewire }
+  - { kind: thunderbolt, check: device, to: ports.thunderbolt }
+  # Storage and thermal.
+  - { kind: optical, check: disc, to: storage.optical }
+  - { kind: thermal, to: thermal.sensors }
+  - { kind: fan, to: thermal.fans }
+  # A component OmacDiag expected but didn't find.
+  - { kind: microphone, check: availability, to: audio.microphone }
+  - { kind: speaker, check: availability, to: audio.speakers }
+  - { kind: sd_reader, check: availability, to: ports.sd-card }
+  - { kind: audio_jack, check: availability, to: audio.headphone }
+  - { kind: battery, check: availability, to: power.battery-status }
+  - { kind: optical, check: availability, to: storage.optical }
+
+# Non-passing results with these reasons mean a device or driver is missing:
+# on Omarchy that is a failure (§22.10), flagged driver_missing for review.
+failed_reasons: [expected_not_detected, device_missing, capture_endpoint_missing, render_node_missing,
+  egl_unavailable, egl_devices_unavailable, egl_display_unavailable, egl_config_unavailable,
+  egl_context_unavailable, egl_extension_missing, egl_symbol_missing, gpu_mapping_unavailable,
+  backlight_control_unavailable, backlight_path_missing, jack_detection_unavailable, device_node_unavailable]
+
+# Skipped checks: OmacDiag's reason → ours. Anything else that isn't a pass
+# or a failure is not tested, reason "uncertain".
+skip_reasons:
+  equipment_unavailable: no-equipment
+  operator_required: not-in-profile
+  operator_skipped: other
+
+# boot.install counts as supported when OmacDiag ran on Omarchy (§22.10).
+install_when_distribution: [Omarchy]
