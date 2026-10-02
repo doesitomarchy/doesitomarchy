@@ -49,6 +49,9 @@ type Capability struct {
 	Name        string     `yaml:"name" json:"name"`
 	Description string     `yaml:"description" json:"description"`
 	When        *Condition `yaml:"when" json:"when"`
+	// Retired criteria no longer apply to any configuration. They stay in the
+	// catalog because results may reference them; IDs are never deleted.
+	Retired bool `yaml:"retired" json:"retired,omitempty"`
 }
 
 // Category returns the category part of the capability ID ("boot" for "boot.install").

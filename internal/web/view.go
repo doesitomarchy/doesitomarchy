@@ -10,11 +10,13 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
+	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
-// The web pages render from view models built once from the loaded catalog
-// at startup (the catalog is immutable while the process runs). Verdicts
-// come from the status package; Phase 7 rebuilds them when results change.
+// The web pages render from view models built from the loaded catalog and
+// the accepted results. The catalog is immutable while the process runs;
+// results change, and the server rebuilds the views (and swaps them in
+// atomically) whenever the store's data version moves.
 
 // lineOrder is the display order of product lines; unknown lines sort after.
 var lineOrder = []string{"macbook", "macbook-air", "macbook-pro", "imac", "imac-pro", "mac-mini", "mac-pro", "xserve"}
@@ -34,7 +36,10 @@ type Options struct {
 	CatalogDate string // last catalog change (YYYY-MM-DD), stamped at build time
 	// CatalogCommit is the git commit of that change; "" links to main.
 	CatalogCommit string
-	Demo          bool // design-review mode: a few configs carry made-up results
+	Demo          bool // design-review mode: a throwaway database seeded with made-up results
+	// Cloudflare zone and purge-only token: when set, the cache is purged
+	// after results change, so visitors see new verdicts within seconds.
+	PurgeZone, PurgeToken string
 }
 
 type site struct {
@@ -117,7 +122,9 @@ type configView struct {
 	Features     []string
 	Categories   []categoryView
 	Status       status.ConfigStatus
-	Verified     bool // every applicable capability passed, no conflicts
+	Verified     bool                  // every applicable capability passed, no conflicts
+	Results      []store.ResultSummary // accepted and retracted results, newest first
+	Latest       *store.ResultSummary  // the newest accepted result
 	OutOfScope   string
 	Notes        string
 	Uncertain    []uncertainView
@@ -161,9 +168,18 @@ func (c categoryView) Pct() string { return fmt.Sprintf("%.2f", pctOf(c.Passed, 
 
 type capView struct {
 	ID, Name, Description string
-	Verdict               status.Verdict // Untested until Phase 7 (or demo data)
-	Error                 string         // why it failed, as reported by the doioma test tool
-	Fix                   string         // who is working on it / where it's tracked (Phase 7 design)
+	Verdict               status.Verdict
+	Error                 string // why it failed or only partly works, as reported (evidence)
+	Fix                   string // who is working on it / where it's tracked (fix tracking, 7d)
+	Reason                string // the maintainer's reason, when Unsupported
+	// The latest report for this capability (Result 0 when untested).
+	Result                int64
+	Code                  string // its public code, for /report/{code}
+	Date, Omarchy, Method string
+	Stale, Conflict       bool
+	// FromLatest: the result is the config's latest, already named once at
+	// the top of the card, so the row only shows its method.
+	FromLatest bool
 }
 
 // matrixView is a criteria × configurations table (model page and /criteria).
@@ -208,6 +224,7 @@ type catalogView struct {
 	configs    map[string]*configView // config ID → config
 	components []componentUse
 	states     search.States
+	rollup     *store.Rollup
 }
 
 // componentUse is one component and the configs that use it (/components).
@@ -218,29 +235,29 @@ type componentUse struct {
 	Macs                                           []*macView
 }
 
-// state is a config's current status plus per-capability verdicts and,
-// for failures, the reported error and fix tracking.
-type state struct {
-	status status.ConfigStatus
-	caps   map[string]status.Verdict
-	errors map[string]string
-	fixes  map[string]string
-}
-
-func buildView(c *catalog.Catalog, opt Options) *catalogView {
-	v := &catalogView{bySlug: map[string]*macView{}, configs: map[string]*configView{}, states: search.States{}}
+func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup) *catalogView {
+	if ru == nil {
+		ru = &store.Rollup{}
+	}
+	v := &catalogView{bySlug: map[string]*macView{}, configs: map[string]*configView{}, states: search.States{}, rollup: ru}
 	var statuses []status.ConfigStatus
 	lineStats := map[string]*lineStat{}
-	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) state {
-		if opt.Demo {
-			if st, ok := demoState(m, cfg, excl, applicable); ok {
-				return st
-			}
+	cats := map[string]catalog.Category{}
+	for _, k := range c.Categories {
+		cats[k.ID] = k
+	}
+	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) status.ConfigStatus {
+		caps := make([]status.Capability, len(applicable))
+		for i, cp := range applicable {
+			k := cats[cp.Category()]
+			caps[i] = status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking}
 		}
-		return state{status: status.Config(status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Applicable: len(applicable)})}
+		return status.Config(status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Caps: caps,
+			Items: ru.Items[cfg.ID], Unsupported: ru.Unsupported[cfg.ID], Results: ru.Results[cfg.ID],
+			LatestResult: ru.Latest[cfg.ID], CurrentMajor: ru.CurrentMajor})
 	}
 	for _, m := range c.Macs {
-		mv := buildMac(c, m, stateOf)
+		mv := buildMac(c, m, stateOf, ru)
 		v.macs = append(v.macs, mv)
 		v.bySlug[strings.ToLower(mv.Slug)] = mv
 		ls := lineStats[m.Line]
@@ -253,7 +270,7 @@ func buildView(c *catalog.Catalog, opt Options) *catalogView {
 			statuses = append(statuses, cv.Status)
 			v.configs[cv.ID] = cv
 			ls.Configs++
-			v.states[cv.ID] = search.State{Verdict: cv.Status.Verdict, Tested: cv.Status.Tested > 0}
+			v.states[cv.ID] = search.State{Verdict: cv.Status.Verdict, Tested: cv.Status.Results > 0, Latest: cv.Status.Latest}
 		}
 	}
 	sort.SliceStable(v.macs, func(i, j int) bool { return lessMac(v.macs[i], v.macs[j]) })
@@ -287,81 +304,6 @@ func buildView(c *catalog.Catalog, opt Options) *catalogView {
 	}
 	v.components = buildComponents(c, v)
 	return v
-}
-
-// Made-up results shown with -demo (design review only). They exercise every
-// verdict: Supported, Partial (with a Failed and an Unsupported capability),
-// Failed (a Boot test failed) and Unsupported (a Boot test given up on).
-var (
-	demoVerified = map[string]bool{"MacBookPro8,2": true, "imac12-2-27-mid-2011-a": true}
-	demoCases    = map[string]struct {
-		verdict status.Verdict
-		caps    map[string]status.Verdict
-		errors  map[string]string
-		fixes   map[string]string
-		blocker string
-	}{
-		"MacBookPro15,1": {status.Partial,
-			map[string]status.Verdict{"audio.speakers": status.Failed, "bridge.touch-bar-camera": status.Unsupported},
-			map[string]string{"audio.speakers": "snd_hda_intel 0000:00:1f.3: no codecs found (T2 audio needs the apple-bce aaudio driver)"},
-			map[string]string{"audio.speakers": "Nobody has claimed this fix yet.", "bridge.touch-bar-camera": "Marked unsupported after 3 fix attempts made no progress."},
-			"Audio → Built-in speakers"},
-		"MacBookPro15,2": {status.Failed,
-			map[string]status.Verdict{"boot.install": status.Failed},
-			map[string]string{"boot.install": "nvme0n1 not found: the installer kernel has no apple-bce module, so the T2 SSD is invisible"},
-			map[string]string{"boot.install": "Being worked on by @example in issue #42."},
-			"Boot → Internal storage detected and installation completes"},
-		"MacBookPro16,2": {status.Unsupported,
-			map[string]status.Verdict{"boot.installer-efi64": status.Unsupported},
-			map[string]string{"boot.installer-efi64": "Firmware refuses the installer image (Secure Boot policy cannot be relaxed on this unit)"},
-			map[string]string{"boot.installer-efi64": "Marked unsupported after 4 fix attempts made no progress."},
-			"Boot → Stock installer boots via 64-bit EFI"},
-	}
-)
-
-func demoState(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) (state, bool) {
-	st := state{caps: map[string]status.Verdict{}, errors: map[string]string{}, fixes: map[string]string{}}
-	n := len(applicable)
-	if demoVerified[m.Identifier] || demoVerified[cfg.ID] {
-		for _, cp := range applicable {
-			st.caps[cp.ID] = status.Supported
-		}
-		st.status = status.ConfigStatus{Verdict: status.Supported, Excluded: excl, Applicable: n, Tested: n, Counts: status.Counts{Supported: n}}
-		return st, true
-	}
-	dc, ok := demoCases[m.Identifier]
-	if !ok {
-		return state{}, false
-	}
-	var c status.Counts
-	tested := 0
-	for i, cp := range applicable {
-		v, special := dc.caps[cp.ID]
-		switch {
-		case special:
-		case i%3 != 2:
-			v = status.Supported
-		default:
-			v = status.Untested
-		}
-		st.caps[cp.ID] = v
-		switch v {
-		case status.Supported:
-			c.Supported++
-		case status.Failed:
-			c.Failed++
-		case status.Unsupported:
-			c.Unsupported++
-		default:
-			c.Untested++
-		}
-		if v != status.Untested {
-			tested++
-		}
-	}
-	st.errors, st.fixes = dc.errors, dc.fixes
-	st.status = status.ConfigStatus{Verdict: dc.verdict, Excluded: excl, Applicable: n, Tested: tested, Blocker: dc.blocker, Counts: c}
-	return st, true
 }
 
 func orderedLines[V any](m map[string]V) []string {
@@ -427,9 +369,9 @@ func machineIcon(m *catalog.Mac) string {
 	return m.Line
 }
 
-type stateFunc func(*catalog.Mac, *catalog.Config, string, []catalog.Capability) state
+type stateFunc func(*catalog.Mac, *catalog.Config, string, []catalog.Capability) status.ConfigStatus
 
-func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc) *macView {
+func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.Rollup) *macView {
 	mv := &macView{
 		Identifier: m.Identifier, Slug: catalog.FileSlug(m.Identifier), LineKey: m.Line, LineName: c.Vocab.Lines[m.Line].Name,
 		EFI: m.EFI, HardBlocker: m.HardBlocker, ResearchNotes: m.ResearchNotes, BoardIDs: m.BoardIDs, Sources: m.Sources,
@@ -457,13 +399,31 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc) *macView {
 			cfg := &r.Configs[ci]
 			cv := buildConfig(c, m, r, cfg, excl, stateOf)
 			cv.Mac = mv
+			cv.Results = ru.Accepted[cfg.ID]
+			for i := range cv.Results {
+				if cv.Results[i].State == store.Accepted {
+					cv.Latest = &cv.Results[i]
+					break
+				}
+			}
+			codes := map[int64]string{}
+			for _, x := range cv.Results {
+				codes[x.ID] = x.Code
+			}
+			for ci := range cv.Categories {
+				for k := range cv.Categories[ci].Caps {
+					x := &cv.Categories[ci].Caps[k]
+					x.Code = codes[x.Result]
+					x.FromLatest = cv.Latest != nil && x.Result == cv.Latest.ID && !x.Stale && !x.Conflict
+				}
+			}
 			cv.Letter = string(rune('A' + len(mv.Configs)%26))
 			rv.Configs = append(rv.Configs, cv)
 			mv.Configs = append(mv.Configs, cv)
 			raw = append(raw, cfg)
 			verdicts[cv.Status.Verdict] = true
 			scopes[excl] = true
-			if cv.Status.Tested > 0 {
+			if cv.Status.Results > 0 {
 				mv.Tested++
 			}
 			for _, comp := range cv.Components {
@@ -560,10 +520,8 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		cv.Uncertain = append(cv.Uncertain, uncertainView{u.Field, u.Note})
 	}
 	applicable := c.Applicable(m, cfg)
-	st := stateOf(m, cfg, excl, applicable)
-	cv.Status = st.status
-	cv.Verified = cv.Status.Verdict == status.Supported && cv.Status.Applicable > 0 &&
-		cv.Status.Counts.Supported == cv.Status.Applicable && cv.Status.Conflicts == 0
+	cv.Status = stateOf(m, cfg, excl, applicable)
+	cv.Verified = cv.Status.Verified()
 	byCat := map[string]*categoryView{}
 	for _, cp := range applicable {
 		cat := byCat[cp.Category()]
@@ -576,17 +534,25 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 			}
 			byCat[cat.ID] = cat
 		}
-		v := status.Untested
-		if cv.Status.Verdict == status.NotCompatible {
-			v = status.NotCompatible
+		cs := cv.Status.Caps[cp.ID]
+		x := capView{ID: cp.ID, Name: cp.Name, Description: cp.Description, Verdict: cs.Verdict, Reason: cs.Reason,
+			Stale: cs.Stale, Conflict: cs.Conflict}
+		if x.Verdict == "" {
+			x.Verdict = status.Untested
 		}
-		if x, ok := st.caps[cp.ID]; ok {
-			v = x
+		if cv.Status.Verdict == status.NotCompatible && cs.Latest == nil {
+			x.Verdict = status.NotCompatible
 		}
-		if v == status.Supported {
+		if l := cs.Latest; l != nil {
+			x.Result, x.Date, x.Omarchy, x.Method = l.ResultID, l.TestedAt, l.Omarchy.String(), l.Method
+			if l.Verdict != status.Supported {
+				x.Error = l.Evidence
+			}
+		}
+		if x.Verdict == status.Supported {
 			cat.Passed++
 		}
-		cat.Caps = append(cat.Caps, capView{ID: cp.ID, Name: cp.Name, Description: cp.Description, Verdict: v, Error: st.errors[cp.ID], Fix: st.fixes[cp.ID]})
+		cat.Caps = append(cat.Caps, x)
 	}
 	for _, k := range c.Categories {
 		if cat := byCat[k.ID]; cat != nil {
@@ -788,7 +754,7 @@ func buildMatrix(c *catalog.Catalog, cfgs []*configView, withMac bool) *matrixVi
 	for _, k := range c.Categories {
 		g := matrixGroup{Name: k.Name, Icon: iconFor[k.Icon], Blocking: k.Blocking}
 		for _, cp := range c.Capabilities {
-			if cp.Category() != k.ID {
+			if cp.Category() != k.ID || cp.Retired {
 				continue
 			}
 			row := matrixRow{ID: cp.ID, Name: cp.Name, Description: cp.Description}

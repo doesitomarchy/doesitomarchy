@@ -30,6 +30,9 @@ Commands:
   validate   Check the catalog in data/ (-data DIR)
   lock       Record new config IDs in data/config-ids.lock (-data DIR)
   report     Write an HTML review page for a batch (-line mac-mini -o FILE [-intro FILE])
+  reports    Moderate diagnostic reports: import, list, show, accept, reject, retract,
+             flags (doiomad reports help)
+  sources    List the apps registered to submit reports
   version    Print the version
   help       Show this help
 
@@ -57,6 +60,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return cmdLock(rest, stdout, stderr)
 	case "report":
 		return cmdReport(rest, stdout, stderr)
+	case "reports", "results":
+		return cmdResults(rest, stdout, stderr)
+	case "sources":
+		return cmdSources(rest, stdout, stderr)
 	case "version", "-v", "--version":
 		fmt.Fprintln(stdout, version)
 		return 0

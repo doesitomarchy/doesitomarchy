@@ -1,0 +1,57 @@
+# SYNTHETIC result for tests and the release smoke test (PLAN.md §15, §21.8).
+# It is not a real test. It exercises every item status, every method, skip
+# reasons, evidence, an extra, and personal data the scrubber must remove
+# (the serial number, MAC address, hostname and home-directory path below).
+schema: doesitomarchy/report/v1
+config: macbookpro15-2-13-2018-4tb3-a
+source: { id: manual, version: "", profile: full, workflow: guided }
+tester: { handle: synthetic-fixture, contact: tester@example.com }
+tested_at: 2026-09-30T14:05:00-04:00
+omarchy: { version: "4.0.4", revision: "", image: omarchy-4.0.4-x86_64.iso }
+kernel: 6.16.2-arch1-1
+notes: |
+  SYNTHETIC fixture, not a real test. Secure Boot set to "No Security" in
+  Startup Security Utility before installing. Logs in /home/carl/omarchy-test/,
+  run from carl@work-mbp:~$ on 192.168.1.42.
+hardware:
+  product_name: MacBookPro15,2
+  board_id: Mac-827FB448E656EC26
+  serial_number: C02XG0FDH7JY
+  wifi_mac: "a4:83:e7:12:34:56"
+  hostname: work-mbp
+  pci:
+    - "8086:3e9b Intel UHD Graphics 655"
+    - "14e4:4464 Broadcom BCM4364"
+items:
+  boot.installer-efi64:       { status: supported, method: automatic }
+  boot.install:               { status: supported, method: observed, note: "after disabling Secure Boot" }
+  boot.power-cycle:           { status: supported, method: observed }
+  graphics.integrated:        { status: supported, method: automatic }
+  graphics.external-display:  { status: partial, method: fixture, evidence: "DisplayPort alt mode works on the left ports only; right ports: no signal" }
+  display.native-resolution:  { status: supported, method: automatic }
+  display.brightness:         { status: supported, method: observed }
+  input.keyboard:             { status: supported, method: observed }
+  input.trackpad:             { status: supported, method: observed }
+  input.keyboard-backlight:   { status: supported, method: observed }
+  input.ambient-light-sensor: { status: not_tested, reason: uncertain, note: "no reading; unclear whether the sensor is exposed" }
+  input.force-touch:          { status: partial, method: observed, evidence: "click works; pressure levels are not reported" }
+  input.touch-bar:            { status: supported, method: observed }
+  input.touch-id:             { status: failed, method: observed, evidence: "no driver for the T2 fingerprint sensor" }
+  power.sleep-wake:           { status: failed, method: observed, evidence: "suspend works; resume hangs on a black screen (apple-bce did not resume)" }
+  power.battery-status:       { status: supported, method: automatic }
+  power.charging:             { status: supported, method: observed }
+  power.lid:                  { status: failed, method: observed, evidence: "lid close suspends; opening the lid does not resume" }
+  audio.speakers:             { status: failed, method: automatic, evidence: "snd_hda_intel 0000:00:1f.3: no codecs found (T2 audio needs the apple-bce aaudio driver)" }
+  audio.microphone:           { status: failed, method: automatic, evidence: "no capture device" }
+  audio.headphone:            { status: not_tested, reason: no-equipment, note: "no headphones to hand" }
+  camera.builtin:             { status: supported, method: automatic }
+  network.wifi:               { status: supported, method: automatic, note: "brcmfmac with firmware copied from macOS" }
+  network.bluetooth:          { status: supported, method: automatic }
+  ports.usb-c:                { status: supported, method: fixture }
+  ports.usb-c-charging:       { status: supported, method: observed }
+  ports.thunderbolt:          { status: not_tested, reason: no-equipment, note: "no Thunderbolt device" }
+  thermal.sensors:            { status: supported, method: automatic }
+  thermal.fans:               { status: partial, method: observed, evidence: "fans stay at a fixed speed without t2fanrd" }
+  bridge.touch-bar-camera:    { status: supported, method: observed }
+extras:
+  - { id: backlight.ambient-auto, label: "Automatic brightness from the ambient light sensor", status: failed, detail: "no sensor readings" }

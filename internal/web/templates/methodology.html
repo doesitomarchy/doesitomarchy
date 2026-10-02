@@ -18,18 +18,18 @@
     <tr><th scope="row">{{template "verdict" (v "supported")}}</th><td>Every tested capability works, shown with how many were tested.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "partial")}}</th><td>Something other than Boot failed, was given up on, only partly works, or has conflicting reports.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "failed")}}</th><td>A Boot capability failed. A failure is something to fix, not a final answer: each one records why it failed and who is working on it.</td></tr>
-    <tr><th scope="row">{{template "verdict" (v "untested")}}</th><td>No test result yet.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "untested")}}</th><td>No diagnostic report yet.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "unsupported")}}</th><td>A Boot capability was given up on. Maintainers mark a capability Unsupported only as a last resort, after repeated attempts to fix a failure made no progress.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "not-compatible")}}</th><td>The Mac can never run Omarchy by design. Today that means the 2006 Macs with a 32-bit-only Core Duo CPU, since Omarchy and Arch Linux support x86_64 only.</td></tr>
   </tbody>
 </table>
-<p>The newest Omarchy version's result wins. Results from an older Omarchy major version are marked stale. Two results for the same Omarchy version that disagree are shown as conflicting.</p>
+<p>Each test run is a diagnostic report. For each capability, the report from the newest Omarchy version wins. Reports from an older Omarchy major version are marked stale. Two reports for the same Omarchy version that disagree are shown as conflicting. All times are UTC.</p>
 <h2>Coverage</h2>
 <table class="defs">
   <thead><tr><th scope="col">Figure</th><th scope="col">What it counts</th></tr></thead>
   <tbody>
     <tr><th scope="row">Compatibility coverage</th><td>Configurations where every applicable capability has passed.</td></tr>
-    <tr><th scope="row">Test result coverage</th><td>Configurations with at least one test result.</td></tr>
+    <tr><th scope="row">Test result coverage</th><td>Configurations with at least one accepted diagnostic report.</td></tr>
     <tr><th scope="row">Not counted</th><td>Configurations that are not compatible by design, and those outside the coverage scope: Macs released before 2009 and the Xserve. Out-of-scope Macs are still listed and can still be tested.</td></tr>
   </tbody>
 </table>

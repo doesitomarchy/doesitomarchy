@@ -25,8 +25,8 @@
 <div class="stat" role="group" aria-label="Test result coverage">
   <div class="row"><a class="label" href="/stats">Test result coverage</a>
     <span class="figure" data-total="{{.Coverage.Eligible}}"><span class="n">{{.Coverage.Tested}}</span> / {{.Coverage.Eligible}} <span class="pct">configs · <span class="p">{{pct .Coverage.TestedPct}}</span></span></span></div>
-  <svg class="bar" viewBox="0 0 100 10" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="{{.Coverage.Eligible}}" aria-valuenow="{{.Coverage.Tested}}" aria-label="{{.Coverage.Tested}} of {{.Coverage.Eligible}} eligible configurations have a test result"><rect width="{{barw .Coverage.Tested .Coverage.Eligible}}" height="10"/></svg>
-  <div class="sub">configurations with at least one test result</div>
+  <svg class="bar" viewBox="0 0 100 10" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="{{.Coverage.Eligible}}" aria-valuenow="{{.Coverage.Tested}}" aria-label="{{.Coverage.Tested}} of {{.Coverage.Eligible}} eligible configurations have a diagnostic report"><rect width="{{barw .Coverage.Tested .Coverage.Eligible}}" height="10"/></svg>
+  <div class="sub">configurations with at least one diagnostic report</div>
 </div>
 {{end}}
 
@@ -112,7 +112,7 @@
 {{end}}
 </ol>
 {{else if .NoResults}}
-<p class="empty">No test results yet. Testing opens with the submission API; until then every configuration is Untested.</p>
+<p class="empty">No diagnostic reports yet. Testing opens with the submission API; until then every configuration is Untested.</p>
 {{else if .Q}}
 <p class="empty">No Macs match <code>{{.Q}}</code>.{{with .Resp.DidYouMean}} Did you mean <a href="{{query .}}">{{.}}</a>?{{end}}</p>
 {{end}}

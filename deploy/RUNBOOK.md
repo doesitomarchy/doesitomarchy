@@ -101,6 +101,39 @@ under `deploy/root/`, run `deploy/provision.sh` again to apply it.
 same steps rebuild a lost server: provision, run cloudflare.sh (it moves the
 tunnel token to the new droplet), and tag or re-deploy a release.
 
+## Moderating diagnostic reports
+
+Diagnostic reports arrive as files (later through the API) and start
+**pending**. Nothing counts until a maintainer accepts it. Each report has a
+10-character code, which is its public URL (`/report/CODE`) and how the CLI
+names it. On the droplet the `doiomad` wrapper
+runs as the service user, which can't read your home directory, so pipe
+files in:
+
+```sh
+doiomad reports import - < report.yaml     # validates, stores as pending, previews the effect
+doiomad reports list -state pending
+doiomad reports show 4f9a2c7e1b            # items, evidence, flags, history
+doiomad reports accept 4f9a2c7e1b
+doiomad reports reject 4f9a2c7e1b -reason "duplicate of 7d1e09ab32"
+doiomad reports retract 4f9a2c7e1b -reason "tested with a third-party Wi-Fi card"
+doiomad reports flags                      # open review flags
+doiomad reports resolve 3 -note "stored, not counted; fine"
+```
+
+- **Effect:** accepts and retractions bump a change counter. The server
+  rebuilds within about 5 s, then purges Cloudflare's cache 10 s after the
+  last change. That needs `CF_ZONE_ID` and `CF_PURGE_TOKEN` (a purge-only
+  token) in `/etc/doiomad/doiomad.env`, which `provision.sh` writes when
+  they're set. Without them, pages catch up within 5 minutes.
+- **Records:** every action is recorded with your user name. Nothing is ever
+  deleted; a retracted report keeps its public page, marked retracted.
+- **Times:** every timestamp (tested, submitted, moderated) is stored and
+  shown in UTC.
+- **Privacy:** personal data (serials, MAC and IP addresses, host and user
+  names, e-mail addresses) is scrubbed before storage. The raw submission is
+  kept, scrubbed and private.
+
 ## Public or private
 
 The site went public on 2026-10-01 (Phase 6). `cloudflare.sh` keeps it public

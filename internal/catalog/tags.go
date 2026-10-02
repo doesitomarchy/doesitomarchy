@@ -72,7 +72,7 @@ func (c *Catalog) Applicable(m *Mac, cfg *Config) []Capability {
 	tags := c.Tags(m, cfg)
 	var out []Capability
 	for _, cap := range c.Capabilities {
-		if cap.When.Matches(tags) {
+		if !cap.Retired && cap.When.Matches(tags) {
 			out = append(out, cap)
 		}
 	}

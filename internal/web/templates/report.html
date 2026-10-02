@@ -1,0 +1,42 @@
+{{define "content"}}{{with .Data}}{{$r := .R}}
+<article class="result">
+<header class="mac-head">
+  <h1>Diagnostic Report <span class="report-code">{{$r.Code}}</span></h1>
+  <p class="sub slash"><a class="ident" href="/mac/{{$r.Slug}}">{{$r.Identifier}}</a>{{with .Config}}<a href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}"><span class="cfgref">{{.Diff}}</span></a><span>{{.Label}}</span>{{end}}</p>
+  <p class="sub slash"><span>tested <b>{{utc $r.TestedAt}}</b></span><span>submitted <b>{{utc $r.SubmittedAt}}</b></span></p>
+  <p class="sub slash"><span>Omarchy <b>{{$r.Omarchy}}</b></span>{{with $r.Kernel}}<span>kernel {{.}}</span>{{end}}
+    <span>by {{if $r.TesterHandle}}<b>@{{$r.TesterHandle}}</b>{{else}}anonymous{{end}} via <b>{{$r.SourceName}}</b>{{with $r.SourceVersion}} {{.}}{{end}}{{with $r.Profile}} · {{.}} profile{{end}}</span></p>
+  <p class="sub">{{template "verdict" (v "supported")}} <span class="muted">{{$r.Supported}}</span>
+    {{template "verdict" (v "partial")}} <span class="muted">{{$r.Partial}}</span>
+    {{template "verdict" (v "failed")}} <span class="muted">{{$r.Failed}}</span>
+    <span class="muted">· {{$r.NotTested}} not tested</span></p>
+</header>
+{{if eq $r.State "retracted"}}<p class="notice">{{template "vicon" "untested"}}<strong>Retracted</strong> {{utc $r.StateAt}}: {{$r.StateReason}}. This report no longer counts toward any verdict.</p>{{end}}
+{{with $r.Notes}}<div class="result-notes"><p>{{.}}</p></div>{{end}}
+
+<div class="card result-items"><div class="caps">
+{{range .Groups}}
+  <details open>
+    <summary>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Items}}{{template "vicon" (itemVerdict .Status)}}{{end}}</span></summary>
+    <ul>{{range .Items}}<li>{{template "vicon" (itemVerdict .Status)}}<span>{{.CapabilityName}}</span><span class="st st-{{itemVerdict .Status}}">{{itemLabel .Status}}</span>
+      <span class="capmeta">{{if .Method}}{{.Method}}{{else}}{{reasonLabel .Reason}}{{end}}</span>
+      {{if or .Evidence .Note}}<div class="why{{if ne .Status "failed"}} minor{{end}}">{{with .Evidence}}<p><span class="lbl">Reported</span> <code>{{.}}</code></p>{{end}}{{with .Note}}<p><span class="lbl">Note</span> {{.}}</p>{{end}}</div>{{end}}</li>{{end}}</ul>
+  </details>
+{{end}}
+</div></div>
+
+{{with $r.Extras}}<section class="extras-list">
+  <h2>Other checks</h2>
+  <p class="muted">Checks this diagnostic ran that aren't part of the criteria (yet). They're shown as reported and don't affect any verdict.</p>
+  <ul>{{range .}}<li><code>{{.ID}}</code> {{.Label}}{{with .Status}} · <b>{{.}}</b>{{end}}{{with .Detail}} · {{.}}{{end}}</li>{{end}}</ul>
+</section>{{end}}
+
+{{with .Other}}<section class="extras-list">
+  <h2>Not counted</h2>
+  <p class="muted">Reported for capabilities that don't apply to this configuration. Kept for review; they never affect a verdict.</p>
+  <ul>{{range .}}<li>{{.CapabilityName}} · {{itemLabel .Status}}</li>{{end}}</ul>
+</section>{{end}}
+
+<p class="muted result-foot">Report <code>{{$r.Code}}</code> · configuration <code>{{$r.ConfigID}}</code>. All times are UTC. Personal data (serial numbers, network addresses, user and host names) is removed before anything is stored.</p>
+</article>
+{{end}}{{end}}
