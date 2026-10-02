@@ -27,6 +27,8 @@ func (s *Server) adminRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/report/{code}/{action}", s.admin(s.adminAction))
 	mux.HandleFunc("POST /admin/flag/{id}/resolve", s.admin(s.adminResolve))
 	mux.HandleFunc("GET /admin/sources", s.admin(s.adminSources))
+	mux.HandleFunc("GET /admin/shares", s.admin(s.adminShares))
+	mux.HandleFunc("POST /admin/shares/review", s.admin(s.adminSharesReview))
 }
 
 type adminHandler func(w http.ResponseWriter, r *http.Request, who string)

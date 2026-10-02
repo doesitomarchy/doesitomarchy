@@ -58,6 +58,7 @@ func TestParseProbe(t *testing.T) {
 			PCI: []string{"8086:0126", "1002:6760"}, CPU: "Intel(R) Core(TM) i7-2635QM CPU @ 2.00GHz"}},
 		{"Core 2 padding", "MacBookPro5,5\nmodel name\t: Intel(R) Core(TM)2 Duo CPU     P8700  @ 2.53GHz\n",
 			Probe{ProductName: "MacBookPro5,5", CPU: "Intel(R) Core(TM)2 Duo CPU P8700 @ 2.53GHz"}},
+		{"8-digit board ID", "iMac9,1\nMac-f2218fc8\n", Probe{ProductName: "iMac9,1", BoardID: "Mac-F2218FC8"}},
 		{"nothing useful", "hello world [0300]", Probe{}},
 	}
 	for _, tt := range tests {
@@ -74,6 +75,9 @@ func TestParseProbe(t *testing.T) {
 	}
 	if r := m.Match(ParseProbe(macOS)); !r.Exact || r.Best() != "macbookpro8-2-15-early-2011-a" {
 		t.Errorf("macOS paste: %+v", r)
+	}
+	if r := m.Match(ParseProbe("Mac-F2208EC8\n")); r.Identifier != "Macmini4,1" || r.By != "board_id" {
+		t.Errorf("8-digit board ID alone: %+v", r)
 	}
 	if r := m.Match(ParseProbe(linuxLspci)); r.Exact {
 		t.Errorf("the HD 6750M is shared by two configs: %+v", r)

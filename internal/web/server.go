@@ -50,6 +50,8 @@ type Server struct {
 	purge   *purger
 	match   *match.Matcher
 	access  *accessVerifier
+	// shareLimit is PF-3's per-IP limit, held in memory only.
+	shareLimit *rateLimiter
 }
 
 // snapshot is everything built from the catalog and the accepted results.
@@ -76,7 +78,8 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		return nil, err
 	}
 	s := &Server{store: st, cat: c, opt: opt, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{},
-		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD)}
+		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD),
+		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour)}
 	if _, err := s.Refresh(context.Background()); err != nil {
 		return nil, fmt.Errorf("load results: %w", err)
 	}
@@ -101,7 +104,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"itemLabel":   itemLabel,
 		"reasonLabel": reasonLabel,
 	}
-	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
@@ -139,6 +142,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /changelog", s.changelog)
 	mux.HandleFunc("GET /identify", s.identify)
 	mux.HandleFunc("POST /identify", s.identifyPost)
+	mux.HandleFunc("POST /identify/share", s.identifyShare)
 	mux.HandleFunc("GET /privacy", s.privacy)
 	mux.HandleFunc("GET /api", s.apiDocs)
 	s.apiRoutes(mux)
@@ -168,6 +172,14 @@ func apiNotFound(w http.ResponseWriter, r *http.Request) {
 func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
 	s.render(w, r, http.StatusNotFound, "notfound", page{Title: "Not found"})
 }
+
+// message renders a short notice with a way back, for refusals a visitor
+// should understand (a full form, a rate limit).
+func (s *Server) message(w http.ResponseWriter, r *http.Request, code int, title, text, back string) {
+	s.render(w, r, code, "message", page{Title: title, Data: messageData{title, text, back}})
+}
+
+type messageData struct{ Title, Text, Back string }
 
 func (s *Server) fail(w http.ResponseWriter, r *http.Request, err error) {
 	s.log.Error("request failed", "path", r.URL.Path, "err", err)

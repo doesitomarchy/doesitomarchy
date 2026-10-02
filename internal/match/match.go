@@ -75,13 +75,14 @@ type Matcher struct {
 	byBoard      map[string]string // lower-case board ID → identifier
 	configs      map[string][]*config
 	byDevice     map[string][]string // hardware ID → config IDs
+	known        map[string]bool     // every hardware ID, standard and build-to-order
 	order        []string            // identifiers in catalog order
 }
 
 // New indexes a catalog.
 func New(c *catalog.Catalog) *Matcher {
 	m := &Matcher{byIdentifier: map[string]string{}, byBoard: map[string]string{}, configs: map[string][]*config{},
-		byDevice: map[string][]string{}}
+		byDevice: map[string][]string{}, known: map[string]bool{}}
 	for _, mac := range c.Macs {
 		m.order = append(m.order, mac.Identifier)
 		m.byIdentifier[strings.ToLower(mac.Identifier)] = mac.Identifier
@@ -99,6 +100,7 @@ func New(c *catalog.Catalog) *Matcher {
 					p := part{kind: comp.Kind}
 					for _, id := range comp.IDs {
 						x.ids[id] = comp.Kind
+						m.known[id] = true
 						p.ids = append(p.ids, id)
 						m.byDevice[id] = append(m.byDevice[id], cfg.ID)
 					}
@@ -110,6 +112,7 @@ func New(c *catalog.Catalog) *Matcher {
 					if comp := c.Components[ref]; comp != nil {
 						for _, id := range comp.IDs {
 							x.bto[id] = true
+							m.known[id] = true
 						}
 					}
 				}
@@ -195,6 +198,34 @@ func (m *Matcher) Identify(p Probe) (identifier, by string) {
 		return id, "board_id"
 	}
 	return "", ""
+}
+
+// KnownBoard reports whether the catalog lists a board ID.
+func (m *Matcher) KnownBoard(board string) bool {
+	return m.byBoard[strings.ToLower(strings.TrimSpace(board))] != ""
+}
+
+// KnownDevice reports whether any catalog component has a hardware ID, in
+// any common form ("10de:0647", "pci:10de:0647").
+func (m *Matcher) KnownDevice(id, kind string) bool {
+	ids := NormalizeIDs([]string{id}, kind)
+	return len(ids) == 1 && m.known[ids[0]]
+}
+
+// KnownCPU reports whether a system's CPU name contains the model number of
+// any CPU in the catalog, standard or build-to-order.
+func (m *Matcher) KnownCPU(name string) bool {
+	name = strings.Join(strings.Fields(strings.ToLower(name)), " ")
+	for _, cfgs := range m.configs {
+		for _, cfg := range cfgs {
+			for _, t := range cfg.cpus {
+				if cpuHas(name, t) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // Match ranks the configurations that fit a probe.

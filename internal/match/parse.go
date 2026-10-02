@@ -10,11 +10,11 @@ import (
 // macOS (sysctl, ioreg, system_profiler). static/site.js applies the same rules in the browser.
 var (
 	identifierRe = regexp.MustCompile(`\b(MacBook(?:Air|Pro)?|iMac(?:Pro)?|Macmini|MacPro|Xserve)\d{1,2},\d{1,2}\b`)
-	boardRe      = regexp.MustCompile(`\bMac-[0-9A-Fa-f]{16}\b`)
-	sysfsRe      = regexp.MustCompile(`(?i)\b0x([0-9a-f]{4}):0x([0-9a-f]{4})\b`) // /sys vendor:device
-	lspciRe      = regexp.MustCompile(`(?i)\[([0-9a-f]{4}):([0-9a-f]{4})\]`)     // lspci -nn
-	macVendorRe  = regexp.MustCompile(`(?i)Vendor:.*\(0x([0-9a-f]{4})\)`)        // system_profiler
-	macDeviceRe  = regexp.MustCompile(`(?i)Device ID:\s*0x([0-9a-f]{4})`)        // system_profiler
+	boardRe      = regexp.MustCompile(`\bMac-(?:[0-9A-Fa-f]{16}|[0-9A-Fa-f]{8})\b`) // older Macs have 8 digits
+	sysfsRe      = regexp.MustCompile(`(?i)\b0x([0-9a-f]{4}):0x([0-9a-f]{4})\b`)    // /sys vendor:device
+	lspciRe      = regexp.MustCompile(`(?i)\[([0-9a-f]{4}):([0-9a-f]{4})\]`)        // lspci -nn
+	macVendorRe  = regexp.MustCompile(`(?i)Vendor:.*\(0x([0-9a-f]{4})\)`)           // system_profiler
+	macDeviceRe  = regexp.MustCompile(`(?i)Device ID:\s*0x([0-9a-f]{4})`)           // system_profiler
 	cpuRe        = regexp.MustCompile(`(?im)^[ \t]*(?:model name[ \t]*:[ \t]*)?((?:Genuine )?Intel\(R\)[^\n]*?)[ \t]*$`)
 )
 

@@ -157,8 +157,26 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	}
 
 	// A pending result: stored, never shown.
-	_, err = add(file("macbookpro11-1-13-late-2013-a", "4.0.4", "2026-10-01T15:30:00Z", "", allPass, nil), false)
-	return err
+	if _, err = add(file("macbookpro11-1-13-late-2013-a", "4.0.4", "2026-10-01T15:30:00Z", "", allPass, nil), false); err != nil {
+		return err
+	}
+
+	// Shared IDs (PF-3) for /admin/shares: a known Mac with an aftermarket
+	// Wi-Fi card, the same set twice, and an identifier the catalog lacks.
+	for _, sh := range []store.Share{
+		{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", CPU: "Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz",
+			PCI: []string{"8086:0126", "1002:6760", "14e4:43a0"}, Modified: "yes", Release: "15-early-2011"},
+		{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", CPU: "Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz",
+			PCI: []string{"8086:0126", "1002:6760", "14e4:4331"}, Modified: "no", Release: "15-early-2011"},
+		{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", CPU: "Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz",
+			PCI: []string{"8086:0126", "1002:6760", "14e4:4331"}},
+		{Product: "MacBookPro18,1", BoardID: "Mac-0000000000000001"},
+	} {
+		if _, err := st.AddShare(ctx, sh); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func findDemoConfig(c *catalog.Catalog, id string) (*catalog.Mac, *catalog.Config) {

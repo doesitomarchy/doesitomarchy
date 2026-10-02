@@ -2,11 +2,14 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
 // The moderation CLI end to end: import (pending, with a preview), list,
@@ -140,5 +143,45 @@ items: { boot.install: { status: supported, method: observed } }
 		if code != s.code || !strings.Contains(out, s.want) {
 			t.Errorf("%v: exit %d, want %d and %q\n%s", s.args, code, s.code, s.want, out)
 		}
+	}
+}
+
+func TestSharesCLI(t *testing.T) {
+	db := filepath.Join(t.TempDir(), "sh.db")
+	t.Setenv("SUDO_USER", "carl")
+	run := func(args ...string) (int, string) {
+		t.Helper()
+		var out, errb bytes.Buffer
+		code := run(append(args[:1:1], append([]string{args[1], "-db", db}, args[2:]...)...), &out, &errb)
+		return code, out.String() + errb.String()
+	}
+	if code, out := run("shares", "list"); code != 0 || !strings.Contains(out, "No new shares.") {
+		t.Fatalf("empty list: %d\n%s", code, out)
+	}
+	st, err := store.Open(context.Background(), db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st.AddShare(context.Background(), store.Share{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", PCI: []string{"1002:6760", "ffff:0001"}, Modified: "no"})
+	st.AddShare(context.Background(), store.Share{Product: "MacBookPro18,1"})
+	st.Close()
+	for _, s := range []struct {
+		args []string
+		code int
+		want string
+	}{
+		{[]string{"shares", "list"}, 0, "pci=1002:6760,ffff:0001*  modified=no"},
+		{[]string{"shares", "list"}, 0, "MacBookPro18,1*: 1 shares, 1 new"},
+		{[]string{"shares", "review", "MacBookPro18,1"}, 0, "MacBookPro18,1: 1 marked reviewed"},
+		{[]string{"shares", "list", "-all"}, 0, "reviewed"},
+		{[]string{"shares", "review"}, 2, "wrong arguments"},
+	} {
+		code, out := run(s.args...)
+		if code != s.code || !strings.Contains(out, s.want) {
+			t.Errorf("%v: exit %d, want %d and %q\n%s", s.args, code, s.code, s.want, out)
+		}
+	}
+	if _, out := run("shares", "list"); strings.Contains(out, "MacBookPro18,1") {
+		t.Errorf("reviewed group still listed:\n%s", out)
 	}
 }

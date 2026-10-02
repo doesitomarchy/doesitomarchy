@@ -362,6 +362,8 @@
       sw.setAttribute("aria-checked", String(on));
       document.querySelectorAll("code[data-clip]").forEach(function (c) { c.textContent = c.getAttribute(on ? "data-clip" : "data-plain"); });
       document.querySelectorAll(".clip-note").forEach(function (n) { n.hidden = !on; });
+      // PF-2: the explanation describes exactly the command shown.
+      document.querySelectorAll("[data-clip-only]").forEach(function (n) { n.hidden = !on; });
       step.textContent = step.getAttribute(on ? "data-clip-text" : "data-plain-text");
     };
     sw.addEventListener("click", function () { setClip(sw.getAttribute("aria-checked") !== "true"); });
@@ -371,7 +373,7 @@
       var q = new URLSearchParams();
       var id = text.match(/\b(MacBook(?:Air|Pro)?|iMac(?:Pro)?|Macmini|MacPro|Xserve)\d{1,2},\d{1,2}\b/);
       if (id) q.set("product", id[0]);
-      var board = text.match(/\bMac-[0-9A-Fa-f]{16}\b/);
+      var board = text.match(/\bMac-(?:[0-9A-Fa-f]{16}|[0-9A-Fa-f]{8})\b/);
       if (board) q.set("board", "Mac-" + board[0].slice(4).toUpperCase());
       var cpu = text.match(/^[ \t]*(?:model name[ \t]*:[ \t]*)?((?:Genuine )?Intel\(R\)[^\n]*?)[ \t]*$/im);
       if (cpu) q.set("cpu", cpu[1].split(/\s+/).join(" "));
