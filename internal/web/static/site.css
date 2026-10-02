@@ -293,6 +293,15 @@ h2.gh { font-size: 17px; }
 .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
 .panel { border: 1px solid var(--line); background: var(--panel); padding: 0.8rem 1rem; }
 .panel h2 { font-size: 0.95rem; }
+/* Full-width panels under the coverage block (/stats). */
+.panel.wide { margin-top: 1.25rem; }
+.report-cols { display: flex; flex-wrap: wrap; gap: 0 2.5rem; }
+.report-cols > div { flex: 0.8 1 min(100%, 16rem); min-width: 0; }
+.report-cols > .col-recent { flex: 1 1 min(100%, 28rem); }
+.report-cols > .col-failing { flex: 1.6 1 min(100%, 22rem); }
+ul.recent li { white-space: nowrap; }
+@media (max-width: 480px) { ul.recent li { white-space: normal; } }
+.reports-panel .hbar { grid-template-columns: minmax(0, 2fr) minmax(3rem, 1fr) 2rem; }
 .hbar { display: grid; grid-template-columns: 9rem 1fr 3rem; gap: 0.6rem; align-items: center; font-size: 13px; padding: 0.1rem 0; }
 .hbar svg { display: block; width: 100%; height: 8px; background: var(--bg); border: 1px solid var(--line); }
 .hbar svg rect { fill: var(--accent); }

@@ -3,20 +3,22 @@
 <p class="muted">Every figure comes from the catalog and the accepted diagnostic reports. The site has no analytics.</p>
 <section class="panel cov-wide"><h2>Coverage</h2><div class="coverage">{{template "coverage-rows" $.Site}}</div>
   <p class="muted">N = {{$.Site.Coverage.Eligible}} configurations. Not counted: <a href="/configs?status=not-compatible">{{$.Site.Coverage.NotCompatible}} not compatible by design</a>{{range $.Site.Exclusions}} · <a href="/configs?excluded={{.Reason}}">{{.Count}} {{.Reason}}</a>{{end}}.</p></section>
-<div class="grid3">
-  <section class="panel"><h2>Diagnostic reports</h2>
+<section class="panel wide reports-panel"><h2>Diagnostic reports</h2>
   {{if .Results}}
     <p><b>{{.Results}}</b> accepted {{plural .Results "report" "reports"}}{{with $.Site.Coverage.StaleVerified}} · {{.}} verified on an older Omarchy{{end}}.</p>
-    {{with .Recent}}<h3 class="sub-h">Recent</h3>
-    <ul class="recent">{{range .}}<li><a href="/report/{{.Code}}">{{.Identifier}}</a> <span class="muted">{{utc .TestedAt}} · Omarchy {{.Omarchy}}</span></li>{{end}}</ul>{{end}}
-    {{with .MostTested}}<h3 class="sub-h">Most-tested Macs</h3>
-    {{range .}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}{{end}}
-    {{with .MostFailed}}<h3 class="sub-h">Failing on the most configurations</h3>
-    {{range .}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}{{end}}
+    <div class="report-cols">
+    {{with .Recent}}<div class="col-recent"><h3 class="sub-h">Recent</h3>
+    <ul class="recent">{{range .}}<li><a href="/report/{{.Code}}">{{.Identifier}}</a> <span class="muted">{{utc .TestedAt}} · Omarchy {{.Omarchy}}</span></li>{{end}}</ul></div>{{end}}
+    {{with .MostTested}}<div><h3 class="sub-h">Most-tested Macs</h3>
+    {{range .}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}</div>{{end}}
+    {{with .MostFailed}}<div class="col-failing"><h3 class="sub-h">Failing on the most configurations</h3>
+    {{range .}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}</div>{{end}}
+    </div>
   {{else}}
     <p>No diagnostic reports yet.</p>
     <p class="muted">Once reports arrive, this panel shows reports accepted, recent reports, the most-tested Macs and the capabilities that fail on the most configurations.</p>
   {{end}}</section>
+<div class="grid3">
   <section class="panel"><h2>Configurations by product line</h2>
     {{range .Lines}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}</section>
   <section class="panel"><h2>Configurations by release year</h2>
