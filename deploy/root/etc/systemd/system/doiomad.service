@@ -9,6 +9,9 @@ Wants=network-online.target
 User=doiomad
 Group=doiomad
 Environment=DOIOMAD_DB=/var/lib/doiomad/doesitomarchy.db
+# Optional: CF_ZONE_ID and CF_PURGE_TOKEN (purge-only), so accepted results
+# reach visitors within seconds instead of when the 5-minute cache expires.
+EnvironmentFile=-/etc/doiomad/doiomad.env
 ExecStart=/opt/doiomad/current/doiomad serve -addr 127.0.0.1:8080
 WorkingDirectory=/var/lib/doiomad
 Restart=always

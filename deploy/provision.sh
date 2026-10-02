@@ -14,6 +14,8 @@
 #   DEPLOY_KEY     deploy private key, created if missing (default: ~/.ssh/doesitomarchy_deploy)
 #   LITESTREAM_BUCKET, LITESTREAM_ENDPOINT, LITESTREAM_ACCESS_KEY_ID,
 #   LITESTREAM_SECRET_ACCESS_KEY   R2 replica; written to the droplet when set
+#   CF_ZONE_ID, CF_PURGE_TOKEN     purge-only Cloudflare token for the server, which
+#                                  purges the cache after results change (primary only)
 #   SET_GITHUB_SECRETS=1           also store DEPLOY_HOST/KEY/KNOWN_HOSTS in GitHub
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -86,6 +88,12 @@ if [ -n "${LITESTREAM_ACCESS_KEY_ID:-}" ]; then
 	printf 'LITESTREAM_BUCKET=%s\nLITESTREAM_ENDPOINT=%s\nLITESTREAM_ACCESS_KEY_ID=%s\nLITESTREAM_SECRET_ACCESS_KEY=%s\n' \
 		"${LITESTREAM_BUCKET:?}" "${LITESTREAM_ENDPOINT:?}" "$LITESTREAM_ACCESS_KEY_ID" "${LITESTREAM_SECRET_ACCESS_KEY:?}" |
 		ssh "${ssh_opts[@]}" "$ADMIN_USER@$ip" "sudo install -d -m 0750 /etc/doiomad && sudo install -m 0640 -g root /dev/stdin /etc/doiomad/litestream.env.tmp && sudo mv /etc/doiomad/litestream.env.tmp /etc/doiomad/litestream.env"
+fi
+
+if [ -n "${CF_PURGE_TOKEN:-}" ] && [ "$REPLICATE" = 1 ]; then
+	step "writing the cache-purge token"
+	printf 'CF_ZONE_ID=%s\nCF_PURGE_TOKEN=%s\n' "${CF_ZONE_ID:?}" "$CF_PURGE_TOKEN" |
+		ssh "${ssh_opts[@]}" "$ADMIN_USER@$ip" "sudo install -d -m 0750 /etc/doiomad && sudo install -m 0600 /dev/stdin /etc/doiomad/doiomad.env.tmp && sudo mv /etc/doiomad/doiomad.env.tmp /etc/doiomad/doiomad.env"
 fi
 
 step "running setup.sh"

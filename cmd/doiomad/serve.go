@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -104,7 +105,8 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	db, dataDir := dbFlags(fs)
 	addr := fs.String("addr", "127.0.0.1:8080", "listen address")
-	demo := fs.Bool("demo", false, "design review only: show made-up results on a few configurations")
+	demo := fs.Bool("demo", false, "design review only: a throwaway database with made-up results (ignores -db)")
+	watch := fs.Duration("watch", 5*time.Second, "how often to check for result changes (0: never)")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -112,18 +114,36 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	if *demo {
+		// Never write made-up results into a real database.
+		dir, err := os.MkdirTemp("", "doiomad-demo-")
+		if err != nil {
+			log.Error("demo", "err", err)
+			return 1
+		}
+		defer os.RemoveAll(dir)
+		*db = filepath.Join(dir, "demo.db")
+		log.Info("demo mode: using a throwaway database", "db", *db)
+	}
 	st, c, changed, err := openSynced(ctx, *db, *dataDir)
 	if err != nil {
 		log.Error("startup", "err", err)
 		return 1
 	}
 	defer st.Close()
+	if *demo {
+		if err := seedDemo(ctx, st, c); err != nil {
+			log.Error("demo", "err", err)
+			return 1
+		}
+	}
 	start := time.Now()
 	hash, _ := catalog.HashFS(catalogFS(*dataDir))
 	if len(hash) > 10 {
 		hash = hash[:10]
 	}
-	srv, err := web.New(st, c, log, web.Options{Version: version, CatalogHash: hash, CatalogDate: catalogDate, CatalogCommit: catalogCommit, Demo: *demo})
+	srv, err := web.New(st, c, log, web.Options{Version: version, CatalogHash: hash, CatalogDate: catalogDate, CatalogCommit: catalogCommit,
+		Demo: *demo, PurgeZone: os.Getenv("CF_ZONE_ID"), PurgeToken: os.Getenv("CF_PURGE_TOKEN")})
 	log.Info("views and search index built", "ms", time.Since(start).Milliseconds(), "demo", *demo)
 	if err != nil {
 		log.Error("templates", "err", err)
@@ -145,6 +165,9 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	log.Info("serving", "addr", ln.Addr().String(), "db", *db, "catalog_changed", changed, "version", version)
 	errc := make(chan error, 1)
 	go func() { errc <- hs.Serve(ln) }()
+	if *watch > 0 {
+		go srv.Watch(ctx, *watch)
+	}
 	select {
 	case err := <-errc:
 		log.Error("serve", "err", err)

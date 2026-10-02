@@ -40,7 +40,9 @@ make check                                   # everything CI runs
 
 ## Test results
 
-Results will be stored in the site database, not in this repo. Submission opens with the site's API, in a later phase; until then no results are accepted.
+Results are stored in the site database, not in this repo. They use the DoesItOmarchy result schema, `doesitomarchy/result/v1`: one file per test run, for one configuration, with a status for each capability tested. [`internal/results/fixtures/mbp152-synthetic.yaml`](internal/results/fixtures/mbp152-synthetic.yaml) is a complete (made-up) example.
+
+Every result starts pending, and a maintainer reviews it before it counts. For now maintainers import results by hand; the submission API for test tools such as OmacDiag comes next. Personal data (serial numbers, MAC and IP addresses, host and user names) is removed before anything is stored.
 
 ## Code
 

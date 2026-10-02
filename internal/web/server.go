@@ -5,6 +5,7 @@ package web
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"fmt"
 	"html/template"
@@ -14,6 +15,8 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
@@ -36,17 +39,30 @@ const RepoURL = "https://github.com/doesitomarchy/doesitomarchy"
 // Server serves the site.
 type Server struct {
 	store   *store.Store
-	index   *search.Index
-	view    *catalogView
 	cat     *catalog.Catalog
+	opt     Options
+	snap    atomic.Pointer[snapshot]
 	assets  *assets
 	log     *slog.Logger
 	version string
 	pages   map[string]*template.Template
+	purge   *purger
 }
 
-// New builds the page views and the search index from the catalog, and
-// parses templates.
+// snapshot is everything built from the catalog and the accepted results.
+// It is immutable; a rebuild makes a new one and swaps it in atomically, so
+// a request always sees one consistent version.
+type snapshot struct {
+	view    *catalogView
+	index   *search.Index
+	version int64 // the store's data version it was built from
+}
+
+// data returns the current snapshot.
+func (s *Server) data() *snapshot { return s.snap.Load() }
+
+// New builds the page views and the search index from the catalog and the
+// accepted results, and parses templates.
 func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*Server, error) {
 	static, err := fs.Sub(staticFS, "static")
 	if err != nil {
@@ -56,23 +72,30 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 	if err != nil {
 		return nil, err
 	}
-	view := buildView(c, opt)
-	s := &Server{store: st, index: search.Build(c, view.states), view: view, cat: c, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{}}
-	funcs := template.FuncMap{
-		"asset":      a.URL,
-		"pct":        formatPct,
-		"barw":       func(n, d int) string { return fmt.Sprintf("%.2f", pctOf(n, d)) },
-		"query":      func(q string) string { return "/search?q=" + url.QueryEscape(q) },
-		"plural":     func(n int, one, many string) string { return map[bool]string{true: one, false: many}[n == 1] },
-		"join":       strings.Join,
-		"joinlim":    joinLimit,
-		"dots":       func(n int) string { return strings.Repeat("·", n) },
-		"add":        func(a, b int) int { return a + b },
-		"applies":    s.appliesText,
-		"v":          func(s string) status.Verdict { return status.Verdict(s) },
-		"releaseURL": releaseURL,
+	s := &Server{store: st, cat: c, opt: opt, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{},
+		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log)}
+	if _, err := s.Refresh(context.Background()); err != nil {
+		return nil, fmt.Errorf("load results: %w", err)
 	}
-	for _, p := range []string{"home", "mac", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+	funcs := template.FuncMap{
+		"asset":       a.URL,
+		"pct":         formatPct,
+		"barw":        func(n, d int) string { return fmt.Sprintf("%.2f", pctOf(n, d)) },
+		"query":       func(q string) string { return "/search?q=" + url.QueryEscape(q) },
+		"plural":      func(n int, one, many string) string { return map[bool]string{true: one, false: many}[n == 1] },
+		"join":        strings.Join,
+		"joinlim":     joinLimit,
+		"dots":        func(n int) string { return strings.Repeat("·", n) },
+		"add":         func(a, b int) int { return a + b },
+		"applies":     s.appliesText,
+		"v":           func(s string) status.Verdict { return status.Verdict(s) },
+		"releaseURL":  releaseURL,
+		"itemVerdict": itemVerdict,
+		"day":         func(ts string) string { return ts[:min(len(ts), 10)] },
+		"itemLabel":   itemLabel,
+		"reasonLabel": reasonLabel,
+	}
+	for _, p := range []string{"home", "mac", "result", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
@@ -96,6 +119,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /{$}", s.home)
 	mux.HandleFunc("GET /macs", s.macs)
 	mux.HandleFunc("GET /mac/{id}", s.mac)
+	mux.HandleFunc("GET /result/{id}", s.result)
 	mux.HandleFunc("GET /search", s.search)
 	mux.HandleFunc("GET /search/suggest", s.suggest)
 	mux.HandleFunc("GET /stats", s.stats)
@@ -152,7 +176,7 @@ type page struct {
 
 // render executes into a buffer first so a template error never sends half a page.
 func (s *Server) render(w http.ResponseWriter, r *http.Request, code int, name string, p page) {
-	p.Site, p.Version = &s.view.site, s.version
+	p.Site, p.Version = &s.data().view.site, s.version
 	// Canonical: the path without its query (filters and views are the same
 	// page), unless the handler chose one. Error pages have none.
 	if code != http.StatusOK {
@@ -224,4 +248,93 @@ func joinLimit(xs []string, n int) string {
 		return strings.Join(xs, ", ")
 	}
 	return strings.Join(xs[:n], ", ") + fmt.Sprintf(" +%d", len(xs)-n)
+}
+
+// Refresh rebuilds the views and search index from the store's accepted
+// results if they changed since the current snapshot, and swaps them in.
+// It reports whether anything changed.
+func (s *Server) Refresh(ctx context.Context) (bool, error) {
+	ru, err := s.store.RollupData(ctx)
+	if err != nil {
+		return false, err
+	}
+	if cur := s.snap.Load(); cur != nil && cur.version == ru.Version {
+		return false, nil
+	}
+	start := time.Now()
+	view := buildView(s.cat, s.opt, ru)
+	s.snap.Store(&snapshot{view: view, index: search.Build(s.cat, view.states), version: ru.Version})
+	s.log.Info("results loaded", "data_version", ru.Version, "verified", view.site.Coverage.Verified,
+		"tested", view.site.Coverage.Tested, "ms", time.Since(start).Milliseconds())
+	return true, nil
+}
+
+// Watch polls the store's data version and rebuilds when it moves (an
+// accept, retract or Unsupported flag from the CLI or /admin), then asks
+// Cloudflare to drop its cached pages. It returns when ctx is done.
+func (s *Server) Watch(ctx context.Context, every time.Duration) {
+	t := time.NewTicker(every)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+		}
+		v, err := s.store.DataVersion(ctx)
+		if err != nil {
+			if ctx.Err() == nil {
+				s.log.Warn("data version", "err", err)
+			}
+			continue
+		}
+		if cur := s.snap.Load(); cur != nil && cur.version == v {
+			continue
+		}
+		changed, err := s.Refresh(ctx)
+		if err != nil {
+			s.log.Error("rebuild", "err", err)
+			continue
+		}
+		if changed {
+			s.purge.schedule()
+		}
+	}
+}
+
+// itemVerdict maps a stored item status to the verdict glyph it shows.
+func itemVerdict(st string) status.Verdict {
+	switch st {
+	case "supported":
+		return status.Supported
+	case "partial":
+		return status.Partial
+	case "failed":
+		return status.Failed
+	default:
+		return status.Untested
+	}
+}
+
+// itemLabel is a stored item status as people read it.
+func itemLabel(st string) string {
+	if st == "not_tested" {
+		return "Not tested"
+	}
+	return itemVerdict(st).Label()
+}
+
+// reasonLabel explains why a check was skipped.
+func reasonLabel(r string) string {
+	switch r {
+	case "no-equipment":
+		return "skipped: no equipment"
+	case "not-in-profile":
+		return "skipped: not in the test profile"
+	case "uncertain":
+		return "skipped: result uncertain"
+	case "other":
+		return "skipped"
+	}
+	return ""
 }

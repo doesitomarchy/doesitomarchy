@@ -190,7 +190,12 @@ type Stats struct {
 }
 
 func (c *Catalog) Stats() Stats {
-	s := Stats{Macs: len(c.Macs), Components: len(c.Components), Capabilities: len(c.Capabilities)}
+	s := Stats{Macs: len(c.Macs), Components: len(c.Components)}
+	for _, cp := range c.Capabilities {
+		if !cp.Retired {
+			s.Capabilities++
+		}
+	}
 	for _, comp := range c.Components {
 		s.Uncertain += len(comp.Uncertain)
 	}

@@ -16,7 +16,7 @@ const CHROME = process.env.CHROME || "/usr/bin/chromium";
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
-  "/contribute", "/configs", "/components", "/changelog", "/attribution",
+  "/contribute", "/configs", "/components", "/changelog", "/attribution", "/result/7", "/mac/MacBookAir7-2",
 ];
 const widths = [360, 1440];
 const contrastPages = ["/", "/mac/MacBookPro15-1"];

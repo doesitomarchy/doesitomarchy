@@ -20,7 +20,7 @@ var catalogTables = []string{
 
 // syncFormat versions how catalog rows are written (column set, JSON shape).
 // Bumping it forces a re-sync of an unchanged catalog after an upgrade.
-const syncFormat = "2"
+const syncFormat = "3"
 
 // SyncCatalog replaces the catalog tables with c in one transaction. hash
 // identifies the catalog content (catalog.HashFS); if it matches the last
@@ -162,8 +162,8 @@ func (w *writer) capabilities(c *catalog.Catalog) {
 			cat.ID, cat.Name, cat.Icon, b2i(cat.Blocking), i)
 	}
 	for i, cp := range c.Capabilities {
-		w.exec("INSERT INTO capabilities (id, category_id, name, description, ord) VALUES (?, ?, ?, ?, ?)",
-			cp.ID, cp.Category(), cp.Name, cp.Description, i)
+		w.exec("INSERT INTO capabilities (id, category_id, name, description, ord, retired) VALUES (?, ?, ?, ?, ?, ?)",
+			cp.ID, cp.Category(), cp.Name, cp.Description, i, b2i(cp.Retired))
 	}
 }
 

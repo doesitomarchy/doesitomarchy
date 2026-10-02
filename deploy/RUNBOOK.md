@@ -101,6 +101,35 @@ under `deploy/root/`, run `deploy/provision.sh` again to apply it.
 same steps rebuild a lost server: provision, run cloudflare.sh (it moves the
 tunnel token to the new droplet), and tag or re-deploy a release.
 
+## Moderating results
+
+Results arrive as files (later through the API) and start **pending**. Nothing
+counts until a maintainer accepts it. On the droplet the `doiomad` wrapper
+runs as the service user, which can't read your home directory, so pipe
+files in:
+
+```sh
+doiomad results import - < result.yaml     # validates, stores as pending, previews the effect
+doiomad results list -state pending
+doiomad results show 12                    # items, evidence, flags, history
+doiomad results accept 12
+doiomad results reject 12 -reason "duplicate of #11"
+doiomad results retract 12 -reason "tested with a third-party Wi-Fi card"
+doiomad results flags                      # open review flags
+doiomad results resolve 3 -note "stored, not counted; fine"
+```
+
+- **Effect:** accepts and retractions bump a change counter. The server
+  rebuilds within about 5 s, then purges Cloudflare's cache 10 s after the
+  last change. That needs `CF_ZONE_ID` and `CF_PURGE_TOKEN` (a purge-only
+  token) in `/etc/doiomad/doiomad.env`, which `provision.sh` writes when
+  they're set. Without them, pages catch up within 5 minutes.
+- **Records:** every action is recorded with your user name. Nothing is ever
+  deleted; a retracted result keeps its public page, marked retracted.
+- **Privacy:** personal data (serials, MAC and IP addresses, host and user
+  names, e-mail addresses) is scrubbed before storage. The raw submission is
+  kept, scrubbed and private.
+
 ## Public or private
 
 The site went public on 2026-10-01 (Phase 6). `cloudflare.sh` keeps it public

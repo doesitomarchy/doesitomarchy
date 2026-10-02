@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -11,6 +12,7 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
+	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
 // preset is one of the quick searches under the home search bar (PLAN §17.7).
@@ -80,20 +82,20 @@ type searchData struct {
 }
 
 func (s *Server) runSearch(q, sortBy string) searchData {
-	resp := s.index.Search(q)
+	resp := s.data().index.Search(q)
 	if sortBy == "recent" {
 		search.SortRecent(resp.Results)
 	}
 	d := searchData{Q: q, Sort: sortBy, Resp: resp, Presets: presets}
 	for _, res := range resp.Results {
-		rv := resultView{Result: res, Mac: s.view.bySlug[strings.ToLower(res.Slug)]}
+		rv := resultView{Result: res, Mac: s.data().view.bySlug[strings.ToLower(res.Slug)]}
 		for _, hit := range res.Configs {
-			rv.Scoped = append(rv.Scoped, s.view.configs[hit.ID])
+			rv.Scoped = append(rv.Scoped, s.data().view.configs[hit.ID])
 		}
 		d.Results = append(d.Results, rv)
 	}
 	lq := strings.ToLower(q)
-	if len(resp.Results) == 0 && s.view.site.Coverage.Tested == 0 && (strings.Contains(lq, "tested:") || strings.Contains(lq, "status:")) {
+	if len(resp.Results) == 0 && s.data().view.site.Coverage.Tested == 0 && (strings.Contains(lq, "tested:") || strings.Contains(lq, "status:")) {
 		d.NoResults = true
 	}
 	return d
@@ -131,7 +133,7 @@ func (s *Server) suggest(w http.ResponseWriter, r *http.Request) {
 	if c, err := strconv.Atoi(r.URL.Query().Get("cursor")); err == nil {
 		cursor = c
 	}
-	s.renderPartial(w, r, "suggest", "suggestions", s.index.Suggest(q, cursor))
+	s.renderPartial(w, r, "suggest", "suggestions", s.data().index.Suggest(q, cursor))
 }
 
 // ── model page ────────────────────────────────────────────────────────────
@@ -143,7 +145,7 @@ type macData struct {
 
 func (s *Server) mac(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	m := s.view.bySlug[strings.ToLower(strings.ReplaceAll(id, ",", "-"))]
+	m := s.data().view.bySlug[strings.ToLower(strings.ReplaceAll(id, ",", "-"))]
 	if m == nil {
 		s.notFound(w, r)
 		return
@@ -181,17 +183,17 @@ func (s *Server) macs(w http.ResponseWriter, r *http.Request) {
 	if !sortKeys[sortBy] {
 		sortBy = ""
 	}
-	d := macsData{Q: q, Sort: sortBy, Total: len(s.view.macs)}
-	rows := s.view.macs
+	d := macsData{Q: q, Sort: sortBy, Total: len(s.data().view.macs)}
+	rows := s.data().view.macs
 	if strings.TrimSpace(q) != "" {
-		resp := s.index.Search(q)
+		resp := s.data().index.Search(q)
 		d.Errors = resp.Errors
 		keep := map[string]bool{}
 		for _, res := range resp.Results {
 			keep[res.Identifier] = true
 		}
 		rows = nil
-		for _, m := range s.view.macs {
+		for _, m := range s.data().view.macs {
 			if keep[m.Identifier] {
 				rows = append(rows, m)
 			}
@@ -235,6 +237,11 @@ type statsData struct {
 	Lines []countRow
 	Years []countRow
 	Top   []topList
+	// Test results (empty until the first accepted result).
+	Results    int
+	MostTested []countRow
+	MostFailed []countRow
+	Recent     []store.ResultSummary
 }
 
 type topList struct {
@@ -245,15 +252,15 @@ type topList struct {
 func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
 	var d statsData
 	maxLine := 0
-	for _, l := range s.view.site.Lines {
+	for _, l := range s.data().view.site.Lines {
 		maxLine = max(maxLine, l.Configs)
 	}
-	for _, l := range s.view.site.Lines {
+	for _, l := range s.data().view.site.Lines {
 		d.Lines = append(d.Lines, countRow{l.Name, l.Configs, maxLine, "/configs?line=" + url.QueryEscape(l.Key)})
 	}
 	years := map[int]int{}
 	comps := map[string]map[string]int{}
-	for _, m := range s.view.macs {
+	for _, m := range s.data().view.macs {
 		for _, rel := range m.Releases {
 			y, _ := strconv.Atoi(rel.Announced[:4])
 			years[y] += len(rel.Configs)
@@ -300,7 +307,124 @@ func (s *Server) stats(w http.ResponseWriter, r *http.Request) {
 		}
 		d.Top = append(d.Top, topList{k.title, rows})
 	}
+	s.resultStats(&d)
 	s.render(w, r, http.StatusOK, "stats", page{Title: "Stats", Nav: "stats", Data: d})
+}
+
+// resultStats fills the "Test results" panel: totals, the most-tested Macs,
+// the capabilities that fail on the most configurations, and recent results.
+func (s *Server) resultStats(d *statsData) {
+	v := s.data().view
+	perMac, failing := map[string]int{}, map[string]int{}
+	var recent []store.ResultSummary
+	names := map[string]string{}
+	for _, cp := range s.cat.Capabilities {
+		names[cp.ID] = cp.Name
+	}
+	for _, m := range v.macs {
+		for _, cv := range m.Configs {
+			d.Results += cv.Status.Results
+			perMac[m.Identifier] += cv.Status.Results
+			for id, cs := range cv.Status.Caps {
+				if cs.Verdict == status.Failed {
+					failing[id]++
+				}
+			}
+			for _, x := range cv.Results {
+				if x.State == store.Accepted {
+					recent = append(recent, x)
+				}
+			}
+		}
+	}
+	top := func(counts map[string]int, label func(string) string, url func(string) string) []countRow {
+		var rows []countRow
+		for k, n := range counts {
+			if n > 0 {
+				rows = append(rows, countRow{Label: label(k), Count: n, URL: url(k)})
+			}
+		}
+		sort.Slice(rows, func(i, j int) bool {
+			if rows[i].Count != rows[j].Count {
+				return rows[i].Count > rows[j].Count
+			}
+			return rows[i].Label < rows[j].Label
+		})
+		if len(rows) > 8 {
+			rows = rows[:8]
+		}
+		for i := range rows {
+			rows[i].Max = rows[0].Count
+		}
+		return rows
+	}
+	d.MostTested = top(perMac, func(k string) string { return k },
+		func(k string) string { return "/mac/" + url.PathEscape(catalog.FileSlug(k)) })
+	d.MostFailed = top(failing, func(k string) string { return names[k] },
+		func(k string) string { return "/search?q=" + url.QueryEscape("status:failed") })
+	sort.Slice(recent, func(i, j int) bool {
+		if recent[i].TestedOn != recent[j].TestedOn {
+			return recent[i].TestedOn > recent[j].TestedOn
+		}
+		return recent[i].ID > recent[j].ID
+	})
+	if len(recent) > 8 {
+		recent = recent[:8]
+	}
+	d.Recent = recent
+}
+
+// ── result pages ──────────────────────────────────────────────────────────
+
+type resultData struct {
+	R      *store.ResultDetail
+	Config *configView
+	Groups []resultGroup
+	Other  []store.ResultItem // stored but not counted: the capability doesn't apply
+}
+
+type resultGroup struct {
+	Name, Icon string
+	Items      []store.ResultItem
+}
+
+// result serves /result/{id}: one accepted (or retracted) result in full.
+// Pending and rejected results are never public.
+func (s *Server) result(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id <= 0 {
+		s.notFound(w, r)
+		return
+	}
+	rd, err := s.store.Result(r.Context(), id)
+	if errors.Is(err, store.ErrNotFound) || (err == nil && rd.State != store.Accepted && rd.State != store.Retracted) {
+		s.notFound(w, r)
+		return
+	}
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	d := resultData{R: rd, Config: s.data().view.configs[rd.ConfigID]}
+	icons := map[string]string{}
+	for _, k := range s.cat.Categories {
+		icons[k.ID] = iconFor[k.Icon]
+	}
+	for _, it := range rd.Items {
+		if !it.Applicable {
+			d.Other = append(d.Other, it)
+			continue
+		}
+		if n := len(d.Groups); n == 0 || d.Groups[n-1].Name != it.CategoryName {
+			d.Groups = append(d.Groups, resultGroup{Name: it.CategoryName, Icon: icons[it.CategoryID]})
+		}
+		g := &d.Groups[len(d.Groups)-1]
+		g.Items = append(g.Items, it)
+	}
+	title := fmt.Sprintf("Result #%d · %s", id, rd.Identifier)
+	desc := fmt.Sprintf("Omarchy %s test result for %s, %s: %d passed, %d partly, %d failed.", rd.Omarchy, rd.Identifier,
+		rd.TestedOn, rd.Supported, rd.Partial, rd.Failed)
+	s.render(w, r, http.StatusOK, "result", page{Title: title, Description: desc, Data: d})
 }
 
 // ── methodology / contribute ──────────────────────────────────────────────
@@ -317,7 +441,9 @@ func (s *Server) methodology(w http.ResponseWriter, r *http.Request) {
 		d.Icons[k.ID] = iconFor[k.Icon]
 	}
 	for _, c := range s.cat.Capabilities {
-		d.Caps[c.Category()] = append(d.Caps[c.Category()], c)
+		if !c.Retired {
+			d.Caps[c.Category()] = append(d.Caps[c.Category()], c)
+		}
 	}
 	s.render(w, r, http.StatusOK, "methodology", page{Title: "Methodology", Nav: "methodology", Data: d})
 }
@@ -397,7 +523,7 @@ type criteriaData struct{ Lines []lineMatrix }
 func (s *Server) criteria(w http.ResponseWriter, r *http.Request) {
 	byLine := map[string][]*configView{}
 	names := map[string]string{}
-	for _, m := range s.view.macs {
+	for _, m := range s.data().view.macs {
 		byLine[m.LineKey] = append(byLine[m.LineKey], m.Configs...)
 		names[m.LineKey] = m.LineName
 	}
@@ -410,7 +536,7 @@ func (s *Server) criteria(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) releases(w http.ResponseWriter, r *http.Request) {
 	var rows []*releaseView
-	for _, m := range s.view.macs {
+	for _, m := range s.data().view.macs {
 		rows = append(rows, m.Releases...)
 	}
 	sort.SliceStable(rows, func(i, j int) bool { return rows[i].Announced > rows[j].Announced })
@@ -443,7 +569,7 @@ func (s *Server) configList(w http.ResponseWriter, r *http.Request) {
 	case qs.Get("line") != "":
 		key := qs.Get("line")
 		d.Title = "Configurations by product line: " + key
-		for _, l := range s.view.site.Lines {
+		for _, l := range s.data().view.site.Lines {
 			if l.Key == key {
 				d.Title = l.Name + " configurations"
 			}
@@ -453,7 +579,7 @@ func (s *Server) configList(w http.ResponseWriter, r *http.Request) {
 		y := qs.Get("year")
 		d.Title = "Configurations released in " + y
 		in := map[string]bool{}
-		for _, m := range s.view.macs {
+		for _, m := range s.data().view.macs {
 			for _, rel := range m.Releases {
 				if strings.HasPrefix(rel.Announced, y+"-") {
 					for _, c := range rel.Configs {
@@ -484,14 +610,14 @@ func (s *Server) configList(w http.ResponseWriter, r *http.Request) {
 		q := queryParam(r)
 		d.Title = "Configurations matching " + q
 		hit := map[string]bool{}
-		for _, res := range s.index.Search(q).Results {
+		for _, res := range s.data().index.Search(q).Results {
 			for _, c := range res.Configs {
 				hit[c.ID] = true
 			}
 		}
 		keep = func(c *configView) bool { return hit[c.ID] }
 	}
-	for _, m := range s.view.macs {
+	for _, m := range s.data().view.macs {
 		for _, c := range m.Configs {
 			if keep(c) {
 				d.Rows = append(d.Rows, c)
@@ -502,7 +628,7 @@ func (s *Server) configList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) componentList(w http.ResponseWriter, r *http.Request) {
-	s.render(w, r, http.StatusOK, "components", page{Title: "Components", Data: s.view.components})
+	s.render(w, r, http.StatusOK, "components", page{Title: "Components", Data: s.data().view.components})
 }
 
 func (s *Server) changelog(w http.ResponseWriter, r *http.Request) {
@@ -543,8 +669,16 @@ func (s *Server) sitemap(w http.ResponseWriter, r *http.Request) {
 	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution", "/changelog"} {
 		fmt.Fprintf(&b, "  <url><loc>%s%s</loc></url>\n", BaseURL, p)
 	}
-	for _, m := range s.view.macs {
+	d := s.data()
+	for _, m := range d.view.macs {
 		fmt.Fprintf(&b, "  <url><loc>%s/mac/%s</loc></url>\n", BaseURL, url.PathEscape(m.Slug))
+	}
+	for _, rs := range d.view.rollup.Accepted {
+		for _, x := range rs {
+			if x.State == store.Accepted {
+				fmt.Fprintf(&b, "  <url><loc>%s/result/%d</loc></url>\n", BaseURL, x.ID)
+			}
+		}
 	}
 	b.WriteString("</urlset>\n")
 	w.Write([]byte(b.String()))
