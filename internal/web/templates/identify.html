@@ -24,6 +24,29 @@
     <p>{{with .Probe.ProductName}}<code>{{.}}</code> isn't{{else}}That isn't{{end}} one of the Intel Macs Apple sold from 2006 to 2020. If it should be, <a href="/contribute">tell us</a>. You can also <a href="/macs">browse every Intel Mac</a>.</p>
   {{end}}
   <p class="muted identify-used">Matched on: {{with .Probe.ProductName}}<code>{{.}}</code> {{end}}{{with .Probe.BoardID}}<code>{{.}}</code> {{end}}{{with .Probe.CPU}}<code>{{.}}</code> {{end}}{{range .Probe.PCI}}<code>{{.}}</code> {{end}}· <a href="/identify">Start again</a></p>
+  <div class="share" id="share">
+  {{if .Shared}}
+    <p class="share-done" role="status">Thanks, shared. A maintainer will compare these IDs with the catalog.</p>
+  {{else}}
+    <form method="post" action="/identify/share" class="share-form">
+      <input type="hidden" name="product" value="{{.Probe.ProductName}}">
+      <input type="hidden" name="board" value="{{.Probe.BoardID}}">
+      <input type="hidden" name="cpu" value="{{.Probe.CPU}}">
+      <input type="hidden" name="pci" value="{{.PCIList}}">
+      {{if .ShareConsent}}<p class="notice" role="alert">Tick the box first if you'd like to share.</p>{{end}}
+      <label class="share-consent"><input type="checkbox" name="consent" value="yes" required> Share these IDs to help improve the catalog</label>
+      <fieldset class="share-q">
+        <legend>Has this Mac been modified, such as a new Wi-Fi card or an SSD adapter? <span class="muted">(optional)</span></legend>
+        {{range .Modified}}<label><input type="radio" name="modified" value="{{.Value}}"> {{.Label}}</label>{{end}}
+      </fieldset>
+      {{with .Mac}}<label class="share-q">Which release does About This Mac show? <span class="muted">(optional)</span>
+        <select name="release"><option value="">Not sure</option>{{range .Releases}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select>
+      </label>{{end}}
+      <button class="btn" type="submit">Share</button>
+      <p class="muted share-small">We keep only the IDs listed above, your answers and today's date. Nothing links a share to you, so it can't be withdrawn later. A maintainer reviews shares by hand; they never change the catalog by themselves. See <a href="/privacy#sharing">privacy</a>.</p>
+    </form>
+  {{end}}
+  </div>
 </section>
 {{else if .NoneFound}}
 <p class="notice" role="alert">Nothing we recognise was in what you pasted. Check that you copied the command's whole output.</p>
@@ -47,6 +70,18 @@
       <div class="snippet-code" tabindex="0" role="region" aria-label="{{.Label}} command"><pre><code id="cmd-{{.OS}}" data-plain="{{.Plain}}" data-clip="{{.Clip}}">{{.Clip}}</code></pre></div>
       <button type="button" class="snippet-copy" data-copy="cmd-{{.OS}}" aria-label="Copy the {{.Label}} command" title="Copy" data-js>{{template "icon" "copy"}}<span class="copied" aria-hidden="true">Copied!</span></button>
     </div>
+    <details class="explain">
+      <summary>Learn what this command does</summary>
+      <table class="explain-table">
+        <thead><tr><th scope="col">Part</th><th scope="col">What it does</th><th scope="col">Learn more</th></tr></thead>
+        <tbody>{{range .Explain}}<tr{{if .ClipOnly}} data-clip-only{{end}}>
+          <td><code>{{.Part}}</code>{{if .ClipOnly}} <span class="muted clip-tag">only when copying</span>{{end}}</td>
+          <td>{{.What}}</td>
+          <td>{{range .Links}}<a class="offsite" href="{{.URL}}" rel="noopener">{{.Label}}{{template "icon" "external"}}<span class="sr-only"> (another site)</span></a> {{end}}</td>
+        </tr>{{end}}</tbody>
+      </table>
+      <p class="muted">None of these commands change anything; they only read.</p>
+    </details>
   </div>
   {{end}}
   <p class="sr-only" aria-live="polite" id="copy-status"></p>

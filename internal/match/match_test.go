@@ -122,3 +122,16 @@ func TestNotReportedPerPart(t *testing.T) {
 		t.Errorf("not reported: %v, want %v", best.NotReported, want)
 	}
 }
+
+func TestKnown(t *testing.T) {
+	m := matcher(t)
+	if !m.KnownBoard("mac-94245a3940c91c80") || m.KnownBoard("Mac-0000000000000000") {
+		t.Error("KnownBoard")
+	}
+	if !m.KnownDevice("1002:6760", "pci") || !m.KnownDevice("pci:8086:0126", "pci") || m.KnownDevice("ffff:0001", "pci") {
+		t.Error("KnownDevice")
+	}
+	if !m.KnownCPU("Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz") || m.KnownCPU("Intel(R) Core(TM) i9-99999 CPU") {
+		t.Error("KnownCPU")
+	}
+}

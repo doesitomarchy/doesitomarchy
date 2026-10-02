@@ -18,10 +18,11 @@ const pages = [
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
   "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
-  "/api", "/privacy", "/admin", "/admin/sources", "ADMIN_REPORT",
+  "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
+  "/api", "/privacy", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
-const contrastPages = ["/", "/mac/MacBookPro15-1"];
+const contrastPages = ["/", "/mac/MacBookPro15-1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares"];
 
 const failures = [];
 const fail = (where, msg) => failures.push(`${where}: ${msg}`);
@@ -37,6 +38,8 @@ async function load(path, width, theme) {
   const res = await page.goto(BASE + path, { waitUntil: "networkidle0" });
   if (!res.ok()) throw new Error(`${path}: HTTP ${res.status()}`);
   if (!(await page.evaluate(() => typeof window.axe !== "undefined"))) await page.evaluate(axeSource);
+  // Check what's folded away too: Identify my Mac's command explanations.
+  await page.evaluate(() => document.querySelectorAll("details.explain").forEach((d) => { d.open = true; }));
 }
 
 async function axe(rules) {

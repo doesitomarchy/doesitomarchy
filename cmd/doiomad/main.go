@@ -35,6 +35,8 @@ Commands:
   sources    Manage the test tools that submit reports: list, add, rotate, revoke,
              trust (doiomad sources help)
   maintainers  Who may review reports in /admin: list, add, remove
+  shares     Hardware IDs shared from Identify my Mac: list, review
+             (doiomad shares help)
   version    Print the version
   help       Show this help
 
@@ -68,6 +70,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return cmdMaintainers(args[1:], stdout, stderr)
 	case "sources":
 		return cmdSources(rest, stdout, stderr)
+	case "shares":
+		return cmdShares(rest, stdout, stderr)
 	case "version", "-v", "--version":
 		fmt.Fprintln(stdout, version)
 		return 0

@@ -507,9 +507,45 @@ html:not(.js) .snippet::after { right: 0; }
 #identify-form .btn { justify-self: start; }
 .identify-privacy { font-size: 12px; margin-top: 0.6rem; }
 
+/* PF-2: what the command does, part by part, in command order. */
+details.explain { margin-top: 0.4rem; font-size: 13px; }
+details.explain > summary { cursor: pointer; color: var(--link); width: fit-content; }
+details.explain > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details.explain > p { margin: 0.4rem 0 0; }
+table.explain-table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+table.explain-table th { text-align: left; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line-strong); padding: 0.3rem 0.6rem 0.3rem 0; }
+table.explain-table td { vertical-align: top; border-bottom: 1px solid var(--line); padding: 0.45rem 0.6rem 0.45rem 0; line-height: 1.5; }
+table.explain-table td:first-child { width: 34%; }
+table.explain-table td:first-child code { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--heading); }
+table.explain-table td:last-child { white-space: nowrap; }
+table.explain-table td:last-child a { margin-right: 0.4rem; }
+a.offsite svg.i { width: 0.85em; height: 0.85em; margin-left: 0.2em; vertical-align: -0.05em; }
+table.explain-table tr[hidden] { display: none; }
+.clip-tag { display: block; font-size: 11px; }
+@media (max-width: 40rem) {
+  table.explain-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table.explain-table, table.explain-table tbody, table.explain-table tr, table.explain-table td { display: block; width: auto; }
+  table.explain-table tr { border-bottom: 1px solid var(--line); padding: 0.45rem 0; }
+  table.explain-table td, table.explain-table td:first-child { border: 0; padding: 0.1rem 0; width: auto; }
+  table.explain-table td:last-child { white-space: normal; }
+}
+
+/* PF-3: share the IDs, opt-in, below the result. */
+.share { border-top: 1px solid var(--line); margin-top: 0.6rem; padding-top: 0.7rem; }
+.share-form { display: grid; gap: 0.55rem; font-size: 13px; max-width: 46rem; }
+.share-consent { display: flex; gap: 0.5rem; align-items: center; color: var(--heading); font-size: 14px; }
+.share-q { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; align-items: center; }
+.share-q legend { padding: 0; margin-bottom: 0.25rem; width: 100%; }
+.share-q label { display: inline-flex; gap: 0.35rem; align-items: center; }
+.share-q select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); padding: 0.2rem 0.4rem; max-width: 100%; }
+.share-form .btn { justify-self: start; }
+.share-small { font-size: 12px; margin: 0; }
+.share-done { margin: 0; color: var(--heading); }
+
 /* Privacy: one readable column, larger type; headings and intro in the site's mono. */
 .privacy { max-width: 44rem; font: 17px/1.65 var(--sans); }
-.privacy h1, .privacy h2 { font-family: var(--mono); }
+.privacy h1, .privacy h2, .privacy h3 { font-family: var(--mono); }
+.privacy h3 { font-size: 1.05rem; margin: 1.25rem 0 0.6rem; color: var(--heading); }
 .privacy h1 { font-size: 2rem; }
 .privacy .privacy-intro { font: 1.3rem/1.5 var(--mono); color: var(--heading); margin: 0 0 1.75rem; text-wrap: balance; }
 .privacy section { margin-top: 2rem; }
@@ -525,3 +561,12 @@ blockquote.notice-text { margin: 0.5rem 0; padding: 0.5rem 0.9rem; border-left: 
 blockquote.notice-text p { margin: 0; }
 .paper > section { min-width: 0; }
 .paper pre { overflow-x: auto; max-width: 100%; background: var(--panel); border: 1px solid var(--line); padding: 0.6rem 0.8rem; font-size: 13px; }
+
+/* /admin/shares (PF-3). */
+.share-group { margin: 1.5rem 0; }
+.share-group h2 { margin-bottom: 0.3rem; }
+.share-group > p { margin: 0 0 0.4rem; font-size: 13px; }
+table.shares td { vertical-align: top; font-size: 13px; }
+table.shares code { font-size: 12px; white-space: nowrap; }
+table.shares td:nth-child(2) { white-space: nowrap; }
+.unk-tag { font: 11px var(--mono); color: var(--accent); border: 1px solid var(--accent); padding: 0 0.25rem; white-space: nowrap; }
