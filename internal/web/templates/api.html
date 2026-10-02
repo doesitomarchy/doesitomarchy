@@ -1,0 +1,83 @@
+{{define "content"}}{{with .Data}}
+<h1>Open API</h1>
+<p class="lead">Everything on this site is open data. Read the catalog and the test results as JSON, or, if you write a test tool, send diagnostic reports straight in.</p>
+<div class="paper">
+<section>
+<h2>Reading</h2>
+<p>No key needed. Every read endpoint returns JSON, allows any origin (CORS), and may be cached for a minute. Catalog data is CC BY-SA 4.0: credit DoesItOmarchy and share alike.</p>
+<ul>
+  <li><code>GET /api/v1</code>: an index of the endpoints.</li>
+  <li><code>GET /api/v1/macs</code>: every Intel Mac, with its verdict range and configuration IDs.</li>
+  <li><code>GET /api/v1/macs/{identifier}</code>: one Mac (e.g. <code>MacBookPro11,3</code>) and all its configurations.</li>
+  <li><code>GET /api/v1/configs/{id}</code>: one configuration: components with hardware IDs, the criteria that apply, the current status of each, and its latest reports.</li>
+  <li><code>GET /api/v1/capabilities</code>: the test criteria, including retired ones.</li>
+  <li><code>GET /api/v1/schema</code>: the diagnostic report format, as JSON Schema.</li>
+  <li><code>GET /api/v1/reports/{code}</code>: where a report stands: <code>pending</code>, <code>accepted</code>, <code>rejected</code> (with the reason) or <code>retracted</code>.</li>
+  <li><code>POST /api/v1/match</code>: send a hardware probe (<code>product_name</code>, <code>board_id</code>, <code>cpu</code>, <code>pci</code>, <code>usb</code>), get the Mac and, in <code>config</code>, its configuration, or <code>null</code> when several fit equally. <code>best</code> lists every configuration tied at the top (one when it's exact; their order within a tie means nothing). <code>candidates</code> ranks them all, with the IDs each matched and the parts not reported. It's the same matching as <a href="/identify">Identify my Mac</a>.</li>
+</ul>
+<pre tabindex="0"><code>curl -s {{.Base}}/api/v1/macs/MacBookPro11,3
+curl -s -X POST {{.Base}}/api/v1/match \
+  -d '{"product_name":"MacBookPro8,2","pci":["1002:6760"]}'</code></pre>
+</section>
+
+<section>
+<h2>Becoming a source</h2>
+<p>A source is a test tool that submits reports. Each one has an ID and a key. To get one, <a href="https://github.com/doesitomarchy/doesitomarchy/issues" rel="noopener">open an issue</a> with your tool's name, homepage and what it tests. A maintainer registers it and sends you the key privately.</p>
+<ul>
+  <li>Keys look like <code>doi_</code> followed by 32 characters. We keep only a hash, so a lost key is replaced, not recovered.</li>
+  <li>Keep the key in your tool's build or server, not in a public repository. If it leaks, ask for a new one; the old one stops working at once.</li>
+  <li>Each source may submit up to {{.PerHour}} reports an hour.</li>
+</ul>
+</section>
+
+<section>
+<h2>Submitting a report</h2>
+<p>Send one report per test run, as JSON or YAML, with your key:</p>
+<pre tabindex="0"><code>curl -s -X POST {{.Base}}/api/v1/reports \
+  -H "Authorization: Bearer $DOI_KEY" \
+  -H "Content-Type: application/json" \
+  --data-binary @report.json</code></pre>
+<p>You don't need to know the configuration ID. Send the model identifier and the hardware probe, and the server finds the configuration. Include the CPU name (<code>hardware.cpu</code>): it tells apart configurations that share every device. If the probe still fits several, the report is taken anyway, and a maintainer picks the right one.</p>
+<p>A new report is <code>pending</code> until a maintainer reviews it. The reply:</p>
+<pre tabindex="0"><code>201 Created
+{"code": "3f9a1c07be", "state": "pending",
+ "config": "macbookpro8-2-15-early-2011-a", "candidates": [],
+ "flags": [], "status_url": "{{.Base}}/api/v1/reports/3f9a1c07be"}</code></pre>
+<p>Errors come back as <code>{"error": "…", "problems": ["…"]}</code>:</p>
+<ul>
+  <li><strong>400</strong>: the report isn't valid. <code>problems</code> lists every issue, not just the first.</li>
+  <li><strong>401</strong>: no key or an unknown key. <strong>403</strong>: the key was revoked, or the report names a different source.</li>
+  <li><strong>413</strong>: over 1 MiB. <strong>415</strong>: a format we don't read.</li>
+  <li><strong>422</strong>: no configuration in the catalog fits this hardware.</li>
+  <li><strong>429</strong>: the hourly limit; wait for <code>Retry-After</code> seconds.</li>
+</ul>
+</section>
+
+<section>
+<h2>The report format</h2>
+<p>Format <code>doesitomarchy/report/v1</code>, fully described by <a href="/api/v1/schema">the schema</a>. Items use the criteria IDs from <code>/api/v1/capabilities</code>; leave out anything you didn't test. Each result says how it was tested: <code>automatic</code> (the tool checked), <code>observed</code> (the tester looked) or <code>fixture</code> (with test equipment, such as a loopback plug).</p>
+<pre tabindex="0"><code>{{.Example}}</code></pre>
+<ul>
+  <li><code>tested_at</code> is when the test ran, with a time zone. The site shows every time in UTC.</li>
+  <li>Don't send serial numbers, network addresses, or user and computer names. They're removed anyway, but it's better never to send them.</li>
+  <li>Put the check's output in <code>evidence</code> when something fails or only partly works. It's what helps someone fix it.</li>
+</ul>
+</section>
+
+<section>
+<h2 id="consent">The notice testers must see</h2>
+<p>Before your tool submits, it must show the tester this notice (or a faithful translation) and let them stop. Submitting counts as agreeing. Send the text you showed in <code>consent_notice</code>.</p>
+<blockquote class="notice-text"><p>{{.Notice}}</p></blockquote>
+<p>What happens to the data is set out on the <a href="/privacy">privacy page</a>.</p>
+</section>
+
+<section>
+<h2>Ground rules</h2>
+<ul>
+  <li>Only send results from real test runs on real hardware.</li>
+  <li>Maintainers review every report and can reject or retract it, with a reason that's shown on the site.</li>
+  <li>The format may gain optional fields. A breaking change would get a new version (<code>/v2</code>), and v1 would keep working.</li>
+</ul>
+</section>
+</div>
+{{end}}{{end}}

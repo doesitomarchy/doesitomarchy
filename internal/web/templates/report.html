@@ -18,7 +18,7 @@
 {{range .Groups}}
   <details open>
     <summary>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Items}}{{template "vicon" (itemVerdict .Status)}}{{end}}</span></summary>
-    <ul>{{range .Items}}<li>{{template "vicon" (itemVerdict .Status)}}<span>{{.CapabilityName}}</span><span class="st st-{{itemVerdict .Status}}">{{itemLabel .Status}}</span>
+    <ul>{{range .Items}}<li>{{template "vicon" (itemVerdict .Status)}}<span class="capname">{{.CapabilityName}}</span><span class="st st-{{itemVerdict .Status}}">{{itemLabel .Status}}</span>
       <span class="capmeta">{{if .Method}}{{.Method}}{{else}}{{reasonLabel .Reason}}{{end}}</span>
       {{if or .Evidence .Note}}<div class="why{{if ne .Status "failed"}} minor{{end}}">{{with .Evidence}}<p><span class="lbl">Reported</span> <code>{{.}}</code></p>{{end}}{{with .Note}}<p><span class="lbl">Note</span> {{.}}</p>{{end}}</div>{{end}}</li>{{end}}</ul>
   </details>
@@ -34,7 +34,7 @@
 {{with .Other}}<section class="extras-list">
   <h2>Not counted</h2>
   <p class="muted">Reported for capabilities that don't apply to this configuration. Kept for review; they never affect a verdict.</p>
-  <ul>{{range .}}<li>{{.CapabilityName}} · {{itemLabel .Status}}</li>{{end}}</ul>
+  <ul>{{range .}}<li><span class="capname">{{.CapabilityName}}</span> · {{itemLabel .Status}}</li>{{end}}</ul>
 </section>{{end}}
 
 <p class="muted result-foot">Report <code>{{$r.Code}}</code> · configuration <code>{{$r.ConfigID}}</code>. All times are UTC. Personal data (serial numbers, network addresses, user and host names) is removed before anything is stored.</p>

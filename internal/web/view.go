@@ -40,6 +40,12 @@ type Options struct {
 	// Cloudflare zone and purge-only token: when set, the cache is purged
 	// after results change, so visitors see new verdicts within seconds.
 	PurgeZone, PurgeToken string
+	// Cloudflare Access team name and /admin application audience tag: the
+	// server verifies Access's signed token on every /admin request.
+	AccessTeam, AccessAUD string
+	// AdminInsecure opens /admin without Access, for local development only
+	// (serve refuses it unless listening on a loopback address).
+	AdminInsecure bool
 }
 
 type site struct {
@@ -176,6 +182,7 @@ type capView struct {
 	Result                int64
 	Code                  string // its public code, for /report/{code}
 	Date, Omarchy, Method string
+	Kernel                string // the report's kernel, when given
 	Stale, Conflict       bool
 	// FromLatest: the result is the config's latest, already named once at
 	// the top of the card, so the row only shows its method.
@@ -406,14 +413,14 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 					break
 				}
 			}
-			codes := map[int64]string{}
+			codes, kernels := map[int64]string{}, map[int64]string{}
 			for _, x := range cv.Results {
-				codes[x.ID] = x.Code
+				codes[x.ID], kernels[x.ID] = x.Code, x.Kernel
 			}
 			for ci := range cv.Categories {
 				for k := range cv.Categories[ci].Caps {
 					x := &cv.Categories[ci].Caps[k]
-					x.Code = codes[x.Result]
+					x.Code, x.Kernel = codes[x.Result], kernels[x.Result]
 					x.FromLatest = cv.Latest != nil && x.Result == cv.Latest.ID && !x.Stale && !x.Conflict
 				}
 			}

@@ -8,3 +8,8 @@ import _ "embed"
 //
 //go:embed fixtures/mbp152-synthetic.yaml
 var SyntheticFixture []byte
+
+// SchemaV1JSON is the report schema as a JSON Schema document (GET /api/v1/schema).
+//
+//go:embed schema_v1.json
+var SchemaV1JSON []byte

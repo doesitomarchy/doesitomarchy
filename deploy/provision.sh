@@ -92,8 +92,9 @@ fi
 
 if [ -n "${CF_PURGE_TOKEN:-}" ] && [ "$REPLICATE" = 1 ]; then
 	step "writing the cache-purge token"
+	# Merged into doiomad.env, keeping the Access settings cloudflare.sh writes there.
 	printf 'CF_ZONE_ID=%s\nCF_PURGE_TOKEN=%s\n' "${CF_ZONE_ID:?}" "$CF_PURGE_TOKEN" |
-		ssh "${ssh_opts[@]}" "$ADMIN_USER@$ip" "sudo install -d -m 0750 /etc/doiomad && sudo install -m 0600 /dev/stdin /etc/doiomad/doiomad.env.tmp && sudo mv /etc/doiomad/doiomad.env.tmp /etc/doiomad/doiomad.env"
+		ssh "${ssh_opts[@]}" "$ADMIN_USER@$ip" "sudo install -d -m 0750 /etc/doiomad && sudo sh -c 'umask 077; f=/etc/doiomad/doiomad.env; { [ -f \$f ] && grep -v -E \"^CF_(ZONE_ID|PURGE_TOKEN)=\" \$f; cat; } > \$f.tmp && mv \$f.tmp \$f'"
 fi
 
 step "running setup.sh"

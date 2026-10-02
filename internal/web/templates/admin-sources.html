@@ -1,0 +1,14 @@
+{{define "content"}}{{with .Data}}
+<div class="admin">
+<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/sources">Sources</a></p>
+<h1>Sources and maintainers</h1>
+<p class="muted">Keys are issued and revoked on the server: <code>doiomad sources add|rotate|revoke|trust</code>, <code>doiomad maintainers add|remove</code>.</p>
+<h2>Sources</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Sources"><table class="browse">
+  <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Trust</th><th scope="col">Registered</th><th scope="col">Revoked</th></tr></thead>
+  <tbody>{{range .Sources}}<tr><td><code>{{.ID}}</code></td><td>{{if .Homepage}}<a href="{{.Homepage}}" rel="noopener">{{.Name}}</a>{{else}}{{.Name}}{{end}}</td><td>{{.Trust}}</td><td>{{utc .CreatedAt}}</td><td>{{with .RevokedAt}}{{utc .}}{{else}}—{{end}}</td></tr>{{end}}</tbody>
+</table></div>
+<h2>Maintainers</h2>
+<ul class="admin-flags">{{range .Maintainers}}<li><b>{{.Handle}}</b> · {{.Email}} · since {{utc .AddedAt}}</li>{{else}}<li>None yet: <code>doiomad maintainers add HANDLE EMAIL</code>.</li>{{end}}</ul>
+</div>
+{{end}}{{end}}

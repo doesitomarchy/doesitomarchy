@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -109,11 +110,11 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 	for attempt := 0; ; attempt++ {
 		res, err = tx.ExecContext(ctx, `INSERT INTO results (code, config_id, source_id, source_version, profile, workflow, schema,
 			format, tester_handle, contact_hash, tested_at, omarchy_version, omarchy_major, omarchy_minor, omarchy_patch,
-			omarchy_revision, omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			omarchy_revision, omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at, consent_notice, candidates)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			newCode(), r.ConfigID, r.SourceID, r.SourceVersion, r.Profile, r.Workflow, r.Schema, format, r.TesterHandle, contact,
 			r.TestedAt, r.OmarchyRaw, r.Omarchy.Major, r.Omarchy.Minor, r.Omarchy.Patch, r.Revision, r.Image, r.Kernel, r.Notes,
-			r.Hardware, Pending, actor, at)
+			r.Hardware, Pending, actor, at, r.ConsentNotice, jsonList(r.Candidates))
 		if err == nil || attempt == 4 || !strings.Contains(err.Error(), "results.code") {
 			break // retry only on the (1 in 10^12) code collision
 		}
@@ -142,7 +143,18 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 			return 0, err
 		}
 	}
-	for _, f := range r.Flags {
+	flags := r.Flags
+	// The same source, tester, configuration and test time as an earlier report.
+	var dup string
+	err = tx.QueryRowContext(ctx, `SELECT code FROM results WHERE id <> ? AND source_id = ? AND tester_handle = ? AND config_id = ?
+		AND tested_at = ? AND state <> 'rejected' ORDER BY id LIMIT 1`, id, r.SourceID, r.TesterHandle, r.ConfigID, r.TestedAt).Scan(&dup)
+	if err == nil {
+		flags = append(flags, results.Flag{Kind: results.FlagDuplicate,
+			Detail: fmt.Sprintf("same source, tester, configuration and test time as report %s", dup)})
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return 0, err
+	}
+	for _, f := range flags {
 		if _, err = tx.ExecContext(ctx, "INSERT INTO result_flags (result_id, kind, detail) VALUES (?, ?, ?)", id, f.Kind, f.Detail); err != nil {
 			return 0, err
 		}
@@ -193,6 +205,16 @@ func (s *Store) SetResultState(ctx context.Context, id int64, to, reason, actor 
 	}
 	if (to == Rejected || to == Retracted) && strings.TrimSpace(reason) == "" {
 		return fmt.Errorf("a reason is required to %s a result", strings.TrimSuffix(to, "ed"))
+	}
+	if to == Accepted {
+		var open int
+		if err = tx.QueryRowContext(ctx, "SELECT count(*) FROM result_flags WHERE result_id = ? AND kind = 'config_ambiguous' AND resolved_at = ''",
+			id).Scan(&open); err != nil {
+			return err
+		}
+		if open > 0 {
+			return fmt.Errorf("result %d fits several configurations; pick one first (-config): %w", id, ErrState)
+		}
 	}
 	if _, err = tx.ExecContext(ctx, "UPDATE results SET state = ?, state_reason = ?, state_by = ?, state_at = ? WHERE id = ?",
 		to, strings.TrimSpace(reason), actor, now(), id); err != nil {
@@ -288,6 +310,102 @@ func (s *Store) ListResults(ctx context.Context, f ResultFilter) ([]ResultSummar
 	return out, rows.Err()
 }
 
+func jsonList(xs []string) string {
+	if len(xs) == 0 {
+		return "[]"
+	}
+	b, _ := json.Marshal(xs)
+	return string(b)
+}
+
+// SetResultConfig settles which configuration a pending report is for
+// (after config_ambiguous, or to correct a tool's guess). applicable lists
+// the new config's applicable capabilities: items are re-marked, flags for
+// the old config are resolved, and new ones raised.
+func (s *Store) SetResultConfig(ctx context.Context, id int64, configID string, applicable map[string]bool, actor string) (err error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+	var state, oldConfig, oldMac, newMac string
+	if err = tx.QueryRowContext(ctx, `SELECT r.state, r.config_id, c.mac_identifier FROM results r JOIN configs c ON c.id = r.config_id
+		WHERE r.id = ?`, id).Scan(&state, &oldConfig, &oldMac); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = fmt.Errorf("result %d: %w", id, ErrNotFound)
+		}
+		return err
+	}
+	if state != Pending {
+		return fmt.Errorf("result %d is %s; only a pending report's configuration can change: %w", id, state, ErrState)
+	}
+	if err = tx.QueryRowContext(ctx, "SELECT mac_identifier FROM configs WHERE id = ?", configID).Scan(&newMac); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = fmt.Errorf("config %s: %w", configID, ErrNotFound)
+		}
+		return err
+	}
+	if newMac != oldMac {
+		return fmt.Errorf("config %s is a %s; this report is for a %s", configID, newMac, oldMac)
+	}
+	if _, err = tx.ExecContext(ctx, "UPDATE results SET config_id = ? WHERE id = ?", configID, id); err != nil {
+		return err
+	}
+	rows, err := tx.QueryContext(ctx, `SELECT i.capability_id, cp.name FROM result_items i JOIN capabilities cp ON cp.id = i.capability_id
+		WHERE i.result_id = ?`, id)
+	if err != nil {
+		return err
+	}
+	type item struct{ id, name string }
+	var items []item
+	for rows.Next() {
+		var x item
+		if err = rows.Scan(&x.id, &x.name); err != nil {
+			rows.Close()
+			return err
+		}
+		items = append(items, x)
+	}
+	rows.Close()
+	at := now()
+	if _, err = tx.ExecContext(ctx, `UPDATE result_flags SET resolution = ?, resolved_by = ?, resolved_at = ?
+		WHERE result_id = ? AND resolved_at = '' AND kind IN ('config_ambiguous', 'inapplicable_item')`,
+		"configuration set to "+configID, actor, at, id); err != nil {
+		return err
+	}
+	for _, x := range items {
+		if _, err = tx.ExecContext(ctx, "UPDATE result_items SET applicable = ? WHERE result_id = ? AND capability_id = ?",
+			b2i(applicable[x.id]), id, x.id); err != nil {
+			return err
+		}
+		if !applicable[x.id] {
+			if _, err = tx.ExecContext(ctx, "INSERT INTO result_flags (result_id, kind, detail) VALUES (?, 'inapplicable_item', ?)",
+				id, fmt.Sprintf("%s (%s) does not apply to this configuration; stored, never counted", x.id, x.name)); err != nil {
+				return err
+			}
+		}
+	}
+	if err = event(ctx, tx, id, actor, "config-set", oldConfig+" → "+configID); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// Candidates lists the configurations a report's hardware fitted equally.
+func (s *Store) Candidates(ctx context.Context, id int64) ([]string, error) {
+	var raw string
+	if err := s.db.QueryRowContext(ctx, "SELECT candidates FROM results WHERE id = ?", id).Scan(&raw); err != nil {
+		return nil, err
+	}
+	var out []string
+	err := json.Unmarshal([]byte(raw), &out)
+	return out, err
+}
+
 // ResultItem is a stored result item, with its capability's name and category.
 type ResultItem struct {
 	Capability, CapabilityName, CategoryID, CategoryName string
@@ -311,6 +429,8 @@ type ResultEvent struct{ At, Actor, Action, Detail string }
 type ResultDetail struct {
 	ResultSummary
 	OmarchyRevision, OmarchyImage, Notes, Hardware string
+	ConsentNotice                                  string
+	Candidates                                     []string // configs the hardware fitted equally
 	Items                                          []ResultItem
 	Extras                                         []results.FileExtra
 	Flags                                          []ResultFlag
@@ -329,12 +449,14 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 		return nil, err
 	}
 	d := &ResultDetail{ResultSummary: sum}
-	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.notes, r.hardware,
+	var cands string
+	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.notes, r.hardware, r.consent_notice, r.candidates,
 		coalesce(p.size, 0), coalesce(p.visibility, 'private')
 		FROM results r LEFT JOIN result_reports p ON p.result_id = r.id WHERE r.id = ?`, id).Scan(
-		&d.OmarchyRevision, &d.OmarchyImage, &d.Notes, &d.Hardware, &d.ReportSize, &d.ReportVisibility); err != nil {
+		&d.OmarchyRevision, &d.OmarchyImage, &d.Notes, &d.Hardware, &d.ConsentNotice, &cands, &d.ReportSize, &d.ReportVisibility); err != nil {
 		return nil, err
 	}
+	json.Unmarshal([]byte(cands), &d.Candidates)
 	rows, err := s.db.QueryContext(ctx, `SELECT i.capability_id, cp.name, cp.category_id, k.name, i.connector, i.status, i.method,
 		i.reason, i.note, i.evidence, i.applicable
 		FROM result_items i JOIN capabilities cp ON cp.id = i.capability_id JOIN categories k ON k.id = cp.category_id

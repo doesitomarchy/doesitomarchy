@@ -17,6 +17,8 @@ const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
   "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2",
+  "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
+  "/api", "/privacy", "/admin", "/admin/sources", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
 const contrastPages = ["/", "/mac/MacBookPro15-1"];
@@ -49,7 +51,10 @@ async function axe(rules) {
 await load("/stats", 1440);
 const report = await page.$eval('a[href^="/report/"]', (a) => a.getAttribute("href")).catch(() => null);
 if (!report) fail("/stats", "no link to a diagnostic report (is the server running with -demo?)");
-for (let i = 0; i < pages.length; i++) if (pages[i] === "REPORT") pages[i] = report || "/stats";
+for (let i = 0; i < pages.length; i++) {
+  if (pages[i] === "REPORT") pages[i] = report || "/stats";
+  if (pages[i] === "ADMIN_REPORT") pages[i] = report ? "/admin" + report : "/admin";
+}
 
 // 1. Accessibility + layout at phone and desktop widths.
 for (const path of pages) {

@@ -7,6 +7,12 @@
 
 {{define "verdict"}}<span class="verdict {{.}}">{{template "vicon" .}}{{.Label}}</span>{{end}}
 
+{{/* state is a report's review state as a tag, like a verdict. */}}
+{{define "state"}}<span class="state-tag st-{{.}}">{{if eq . "pending"}}Pending{{else if eq . "accepted"}}Accepted{{else if eq . "rejected"}}Rejected{{else if eq . "retracted"}}Retracted{{else}}{{.}}{{end}}</span>{{end}}
+
+{{/* tally shows a report's supported / partial / failed counts with coloured glyphs. */}}
+{{define "tally"}}<span class="tally-g">{{template "vicon" "supported"}}<span class="sr-only">supported</span> {{.Supported}} {{template "vicon" "partial"}}<span class="sr-only">partial</span> {{.Partial}} {{template "vicon" "failed"}}<span class="sr-only">failed</span> {{.Failed}}</span>{{end}}
+
 {{define "badge"}}<svg class="badge" role="img" aria-label="Passed every test"><title>Passed every applicable test</title><use href="{{asset "icons.svg"}}#omarchy-logo"></use></svg>{{end}}
 
 {{/* slot reserves the badge's width so names line up whether or not a row earned it. Pass a bool. */}}
@@ -39,11 +45,14 @@
       <ul>
         <li><a href="/macs">Browse all Intel Macs</a></li>
         <li><a href="/criteria">Criteria matrix</a></li>
-        <li><a href="/stats">Stats</a></li>
+        <li><a href="/stats">Statistics</a></li>
         <li><a href="/methodology">Methodology</a></li>
         <li><a href="/contribute">Contribute</a></li>
         <li><a href="/changelog">Catalog changelog</a></li>
+        <li><a href="/identify">Identify my Mac</a></li>
+        <li><a href="/api">Open API</a></li>
         <li><a href="/attribution">Attribution</a></li>
+        <li><a href="/privacy">Privacy</a></li>
         <li><a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">Source on GitHub</a></li>
       </ul>
     </section>
@@ -68,7 +77,7 @@
   </div>
   <div class="legal">
     <p><strong>A community site. Not officially affiliated with <a href="https://omarchy.org" rel="noopener">Omarchy</a> or the <a href="https://omarchy.org/foundation/" rel="noopener">Omacom Foundation</a>.</strong></p>
-    <p>Code MIT / catalog data CC BY-SA 4.0 / catalog <a href="{{.Site.CatalogURL}}" rel="noopener" title="This catalog's data on GitHub">{{.Site.CatalogHash}}</a> (<a href="/changelog" title="Catalog changelog">{{.Site.CatalogDate}}</a>) / doiomad {{with releaseURL .Version}}<a href="{{.}}" rel="noopener" title="This release on GitHub">{{$.Version}}</a>{{else}}{{.Version}}{{end}} / <a href="/attribution">attribution</a></p>
+    <p>Code MIT / catalog data CC BY-SA 4.0 / catalog <a href="{{.Site.CatalogURL}}" rel="noopener" title="This catalog's data on GitHub">{{.Site.CatalogHash}}</a> (<a href="/changelog" title="Catalog changelog">{{.Site.CatalogDate}}</a>) / doiomad {{with releaseURL .Version}}<a href="{{.}}" rel="noopener" title="This release on GitHub">{{$.Version}}</a>{{else}}{{.Version}}{{end}} / <a href="/attribution">attribution</a> / <a href="/privacy">privacy</a></p>
   </div>
   </div>
 </footer>

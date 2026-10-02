@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://doesitomarchy.com/api/v1/schema",
+  "title": "DoesItOmarchy diagnostic report, v1",
+  "description": "One test run of Omarchy on one Intel Mac configuration. Submit it to POST /api/v1/reports with a source key. See https://doesitomarchy.com/api.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "tested_at", "omarchy", "items"],
+  "properties": {
+    "schema": { "const": "doesitomarchy/report/v1" },
+    "config": { "type": "string", "description": "A configuration ID (see GET /api/v1/macs/{identifier}). Optional when identifier or hardware identify the Mac; the server then finds the configuration." },
+    "identifier": { "type": "string", "examples": ["MacBookPro15,2"], "description": "The model identifier (DMI product_name on Linux, hw.model on macOS)." },
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "Taken from your key; if given, it must match." },
+        "version": { "type": "string" },
+        "profile": { "type": "string", "examples": ["quick", "full"] },
+        "workflow": { "type": "string", "examples": ["guided"] }
+      }
+    },
+    "tester": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "handle": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,38}$", "description": "Optional public name." },
+        "contact": { "type": "string", "description": "Optional; stored only as a one-way hash, for maintainers." }
+      }
+    },
+    "tested_at": { "type": "string", "format": "date-time", "description": "When the test ran, RFC 3339 with a time zone. Stored and shown in UTC." },
+    "omarchy": {
+      "type": "object", "additionalProperties": false, "required": ["version"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^v?\\d+(\\.\\d+){0,2}$", "examples": ["4.0.4"] },
+        "revision": { "type": "string" },
+        "image": { "type": "string" }
+      }
+    },
+    "kernel": { "type": "string" },
+    "notes": { "type": "string", "maxLength": 10000 },
+    "hardware": {
+      "type": "object",
+      "description": "The hardware probe. Standard keys (product_name, board_id, cpu, pci, usb) identify the configuration; other keys are kept. Personal data (serials, MAC/IP addresses, host and user names) is removed before storage; please don't send it.",
+      "properties": {
+        "product_name": { "type": "string" },
+        "board_id": { "type": "string", "examples": ["Mac-827FB448E656EC26"] },
+        "cpu": { "type": "string", "examples": ["Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz"], "description": "The CPU name (model name in /proc/cpuinfo, or machdep.cpu.brand_string). Tells apart configurations that share every device." },
+        "pci": { "type": "array", "items": { "type": "string" }, "examples": [["8086:3ea5", "14e4:4464"]] },
+        "usb": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "items": {
+      "type": "object",
+      "description": "Capability ID (see GET /api/v1/capabilities) → result. Leave out what you didn't test.",
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["status"],
+        "properties": {
+          "status": { "enum": ["supported", "partial", "failed", "not_tested"] },
+          "method": { "enum": ["automatic", "observed", "fixture"], "description": "Required unless not_tested." },
+          "reason": { "enum": ["no-equipment", "not-in-profile", "uncertain", "other"], "description": "not_tested only." },
+          "note": { "type": "string", "maxLength": 1000 },
+          "evidence": { "type": "string", "maxLength": 4000, "description": "Why it failed or only partly works: the check's output." }
+        }
+      }
+    },
+    "extras": {
+      "type": "array",
+      "description": "Checks that aren't (yet) DoesItOmarchy criteria; shown as reported, never counted.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id"],
+        "properties": { "id": { "type": "string" }, "label": { "type": "string" }, "status": { "type": "string" }, "detail": { "type": "string" } }
+      }
+    },
+    "consent_notice": { "type": "string", "description": "The notice your tool showed the tester before submitting (see /api)." }
+  }
+}

@@ -32,7 +32,9 @@ Commands:
   report     Write an HTML review page for a batch (-line mac-mini -o FILE [-intro FILE])
   reports    Moderate diagnostic reports: import, list, show, accept, reject, retract,
              flags (doiomad reports help)
-  sources    List the apps registered to submit reports
+  sources    Manage the test tools that submit reports: list, add, rotate, revoke,
+             trust (doiomad sources help)
+  maintainers  Who may review reports in /admin: list, add, remove
   version    Print the version
   help       Show this help
 
@@ -62,6 +64,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return cmdReport(rest, stdout, stderr)
 	case "reports", "results":
 		return cmdResults(rest, stdout, stderr)
+	case "maintainers":
+		return cmdMaintainers(args[1:], stdout, stderr)
 	case "sources":
 		return cmdSources(rest, stdout, stderr)
 	case "version", "-v", "--version":

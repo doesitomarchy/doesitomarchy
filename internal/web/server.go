@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/internal/match"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -47,6 +48,8 @@ type Server struct {
 	version string
 	pages   map[string]*template.Template
 	purge   *purger
+	match   *match.Matcher
+	access  *accessVerifier
 }
 
 // snapshot is everything built from the catalog and the accepted results.
@@ -73,7 +76,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		return nil, err
 	}
 	s := &Server{store: st, cat: c, opt: opt, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{},
-		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log)}
+		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD)}
 	if _, err := s.Refresh(context.Background()); err != nil {
 		return nil, fmt.Errorf("load results: %w", err)
 	}
@@ -84,6 +87,9 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"query":       func(q string) string { return "/search?q=" + url.QueryEscape(q) },
 		"plural":      func(n int, one, many string) string { return map[bool]string{true: one, false: many}[n == 1] },
 		"join":        strings.Join,
+		"lines":       nonEmptyLines,
+		"osver":       osVersion,
+		"dict":        dict,
 		"joinlim":     joinLimit,
 		"dots":        func(n int) string { return strings.Repeat("·", n) },
 		"add":         func(a, b int) int { return a + b },
@@ -95,7 +101,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"itemLabel":   itemLabel,
 		"reasonLabel": reasonLabel,
 	}
-	for _, p := range []string{"home", "mac", "report", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
@@ -131,7 +137,12 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /components", s.componentList)
 	mux.HandleFunc("GET /attribution", s.attribution)
 	mux.HandleFunc("GET /changelog", s.changelog)
-	mux.HandleFunc("/api/v1/", apiNotFound) // reserved until the API ships (Phase 7)
+	mux.HandleFunc("GET /identify", s.identify)
+	mux.HandleFunc("POST /identify", s.identifyPost)
+	mux.HandleFunc("GET /privacy", s.privacy)
+	mux.HandleFunc("GET /api", s.apiDocs)
+	s.apiRoutes(mux)
+	s.adminRoutes(mux)
 	mux.HandleFunc("/", s.notFound)
 	return s.recoverer(logRequests(s.log, securityHeaders(compress(mux))))
 }
@@ -347,4 +358,34 @@ func formatUTC(ts string) string {
 		return ts
 	}
 	return t.UTC().Format("2006-01-02 15:04") + " UTC"
+}
+
+// nonEmptyLines splits text into its non-blank lines (research notes are one
+// note per line).
+func nonEmptyLines(s string) []string {
+	var out []string
+	for _, l := range strings.Split(s, "\n") {
+		if l = strings.TrimSpace(l); l != "" {
+			out = append(out, l)
+		}
+	}
+	return out
+}
+
+// osVersion names what a report ran: "Omarchy 4.0.4 · kernel 6.16.2-arch1-1".
+// Omarchy ships its own kernel builds, so the kernel matters as much.
+func osVersion(omarchy, kernel string) string {
+	if kernel == "" {
+		return "Omarchy " + omarchy
+	}
+	return "Omarchy " + omarchy + " · kernel " + kernel
+}
+
+// dict builds a map for passing several values to a template.
+func dict(kv ...any) map[string]any {
+	m := map[string]any{}
+	for i := 0; i+1 < len(kv); i += 2 {
+		m[fmt.Sprint(kv[i])] = kv[i+1]
+	}
+	return m
 }
