@@ -59,7 +59,7 @@ echo "ok   retract: back to the previous state"
 # The API: a source registered in the copy submits the fixture with no config
 # (the server finds it from the identifier and probe).
 KEY=$(DOIOMAD_DB="$T/smoke.db" "$BIN" sources add smoke-test -name "Smoke test" | grep -o 'doi_[0-9a-f]*')
-sed -e '/^config:/d' -e 's/^source: { id: manual, /source: { /' "$T/fixture.yaml" > "$T/api.yaml"
+cat "$T/fixture.yaml" | sed -e '/^config:/d' -e 's/^source: { id: manual, /source: { /' > "$T/api.yaml"
 post() { curl -s -o "$T/post.json" -w '%{http_code}' -X POST -H "Authorization: Bearer $1" -H 'Content-Type: application/yaml' --data-binary @"$T/api.yaml" 127.0.0.1:$PORT/api/v1/reports; }
 [ "$(post doi_00000000000000000000000000000000)" = 401 ] || { echo "FAIL: an unknown key was not refused" >&2; exit 1; }
 [ "$(post "$KEY")" = 201 ] || { echo "FAIL: API submission: $(cat "$T/post.json")" >&2; exit 1; }
