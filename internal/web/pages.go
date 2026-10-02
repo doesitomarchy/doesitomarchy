@@ -113,6 +113,18 @@ func (s *Server) search(w http.ResponseWriter, r *http.Request) {
 		s.renderPartial(w, r, "search", "results", d)
 		return
 	}
+	// Enter on a query with exactly one match goes straight to that Mac,
+	// and to the configuration when the query pinpoints one of several.
+	if q != "" && r.URL.Query().Get("sort") == "" && len(d.Results) == 1 && d.Results[0].Mac != nil {
+		m := d.Results[0].Mac
+		target := "/mac/" + url.PathEscape(m.Slug)
+		if sc := d.Results[0].Scoped; len(sc) == 1 && sc[0] != nil && len(m.Configs) > 1 {
+			target += "#cfg-" + sc[0].ID
+		}
+		w.Header().Set("Cache-Control", "public, max-age=0, s-maxage=300")
+		http.Redirect(w, r, target, http.StatusFound)
+		return
+	}
 	d.OnSearchPage = true
 	title := "Search"
 	if q != "" {
@@ -363,8 +375,8 @@ func (s *Server) resultStats(d *statsData) {
 	d.MostFailed = top(failing, func(k string) string { return names[k] },
 		func(k string) string { return "/search?q=" + url.QueryEscape("status:failed") })
 	sort.Slice(recent, func(i, j int) bool {
-		if recent[i].TestedOn != recent[j].TestedOn {
-			return recent[i].TestedOn > recent[j].TestedOn
+		if recent[i].TestedAt != recent[j].TestedAt {
+			return recent[i].TestedAt > recent[j].TestedAt
 		}
 		return recent[i].ID > recent[j].ID
 	})
@@ -374,7 +386,7 @@ func (s *Server) resultStats(d *statsData) {
 	d.Recent = recent
 }
 
-// ── result pages ──────────────────────────────────────────────────────────
+// ── diagnostic report pages ───────────────────────────────────────────────
 
 type resultData struct {
 	R      *store.ResultDetail
@@ -388,12 +400,21 @@ type resultGroup struct {
 	Items      []store.ResultItem
 }
 
-// result serves /result/{id}: one accepted (or retracted) result in full.
-// Pending and rejected results are never public.
-func (s *Server) result(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil || id <= 0 {
+// report serves /report/{code}: one accepted (or retracted) diagnostic
+// report in full. Pending and rejected reports are never public.
+func (s *Server) report(w http.ResponseWriter, r *http.Request) {
+	code := r.PathValue("code")
+	if !store.IsCode(code) {
 		s.notFound(w, r)
+		return
+	}
+	id, err := s.store.ResultIDByCode(r.Context(), code)
+	if errors.Is(err, store.ErrNotFound) {
+		s.notFound(w, r)
+		return
+	}
+	if err != nil {
+		s.fail(w, r, err)
 		return
 	}
 	rd, err := s.store.Result(r.Context(), id)
@@ -421,10 +442,10 @@ func (s *Server) result(w http.ResponseWriter, r *http.Request) {
 		g := &d.Groups[len(d.Groups)-1]
 		g.Items = append(g.Items, it)
 	}
-	title := fmt.Sprintf("Result #%d · %s", id, rd.Identifier)
-	desc := fmt.Sprintf("Omarchy %s test result for %s, %s: %d passed, %d partly, %d failed.", rd.Omarchy, rd.Identifier,
-		rd.TestedOn, rd.Supported, rd.Partial, rd.Failed)
-	s.render(w, r, http.StatusOK, "result", page{Title: title, Description: desc, Data: d})
+	title := fmt.Sprintf("Diagnostic Report %s · %s", rd.Code, rd.Identifier)
+	desc := fmt.Sprintf("Omarchy %s diagnostic report for %s, tested %s: %d passed, %d partly, %d failed.", rd.Omarchy, rd.Identifier,
+		formatUTC(rd.TestedAt), rd.Supported, rd.Partial, rd.Failed)
+	s.render(w, r, http.StatusOK, "report", page{Title: title, Description: desc, Data: d})
 }
 
 // ── methodology / contribute ──────────────────────────────────────────────
@@ -676,7 +697,7 @@ func (s *Server) sitemap(w http.ResponseWriter, r *http.Request) {
 	for _, rs := range d.view.rollup.Accepted {
 		for _, x := range rs {
 			if x.State == store.Accepted {
-				fmt.Fprintf(&b, "  <url><loc>%s/result/%d</loc></url>\n", BaseURL, x.ID)
+				fmt.Fprintf(&b, "  <url><loc>%s/report/%s</loc></url>\n", BaseURL, x.Code)
 			}
 		}
 	}

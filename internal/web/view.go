@@ -172,8 +172,9 @@ type capView struct {
 	Error                 string // why it failed or only partly works, as reported (evidence)
 	Fix                   string // who is working on it / where it's tracked (fix tracking, 7d)
 	Reason                string // the maintainer's reason, when Unsupported
-	// The latest result for this capability (Result 0 when untested).
+	// The latest report for this capability (Result 0 when untested).
 	Result                int64
+	Code                  string // its public code, for /report/{code}
 	Date, Omarchy, Method string
 	Stale, Conflict       bool
 	// FromLatest: the result is the config's latest, already named once at
@@ -405,9 +406,14 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 					break
 				}
 			}
+			codes := map[int64]string{}
+			for _, x := range cv.Results {
+				codes[x.ID] = x.Code
+			}
 			for ci := range cv.Categories {
 				for k := range cv.Categories[ci].Caps {
 					x := &cv.Categories[ci].Caps[k]
+					x.Code = codes[x.Result]
 					x.FromLatest = cv.Latest != nil && x.Result == cv.Latest.ID && !x.Stale && !x.Conflict
 				}
 			}
@@ -538,7 +544,7 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 			x.Verdict = status.NotCompatible
 		}
 		if l := cs.Latest; l != nil {
-			x.Result, x.Date, x.Omarchy, x.Method = l.ResultID, l.TestedOn, l.Omarchy.String(), l.Method
+			x.Result, x.Date, x.Omarchy, x.Method = l.ResultID, l.TestedAt, l.Omarchy.String(), l.Method
 			if l.Verdict != status.Supported {
 				x.Error = l.Evidence
 			}

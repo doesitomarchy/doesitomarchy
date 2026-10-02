@@ -36,7 +36,7 @@ func TestSyntheticFixture(t *testing.T) {
 		t.Fatal(err)
 	}
 	if r.ConfigID != "macbookpro15-2-13-2018-4tb3-a" || r.Identifier != "MacBookPro15,2" || r.SourceID != "manual" ||
-		r.Omarchy.String() != "4.0.4" || r.TestedOn != "2026-09-30" || r.TesterHandle != "synthetic-fixture" {
+		r.Omarchy.String() != "4.0.4" || r.TestedAt != "2026-09-30T18:05:00Z" || r.TesterHandle != "synthetic-fixture" {
 		t.Fatalf("header: %+v", r)
 	}
 	counts := map[string]int{}
@@ -68,9 +68,9 @@ func TestSyntheticFixture(t *testing.T) {
 }
 
 func valid() string {
-	return `schema: doesitomarchy/result/v1
+	return `schema: doesitomarchy/report/v1
 config: macbookpro15-2-13-2018-4tb3-a
-tested_on: 2026-10-01
+tested_at: 2026-10-01T12:00:00Z
 omarchy: { version: "4.0.4" }
 items:
   boot.install: { status: supported, method: observed }
@@ -86,9 +86,11 @@ func TestValidateErrors(t *testing.T) {
 		{"wrong schema", strings.Replace(valid(), "v1", "v9", 1), []string{"schema:"}},
 		{"unknown config", strings.Replace(valid(), "macbookpro15-2-13-2018-4tb3-a", "macbookpro99-1-x", 1), []string{"config:", "not a known"}},
 		{"missing config", strings.Replace(valid(), "config: macbookpro15-2-13-2018-4tb3-a\n", "", 1), []string{"config: required"}},
-		{"bad date", strings.Replace(valid(), "2026-10-01", "01/10/2026", 1), []string{"tested_on"}},
-		{"future date", strings.Replace(valid(), "2026-10-01", "2027-01-01", 1), []string{"in the future"}},
-		{"pre-Omarchy date", strings.Replace(valid(), "2026-10-01", "2019-05-01", 1), []string{"before Omarchy"}},
+		{"bad date", strings.Replace(valid(), "2026-10-01T12:00:00Z", "01/10/2026", 1), []string{"tested_at"}},
+		{"date without a time", strings.Replace(valid(), "2026-10-01T12:00:00Z", "2026-10-01", 1), []string{"tested_at", "time zone"}},
+		{"time without a zone", strings.Replace(valid(), "2026-10-01T12:00:00Z", "2026-10-01T12:00:00", 1), []string{"tested_at", "time zone"}},
+		{"future date", strings.Replace(valid(), "2026-10-01T12:00:00Z", "2026-10-03T13:00:00Z", 1), []string{"in the future"}},
+		{"pre-Omarchy date", strings.Replace(valid(), "2026-10-01T12:00:00Z", "2019-05-01T00:00:00Z", 1), []string{"before Omarchy"}},
 		{"bad version", strings.Replace(valid(), `"4.0.4"`, `"four"`, 1), []string{"omarchy.version"}},
 		{"unknown capability", valid() + "  audio.kazoo: { status: supported, method: observed }\n", []string{"items.audio.kazoo", "unknown capability"}},
 		{"per-connector item", valid() + "  ports.usb-c@left-1: { status: supported, method: fixture }\n", []string{"per-connector"}},
@@ -120,7 +122,7 @@ func TestValidateErrors(t *testing.T) {
 }
 
 func TestValidateCollectsEveryError(t *testing.T) {
-	f, err := Parse([]byte("schema: nope\nconfig: nope\ntested_on: x\nomarchy: { version: y }\nitems: { boot.install: { status: z } }\n"))
+	f, err := Parse([]byte("schema: nope\nconfig: nope\ntested_at: x\nomarchy: { version: y }\nitems: { boot.install: { status: z } }\n"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,7 +191,7 @@ func TestParse(t *testing.T) {
 	if _, err := Parse(make([]byte, MaxSize+1)); err == nil {
 		t.Error("oversized input must be rejected")
 	}
-	js := `{"schema":"doesitomarchy/result/v1","config":"macbookpro15-2-13-2018-4tb3-a","tested_on":"2026-10-01",
+	js := `{"schema":"doesitomarchy/report/v1","config":"macbookpro15-2-13-2018-4tb3-a","tested_at":"2026-10-01T08:00:00-04:00",
 	        "omarchy":{"version":"4.0.4"},"items":{"boot.install":{"status":"supported","method":"observed"}}}`
 	f, err := Parse([]byte(js))
 	if err != nil {
@@ -256,5 +258,13 @@ func TestScrubValue(t *testing.T) {
 	nested := out["nested"].([]any)
 	if nested[0].(map[string]any)["hostname"] != Redacted || nested[0].(map[string]any)["kernel"] != "6.16" || nested[1] != "Hostname: "+Redacted {
 		t.Errorf("nested: %v", nested)
+	}
+}
+
+func TestTestedAtIsUTC(t *testing.T) {
+	f, _ := Parse([]byte(strings.Replace(valid(), "2026-10-01T12:00:00Z", "2026-10-01T22:30:00-04:00", 1)))
+	r, err := Validate(f, loadCatalog(t), now)
+	if err != nil || r.TestedAt != "2026-10-02T02:30:00Z" {
+		t.Fatalf("tested_at should be stored in UTC: %q %v", r.TestedAt, err)
 	}
 }

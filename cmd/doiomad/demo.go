@@ -34,7 +34,7 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	// file builds a result for one config: every applicable capability gets
 	// status(i, id), which returns "" to leave it out.
 	file := func(configID, version, on, handle string, status func(i int, id string) string, evidence map[string]string) *results.File {
-		f := &results.File{Schema: results.SchemaV1, Config: configID, TestedOn: on, Items: map[string]results.FileItem{},
+		f := &results.File{Schema: results.SchemaV1, Config: configID, TestedAt: on, Items: map[string]results.FileItem{},
 			Omarchy: results.FileOmarchy{Version: version}, Tester: results.FileTester{Handle: handle},
 			Source: results.FileSource{ID: "manual", Profile: "full"}}
 		m, cfg := findDemoConfig(c, configID)
@@ -58,19 +58,19 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 		}
 		for _, r := range m.Releases {
 			for _, cfg := range r.Configs {
-				if _, err := add(file(cfg.ID, "4.0.4", "2026-09-28", "demo-tester", allPass, nil), true); err != nil {
+				if _, err := add(file(cfg.ID, "4.0.4", "2026-09-28T15:30:00Z", "demo-tester", allPass, nil), true); err != nil {
 					return err
 				}
 			}
 		}
 	}
-	if _, err := add(file("imac12-2-27-mid-2011-a", "4.0.4", "2026-09-27", "demo-tester", allPass, nil), true); err != nil {
+	if _, err := add(file("imac12-2-27-mid-2011-a", "4.0.4", "2026-09-27T15:30:00Z", "demo-tester", allPass, nil), true); err != nil {
 		return err
 	}
 
 	// Partial: a failure and a capability given up on (MacBookPro15,1, 2018).
 	speakers := map[string]string{"audio.speakers": "snd_hda_intel 0000:00:1f.3: no codecs found (T2 audio needs the apple-bce aaudio driver)"}
-	if _, err := add(file("macbookpro15-1-15-2018-a", "4.0.4", "2026-09-30", "demo-tester", func(i int, id string) string {
+	if _, err := add(file("macbookpro15-1-15-2018-a", "4.0.4", "2026-09-30T15:30:00Z", "demo-tester", func(i int, id string) string {
 		switch {
 		case id == "audio.speakers":
 			return "failed"
@@ -97,7 +97,7 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 
 	// Failed: a Boot capability failed (MacBookPro15,2, 2019).
 	install := map[string]string{"boot.install": "nvme0n1 not found: the installer kernel has no apple-bce module, so the T2 SSD is invisible"}
-	if _, err := add(file("macbookpro15-2-13-2019-4tb3-a", "4.0.4", "2026-10-01", "", func(i int, id string) string {
+	if _, err := add(file("macbookpro15-2-13-2019-4tb3-a", "4.0.4", "2026-10-01T15:30:00Z", "", func(i int, id string) string {
 		switch {
 		case id == "boot.install":
 			return "failed"
@@ -110,7 +110,7 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	}
 
 	// Unsupported: a Boot capability given up on (MacBookPro16,2).
-	if _, err := add(file("macbookpro16-2-13-2020-4tb3-a", "4.0.4", "2026-09-29", "demo-tester", func(i int, id string) string {
+	if _, err := add(file("macbookpro16-2-13-2020-4tb3-a", "4.0.4", "2026-09-29T15:30:00Z", "demo-tester", func(i int, id string) string {
 		if id == "boot.installer-efi64" {
 			return "failed"
 		}
@@ -136,14 +136,14 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 			return ""
 		}
 	}
-	if _, err := add(file("macbookair7-2-2017-a", "4.0.4", "2026-09-25", "demo-tester", wifi("supported"), nil), true); err != nil {
+	if _, err := add(file("macbookair7-2-2017-a", "4.0.4", "2026-09-25T15:30:00Z", "demo-tester", wifi("supported"), nil), true); err != nil {
 		return err
 	}
-	if _, err := add(file("macbookair7-2-2017-a", "4.0.4", "2026-09-26", "another-tester", wifi("failed"),
+	if _, err := add(file("macbookair7-2-2017-a", "4.0.4", "2026-09-26T15:30:00Z", "another-tester", wifi("failed"),
 		map[string]string{"network.wifi": "brcmfmac: firmware load failed"}), true); err != nil {
 		return err
 	}
-	id, err := add(file("macbookair7-2-2017-a", "4.0.3", "2026-09-20", "", wifi("supported"), nil), true)
+	id, err := add(file("macbookair7-2-2017-a", "4.0.3", "2026-09-20T15:30:00Z", "", wifi("supported"), nil), true)
 	if err != nil {
 		return err
 	}
@@ -152,12 +152,12 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	}
 
 	// Stale: verified, but only on an older Omarchy major (MacBookPro11,1).
-	if _, err := add(file("macbookpro11-1-13-mid-2014-a", "3.2.0", "2025-11-10", "demo-tester", allPass, nil), true); err != nil {
+	if _, err := add(file("macbookpro11-1-13-mid-2014-a", "3.2.0", "2025-11-10T15:30:00Z", "demo-tester", allPass, nil), true); err != nil {
 		return err
 	}
 
 	// A pending result: stored, never shown.
-	_, err = add(file("macbookpro11-1-13-late-2013-a", "4.0.4", "2026-10-01", "", allPass, nil), false)
+	_, err = add(file("macbookpro11-1-13-late-2013-a", "4.0.4", "2026-10-01T15:30:00Z", "", allPass, nil), false)
 	return err
 }
 

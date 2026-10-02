@@ -99,7 +99,7 @@ func TestResultLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(ru.Items[r.ConfigID]) != 27 || ru.Results[r.ConfigID] != 1 || ru.Latest[r.ConfigID] != "2026-09-30" ||
+	if len(ru.Items[r.ConfigID]) != 27 || ru.Results[r.ConfigID] != 1 || ru.Latest[r.ConfigID] != "2026-09-30T18:05:00Z" ||
 		ru.CurrentMajor != 4 || ru.Version != v1 || len(ru.Accepted[r.ConfigID]) != 1 {
 		t.Fatalf("rollup after accept: items %d results %d latest %q major %d version %d",
 			len(ru.Items[r.ConfigID]), ru.Results[r.ConfigID], ru.Latest[r.ConfigID], ru.CurrentMajor, ru.Version)
@@ -136,9 +136,9 @@ func TestResultLifecycle(t *testing.T) {
 func TestRejectAndFlags(t *testing.T) {
 	ctx := context.Background()
 	st, c := synced(t)
-	f, _ := results.Parse([]byte(`schema: doesitomarchy/result/v1
+	f, _ := results.Parse([]byte(`schema: doesitomarchy/report/v1
 config: macbookpro15-2-13-2018-4tb3-a
-tested_on: 2026-10-01
+tested_at: 2026-10-01T12:00:00Z
 omarchy: { version: "4.0.4" }
 items:
   boot.install: { status: supported, method: observed }
@@ -268,5 +268,37 @@ func TestResultsSurviveSync(t *testing.T) {
 	}
 	if d, err := st.Result(ctx, id); err != nil || d.ConfigID != "macbookpro15-2-13-2018-4tb3-a" {
 		t.Fatalf("the failed sync must leave results untouched: %v", err)
+	}
+}
+
+func TestReportCodes(t *testing.T) {
+	ctx := context.Background()
+	st, c := synced(t)
+	r, raw := fixture(t, c)
+	seen := map[string]bool{}
+	for i := 0; i < 20; i++ {
+		id, err := st.InsertResult(ctx, r, raw, results.SchemaV1, "carl")
+		if err != nil {
+			t.Fatal(err)
+		}
+		d, _ := st.Result(ctx, id)
+		if !IsCode(d.Code) || seen[d.Code] {
+			t.Fatalf("code %q: not a fresh 10-character hex code", d.Code)
+		}
+		seen[d.Code] = true
+		if back, err := st.ResultIDByCode(ctx, d.Code); err != nil || back != id {
+			t.Fatalf("lookup by code: %d %v", back, err)
+		}
+		if d.SubmittedAt == "" || d.SubmittedAt[len(d.SubmittedAt)-1] != 'Z' {
+			t.Errorf("submitted_at should be UTC: %q", d.SubmittedAt)
+		}
+	}
+	if _, err := st.ResultIDByCode(ctx, "0000000000"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("unknown code: %v", err)
+	}
+	for _, bad := range []string{"", "123", "ABCDEF1234", "abcdefghij", "0123456789a"} {
+		if IsCode(bad) {
+			t.Errorf("IsCode(%q)", bad)
+		}
 	}
 }

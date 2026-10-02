@@ -40,9 +40,9 @@ make check                                   # everything CI runs
 
 ## Test results
 
-Results are stored in the site database, not in this repo. They use the DoesItOmarchy result schema, `doesitomarchy/result/v1`: one file per test run, for one configuration, with a status for each capability tested. [`internal/results/fixtures/mbp152-synthetic.yaml`](internal/results/fixtures/mbp152-synthetic.yaml) is a complete (made-up) example.
+Results are stored in the site database, not in this repo. Each test run is a **diagnostic report** in the DoesItOmarchy schema, `doesitomarchy/report/v1`: one file per run, for one configuration, with a status for each capability tested and the time of the test (`tested_at`, with a time zone; everything is shown in UTC). [`internal/results/fixtures/mbp152-synthetic.yaml`](internal/results/fixtures/mbp152-synthetic.yaml) is a complete (made-up) example.
 
-Every result starts pending, and a maintainer reviews it before it counts. For now maintainers import results by hand; the submission API for test tools such as OmacDiag comes next. Personal data (serial numbers, MAC and IP addresses, host and user names) is removed before anything is stored.
+Every report starts pending, and a maintainer reviews it before it counts. For now maintainers import reports by hand; the submission API for test tools such as OmacDiag comes next. Personal data (serial numbers, MAC and IP addresses, host and user names) is removed before anything is stored.
 
 ## Code
 

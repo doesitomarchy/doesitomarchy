@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -32,7 +33,44 @@ var transitions = map[string][]string{
 // ErrState is returned for a moderation move the result's state doesn't allow.
 var ErrState = errors.New("not allowed in this state")
 
+// now is the current time in UTC, RFC 3339: every timestamp the store writes.
 func now() string { return time.Now().UTC().Format(time.RFC3339) }
+
+// CodeLen is the length of a report's public code.
+const CodeLen = 10
+
+// newCode is a report's public identifier: 10 random hex characters. Random,
+// not derived from the row ID, so pending reports can't be found by counting.
+func newCode() string {
+	b := make([]byte, CodeLen/2)
+	if _, err := rand.Read(b); err != nil {
+		panic(err) // crypto/rand doesn't fail on supported platforms
+	}
+	return hex.EncodeToString(b)
+}
+
+// IsCode reports whether s looks like a report code.
+func IsCode(s string) bool {
+	if len(s) != CodeLen {
+		return false
+	}
+	for _, r := range s {
+		if !(r >= '0' && r <= '9' || r >= 'a' && r <= 'f') {
+			return false
+		}
+	}
+	return true
+}
+
+// ResultIDByCode finds a report's internal ID from its public code.
+func (s *Store) ResultIDByCode(ctx context.Context, code string) (int64, error) {
+	var id int64
+	err := s.db.QueryRowContext(ctx, "SELECT id FROM results WHERE code = ?", code).Scan(&id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, ErrNotFound
+	}
+	return id, err
+}
 
 // InsertResult stores a validated result as pending, with its scrubbed raw
 // report, items, extras and flags, and returns its ID. Pending results don't
@@ -67,13 +105,19 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 		contact = hex.EncodeToString(sum[:])
 	}
 	at := now()
-	res, err := tx.ExecContext(ctx, `INSERT INTO results (config_id, source_id, source_version, profile, workflow, schema, format,
-		tester_handle, contact_hash, tested_on, omarchy_version, omarchy_major, omarchy_minor, omarchy_patch, omarchy_revision,
-		omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		r.ConfigID, r.SourceID, r.SourceVersion, r.Profile, r.Workflow, r.Schema, format, r.TesterHandle, contact, r.TestedOn,
-		r.OmarchyRaw, r.Omarchy.Major, r.Omarchy.Minor, r.Omarchy.Patch, r.Revision, r.Image, r.Kernel, r.Notes, r.Hardware,
-		Pending, actor, at)
+	var res sql.Result
+	for attempt := 0; ; attempt++ {
+		res, err = tx.ExecContext(ctx, `INSERT INTO results (code, config_id, source_id, source_version, profile, workflow, schema,
+			format, tester_handle, contact_hash, tested_at, omarchy_version, omarchy_major, omarchy_minor, omarchy_patch,
+			omarchy_revision, omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			newCode(), r.ConfigID, r.SourceID, r.SourceVersion, r.Profile, r.Workflow, r.Schema, format, r.TesterHandle, contact,
+			r.TestedAt, r.OmarchyRaw, r.Omarchy.Major, r.Omarchy.Minor, r.Omarchy.Patch, r.Revision, r.Image, r.Kernel, r.Notes,
+			r.Hardware, Pending, actor, at)
+		if err == nil || attempt == 4 || !strings.Contains(err.Error(), "results.code") {
+			break // retry only on the (1 in 10^12) code collision
+		}
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -178,10 +222,11 @@ func (s *Store) DataVersion(ctx context.Context) (int64, error) {
 // ResultSummary is one row of a results list.
 type ResultSummary struct {
 	ID                                    int64
+	Code                                  string
 	ConfigID, Identifier, Slug            string
 	SourceID, SourceName, SourceVersion   string
 	Profile, Workflow                     string
-	TesterHandle, TestedOn, Omarchy       string
+	TesterHandle, TestedAt, Omarchy       string
 	Kernel                                string
 	State, StateReason, StateBy, StateAt  string
 	SubmittedBy, SubmittedAt              string
@@ -195,8 +240,8 @@ type ResultFilter struct {
 	Limit         int
 }
 
-const summaryCols = `r.id, r.config_id, c.mac_identifier, m.slug, r.source_id, s.name, r.source_version, r.profile, r.workflow,
-	r.tester_handle, r.tested_on, r.omarchy_version, r.kernel, r.state, r.state_reason, r.state_by, r.state_at,
+const summaryCols = `r.id, r.code, r.config_id, c.mac_identifier, m.slug, r.source_id, s.name, r.source_version, r.profile, r.workflow,
+	r.tester_handle, r.tested_at, r.omarchy_version, r.kernel, r.state, r.state_reason, r.state_by, r.state_at,
 	r.submitted_by, r.submitted_at,
 	(SELECT count(*) FROM result_items i WHERE i.result_id = r.id AND i.status = 'supported'),
 	(SELECT count(*) FROM result_items i WHERE i.result_id = r.id AND i.status = 'partial'),
@@ -208,8 +253,8 @@ const summaryCols = `r.id, r.config_id, c.mac_identifier, m.slug, r.source_id, s
 
 func scanSummary(sc interface{ Scan(...any) error }) (ResultSummary, error) {
 	var x ResultSummary
-	err := sc.Scan(&x.ID, &x.ConfigID, &x.Identifier, &x.Slug, &x.SourceID, &x.SourceName, &x.SourceVersion, &x.Profile,
-		&x.Workflow, &x.TesterHandle, &x.TestedOn, &x.Omarchy, &x.Kernel, &x.State, &x.StateReason, &x.StateBy, &x.StateAt,
+	err := sc.Scan(&x.ID, &x.Code, &x.ConfigID, &x.Identifier, &x.Slug, &x.SourceID, &x.SourceName, &x.SourceVersion, &x.Profile,
+		&x.Workflow, &x.TesterHandle, &x.TestedAt, &x.Omarchy, &x.Kernel, &x.State, &x.StateReason, &x.StateBy, &x.StateAt,
 		&x.SubmittedBy, &x.SubmittedAt, &x.Supported, &x.Partial, &x.Failed, &x.NotTested, &x.OpenFlags)
 	return x, err
 }
@@ -254,6 +299,7 @@ type ResultItem struct {
 type ResultFlag struct {
 	ID                                 int64
 	ResultID                           int64
+	ResultCode                         string
 	Kind, Detail                       string
 	Resolution, ResolvedBy, ResolvedAt string
 }
@@ -321,7 +367,7 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 		d.Extras = append(d.Extras, x)
 	}
 	rows.Close()
-	if d.Flags, err = s.flags(ctx, "WHERE result_id = ?", id); err != nil {
+	if d.Flags, err = s.flags(ctx, "WHERE f.result_id = ?", id); err != nil {
 		return nil, err
 	}
 	rows, err = s.db.QueryContext(ctx, "SELECT at, actor, action, detail FROM result_events WHERE result_id = ? ORDER BY id", id)
@@ -349,7 +395,8 @@ func (s *Store) ResultReport(ctx context.Context, id int64) (format, body string
 }
 
 func (s *Store) flags(ctx context.Context, where string, args ...any) ([]ResultFlag, error) {
-	rows, err := s.db.QueryContext(ctx, "SELECT id, result_id, kind, detail, resolution, resolved_by, resolved_at FROM result_flags "+where+" ORDER BY id", args...)
+	rows, err := s.db.QueryContext(ctx, `SELECT f.id, f.result_id, r.code, f.kind, f.detail, f.resolution, f.resolved_by, f.resolved_at
+		FROM result_flags f JOIN results r ON r.id = f.result_id `+where+" ORDER BY f.id", args...)
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +404,7 @@ func (s *Store) flags(ctx context.Context, where string, args ...any) ([]ResultF
 	var out []ResultFlag
 	for rows.Next() {
 		var f ResultFlag
-		if err := rows.Scan(&f.ID, &f.ResultID, &f.Kind, &f.Detail, &f.Resolution, &f.ResolvedBy, &f.ResolvedAt); err != nil {
+		if err := rows.Scan(&f.ID, &f.ResultID, &f.ResultCode, &f.Kind, &f.Detail, &f.Resolution, &f.ResolvedBy, &f.ResolvedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, f)
@@ -368,7 +415,7 @@ func (s *Store) flags(ctx context.Context, where string, args ...any) ([]ResultF
 // Flags lists review flags; openOnly hides resolved ones.
 func (s *Store) Flags(ctx context.Context, openOnly bool) ([]ResultFlag, error) {
 	if openOnly {
-		return s.flags(ctx, "WHERE resolved_at = ''")
+		return s.flags(ctx, "WHERE f.resolved_at = ''")
 	}
 	return s.flags(ctx, "")
 }
@@ -491,7 +538,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	r.Version, _ = strconv.ParseInt(version, 10, 64)
 
 	rows, err := tx.QueryContext(ctx, `SELECT r.id, r.config_id, i.capability_id, i.status, i.method, i.evidence,
-		r.omarchy_major, r.omarchy_minor, r.omarchy_patch, r.tested_on
+		r.omarchy_major, r.omarchy_minor, r.omarchy_patch, r.tested_at
 		FROM result_items i JOIN results r ON r.id = i.result_id
 		WHERE r.state = 'accepted' AND i.applicable = 1 AND i.status <> 'not_tested'`)
 	if err != nil {
@@ -501,7 +548,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 		var it status.Item
 		var cfg, st string
 		if err := rows.Scan(&it.ResultID, &cfg, &it.Capability, &st, &it.Method, &it.Evidence,
-			&it.Omarchy.Major, &it.Omarchy.Minor, &it.Omarchy.Patch, &it.TestedOn); err != nil {
+			&it.Omarchy.Major, &it.Omarchy.Minor, &it.Omarchy.Patch, &it.TestedAt); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -510,7 +557,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	}
 	rows.Close()
 
-	rows, err = tx.QueryContext(ctx, "SELECT "+summaryCols+" WHERE r.state IN ('accepted', 'retracted') ORDER BY r.tested_on DESC, r.id DESC")
+	rows, err = tx.QueryContext(ctx, "SELECT "+summaryCols+" WHERE r.state IN ('accepted', 'retracted') ORDER BY r.tested_at DESC, r.id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -523,8 +570,8 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 		r.Accepted[x.ConfigID] = append(r.Accepted[x.ConfigID], x)
 		if x.State == Accepted {
 			r.Results[x.ConfigID]++
-			if x.TestedOn > r.Latest[x.ConfigID] {
-				r.Latest[x.ConfigID] = x.TestedOn
+			if x.TestedAt > r.Latest[x.ConfigID] {
+				r.Latest[x.ConfigID] = x.TestedAt
 			}
 		}
 	}

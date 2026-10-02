@@ -1,5 +1,5 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-CATALOG_DATE ?= $(shell git log -1 --format=%cs -- data 2>/dev/null || echo unknown)
+CATALOG_DATE ?= $(shell TZ=UTC git log -1 --date=format-local:%Y-%m-%d --format=%cd -- data 2>/dev/null || echo unknown)
 CATALOG_COMMIT ?= $(shell git log -1 --format=%H -- data 2>/dev/null)
 LDFLAGS := -s -w -X main.version=$(VERSION) -X main.catalogDate=$(CATALOG_DATE) -X main.catalogCommit=$(CATALOG_COMMIT)
 

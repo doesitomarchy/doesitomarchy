@@ -19,7 +19,7 @@ func v(s string) Version {
 }
 
 func item(cap string, verdict Verdict, ver, on string, id int64) Item {
-	return Item{Capability: cap, Verdict: verdict, Method: "automatic", Omarchy: v(ver), TestedOn: on, ResultID: id}
+	return Item{Capability: cap, Verdict: verdict, Method: "automatic", Omarchy: v(ver), TestedAt: on, ResultID: id}
 }
 
 // all returns an item for every capability with the same verdict.

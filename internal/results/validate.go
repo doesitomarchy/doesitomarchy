@@ -39,7 +39,7 @@ type Result struct {
 	Workflow      string
 	TesterHandle  string
 	Contact       string // raw; the store hashes it and never keeps it
-	TestedOn      string
+	TestedAt      string // RFC 3339, UTC
 	Omarchy       status.Version
 	OmarchyRaw    string
 	Revision      string
@@ -87,7 +87,7 @@ const (
 )
 
 // Validate checks a parsed submission against the catalog and returns the
-// canonical, scrubbed result. now bounds tested_on (no future dates).
+// canonical, scrubbed result. now bounds tested_at (no future dates).
 func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 	var errs Errors
 	bad := func(format string, a ...any) { errs = append(errs, fmt.Sprintf(format, a...)) }
@@ -121,14 +121,15 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 	}
 	r.Contact = strings.TrimSpace(f.Tester.Contact)
 
-	if d, err := time.Parse("2006-01-02", strings.TrimSpace(f.TestedOn)); err != nil {
-		bad("tested_on: %q must be a date (YYYY-MM-DD)", f.TestedOn)
-	} else if d.After(now.Add(36 * time.Hour)) {
-		bad("tested_on: %s is in the future", f.TestedOn)
-	} else if d.Year() < 2025 {
-		bad("tested_on: %s is before Omarchy existed", f.TestedOn)
+	// When the test ran: a full timestamp with a time zone, stored in UTC.
+	if d, err := time.Parse(time.RFC3339, strings.TrimSpace(f.TestedAt)); err != nil {
+		bad("tested_at: %q must be a timestamp with a time zone, e.g. 2026-09-30T14:05:00Z or 2026-09-30T10:05:00-04:00", f.TestedAt)
+	} else if d.After(now.Add(15 * time.Minute)) {
+		bad("tested_at: %s is in the future", f.TestedAt)
+	} else if d.UTC().Year() < 2025 {
+		bad("tested_at: %s is before Omarchy existed", f.TestedAt)
 	} else {
-		r.TestedOn = d.Format("2006-01-02")
+		r.TestedAt = d.UTC().Format(time.RFC3339)
 	}
 
 	if v, err := status.ParseVersion(f.Omarchy.Version); err != nil {

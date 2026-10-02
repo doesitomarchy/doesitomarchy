@@ -110,7 +110,13 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
-	log := slog.New(slog.NewTextHandler(stderr, nil))
+	// Logs use UTC, like every time on the site.
+	log := slog.New(slog.NewTextHandler(stderr, &slog.HandlerOptions{ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
+		if a.Key == slog.TimeKey && a.Value.Kind() == slog.KindTime {
+			a.Value = slog.TimeValue(a.Value.Time().UTC())
+		}
+		return a
+	}}))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

@@ -103,7 +103,7 @@ type Item struct {
 	Verdict    Verdict // Supported, Partial or Failed
 	Method     string  // automatic | observed | fixture
 	Omarchy    Version
-	TestedOn   string // YYYY-MM-DD
+	TestedAt   string // YYYY-MM-DD
 	ResultID   int64
 	Evidence   string // why it failed, as reported
 }
@@ -114,8 +114,8 @@ func newer(a, b Item) bool {
 	if a.Omarchy != b.Omarchy {
 		return b.Omarchy.Less(a.Omarchy)
 	}
-	if a.TestedOn != b.TestedOn {
-		return a.TestedOn > b.TestedOn
+	if a.TestedAt != b.TestedAt {
+		return a.TestedAt > b.TestedAt
 	}
 	return a.ResultID > b.ResultID
 }

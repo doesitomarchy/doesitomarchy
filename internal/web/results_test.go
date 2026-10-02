@@ -99,20 +99,25 @@ func TestResultLifecycleOnTheSite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	d, err := st.Result(ctx, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := "/report/" + d.Code
 
 	// Pending: nothing on the site changes; the result page doesn't exist.
 	time.Sleep(100 * time.Millisecond)
 	if _, now := body(t, ts, page); now != before {
 		t.Fatal("a pending result changed the model page")
 	}
-	if code, _ := body(t, ts, "/result/1"); code != http.StatusNotFound {
-		t.Fatalf("pending result page: %d", code)
+	if code, _ := body(t, ts, report); code != http.StatusNotFound {
+		t.Fatalf("pending report page: %d", code)
 	}
 
 	if err := st.SetResultState(ctx, id, store.Accepted, "", "test"); err != nil {
 		t.Fatal(err)
 	}
-	b := eventually(t, ts, page, func(b string) bool { return strings.Contains(b, "Latest result") }, "the accepted result showing")
+	b := eventually(t, ts, page, func(b string) bool { return strings.Contains(b, "Latest diagnostic report") }, "the accepted result showing")
 	cardHTML := b[strings.Index(b, card):]
 	cardHTML = cardHTML[:strings.Index(cardHTML, "</section>")]
 	for _, want := range []string{
@@ -120,14 +125,15 @@ func TestResultLifecycleOnTheSite(t *testing.T) {
 		"27/30 tested",            // counts
 		"Blocked by: Graphics → External display output",    // the blocker
 		"DisplayPort alt mode works on the left ports only", // evidence on the partial capability
-		"Why it failed",    // failed capabilities explain themselves
-		`href="/result/1"`, // and link to the result
+		"Why it failed",               // failed capabilities explain themselves
+		`href="` + report + `"`,       // and link to the report
+		"tested 2026-09-30 18:05 UTC", // the test time, in UTC
 	} {
 		if !strings.Contains(cardHTML, want) {
 			t.Errorf("model page card lacks %q", want)
 		}
 	}
-	if _, other := body(t, ts, "/mac/MacBookPro15-2"); strings.Count(other, "Latest result") != 1 {
+	if _, other := body(t, ts, "/mac/MacBookPro15-2"); strings.Count(other, "Latest diagnostic report") != 1 {
 		t.Error("only the tested config should show a result")
 	}
 
@@ -137,26 +143,37 @@ func TestResultLifecycleOnTheSite(t *testing.T) {
 		t.Error("home coverage should read 0 verified, 1 tested")
 	}
 	_, stats := body(t, ts, "/stats")
-	if !strings.Contains(stats, "<b>1</b> accepted result") || !strings.Contains(stats, `href="/result/1"`) {
-		t.Error("/stats should list the accepted result")
+	if !strings.Contains(stats, "<b>1</b> accepted report") || !strings.Contains(stats, `href="`+report+`"`) {
+		t.Error("/stats should list the accepted report")
 	}
 	_, search := body(t, ts, "/search?q=tested%3Ayes")
 	if !strings.Contains(search, "MacBookPro15,2") {
 		t.Error("tested:yes should find the tested Mac")
 	}
-	if code, rp := body(t, ts, "/result/1"); code != http.StatusOK || !strings.Contains(rp, "Result #1") ||
-		strings.Contains(rp, "C02XG0FDH7JY") || strings.Contains(rp, "a4:83:e7") || strings.Contains(rp, "tester@example.com") {
-		t.Errorf("result page: %d, or it leaks personal data", code)
+	code, rp := body(t, ts, report)
+	if code != http.StatusOK || !strings.Contains(rp, "Diagnostic Report") || !strings.Contains(rp, d.Code) {
+		t.Errorf("report page: %d", code)
 	}
-	if _, sm := body(t, ts, "/sitemap.xml"); !strings.Contains(sm, "/result/1<") {
-		t.Error("accepted results belong in the sitemap")
+	for _, leak := range []string{"C02XG0FDH7JY", "a4:83:e7", "tester@example.com"} {
+		if strings.Contains(rp, leak) {
+			t.Errorf("report page leaks %q", leak)
+		}
+	}
+	if !strings.Contains(rp, "tested <b>2026-09-30 18:05 UTC</b>") || !strings.Contains(rp, "submitted <b>") {
+		t.Error("the report shows when it was tested and when it was submitted, separately, in UTC")
+	}
+	if c, _ := body(t, ts, "/report/1"); c != http.StatusNotFound {
+		t.Error("reports are found by code, never by number")
+	}
+	if _, sm := body(t, ts, "/sitemap.xml"); !strings.Contains(sm, report+"<") {
+		t.Error("accepted reports belong in the sitemap")
 	}
 
 	// Retract: the site returns to its previous state; the result page says so.
 	if err := st.SetResultState(ctx, id, store.Retracted, "synthetic fixture", "test"); err != nil {
 		t.Fatal(err)
 	}
-	after := eventually(t, ts, page, func(b string) bool { return !strings.Contains(b, "Latest result") }, "the retraction")
+	after := eventually(t, ts, page, func(b string) bool { return !strings.Contains(b, "Latest diagnostic report") }, "the retraction")
 	if !strings.Contains(after, `class="verdict untested"`) || strings.Contains(after[strings.Index(after, card):], `class="verdict partial"`) {
 		t.Error("after retraction the config should be untested again")
 	}
@@ -164,8 +181,8 @@ func TestResultLifecycleOnTheSite(t *testing.T) {
 	if strings.Contains(home, `<span class="n">1</span> / `) {
 		t.Error("coverage should drop back to 0 after retraction")
 	}
-	if code, rp := body(t, ts, "/result/1"); code != http.StatusOK || !strings.Contains(rp, "Retracted") {
-		t.Errorf("a retracted result keeps its page, marked retracted: %d", code)
+	if code, rp := body(t, ts, report); code != http.StatusOK || !strings.Contains(rp, "Retracted") {
+		t.Errorf("a retracted report keeps its page, marked retracted: %d", code)
 	}
 }
 
@@ -199,4 +216,43 @@ func TestPurgeDebounced(t *testing.T) {
 	// Without a token, nothing is scheduled.
 	(&purger{}).schedule()
 	newPurger("", "", nil).schedule()
+}
+
+// Enter on a query with exactly one match goes straight to the Mac.
+func TestSearchSingleMatchRedirects(t *testing.T) {
+	ts, _, _ := liveServer(t)
+	client := ts.Client()
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	get := func(path string, htmx bool) *http.Response {
+		req, _ := http.NewRequest("GET", ts.URL+path, nil)
+		if htmx {
+			req.Header.Set("HX-Request", "true")
+		}
+		res, err := client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		return res
+	}
+	if res := get("/search?q=macbookpro15%2C1", false); res.StatusCode != http.StatusFound || res.Header.Get("Location") != "/mac/MacBookPro15-1" {
+		t.Errorf("one match: %d → %q", res.StatusCode, res.Header.Get("Location"))
+	}
+	// MacBookPro15,2 has two configurations; an order number names one of them.
+	if res := get("/search?q=MV962LL%2FA", false); res.StatusCode != http.StatusFound ||
+		res.Header.Get("Location") != "/mac/MacBookPro15-2#cfg-macbookpro15-2-13-2019-4tb3-a" {
+		t.Errorf("an order number pinpoints a config: %d → %q", res.StatusCode, res.Header.Get("Location"))
+	}
+	// MacBookPro7,1 has one configuration: just the Mac's page.
+	if res := get("/search?q=MC374LL%2FA", false); res.Header.Get("Location") != "/mac/MacBookPro7-1" {
+		t.Errorf("single-config Mac: %q", res.Header.Get("Location"))
+	}
+	for _, path := range []string{"/search?q=mbp+2011", "/search?q=", "/search?q=macbookpro15%2C1&sort=recent"} {
+		if res := get(path, false); res.StatusCode != http.StatusOK {
+			t.Errorf("%s: several matches (or a sort) stay on the results page, got %d", path, res.StatusCode)
+		}
+	}
+	if res := get("/search?q=macbookpro15%2C1", true); res.StatusCode != http.StatusOK {
+		t.Errorf("live search (HTMX) never redirects, got %d", res.StatusCode)
+	}
 }

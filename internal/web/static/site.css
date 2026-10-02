@@ -392,3 +392,4 @@ body.flash > * { visibility: hidden; }
 .changelog .summary { font: 15px/1.6 var(--sans); }
 .changelog ul { font: 14px/1.6 var(--sans); padding-left: 1.2rem; }
 .super .legal a { color: var(--link); }
+.report-code { font-weight: 500; color: var(--muted); font-size: 0.75em; letter-spacing: 0.02em; margin-left: 0.6rem; }

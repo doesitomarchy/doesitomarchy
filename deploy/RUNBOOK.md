@@ -101,22 +101,24 @@ under `deploy/root/`, run `deploy/provision.sh` again to apply it.
 same steps rebuild a lost server: provision, run cloudflare.sh (it moves the
 tunnel token to the new droplet), and tag or re-deploy a release.
 
-## Moderating results
+## Moderating diagnostic reports
 
-Results arrive as files (later through the API) and start **pending**. Nothing
-counts until a maintainer accepts it. On the droplet the `doiomad` wrapper
+Diagnostic reports arrive as files (later through the API) and start
+**pending**. Nothing counts until a maintainer accepts it. Each report has a
+10-character code, which is its public URL (`/report/CODE`) and how the CLI
+names it. On the droplet the `doiomad` wrapper
 runs as the service user, which can't read your home directory, so pipe
 files in:
 
 ```sh
-doiomad results import - < result.yaml     # validates, stores as pending, previews the effect
-doiomad results list -state pending
-doiomad results show 12                    # items, evidence, flags, history
-doiomad results accept 12
-doiomad results reject 12 -reason "duplicate of #11"
-doiomad results retract 12 -reason "tested with a third-party Wi-Fi card"
-doiomad results flags                      # open review flags
-doiomad results resolve 3 -note "stored, not counted; fine"
+doiomad reports import - < report.yaml     # validates, stores as pending, previews the effect
+doiomad reports list -state pending
+doiomad reports show 4f9a2c7e1b            # items, evidence, flags, history
+doiomad reports accept 4f9a2c7e1b
+doiomad reports reject 4f9a2c7e1b -reason "duplicate of 7d1e09ab32"
+doiomad reports retract 4f9a2c7e1b -reason "tested with a third-party Wi-Fi card"
+doiomad reports flags                      # open review flags
+doiomad reports resolve 3 -note "stored, not counted; fine"
 ```
 
 - **Effect:** accepts and retractions bump a change counter. The server
@@ -125,7 +127,9 @@ doiomad results resolve 3 -note "stored, not counted; fine"
   token) in `/etc/doiomad/doiomad.env`, which `provision.sh` writes when
   they're set. Without them, pages catch up within 5 minutes.
 - **Records:** every action is recorded with your user name. Nothing is ever
-  deleted; a retracted result keeps its public page, marked retracted.
+  deleted; a retracted report keeps its public page, marked retracted.
+- **Times:** every timestamp (tested, submitted, moderated) is stored and
+  shown in UTC.
 - **Privacy:** personal data (serials, MAC and IP addresses, host and user
   names, e-mail addresses) is scrubbed before storage. The raw submission is
   kept, scrubbed and private.

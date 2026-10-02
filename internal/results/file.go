@@ -12,7 +12,7 @@ import (
 )
 
 // SchemaV1 identifies the first version of the result schema.
-const SchemaV1 = "doesitomarchy/result/v1"
+const SchemaV1 = "doesitomarchy/report/v1"
 
 // MaxSize is the largest submission accepted, in bytes.
 const MaxSize = 1 << 20
@@ -23,7 +23,7 @@ type File struct {
 	Config   string              `yaml:"config" json:"config"`
 	Source   FileSource          `yaml:"source" json:"source"`
 	Tester   FileTester          `yaml:"tester" json:"tester"`
-	TestedOn string              `yaml:"tested_on" json:"tested_on"`
+	TestedAt string              `yaml:"tested_at" json:"tested_at"`
 	Omarchy  FileOmarchy         `yaml:"omarchy" json:"omarchy"`
 	Kernel   string              `yaml:"kernel" json:"kernel"`
 	Notes    string              `yaml:"notes" json:"notes"`

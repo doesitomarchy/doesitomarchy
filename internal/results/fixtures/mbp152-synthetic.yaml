@@ -2,11 +2,11 @@
 # It is not a real test. It exercises every item status, every method, skip
 # reasons, evidence, an extra, and personal data the scrubber must remove
 # (the serial number, MAC address, hostname and home-directory path below).
-schema: doesitomarchy/result/v1
+schema: doesitomarchy/report/v1
 config: macbookpro15-2-13-2018-4tb3-a
 source: { id: manual, version: "", profile: full, workflow: guided }
 tester: { handle: synthetic-fixture, contact: tester@example.com }
-tested_on: 2026-09-30
+tested_at: 2026-09-30T14:05:00-04:00
 omarchy: { version: "4.0.4", revision: "", image: omarchy-4.0.4-x86_64.iso }
 kernel: 6.16.2-arch1-1
 notes: |

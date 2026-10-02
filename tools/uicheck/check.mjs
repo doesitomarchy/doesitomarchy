@@ -16,7 +16,7 @@ const CHROME = process.env.CHROME || "/usr/bin/chromium";
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
-  "/contribute", "/configs", "/components", "/changelog", "/attribution", "/result/7", "/mac/MacBookAir7-2",
+  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2",
 ];
 const widths = [360, 1440];
 const contrastPages = ["/", "/mac/MacBookPro15-1"];
@@ -44,6 +44,12 @@ async function axe(rules) {
     return r.violations.map((v) => `${v.id} (${v.impact}) ×${v.nodes.length}: ${v.help} [${v.nodes.slice(0, 2).map((n) => n.target.join(" ")).join(" | ")}]`);
   }, rules);
 }
+
+// A diagnostic report page: codes are random, so take the first one /stats links to.
+await load("/stats", 1440);
+const report = await page.$eval('a[href^="/report/"]', (a) => a.getAttribute("href")).catch(() => null);
+if (!report) fail("/stats", "no link to a diagnostic report (is the server running with -demo?)");
+for (let i = 0; i < pages.length; i++) if (pages[i] === "REPORT") pages[i] = report || "/stats";
 
 // 1. Accessibility + layout at phone and desktop widths.
 for (const path of pages) {

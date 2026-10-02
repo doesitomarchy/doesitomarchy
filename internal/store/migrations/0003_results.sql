@@ -26,18 +26,22 @@ CREATE TABLE sources (
 
 INSERT INTO sources (id, name, created_at) VALUES ('manual', 'Manual entry', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'));
 
+-- A "diagnostic report" on the site. id is internal; code is the public,
+-- fixed-length random identifier in URLs (/report/{code}), so reports can't
+-- be enumerated by counting.
 CREATE TABLE results (
   id               INTEGER PRIMARY KEY,
+  code             TEXT NOT NULL UNIQUE,            -- 10 lower-case hex characters
   config_id        TEXT NOT NULL REFERENCES configs (id),
   source_id        TEXT NOT NULL REFERENCES sources (id),
   source_version   TEXT NOT NULL DEFAULT '',
   profile          TEXT NOT NULL DEFAULT '',
   workflow         TEXT NOT NULL DEFAULT '',
-  schema           TEXT NOT NULL,                   -- "doesitomarchy/result/v1"
-  format           TEXT NOT NULL,                   -- input format: "doesitomarchy/result/v1" or a source's native format
+  schema           TEXT NOT NULL,                   -- "doesitomarchy/report/v1"
+  format           TEXT NOT NULL,                   -- input format: "doesitomarchy/report/v1" or a source's native format
   tester_handle    TEXT NOT NULL DEFAULT '',
   contact_hash     TEXT NOT NULL DEFAULT '',
-  tested_on        TEXT NOT NULL,                   -- YYYY-MM-DD
+  tested_at        TEXT NOT NULL,                   -- when the test ran, RFC 3339 in UTC
   omarchy_version  TEXT NOT NULL,                   -- as reported
   omarchy_major    INTEGER NOT NULL,
   omarchy_minor    INTEGER NOT NULL,
@@ -51,7 +55,7 @@ CREATE TABLE results (
   state            TEXT NOT NULL CHECK (state IN ('pending', 'accepted', 'rejected', 'retracted')),
   state_reason     TEXT NOT NULL DEFAULT '',
   state_by         TEXT NOT NULL DEFAULT '',
-  state_at         TEXT NOT NULL DEFAULT '',
+  state_at         TEXT NOT NULL DEFAULT '',        -- RFC 3339 in UTC, like every timestamp here
   submitted_by     TEXT NOT NULL,                   -- maintainer (import) or source (API)
   submitted_at     TEXT NOT NULL
 ) STRICT;

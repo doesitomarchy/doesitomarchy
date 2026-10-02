@@ -91,11 +91,11 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"v":           func(s string) status.Verdict { return status.Verdict(s) },
 		"releaseURL":  releaseURL,
 		"itemVerdict": itemVerdict,
-		"day":         func(ts string) string { return ts[:min(len(ts), 10)] },
+		"utc":         formatUTC,
 		"itemLabel":   itemLabel,
 		"reasonLabel": reasonLabel,
 	}
-	for _, p := range []string{"home", "mac", "result", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+	for _, p := range []string{"home", "mac", "report", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
@@ -119,7 +119,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /{$}", s.home)
 	mux.HandleFunc("GET /macs", s.macs)
 	mux.HandleFunc("GET /mac/{id}", s.mac)
-	mux.HandleFunc("GET /result/{id}", s.result)
+	mux.HandleFunc("GET /report/{code}", s.report)
 	mux.HandleFunc("GET /search", s.search)
 	mux.HandleFunc("GET /search/suggest", s.suggest)
 	mux.HandleFunc("GET /stats", s.stats)
@@ -337,4 +337,14 @@ func reasonLabel(r string) string {
 		return "skipped"
 	}
 	return ""
+}
+
+// formatUTC shows an RFC 3339 timestamp as "2026-09-30 18:05 UTC". Every time
+// on the site is UTC. Anything that isn't a timestamp is shown as is.
+func formatUTC(ts string) string {
+	t, err := time.Parse(time.RFC3339, ts)
+	if err != nil {
+		return ts
+	}
+	return t.UTC().Format("2006-01-02 15:04") + " UTC"
 }

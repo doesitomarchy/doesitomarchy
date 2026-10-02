@@ -18,20 +18,22 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
-const resultsUsage = `doiomad results — moderate test results (PLAN.md §21.5)
+const resultsUsage = `doiomad reports — moderate diagnostic reports (PLAN.md §21.5)
 
-  results import [-accept] FILE      validate a result file (YAML or JSON; "-" reads stdin),
+  reports import [-accept] FILE      validate a report file (YAML or JSON; "-" reads stdin),
                                      store it as pending and preview its effect
-  results list [-state S] [-config ID] [-limit N]
-  results show ID                    a result in full, with its flags and history
-  results accept ID                  make a pending result count
-  results reject ID -reason TEXT     turn a pending result down
-  results retract ID -reason TEXT    stop an accepted result counting (it stays on record)
-  results flags [-all]               review flags (open ones by default)
-  results resolve FLAG -note TEXT    record how a flag was dealt with
+  reports list [-state S] [-config ID] [-limit N]
+  reports show CODE                  a report in full, with its flags and history
+  reports accept CODE                make a pending report count
+  reports reject CODE -reason TEXT   turn a pending report down
+  reports retract CODE -reason TEXT  stop an accepted report counting (it stays on record)
+  reports flags [-all]               review flags (open ones by default)
+  reports resolve FLAG -note TEXT    record how a flag was dealt with
 
+CODE is the report's 10-character code (as in /report/CODE); its number works too.
 Every change is recorded with who made it ($SUDO_USER, else $USER). Nothing is
 ever deleted. Running servers pick up accepts and retractions within seconds.
+"doiomad results" is the same command.
 `
 
 // actor names who is moderating: the admin behind the doiomad wrapper's
@@ -54,7 +56,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		return 0
 	}
 	sub, rest := args[0], args[1:]
-	fs := flag.NewFlagSet("results "+sub, flag.ContinueOnError)
+	fs := flag.NewFlagSet("reports "+sub, flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	db, dataDir := dbFlags(fs)
 	accept := fs.Bool("accept", false, "import: accept immediately (your own tests)")
@@ -71,33 +73,49 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	ctx := context.Background()
 	st, c, _, err := openSynced(ctx, *db, *dataDir)
 	if err != nil {
-		fmt.Fprintf(stderr, "results: %v\n", err)
+		fmt.Fprintf(stderr, "reports: %v\n", err)
 		return 1
 	}
 	defer st.Close()
 	who := actor()
 
+	// id resolves a report code (or a report number, or a flag number for resolve).
 	id := func() (int64, bool) {
 		if len(pos) != 1 {
-			fmt.Fprintf(stderr, "results %s: give one ID\n", sub)
+			fmt.Fprintf(stderr, "reports %s: give one report code\n", sub)
 			return 0, false
 		}
-		n, err := strconv.ParseInt(strings.TrimPrefix(pos[0], "#"), 10, 64)
+		arg := strings.TrimPrefix(strings.ToLower(pos[0]), "#")
+		if sub != "resolve" && store.IsCode(arg) {
+			n, err := st.ResultIDByCode(ctx, arg)
+			if err != nil {
+				fmt.Fprintf(stderr, "reports %s: report %s: %v\n", sub, arg, err)
+				return 0, false
+			}
+			return n, true
+		}
+		n, err := strconv.ParseInt(arg, 10, 64)
 		if err != nil || n <= 0 {
-			fmt.Fprintf(stderr, "results %s: %q is not an ID\n", sub, pos[0])
+			fmt.Fprintf(stderr, "reports %s: %q is not a report code\n", sub, pos[0])
 			return 0, false
 		}
 		return n, true
 	}
+	code := func(n int64) string {
+		if d, err := st.Result(ctx, n); err == nil {
+			return d.Code
+		}
+		return strconv.FormatInt(n, 10)
+	}
 	fail := func(err error) int {
-		fmt.Fprintf(stderr, "results %s: %v\n", sub, err)
+		fmt.Fprintf(stderr, "reports %s: %v\n", sub, err)
 		return 1
 	}
 
 	switch sub {
 	case "import":
 		if len(pos) != 1 {
-			fmt.Fprintln(stderr, "results import: give one file (or - for stdin)")
+			fmt.Fprintln(stderr, "reports import: give one file (or - for stdin)")
 			return 2
 		}
 		raw, err := readInput(pos[0])
@@ -121,7 +139,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		if err != nil {
 			return fail(err)
 		}
-		fmt.Fprintf(stdout, "result %d · pending · %s · %s\n", n, r.Identifier, r.ConfigID)
+		fmt.Fprintf(stdout, "report %s · pending · %s · %s\n", code(n), r.Identifier, r.ConfigID)
 		printEffect(stdout, before, after)
 		for _, fl := range r.Flags {
 			fmt.Fprintf(stdout, "  flag: %s: %s\n", fl.Kind, fl.Detail)
@@ -130,9 +148,9 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 			if err := st.SetResultState(ctx, n, store.Accepted, "", who); err != nil {
 				return fail(err)
 			}
-			fmt.Fprintf(stdout, "result %d accepted\n", n)
+			fmt.Fprintf(stdout, "report %s accepted\n", code(n))
 		} else {
-			fmt.Fprintf(stdout, "accept with: doiomad results accept %d\n", n)
+			fmt.Fprintf(stdout, "accept with: doiomad reports accept %s\n", code(n))
 		}
 		return 0
 
@@ -142,13 +160,13 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 			return fail(err)
 		}
 		if len(list) == 0 {
-			fmt.Fprintln(stdout, "no results")
+			fmt.Fprintln(stdout, "no reports")
 			return 0
 		}
 		tw := tabwriter.NewWriter(stdout, 0, 4, 2, ' ', 0)
-		fmt.Fprintln(tw, "ID\tSTATE\tMAC\tTESTED\tOMARCHY\t●\t◐\t✕\tFLAGS\tSOURCE\tTESTER")
+		fmt.Fprintln(tw, "CODE\tSTATE\tMAC\tTESTED (UTC)\tOMARCHY\t●\t◐\t✕\tFLAGS\tSOURCE\tTESTER")
 		for _, x := range list {
-			fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n", x.ID, x.State, x.Identifier, x.TestedOn, x.Omarchy,
+			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n", x.Code, x.State, x.Identifier, utcShort(x.TestedAt), x.Omarchy,
 				x.Supported, x.Partial, x.Failed, x.OpenFlags, x.SourceID, orAnon(x.TesterHandle))
 		}
 		tw.Flush()
@@ -175,7 +193,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		if err := st.SetResultState(ctx, n, to, *reason, who); err != nil {
 			return fail(err)
 		}
-		fmt.Fprintf(stdout, "result %d %s\n", n, to)
+		fmt.Fprintf(stdout, "report %s %s\n", code(n), to)
 		return 0
 
 	case "flags":
@@ -188,7 +206,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 			return 0
 		}
 		for _, fl := range flags {
-			line := fmt.Sprintf("flag %d · result %d · %s: %s", fl.ID, fl.ResultID, fl.Kind, fl.Detail)
+			line := fmt.Sprintf("flag %d · report %s · %s: %s", fl.ID, fl.ResultCode, fl.Kind, fl.Detail)
 			if fl.ResolvedAt != "" {
 				line += fmt.Sprintf(" · resolved by %s: %s", fl.ResolvedBy, fl.Resolution)
 			}
@@ -207,7 +225,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stdout, "flag %d resolved\n", n)
 		return 0
 	}
-	fmt.Fprintf(stderr, "results: unknown command %q\n\n%s", sub, resultsUsage)
+	fmt.Fprintf(stderr, "reports: unknown command %q\n\n%s", sub, resultsUsage)
 	return 2
 }
 
@@ -296,12 +314,12 @@ func preview(ctx context.Context, st *store.Store, c *catalog.Catalog, r *result
 	for _, it := range r.Items {
 		if it.Applicable && it.Status != "not_tested" {
 			items = append(items, status.Item{Capability: it.Capability, Verdict: verdicts[it.Status], Method: it.Method,
-				Omarchy: r.Omarchy, TestedOn: r.TestedOn, ResultID: 1 << 62, Evidence: it.Evidence})
+				Omarchy: r.Omarchy, TestedAt: r.TestedAt, ResultID: 1 << 62, Evidence: it.Evidence})
 		}
 	}
 	in.Items, in.Results = items, in.Results+1
-	if r.TestedOn > in.LatestResult {
-		in.LatestResult = r.TestedOn
+	if r.TestedAt > in.LatestResult {
+		in.LatestResult = r.TestedAt
 	}
 	after = status.Config(in)
 	return before, after, nil
@@ -330,12 +348,12 @@ func printEffect(w io.Writer, before, after status.ConfigStatus) {
 }
 
 func printDetail(w io.Writer, d *store.ResultDetail) {
-	fmt.Fprintf(w, "result %d · %s", d.ID, d.State)
+	fmt.Fprintf(w, "report %s · %s", d.Code, d.State)
 	if d.StateReason != "" {
 		fmt.Fprintf(w, " (%s)", d.StateReason)
 	}
 	fmt.Fprintf(w, "\n  %s · %s\n", d.Identifier, d.ConfigID)
-	fmt.Fprintf(w, "  tested %s · Omarchy %s", d.TestedOn, d.Omarchy)
+	fmt.Fprintf(w, "  tested %s · submitted %s · Omarchy %s", utcShort(d.TestedAt), utcShort(d.SubmittedAt), d.Omarchy)
 	if d.Kernel != "" {
 		fmt.Fprintf(w, " · kernel %s", d.Kernel)
 	}
@@ -382,7 +400,7 @@ func printDetail(w io.Writer, d *store.ResultDetail) {
 		fmt.Fprintf(w, "  flag %d · %s: %s · %s\n", fl.ID, fl.Kind, fl.Detail, state)
 	}
 	for _, e := range d.Events {
-		fmt.Fprintf(w, "  %s  %-14s %s %s\n", e.At, e.Action, e.Actor, e.Detail)
+		fmt.Fprintf(w, "  %s  %-14s %s %s\n", utcShort(e.At), e.Action, e.Actor, e.Detail)
 	}
 }
 
@@ -401,4 +419,13 @@ func parseInterleaved(fs *flag.FlagSet, args []string) ([]string, bool) {
 		pos = append(pos, fs.Arg(0))
 		args = fs.Args()[1:]
 	}
+}
+
+// utcShort shows an RFC 3339 timestamp as "2026-09-30 18:05 UTC".
+func utcShort(ts string) string {
+	t, err := time.Parse(time.RFC3339, ts)
+	if err != nil {
+		return ts
+	}
+	return t.UTC().Format("2006-01-02 15:04") + " UTC"
 }

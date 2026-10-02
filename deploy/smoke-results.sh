@@ -1,5 +1,5 @@
 #!/bin/bash
-# Release smoke test for results (PLAN.md §21.8). Runs on the droplet against
+# Release smoke test for diagnostic reports (PLAN.md §21.8). Runs on the droplet against
 # a THROWAWAY COPY of the production database: a second doiomad serves the
 # copy on a spare local port, the synthetic fixture is imported, accepted and
 # retracted there, and the pages are checked at each step. Production never
@@ -36,19 +36,19 @@ wait_for() { # wait_for PATH TEXT [absent]
 	echo "FAIL: $1 ${3:-has} '$2'" >&2; exit 1
 }
 tested_before=$(page / | grep -o 'class="n">[0-9]*</span> /' | sed -n 2p)
-ID=$(cat "$T/fixture.yaml" | "$BIN" results import -db "$T/smoke.db" - | awk '/^result [0-9]+ · pending/ {print $2}')
+ID=$(cat "$T/fixture.yaml" | "$BIN" reports import -db "$T/smoke.db" - | awk '/^report [0-9a-f]+ · pending/ {print $2}')
 [ -n "$ID" ] || { echo "FAIL: import" >&2; exit 1; }
 sleep 2
-page /mac/MacBookPro15-2 | grep -q 'href="/result/'"$ID"'"' && { echo "FAIL: a pending result is visible" >&2; exit 1; }
+page /mac/MacBookPro15-2 | grep -q 'href="/report/'"$ID"'"' && { echo "FAIL: a pending report is visible" >&2; exit 1; }
 echo "ok   import $ID: pending, nothing visible"
-DOIOMAD_DB="$T/smoke.db" "$BIN" results accept "$ID" >/dev/null
-wait_for /mac/MacBookPro15-2 'href="/result/'"$ID"'"'
+DOIOMAD_DB="$T/smoke.db" "$BIN" reports accept "$ID" >/dev/null
+wait_for /mac/MacBookPro15-2 'href="/report/'"$ID"'"'
 page /mac/MacBookPro15-2 | grep -q 'Blocked by: Graphics → External display output' || { echo "FAIL: blocker" >&2; exit 1; }
-page /result/$ID | grep -q "Result #$ID" || { echo "FAIL: result page" >&2; exit 1; }
-page /result/$ID | grep -q 'C02XG0FDH7JY' && { echo "FAIL: serial number on the result page" >&2; exit 1; }
-echo "ok   accept: model page, blocker and result page updated without a restart"
-DOIOMAD_DB="$T/smoke.db" "$BIN" results retract "$ID" -reason "smoke test" >/dev/null
-wait_for /mac/MacBookPro15-2 'Latest result <a href="/result/'"$ID"'"' absent
+page /report/$ID | grep -q "Diagnostic Report" || { echo "FAIL: report page" >&2; exit 1; }
+page /report/$ID | grep -q 'C02XG0FDH7JY' && { echo "FAIL: serial number on the report page" >&2; exit 1; }
+echo "ok   accept: model page, blocker and report page updated without a restart"
+DOIOMAD_DB="$T/smoke.db" "$BIN" reports retract "$ID" -reason "smoke test" >/dev/null
+wait_for /mac/MacBookPro15-2 'Latest diagnostic report <a href="/report/'"$ID"'"' absent
 tested_after=$(page / | grep -o 'class="n">[0-9]*</span> /' | sed -n 2p)
 [ "$tested_before" = "$tested_after" ] || { echo "FAIL: coverage did not return ($tested_before → $tested_after)" >&2; exit 1; }
 echo "ok   retract: back to the previous state"
