@@ -46,7 +46,7 @@ jobs:
         run: CGO_ENABLED=0 go build -trimpath -o bin/doiomad ./cmd/doiomad
       - name: start server
         run: |
-          ./bin/doiomad serve -demo -db "$RUNNER_TEMP/ui.db" -addr 127.0.0.1:8080 &
+          ./bin/doiomad serve -demo -admin-insecure -db "$RUNNER_TEMP/ui.db" -addr 127.0.0.1:8080 &
           for i in $(seq 1 50); do curl -fs 127.0.0.1:8080/healthz && exit 0; sleep 0.2; done; exit 1
       - name: install checker
         working-directory: tools/uicheck
