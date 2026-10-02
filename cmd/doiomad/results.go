@@ -24,7 +24,8 @@ const resultsUsage = `doiomad reports — moderate diagnostic reports (PLAN.md �
                                      store it as pending and preview its effect
   reports list [-state S] [-config ID] [-limit N]
   reports show CODE                  a report in full, with its flags and history
-  reports accept CODE                make a pending report count
+  reports accept CODE [-config ID]   make a pending report count; -config picks the
+                                     configuration when the hardware fits several
   reports reject CODE -reason TEXT   turn a pending report down
   reports retract CODE -reason TEXT  stop an accepted report counting (it stays on record)
   reports flags [-all]               review flags (open ones by default)
@@ -61,7 +62,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	db, dataDir := dbFlags(fs)
 	accept := fs.Bool("accept", false, "import: accept immediately (your own tests)")
 	state := fs.String("state", "", "list: pending | accepted | rejected | retracted")
-	config := fs.String("config", "", "list: only this config ID")
+	config := fs.String("config", "", "list: only this config ID; accept: the configuration to use (ambiguous reports)")
 	limit := fs.Int("limit", 50, "list: at most this many")
 	reason := fs.String("reason", "", "reject, retract: why")
 	note := fs.String("note", "", "resolve: how the flag was dealt with")
@@ -164,9 +165,9 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 			return 0
 		}
 		tw := tabwriter.NewWriter(stdout, 0, 4, 2, ' ', 0)
-		fmt.Fprintln(tw, "CODE\tSTATE\tMAC\tTESTED (UTC)\tOMARCHY\t●\t◐\t✕\tFLAGS\tSOURCE\tTESTER")
+		fmt.Fprintln(tw, "CODE\tSTATE\tMAC\tTESTED (UTC)\tOMARCHY\tKERNEL\t●\t◐\t✕\tFLAGS\tSOURCE\tTESTER")
 		for _, x := range list {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n", x.Code, x.State, x.Identifier, utcShort(x.TestedAt), x.Omarchy,
+			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n", x.Code, x.State, x.Identifier, utcShort(x.TestedAt), x.Omarchy, orDash(x.Kernel),
 				x.Supported, x.Partial, x.Failed, x.OpenFlags, x.SourceID, orAnon(x.TesterHandle))
 		}
 		tw.Flush()
@@ -188,6 +189,16 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		n, ok := id()
 		if !ok {
 			return 2
+		}
+		if sub == "accept" && *config != "" {
+			applicable, err := results.ApplicableSet(c, *config)
+			if err != nil {
+				return fail(err)
+			}
+			if err := st.SetResultConfig(ctx, n, *config, applicable, who); err != nil {
+				return fail(err)
+			}
+			fmt.Fprintf(stdout, "report %s now counts for %s\n", code(n), *config)
 		}
 		to := map[string]string{"accept": store.Accepted, "reject": store.Rejected, "retract": store.Retracted}[sub]
 		if err := st.SetResultState(ctx, n, to, *reason, who); err != nil {
@@ -227,38 +238,6 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	}
 	fmt.Fprintf(stderr, "reports: unknown command %q\n\n%s", sub, resultsUsage)
 	return 2
-}
-
-func cmdSources(args []string, stdout, stderr io.Writer) int {
-	if len(args) == 0 || args[0] != "list" {
-		fmt.Fprintln(stderr, "usage: doiomad sources list")
-		return 2
-	}
-	fs := flag.NewFlagSet("sources list", flag.ContinueOnError)
-	fs.SetOutput(stderr)
-	db, dataDir := dbFlags(fs)
-	if err := fs.Parse(args[1:]); err != nil {
-		return 2
-	}
-	ctx := context.Background()
-	st, _, _, err := openSynced(ctx, *db, *dataDir)
-	if err != nil {
-		fmt.Fprintf(stderr, "sources: %v\n", err)
-		return 1
-	}
-	defer st.Close()
-	list, err := st.Sources(ctx)
-	if err != nil {
-		fmt.Fprintf(stderr, "sources: %v\n", err)
-		return 1
-	}
-	tw := tabwriter.NewWriter(stdout, 0, 4, 2, ' ', 0)
-	fmt.Fprintln(tw, "ID\tNAME\tTRUST\tCREATED\tREVOKED")
-	for _, x := range list {
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", x.ID, x.Name, x.Trust, x.CreatedAt, x.RevokedAt)
-	}
-	tw.Flush()
-	return 0
 }
 
 func readInput(path string) ([]byte, error) {
@@ -353,6 +332,12 @@ func printDetail(w io.Writer, d *store.ResultDetail) {
 		fmt.Fprintf(w, " (%s)", d.StateReason)
 	}
 	fmt.Fprintf(w, "\n  %s · %s\n", d.Identifier, d.ConfigID)
+	if len(d.Candidates) > 1 {
+		fmt.Fprintf(w, "  fits: %s (pick one: doiomad reports accept %s -config ID)\n", strings.Join(d.Candidates, ", "), d.Code)
+	}
+	if d.ConsentNotice != "" {
+		fmt.Fprintf(w, "  notice shown: %s\n", d.ConsentNotice)
+	}
 	fmt.Fprintf(w, "  tested %s · submitted %s · Omarchy %s", utcShort(d.TestedAt), utcShort(d.SubmittedAt), d.Omarchy)
 	if d.Kernel != "" {
 		fmt.Fprintf(w, " · kernel %s", d.Kernel)
@@ -428,4 +413,11 @@ func utcShort(ts string) string {
 		return ts
 	}
 	return t.UTC().Format("2006-01-02 15:04") + " UTC"
+}
+
+func orDash(s string) string {
+	if s == "" {
+		return "-"
+	}
+	return s
 }

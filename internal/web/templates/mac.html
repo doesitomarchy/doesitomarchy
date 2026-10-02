@@ -3,7 +3,7 @@
 <header class="mac-head">
   <h1>{{template "machine" .Icon}}{{if .AllVerified}}{{template "badge"}}{{end}}{{.Identifier}}</h1>
   <p class="sub slash"><b>{{.Title}}</b><span>{{.LineName}}</span><span>{{.Years}}</span><span>EFI {{.EFI}}-bit</span><span>{{if .Chip}}{{.Chip}}{{else}}no security chip{{end}}</span></p>
-  <p class="sub">{{range .Verdicts}}{{template "verdict" .}} {{end}}<span class="muted">{{.Tested}} of {{len .Configs}} {{plural (len .Configs) "configuration" "configurations"}} tested</span></p>
+  <p class="sub identify-line"><a href="/identify">Is this your Mac? Identify your configuration →</a></p>
 </header>
 {{if .HardBlocker}}<p class="notice">{{template "vicon" "not-compatible"}}<strong>Not compatible:</strong> {{.HardBlocker}}</p>{{end}}
 {{if .OutOfScope}}<p class="notice scope">{{template "scope" .OutOfScope}} This Mac is listed and can be tested, but it isn't counted in the site's coverage figures.</p>{{end}}
@@ -11,6 +11,7 @@
 <div class="minibar">
   <span class="ident">{{.Identifier}}</span>
   <span class="jump">{{$slug := .Slug}}{{range .Configs}}<a class="cfgref" href="/mac/{{$slug}}#cfg-{{.ID}}" title="{{.Label}} ({{.ReleaseName}})">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</a>{{end}}</span>
+  <span class="muted tested-count">{{.Tested}} of {{len .Configs}} {{plural (len .Configs) "configuration" "configurations"}} tested</span>
   <span class="views">
     <a href="/mac/{{.Slug}}" hx-get="/mac/{{.Slug}}" hx-select="#view" hx-target="#view" hx-swap="outerHTML" hx-push-url="true"{{if not $d.Matrix}} aria-current="true"{{end}}>{{template "icon" "cards"}}Cards</a>
     <a href="/mac/{{.Slug}}?view=matrix" hx-get="/mac/{{.Slug}}?view=matrix" hx-select="#view" hx-target="#view" hx-swap="outerHTML" hx-push-url="true"{{if $d.Matrix}} aria-current="true"{{end}}>{{template "icon" "matrix"}}Matrix</a>
@@ -26,7 +27,7 @@
 </section>
 {{end}}{{end}}
 </div>
-{{if .ResearchNotes}}<details class="more"><summary>Research notes (unverified)</summary><pre>{{.ResearchNotes}}</pre>
+{{if .ResearchNotes}}<details class="more"><summary>Research notes (unverified)</summary><ol class="notes">{{range lines .ResearchNotes}}<li>{{.}}</li>{{end}}</ol>
   {{with .Uncertain}}<ul>{{range .}}<li><span class="q-mark">?</span> {{.Field}}: {{.Note}}</li>{{end}}</ul>{{end}}</details>{{end}}
 <details class="more"><summary>Sources ({{len .Sources}}) and identifiers</summary>
   <p class="muted">Board IDs: {{join .BoardIDs ", "}}</p>
@@ -40,23 +41,24 @@
     <span class="cfgref big">{{if .Verified}}{{template "badge"}}{{end}}{{.Diff}}</span>
     <span class="title">{{.Label}}</span>
     <span class="right">{{if .BTOOnly}}<span class="tag bto">build to order</span>{{end}}{{with .OutOfScope}}{{if ne $.Status.Verdict "not-compatible"}}{{template "scope" .}}{{end}}{{end}}
-      {{template "verdict" .Status.Verdict}}<span class="muted">{{.Status.Tested}}/{{.Status.Applicable}} tested</span></span>
+      {{template "verdict" .Status.Verdict}}<span class="muted">{{.Status.Tested}}/{{.Status.Applicable}} tested</span>
+      <button type="button" class="caps-toggle" data-caps-toggle data-js aria-expanded="false" title="Expand all" aria-label="Expand all">{{template "icon" "expand"}}{{template "icon" "collapse"}}</button></span>
   </div>
   {{with .Status.Blocker}}<p class="blocker-line">Blocked by: {{.}}</p>{{end}}
-  {{with .Latest}}<p class="latest-line">Latest diagnostic report <a href="/report/{{.Code}}">{{.Code}}</a> · Omarchy {{.Omarchy}} · tested {{utc .TestedAt}} · {{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}{{if gt (len $cfg.Results) 1}} · <a href="#results-{{$cfg.ID}}">all {{len $cfg.Results}} reports</a>{{end}}</p>{{end}}
+  {{with .Latest}}<p class="latest-line">Latest diagnostic report <a href="/report/{{.Code}}">{{.Code}}</a> · {{osver .Omarchy .Kernel}} · tested {{utc .TestedAt}} · {{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}{{if gt (len $cfg.Results) 1}} · <a href="#results-{{$cfg.ID}}">all {{len $cfg.Results}} reports</a>{{end}}</p>{{end}}
   <div class="caps">
   {{range .Categories}}
     <details{{if .Problem}} open{{end}}>
       <summary><svg class="catprog" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true"><rect width="{{.Pct}}" height="1"/></svg>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Caps}}{{template "vicon" .Verdict}}{{end}}</span><span class="count">{{.Passed}}/{{len .Caps}} passed</span></summary>
-      <ul>{{range .Caps}}{{$cap := .}}<li>{{template "vicon" .Verdict}}<span title="{{.Description}}">{{.Name}}</span><span class="st st-{{.Verdict}}">{{.Verdict.Label}}</span>
-        {{if .FromLatest}}<span class="capmeta inline">{{.Method}}</span>{{else if .Result}}<span class="capmeta"><a href="/report/{{.Code}}" title="The latest diagnostic report for this capability">Omarchy {{.Omarchy}} · {{utc .Date}}</a> · {{.Method}}{{if .Stale}} · <span class="stale" title="Tested on an older Omarchy major version">⌛ older Omarchy</span>{{end}}{{if .Conflict}} · <a href="#results-{{$cfg.ID}}" title="Reports for the same Omarchy version disagree">conflicting reports</a>{{end}}</span>{{end}}
+      <ul>{{range .Caps}}{{$cap := .}}<li>{{template "vicon" .Verdict}}<span class="capname" title="{{.Description}}">{{.Name}}</span><span class="st st-{{.Verdict}}">{{.Verdict.Label}}</span>
+        {{if .FromLatest}}<span class="capmeta inline">{{.Method}}</span>{{else if .Result}}<span class="capmeta"><a href="/report/{{.Code}}" title="The latest diagnostic report for this capability">{{osver .Omarchy .Kernel}} · {{utc .Date}}</a> · {{.Method}}{{if .Stale}} · <span class="stale" title="Tested on an older Omarchy major version">⌛ older Omarchy</span>{{end}}{{if .Conflict}} · <a href="#results-{{$cfg.ID}}" title="Reports for the same Omarchy version disagree">conflicting reports</a>{{end}}</span>{{end}}
         {{if or .Error .Fix .Reason}}<div class="why{{if eq .Verdict "partial"}} minor{{end}}">{{with .Error}}<p><span class="lbl">{{if eq $cap.Verdict "failed"}}Why it failed{{else}}Reported{{end}}</span> <code>{{.}}</code></p>{{end}}{{with .Reason}}<p><span class="lbl">Unsupported</span> {{.}}</p>{{end}}{{with .Fix}}<p><span class="lbl">Fix</span> {{.}}</p>{{end}}{{if eq .Verdict "failed"}}<p><a href="/contribute">Help fix it →</a></p>{{end}}</div>{{end}}</li>{{end}}</ul>
     </details>
   {{end}}
   </div>
   {{with .Results}}<details class="hw results-list" id="results-{{$cfg.ID}}">
     <summary><span class="hw-title">{{template "icon" "matrix"}}Diagnostic reports</span><span class="muted">{{len .}}</span><span class="hw-toggle" aria-hidden="true"></span></summary>
-    <ul>{{range .}}<li{{if eq .State "retracted"}} class="retracted"{{end}}><a href="/report/{{.Code}}">{{.Code}}</a> <span>tested {{utc .TestedAt}}</span> <span>Omarchy {{.Omarchy}}</span>
+    <ul>{{range .}}<li{{if eq .State "retracted"}} class="retracted"{{end}}><a href="/report/{{.Code}}">{{.Code}}</a> <span>tested {{utc .TestedAt}}</span> <span>{{osver .Omarchy .Kernel}}</span>
       <span class="muted">{{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}</span>
       <span class="tally">{{template "vicon" "supported"}}{{.Supported}} {{template "vicon" "partial"}}{{.Partial}} {{template "vicon" "failed"}}{{.Failed}}</span>{{if eq .State "retracted"}} <span class="tag">retracted</span>{{end}}</li>{{end}}</ul>
   </details>{{end}}

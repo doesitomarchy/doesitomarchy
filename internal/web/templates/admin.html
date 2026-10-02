@@ -1,0 +1,22 @@
+{{define "content"}}{{with .Data}}
+<div class="admin">
+<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/sources">Sources</a></p>
+<h1>Review queue</h1>
+<p class="muted">Pending diagnostic reports count for nothing until accepted. All times are UTC.</p>
+
+<h2>Pending ({{len .Pending}})</h2>
+{{if .Pending}}<div class="table-wrap" tabindex="0" role="region" aria-label="Pending reports"><table class="browse queue">
+  <thead><tr><th scope="col">Report</th><th scope="col">Mac</th><th scope="col">Tested</th><th scope="col">Submitted</th><th scope="col">Omarchy</th><th scope="col">Kernel</th>
+    <th scope="col" class="glyph">{{template "vicon" "supported"}}<span class="sr-only">Supported</span></th><th scope="col" class="glyph">{{template "vicon" "partial"}}<span class="sr-only">Partial</span></th><th scope="col" class="glyph">{{template "vicon" "failed"}}<span class="sr-only">Failed</span></th>
+    <th scope="col" class="glyph">Flags</th><th scope="col">Source</th><th scope="col">Tester</th></tr></thead>
+  <tbody>{{range .Pending}}<tr><td><a href="/admin/report/{{.Code}}">{{.Code}}</a></td><td>{{.Identifier}}</td><td>{{utc .TestedAt}}</td><td>{{utc .SubmittedAt}}</td><td>{{.Omarchy}}</td><td>{{with .Kernel}}{{.}}{{else}}<span class="muted">—</span>{{end}}</td>
+    <td class="glyph">{{.Supported}}</td><td class="glyph">{{.Partial}}</td><td class="glyph">{{.Failed}}</td><td class="glyph">{{if .OpenFlags}}<b>{{.OpenFlags}}</b>{{else}}0{{end}}</td><td>{{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}</td><td>{{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}}</td></tr>{{end}}</tbody>
+</table></div>{{else}}<p>Nothing waiting.</p>{{end}}
+
+<h2>Open flags ({{len .Flags}})</h2>
+{{if .Flags}}<ul class="admin-flags">{{range .Flags}}<li><a href="/admin/report/{{.ResultCode}}">{{.ResultCode}}</a> · <b>{{.Kind}}</b>: {{.Detail}}</li>{{end}}</ul>{{else}}<p>None.</p>{{end}}
+
+<h2>Recent decisions</h2>
+{{if .Recent}}<ul class="admin-flags">{{range .Recent}}<li><a href="/admin/report/{{.Code}}">{{.Code}}</a> {{template "state" .State}} {{.Identifier}} · {{osver .Omarchy .Kernel}}{{with .StateBy}} · by {{.}}{{end}}{{with .StateAt}} · {{utc .}}{{end}}{{with .StateReason}} · {{.}}{{end}}</li>{{end}}</ul>{{else}}<p>None yet.</p>{{end}}
+</div>
+{{end}}{{end}}

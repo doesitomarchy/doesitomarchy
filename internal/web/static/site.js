@@ -3,6 +3,7 @@
 (function () {
   "use strict";
   var root = document.documentElement;
+  root.classList.add("js"); // shows controls that need script ([data-js])
 
   // ── theme picker ──────────────────────────────────────────────────────
   var picker = document.getElementById("theme");
@@ -253,6 +254,141 @@
       var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
       pos = key === code[pos] ? pos + 1 : (key === code[0] ? 1 : 0);
       if (pos === code.length) { pos = 0; e.preventDefault(); flashThenCelebrate(); }
+    });
+  }
+  // ── copy to clipboard ─────────────────────────────────────────────────
+  // The Clipboard API exists only on secure origins (HTTPS, localhost), and
+  // some browsers refuse it anyway, so fall back to a hidden textarea and
+  // execCommand("copy"), which works on plain HTTP too.
+  function legacyCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.className = "clip-buffer";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(function () {
+        if (!legacyCopy(text)) throw new Error("copy refused");
+      });
+    }
+    return legacyCopy(text) ? Promise.resolve() : Promise.reject(new Error("copy refused"));
+  }
+  function selectText(el) {
+    var r = document.createRange();
+    r.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-copy]");
+    if (!b) return;
+    var code = document.getElementById(b.getAttribute("data-copy"));
+    var status = document.getElementById("copy-status");
+    copyText(code.textContent).then(function () {
+      b.classList.add("done");
+      if (status) status.textContent = "Copied to the clipboard.";
+      setTimeout(function () { b.classList.remove("done"); }, 2000);
+    }, function () {
+      selectText(code); // the visitor can still press Ctrl+C
+      if (status) status.textContent = "Couldn't copy automatically; the command is selected, press Ctrl+C.";
+    });
+  });
+
+  // ── configuration cards: expand or collapse every criteria group ──────
+  // Delegated, so it keeps working after HTMX swaps the cards view.
+  function syncCapsToggle(btn) {
+    var groups = btn.closest(".card").querySelectorAll(".caps > details");
+    var allOpen = Array.prototype.every.call(groups, function (d) { return d.open; });
+    btn.setAttribute("aria-expanded", String(allOpen));
+    btn.title = allOpen ? "Collapse all" : "Expand all";
+    btn.setAttribute("aria-label", btn.title);
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest("[data-caps-toggle]");
+    if (!btn) return;
+    var open = btn.getAttribute("aria-expanded") !== "true";
+    btn.closest(".card").querySelectorAll(".caps > details").forEach(function (d) { d.open = open; });
+    syncCapsToggle(btn);
+  });
+  function syncAllCapsToggles() { document.querySelectorAll("[data-caps-toggle]").forEach(syncCapsToggle); }
+  syncAllCapsToggles();
+  document.addEventListener("htmx:afterSettle", syncAllCapsToggles);
+  // A group opened or closed by hand updates its card's button.
+  document.addEventListener("toggle", function (e) {
+    var card = e.target.closest && e.target.closest(".card");
+    var btn = card && card.querySelector("[data-caps-toggle]");
+    if (btn && e.target.parentElement && e.target.parentElement.classList.contains("caps")) syncCapsToggle(btn);
+  }, true);
+
+  // ── /admin: Reject and Retract reveal their reason box first ─────────
+  document.addEventListener("click", function (e) {
+    var open = e.target.closest && e.target.closest("[data-reason-open]");
+    var cancel = e.target.closest && e.target.closest("[data-reason-cancel]");
+    var form = (open || cancel) && (open || cancel).closest("[data-reason-form]");
+    if (!form) return;
+    form.classList.toggle("open", !!open);
+    var opener = form.querySelector("[data-reason-open]");
+    opener.setAttribute("aria-expanded", String(!!open));
+    if (open) form.querySelector("textarea").focus();
+    else opener.focus();
+  });
+
+  // ── /identify (PF-1): pick a command, copy it, parse the paste here ───
+  // Same rules as internal/match/parse.go. Only the extracted IDs leave the
+  // browser, as the result page's URL; the pasted text is never sent.
+  var identifyForm = document.getElementById("identify-form");
+  if (identifyForm) {
+    var osButtons = document.querySelectorAll("[data-os]");
+    var showOS = function (os) {
+      osButtons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-os") === os)); });
+      document.querySelectorAll("[data-os-block]").forEach(function (el) { el.hidden = el.getAttribute("data-os-block") !== os; });
+    };
+    osButtons.forEach(function (b) { b.addEventListener("click", function () { showOS(b.getAttribute("data-os")); }); });
+    showOS(/Mac OS X|Macintosh/.test(navigator.userAgent) && !/Linux/.test(navigator.userAgent) ? "macos" : "linux");
+
+    // The clipboard switch: on, the command also copies its output (wl-copy, pbcopy).
+    var sw = document.getElementById("clip-switch");
+    var step = document.getElementById("paste-step");
+    var setClip = function (on) {
+      sw.setAttribute("aria-checked", String(on));
+      document.querySelectorAll("code[data-clip]").forEach(function (c) { c.textContent = c.getAttribute(on ? "data-clip" : "data-plain"); });
+      document.querySelectorAll(".clip-note").forEach(function (n) { n.hidden = !on; });
+      step.textContent = step.getAttribute(on ? "data-clip-text" : "data-plain-text");
+    };
+    sw.addEventListener("click", function () { setClip(sw.getAttribute("aria-checked") !== "true"); });
+
+    identifyForm.addEventListener("submit", function (e) {
+      var text = document.getElementById("paste").value;
+      var q = new URLSearchParams();
+      var id = text.match(/\b(MacBook(?:Air|Pro)?|iMac(?:Pro)?|Macmini|MacPro|Xserve)\d{1,2},\d{1,2}\b/);
+      if (id) q.set("product", id[0]);
+      var board = text.match(/\bMac-[0-9A-Fa-f]{16}\b/);
+      if (board) q.set("board", "Mac-" + board[0].slice(4).toUpperCase());
+      var cpu = text.match(/^[ \t]*(?:model name[ \t]*:[ \t]*)?((?:Genuine )?Intel\(R\)[^\n]*?)[ \t]*$/im);
+      if (cpu) q.set("cpu", cpu[1].split(/\s+/).join(" "));
+      var seen = {}, pci = [];
+      var add = function (v, d) { var x = (v + ":" + d).toLowerCase(); if (!seen[x]) { seen[x] = true; pci.push(x); } };
+      var m, re = /\b0x([0-9a-f]{4}):0x([0-9a-f]{4})\b/gi;
+      while ((m = re.exec(text))) add(m[1], m[2]);
+      re = /\[([0-9a-f]{4}):([0-9a-f]{4})\]/gi;
+      while ((m = re.exec(text))) add(m[1], m[2]);
+      var vendor = "";
+      text.split("\n").forEach(function (line) {
+        var v = line.match(/Vendor:.*\(0x([0-9a-f]{4})\)/i), d = line.match(/Device ID:\s*0x([0-9a-f]{4})/i);
+        if (v) vendor = v[1]; else if (d && vendor) { add(vendor, d[1]); vendor = ""; }
+      });
+      if (pci.length) q.set("pci", pci.join(","));
+      e.preventDefault();
+      window.location = "/identify?" + (q.toString() || "none=1");
     });
   }
 })();

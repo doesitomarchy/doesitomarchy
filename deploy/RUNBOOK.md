@@ -64,7 +64,9 @@ pre-deploy copy from `backups/` when rolling back.
    its access key ID and secret, and the S3 endpoint
    `https://<account-id>.r2.cloudflarestorage.com`.
 4. **API token for `cloudflare.sh`** (My Profile → API Tokens → Create Custom Token):
-   - Account: *Cloudflare Tunnel: Edit*, *Access: Apps and Policies: Edit*
+   - Account: *Cloudflare Tunnel: Edit*, *Access: Apps and Policies: Edit*,
+     and optionally *Access: Organizations, Identity Providers, and Groups: Read*
+     (lets `cloudflare.sh` read the team name; otherwise set `CF_ACCESS_TEAM`)
    - Zone (doesitomarchy.com only): *Zone: Read*, *DNS: Edit*, *Zone Settings: Edit*,
      *Single Redirect: Edit*, *Cache Rules: Edit*, *Zone WAF: Edit*
 5. **API token for deploys** (GitHub secret `CF_CACHE_TOKEN`): Zone
@@ -89,6 +91,7 @@ export LITESTREAM_ACCESS_KEY_ID=...  LITESTREAM_SECRET_ACCESS_KEY=...
 SET_GITHUB_SECRETS=1 deploy/provision.sh          # droplet, firewall, setup.sh, deploy secrets
 
 export CF_API_TOKEN=... CF_ACCOUNT_ID=...
+export ADMIN_EMAILS="you@example.com"             # who may sign in to /admin
 deploy/cloudflare.sh                              # tunnel, DNS, rules, Access, tunnel token
 gh secret set CF_ZONE_ID -R doesitomarchy/doesitomarchy      # value printed by cloudflare.sh
 gh secret set CF_CACHE_TOKEN -R doesitomarchy/doesitomarchy  # paste the cache-purge token
@@ -103,8 +106,8 @@ tunnel token to the new droplet), and tag or re-deploy a release.
 
 ## Moderating diagnostic reports
 
-Diagnostic reports arrive as files (later through the API) and start
-**pending**. Nothing counts until a maintainer accepts it. Each report has a
+Diagnostic reports arrive through the API from registered test tools, or as
+files you import, and start **pending**. Nothing counts until a maintainer accepts it. Each report has a
 10-character code, which is its public URL (`/report/CODE`) and how the CLI
 names it. On the droplet the `doiomad` wrapper
 runs as the service user, which can't read your home directory, so pipe
@@ -133,6 +136,46 @@ doiomad reports resolve 3 -note "stored, not counted; fine"
 - **Privacy:** personal data (serials, MAC and IP addresses, host and user
   names, e-mail addresses) is scrubbed before storage. The raw submission is
   kept, scrubbed and private.
+
+### In the browser: /admin
+
+`/admin` is the same review queue in a browser: pending reports, open flags,
+each report in full (with its scrubbed raw report), and buttons to accept,
+reject, retract, resolve flags and pick a configuration.
+
+- **Sign-in:** Cloudflare Access protects `/admin` only, with a one-time email
+  code. `cloudflare.sh` creates that Access app from `ADMIN_EMAILS` and writes
+  its team name and audience tag (`CF_ACCESS_TEAM`, `CF_ACCESS_AUD`) into
+  `/etc/doiomad/doiomad.env`. The server checks Access's signed token itself.
+- **Maintainers:** an address must also be a maintainer, which names who did
+  what: `doiomad maintainers add carl carl@example.com`. Remove with
+  `doiomad maintainers remove carl`. Without the Access settings `/admin`
+  answers 503; with them, anyone who isn't a maintainer gets 403.
+- **Locally:** `doiomad serve -demo -admin-insecure -addr 127.0.0.1:8081` opens
+  `/admin` without Access, as "local". The flag is refused on any other address.
+
+### Ambiguous reports
+
+When the hardware in a report fits several configurations (they differ only
+in something the probe can't see), the report is stored with a
+`config_ambiguous` flag and can't be accepted until you pick one: in `/admin`,
+or `doiomad reports accept CODE -config ID`. `reports show` lists the choices.
+
+### Test tools (sources)
+
+A tool needs a source ID and key to submit through `POST /api/v1/reports`
+(documented at `/api`). Ask the author for the tool's name and homepage, then:
+
+```sh
+doiomad sources add omacdiag -name OmacDiag -homepage https://example.com/omacdiag
+#   prints the key once; send it to the author privately (never in a public channel)
+doiomad sources list
+doiomad sources rotate omacdiag      # a leaked key: new key, the old one stops at once
+doiomad sources revoke omacdiag      # stop it submitting; its reports stay
+doiomad sources trust omacdiag trusted
+```
+
+Only a hash of the key is stored. Each source may submit 60 reports an hour.
 
 ## Public or private
 

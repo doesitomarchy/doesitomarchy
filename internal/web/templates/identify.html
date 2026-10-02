@@ -1,0 +1,63 @@
+{{define "content"}}{{with .Data}}
+<article class="identify">
+<h1>Identify my Mac</h1>
+<p class="lead">Not sure which Intel Mac you have, or which of its configurations? Run one command, paste what it prints, and we'll identify it.</p>
+
+
+{{if .Asked}}
+<section class="panel identify-result" aria-live="polite">
+  {{if .Mac}}
+    <h2>{{template "machine" .Mac.Icon}}<a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a> · {{.Mac.Title}}</h2>
+    {{if .Best}}
+      <p>Your configuration: <a class="slotted" href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">{{template "slot" .Best.Verified}}<span class="cfgref big">{{.Best.Diff}}</span></a> {{.Best.Label}} <span class="muted">({{.Best.ReleaseName}})</span></p>
+      <p>{{template "verdict" .Best.Status.Verdict}} <span class="muted">{{.Best.Status.Tested}}/{{.Best.Status.Applicable}} tested</span> · <a href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">See what works →</a></p>
+    {{else}}
+      <p>These configurations fit equally; what you pasted can't tell them apart. They usually differ in something a command can't see, such as the release year printed on the box or in About This Mac.</p>
+      <ul class="identify-cands">{{range .Candidates}}<li><a class="slotted" href="/mac/{{$.Data.Mac.Slug}}#cfg-{{.Config.ID}}">{{template "slot" .Config.Verified}}<span class="cfgref">{{.Config.Diff}}</span></a> {{.Config.Label}} <span class="muted">({{.Config.ReleaseName}})</span></li>{{end}}</ul>
+    {{end}}
+  {{else if .Candidates}}
+    <h2>Possible matches</h2>
+    <p>No model identifier was found, so these are the configurations with the devices you pasted.</p>
+    <ul class="identify-cands">{{range .Candidates}}<li><a class="slotted" href="/mac/{{.Config.Mac.Slug}}#cfg-{{.Config.ID}}">{{template "slot" .Config.Verified}}<span class="ident">{{.Config.Mac.Identifier}}</span></a> <span class="cfgref">{{.Config.Diff}}</span> <span class="muted">{{.Config.ReleaseName}}</span></li>{{end}}</ul>
+  {{else}}
+    <h2>Not an Intel Mac we know</h2>
+    <p>{{with .Probe.ProductName}}<code>{{.}}</code> isn't{{else}}That isn't{{end}} one of the Intel Macs Apple sold from 2006 to 2020. If it should be, <a href="/contribute">tell us</a>. You can also <a href="/macs">browse every Intel Mac</a>.</p>
+  {{end}}
+  <p class="muted identify-used">Matched on: {{with .Probe.ProductName}}<code>{{.}}</code> {{end}}{{with .Probe.BoardID}}<code>{{.}}</code> {{end}}{{with .Probe.CPU}}<code>{{.}}</code> {{end}}{{range .Probe.PCI}}<code>{{.}}</code> {{end}}· <a href="/identify">Start again</a></p>
+</section>
+{{else if .NoneFound}}
+<p class="notice" role="alert">Nothing we recognise was in what you pasted. Check that you copied the command's whole output.</p>
+{{end}}
+
+<section class="identify-steps">
+  <h2>1. Run this command</h2>
+  <div class="snippet-controls">
+    <div class="os-choice" role="group" aria-label="Operating system" data-js>
+      {{range $i, $c := .Commands}}<button type="button" class="btn" data-os="{{.OS}}" aria-pressed="{{if eq $i 0}}true{{else}}false{{end}}">{{.Label}}</button>{{end}}
+    </div>
+    <button type="button" class="switch" role="switch" aria-checked="true" id="clip-switch" data-js>
+      <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+      <span>Also copy the output to the clipboard</span>
+    </button>
+  </div>
+  {{range .Commands}}
+  <div class="cmd" data-os-block="{{.OS}}">
+    <p class="muted">{{.Where}}{{if .Tool}} <span class="clip-note">(uses <code>{{.Tool}}</code>)</span>{{end}}:</p>
+    <div class="snippet">
+      <div class="snippet-code" tabindex="0" role="region" aria-label="{{.Label}} command"><pre><code id="cmd-{{.OS}}" data-plain="{{.Plain}}" data-clip="{{.Clip}}">{{.Clip}}</code></pre></div>
+      <button type="button" class="snippet-copy" data-copy="cmd-{{.OS}}" aria-label="Copy the {{.Label}} command" title="Copy" data-js>{{template "icon" "copy"}}<span class="copied" aria-hidden="true">Copied!</span></button>
+    </div>
+  </div>
+  {{end}}
+  <p class="sr-only" aria-live="polite" id="copy-status"></p>
+
+  <h2 id="paste-step" data-clip-text="2. Paste what it printed (it's already on your clipboard)" data-plain-text="2. Paste what it prints">2. Paste what it printed (it's already on your clipboard)</h2>
+  <form method="post" action="/identify" id="identify-form">
+    <label for="paste" class="sr-only">Command output</label>
+    <textarea id="paste" name="paste" rows="8" spellcheck="false" autocomplete="off" placeholder="MacBookPro11,3&#10;Mac-2BD1B31983FE1663&#10;model name : Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz&#10;pci 0x10de:0x0fe9&#10;…"></textarea>
+    <button class="btn primary" type="submit">Identify my Mac</button>
+  </form>
+  <p class="muted identify-privacy">Your paste is read in your browser. Only the model identifier, board ID, CPU name and device IDs are sent, and nothing is stored. Without JavaScript the server reads the paste and discards it at once. See <a href="/privacy">privacy</a>.</p>
+</section>
+</article>
+{{end}}{{end}}

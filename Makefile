@@ -28,6 +28,6 @@ clean:
 
 # Accessibility and layout checks (needs Node and Chrome/Chromium); CI runs them in the ui job.
 uicheck: build
-	@./bin/doiomad serve -demo -db "$${TMPDIR:-/tmp}/doiomad-uicheck.db" -addr 127.0.0.1:18999 & pid=$$!; \
+	@./bin/doiomad serve -demo -admin-insecure -db "$${TMPDIR:-/tmp}/doiomad-uicheck.db" -addr 127.0.0.1:18999 & pid=$$!; \
 	trap "kill $$pid" EXIT; sleep 1; \
 	cd tools/uicheck && npm ci --no-audit --no-fund --silent && BASE=http://127.0.0.1:18999 CHROME=$${CHROME:-$$(command -v chromium || command -v google-chrome)} node check.mjs

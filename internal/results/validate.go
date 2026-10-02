@@ -7,9 +7,11 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/internal/match"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 )
 
@@ -26,6 +28,8 @@ const (
 	FlagHardware     = "hardware_mismatch"
 	FlagUnmapped     = "unmapped_check"
 	FlagConflict     = "conflict"
+	FlagAmbiguous    = "config_ambiguous"
+	FlagDuplicate    = "duplicate"
 )
 
 // Result is a validated, scrubbed submission, ready to store.
@@ -46,7 +50,9 @@ type Result struct {
 	Image         string
 	Kernel        string
 	Notes         string
-	Hardware      string // scrubbed JSON
+	Hardware      string   // scrubbed JSON
+	Candidates    []string // when the hardware fits several configs: all of them (ConfigID is the first)
+	ConsentNotice string
 	Items         []Item
 	Extras        []FileExtra
 	Flags         []Flag
@@ -95,22 +101,49 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 	if f.Schema != SchemaV1 {
 		bad("schema: %q is not supported (want %q)", f.Schema, SchemaV1)
 	}
-	r := &Result{Schema: SchemaV1, SourceID: strings.TrimSpace(f.Source.ID)}
+	r := &Result{Schema: SchemaV1, SourceID: strings.ToLower(strings.TrimSpace(f.Source.ID))}
 	if r.SourceID == "" {
 		r.SourceID = "manual"
 	}
 	r.SourceVersion, r.Profile, r.Workflow = short(f.Source.Version), short(f.Source.Profile), short(f.Source.Workflow)
 
-	// The configuration (an old ID listed in a config's aliases also resolves).
-	m, cfg := findConfig(c, strings.TrimSpace(f.Config))
-	if cfg == nil {
-		if f.Config == "" {
-			bad("config: required (a configuration ID, e.g. macbookpro15-2-13-2018-4tb3-a)")
-		} else {
-			bad("config: %q is not a known configuration ID", f.Config)
+	// The configuration: given by ID (an old ID listed in a config's aliases
+	// also resolves), or found from the identifier and hardware probe.
+	probe := probeOf(f)
+	configID := strings.TrimSpace(f.Config)
+	if configID == "" && (probe.ProductName != "" || probe.BoardID != "") {
+		mr := matcherFor(c).Match(probe)
+		switch {
+		case len(mr.Candidates) == 0:
+			bad("config: no configuration matches this hardware (identifier %q, board %q); send a config ID", probe.ProductName, probe.BoardID)
+		case mr.Exact:
+			configID = mr.Best()
+		default:
+			top := mr.Candidates[0].Score
+			for _, cd := range mr.Candidates {
+				if cd.Score == top {
+					r.Candidates = append(r.Candidates, cd.Config)
+				}
+			}
+			configID = r.Candidates[0]
+			r.Flags = append(r.Flags, Flag{FlagAmbiguous, fmt.Sprintf("the hardware fits %d configurations equally: %s; a maintainer picks one before accepting",
+				len(r.Candidates), strings.Join(r.Candidates, ", "))})
 		}
-	} else {
+	}
+	m, cfg := findConfig(c, configID)
+	switch {
+	case cfg != nil:
 		r.ConfigID, r.Identifier = cfg.ID, m.Identifier
+		if id := strings.TrimSpace(f.Identifier); id != "" && !strings.EqualFold(id, m.Identifier) {
+			bad("identifier: %q, but config %s is a %s", id, cfg.ID, m.Identifier)
+		}
+		if f.Config != "" {
+			r.Flags = append(r.Flags, mismatches(c, m, cfg, probe)...)
+		}
+	case configID == "" && f.Config == "" && len(errs) == 0:
+		bad("config: required (a configuration ID such as macbookpro15-2-13-2018-4tb3-a, or an identifier and hardware probe)")
+	case f.Config != "":
+		bad("config: %q is not a known configuration ID", f.Config)
 	}
 
 	if h := strings.TrimSpace(f.Tester.Handle); h != "" {
@@ -247,6 +280,11 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 		r.Extras = append(r.Extras, x)
 	}
 
+	if len(f.ConsentNotice) > maxNote {
+		bad("consent_notice: %d bytes; the limit is %d", len(f.ConsentNotice), maxNote)
+	}
+	r.ConsentNotice = strings.TrimSpace(f.ConsentNotice)
+
 	if len(errs) > 0 {
 		return nil, errs
 	}
@@ -293,4 +331,108 @@ func short(s string) string {
 		s = strings.ToValidUTF8(s[:maxShort], "") // never split a character
 	}
 	return s
+}
+
+// matchers caches one matcher per loaded catalog.
+var matchers sync.Map // *catalog.Catalog → *match.Matcher
+
+func matcherFor(c *catalog.Catalog) *match.Matcher {
+	if m, ok := matchers.Load(c); ok {
+		return m.(*match.Matcher)
+	}
+	m, _ := matchers.LoadOrStore(c, match.New(c))
+	return m.(*match.Matcher)
+}
+
+// probeOf reads the standard probe keys from a submission's hardware block
+// (PLAN §22.2): product_name, board_id, pci and usb. The top-level
+// identifier stands in for a missing product_name.
+func probeOf(f *File) match.Probe { return ProbeFromHardware(f.Hardware, f.Identifier) }
+
+// ProbeFromHardware reads the standard probe keys from a report's hardware
+// map; identifier stands in for a missing product_name.
+func ProbeFromHardware(hw map[string]any, identifier string) match.Probe {
+	str := func(k string) string {
+		s, _ := hw[k].(string)
+		return strings.TrimSpace(s)
+	}
+	list := func(k string) []string {
+		var out []string
+		switch v := hw[k].(type) {
+		case []any:
+			for _, x := range v {
+				if s, ok := x.(string); ok {
+					out = append(out, s)
+				}
+			}
+		case string:
+			out = append(out, v)
+		}
+		return out
+	}
+	p := match.Probe{ProductName: str("product_name"), BoardID: str("board_id"), PCI: list("pci"), USB: list("usb"), CPU: str("cpu")}
+	if p.ProductName == "" {
+		p.ProductName = strings.TrimSpace(identifier)
+	}
+	return p
+}
+
+// mismatches flags a probe that disagrees with the config a report names
+// (PLAN §15): another identifier or board, or a GPU or Wi-Fi chip the config
+// doesn't have. The report still counts once accepted.
+func mismatches(c *catalog.Catalog, m *catalog.Mac, cfg *catalog.Config, p match.Probe) []Flag {
+	var out []Flag
+	if p.ProductName != "" && !strings.EqualFold(p.ProductName, m.Identifier) {
+		out = append(out, Flag{FlagHardware, fmt.Sprintf("the probe says %s; the config is a %s", p.ProductName, m.Identifier)})
+	}
+	if p.BoardID != "" {
+		known := false
+		for _, b := range m.BoardIDs {
+			known = known || strings.EqualFold(b, p.BoardID)
+		}
+		if !known {
+			out = append(out, Flag{FlagHardware, fmt.Sprintf("board ID %s isn't one of %s's (%s)", p.BoardID, m.Identifier, strings.Join(m.BoardIDs, ", "))})
+		}
+	}
+	pci := match.NormalizeIDs(p.PCI, "pci")
+	if len(pci) == 0 {
+		return out
+	}
+	have := map[string]bool{}
+	for _, id := range pci {
+		have[id] = true
+	}
+	for _, ref := range cfg.Components {
+		comp := c.Components[ref]
+		if comp == nil || (comp.Kind != "gpu" && comp.Kind != "wifi") || len(comp.IDs) == 0 {
+			continue
+		}
+		found := false
+		for _, id := range comp.IDs {
+			found = found || have[id]
+		}
+		if !found {
+			out = append(out, Flag{FlagHardware, fmt.Sprintf("the probe lists no %s (%s) of this config", comp.Name, strings.Join(comp.IDs, ", "))})
+		}
+	}
+	return out
+}
+
+// FindConfig looks a configuration up by ID or alias.
+func FindConfig(c *catalog.Catalog, id string) (*catalog.Mac, *catalog.Config) {
+	return findConfig(c, id)
+}
+
+// ApplicableSet lists the capabilities that apply to a configuration (for
+// re-marking a report's items when its configuration changes).
+func ApplicableSet(c *catalog.Catalog, configID string) (map[string]bool, error) {
+	m, cfg := findConfig(c, configID)
+	if cfg == nil {
+		return nil, fmt.Errorf("config %q is not a known configuration ID", configID)
+	}
+	set := map[string]bool{}
+	for _, cp := range c.Applicable(m, cfg) {
+		set[cp.ID] = true
+	}
+	return set, nil
 }

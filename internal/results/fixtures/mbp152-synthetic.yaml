@@ -20,7 +20,7 @@ hardware:
   wifi_mac: "a4:83:e7:12:34:56"
   hostname: work-mbp
   pci:
-    - "8086:3e9b Intel UHD Graphics 655"
+    - "8086:3ea5 Intel Iris Plus Graphics 655"
     - "14e4:4464 Broadcom BCM4364"
 items:
   boot.installer-efi64:       { status: supported, method: automatic }

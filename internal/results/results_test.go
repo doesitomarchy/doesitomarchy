@@ -62,7 +62,7 @@ func TestSyntheticFixture(t *testing.T) {
 			t.Errorf("%q leaked into %q", leak, all)
 		}
 	}
-	if !strings.Contains(r.Hardware, "Mac-827FB448E656EC26") || !strings.Contains(r.Hardware, "8086:3e9b") {
+	if !strings.Contains(r.Hardware, "Mac-827FB448E656EC26") || !strings.Contains(r.Hardware, "8086:3ea5") {
 		t.Errorf("useful hardware facts were scrubbed: %s", r.Hardware)
 	}
 }
@@ -266,5 +266,71 @@ func TestTestedAtIsUTC(t *testing.T) {
 	r, err := Validate(f, loadCatalog(t), now)
 	if err != nil || r.TestedAt != "2026-10-02T02:30:00Z" {
 		t.Fatalf("tested_at should be stored in UTC: %q %v", r.TestedAt, err)
+	}
+}
+
+// Reports may name the Mac and its hardware instead of a config ID
+// (PLAN §22.2); the server finds the configuration.
+func TestConfigFromHardware(t *testing.T) {
+	c := loadCatalog(t)
+	base := `schema: doesitomarchy/report/v1
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4" }
+items:
+  boot.install: { status: supported, method: observed }
+`
+	tests := []struct {
+		name, extra string
+		config      string
+		flags       []string
+		err         string
+	}{
+		{"identifier + GPU: exact", "identifier: MacBookPro8,2\nhardware: { pci: [\"8086:0126\", \"1002:6760\"] }\n",
+			"macbookpro8-2-15-early-2011-a", nil, ""},
+		{"probe product name and board ID", "hardware: { product_name: MacBookPro8,2, board_id: Mac-94245A3940C91C80, pci: [\"1002:6740\"] }\n",
+			"macbookpro8-2-15-late-2011-b", nil, ""},
+		{"a GPU two configs share: ambiguous, flagged", "identifier: MacBookPro8,2\nhardware: { pci: [\"1002:6741\"] }\n",
+			"macbookpro8-2-15-early-2011-b", []string{FlagAmbiguous}, ""},
+		{"unknown hardware", "identifier: MacBookPro99,9\n", "", nil, "no configuration matches"},
+		{"identifier contradicts the config", "config: macbookpro15-2-13-2018-4tb3-a\nidentifier: MacBookPro8,2\n", "", nil, "is a MacBookPro15,2"},
+		{"probe contradicts the config", "config: macbookpro15-2-13-2018-4tb3-a\nhardware: { product_name: MacBookPro15,1, board_id: Mac-0000000000000000, pci: [\"1002:67ef\"] }\n",
+			"macbookpro15-2-13-2018-4tb3-a", []string{FlagHardware, FlagHardware, FlagHardware, FlagHardware}, ""},
+		{"nothing identifies the Mac", "", "", nil, "config: required"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f, err := Parse([]byte(base + tt.extra))
+			if err != nil {
+				t.Fatal(err)
+			}
+			r, err := Validate(f, c, now)
+			if tt.err != "" {
+				if err == nil || !strings.Contains(err.Error(), tt.err) {
+					t.Fatalf("want error %q, got %v", tt.err, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			var kinds []string
+			for _, fl := range r.Flags {
+				kinds = append(kinds, fl.Kind)
+			}
+			if r.ConfigID != tt.config || strings.Join(kinds, ",") != strings.Join(tt.flags, ",") {
+				t.Fatalf("config %s flags %v; want %s %v (%+v)", r.ConfigID, kinds, tt.config, tt.flags, r.Flags)
+			}
+			if tt.flags != nil && tt.flags[0] == FlagAmbiguous && len(r.Candidates) != 2 {
+				t.Errorf("an ambiguous report lists its candidates: %v", r.Candidates)
+			}
+		})
+	}
+}
+
+func TestConsentNotice(t *testing.T) {
+	f, _ := Parse([]byte(valid() + "consent_notice: \"Your report becomes public once accepted.\"\n"))
+	r, err := Validate(f, loadCatalog(t), now)
+	if err != nil || r.ConsentNotice != "Your report becomes public once accepted." {
+		t.Fatalf("%v %q", err, r.ConsentNotice)
 	}
 }

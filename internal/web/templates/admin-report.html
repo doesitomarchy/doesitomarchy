@@ -1,0 +1,98 @@
+{{define "content"}}{{with .Data}}{{$r := .R}}{{$d := .}}{{$rv := .Review}}
+<div class="admin">
+<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/sources">Sources</a></p>
+{{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
+{{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
+
+<header class="admin-head">
+  <h1>Report <code class="report-code">{{$r.Code}}</code> {{template "state" $r.State}}</h1>
+  {{with $r.StateReason}}<p class="state-reason">{{$r.State}} by {{$r.StateBy}}: {{.}}</p>{{end}}
+  <dl class="facts">
+    <div><dt>Mac</dt><dd><a class="ident" href="/mac/{{$r.Slug}}">{{$r.Identifier}}</a></dd></div>
+    <div><dt>Configuration</dt><dd>{{if .Ambiguous}}<span class="tag warn-tag">not decided</span> <span class="muted">fits {{len $r.Candidates}}; pick one below</span>{{else}}{{with .Config}}<span class="cfgref">{{.Diff}}</span> {{.Label}} <span class="muted">({{.ReleaseName}})</span>{{else}}<code>{{$r.ConfigID}}</code>{{end}}{{end}}</dd></div>
+    <div><dt>Ran</dt><dd>{{osver $r.Omarchy $r.Kernel}}</dd></div>
+    <div><dt>Results</dt><dd>{{template "tally" $r}} <span class="muted">· {{$r.NotTested}} not tested</span></dd></div>
+    <div><dt>Tested</dt><dd>{{utc $r.TestedAt}}</dd></div>
+    <div><dt>Submitted</dt><dd>{{utc $r.SubmittedAt}} <span class="muted">by {{$r.SubmittedBy}}</span></dd></div>
+    <div><dt>Tester</dt><dd>{{if $r.TesterHandle}}@{{$r.TesterHandle}}{{else}}anonymous{{end}}</dd></div>
+    <div><dt>Source</dt><dd>{{$r.SourceName}}{{with $r.SourceVersion}} {{.}}{{end}}{{with $r.Profile}} <span class="muted">· {{.}} profile</span>{{end}}</dd></div>
+    {{if eq $r.State "accepted" "retracted"}}<div><dt>Public page</dt><dd><a href="/report/{{$r.Code}}">/report/{{$r.Code}}</a></dd></div>{{end}}
+  </dl>
+</header>
+
+<section class="panel admin-section">
+  <h2>Hardware the report sent</h2>
+  {{if $rv.NoHardware}}<p class="muted">The report has no hardware probe{{with $r.Identifier}}, only its model identifier{{end}}. Ask the tester (or the tool) for the details below.</p>{{else}}
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Hardware probe"><table class="browse probe">
+    <thead><tr><th scope="col">What</th><th scope="col">Reported</th><th scope="col">In the catalog</th>{{if gt (len $rv.Rows) 1}}<th scope="col">Fits</th>{{end}}</tr></thead>
+    <tbody>{{range $rv.Probe}}<tr><th scope="row">{{.Label}}</th><td><code>{{.Value}}</code></td><td>{{with .Known}}{{.}}{{end}}{{with .Note}}<span class="muted">{{.}}</span>{{end}}</td>{{if gt (len $rv.Rows) 1}}<td>{{.Fits}}</td>{{end}}</tr>{{end}}</tbody>
+  </table></div>{{end}}
+  {{with $rv.Extra}}<details class="more"><summary>Other details the tool sent ({{len .}})</summary><dl class="facts">{{range .}}<div><dt>{{.Label}}</dt><dd><code>{{.Value}}</code></dd></div>{{end}}</dl></details>{{end}}
+</section>
+
+{{if gt (len $rv.Rows) 1}}<section class="panel admin-section">
+  <h2>{{if $rv.Ambiguous}}Which configuration?{{else}}This Mac's configurations{{end}}</h2>
+  {{if $rv.Ambiguous}}<p>The hardware fits these configurations equally. Pick one before accepting.{{with $rv.Differs}} They differ in: <b>{{join . ", "}}</b>.{{end}}</p>{{end}}
+  {{with $rv.Settle}}<p>What would settle it, from the tester:</p><ul class="settle">{{range .}}<li>{{.}}</li>{{end}}</ul>{{end}}
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Candidate configurations"><table class="browse candidates">
+    <thead><tr><th scope="col">Configuration</th><th scope="col">Release</th><th scope="col">CPU</th><th scope="col">GPU</th><th scope="col">Wi-Fi</th><th scope="col">Matched</th><th scope="col">Not reported</th></tr></thead>
+    <tbody>{{range $rv.Rows}}<tr{{if and .Current (not $rv.Ambiguous)}} class="current"{{end}}><th scope="row"><span class="cfgref">{{.Config.Diff}}</span>{{if and .Current (not $rv.Ambiguous)}} <span class="tag">current</span>{{end}}{{if and $rv.Ambiguous .Tied}} <span class="tag warn-tag">fits</span>{{end}}<br><span class="muted">{{.Config.ID}}</span></th>
+      <td>{{.Config.ReleaseName}}</td><td>{{.CPU}}</td><td>{{.GPU}}</td><td>{{.WiFi}}</td>
+      <td>{{range .Matched}}<code>{{.}}</code> {{else}}<span class="muted">—</span>{{end}}</td><td>{{range .NotReported}}<code>{{.}}</code> {{else}}<span class="muted">—</span>{{end}}</td></tr>{{end}}</tbody>
+  </table></div>
+  {{if eq $r.State "pending"}}<form method="post" action="/admin/report/{{$r.Code}}/config" class="inline-form">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label for="config">Configuration</label>
+    <select id="config" name="config">{{range .Candidates}}<option value="{{.ID}}"{{if eq .ID $r.ConfigID}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+    <button class="btn" type="submit">Set configuration</button>
+  </form>{{end}}
+</section>{{end}}
+
+<section class="panel admin-section">
+  <h2>Decide</h2>
+  {{if eq $r.State "pending"}}
+    {{if .Ambiguous}}<p class="notice" role="note">Pick a configuration above before accepting.</p>{{end}}
+    <div class="decide">
+      <form method="post" action="/admin/report/{{$r.Code}}/accept">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <button class="btn primary" type="submit"{{if .Ambiguous}} disabled{{end}}>Accept</button>
+      </form>
+      {{template "reason-form" (dict "Code" $r.Code "CSRF" .CSRF "Action" "reject" "Verb" "Reject" "Placeholder" "Why it's turned down (shown on the site)")}}
+    </div>
+  {{else if eq $r.State "accepted"}}
+    <div class="decide">{{template "reason-form" (dict "Code" $r.Code "CSRF" .CSRF "Action" "retract" "Verb" "Retract" "Placeholder" "Why it should stop counting (shown on the site)")}}</div>
+  {{else}}<p class="muted">No further moves: {{$r.State}} reports stay on record.</p>{{end}}
+</section>
+
+{{with $r.Flags}}<section class="panel admin-section"><h2>Flags</h2>
+  <ul class="admin-flags">{{range .}}<li><b>{{.Kind}}</b>: {{.Detail}}
+    {{if .ResolvedAt}}<span class="muted"> · resolved by {{.ResolvedBy}} {{utc .ResolvedAt}}: {{.Resolution}}</span>
+    {{else}}<form method="post" action="/admin/flag/{{.ID}}/resolve" class="inline-form">
+      <input type="hidden" name="csrf" value="{{$d.CSRF}}"><input type="hidden" name="report" value="{{$r.Code}}">
+      <label for="note-{{.ID}}">Note</label><input id="note-{{.ID}}" name="note" required placeholder="how it was dealt with">
+      <button class="btn" type="submit">Resolve</button></form>{{end}}</li>{{end}}</ul>
+</section>{{end}}
+
+{{with $r.Notes}}<div class="result-notes"><p>{{.}}</p></div>{{end}}
+<div class="table-wrap" tabindex="0" role="region" aria-label="Items"><table class="browse">
+  <thead><tr><th scope="col">Category</th><th scope="col">Capability</th><th scope="col">Status</th><th scope="col">Method / reason</th><th scope="col">Evidence and notes</th></tr></thead>
+  <tbody>{{range $r.Items}}<tr{{if not .Applicable}} class="oos"{{end}}><td>{{.CategoryName}}</td><td><span class="capname">{{.CapabilityName}}</span>{{if not .Applicable}} <span class="tag">not counted</span>{{end}}</td>
+    <td>{{template "vicon" (itemVerdict .Status)}} {{itemLabel .Status}}</td><td>{{if .Method}}{{.Method}}{{else}}{{reasonLabel .Reason}}{{end}}</td><td>{{with .Evidence}}<code>{{.}}</code>{{end}}{{with .Note}} {{.}}{{end}}</td></tr>{{end}}</tbody>
+</table></div>
+{{with $r.Extras}}<h2>Extras</h2><ul class="admin-flags">{{range .}}<li><code>{{.ID}}</code> {{.Label}} · {{.Status}} {{.Detail}}</li>{{end}}</ul>{{end}}
+{{with $r.ConsentNotice}}<p class="muted">Notice shown to the tester: “{{.}}”</p>{{end}}
+
+<details class="more"><summary>Raw report (scrubbed{{if $r.ReportSize}}, {{$r.ReportSize}} bytes{{end}}, {{$r.ReportVisibility}})</summary>{{if .Raw}}<pre>{{.Raw}}</pre>{{else}}<p class="muted">None stored: this report was entered without its original file (the demo data, for example).</p>{{end}}</details>
+<details class="more" open><summary>History</summary><ul class="admin-flags">{{range $r.Events}}<li>{{utc .At}} · <b>{{.Action}}</b> by {{.Actor}}{{with .Detail}} · {{.}}{{end}}</li>{{end}}</ul></details>
+</div>
+{{end}}{{end}}
+
+{{define "reason-form"}}<form method="post" action="/admin/report/{{.Code}}/{{.Action}}" class="reason-form" data-reason-form>
+  <input type="hidden" name="csrf" value="{{.CSRF}}">
+  <button type="button" class="btn" data-reason-open data-js aria-expanded="false" aria-controls="{{.Action}}-fields">{{.Verb}}…</button>
+  <div class="reason-fields" id="{{.Action}}-fields">
+    <label for="{{.Action}}-reason">Reason (required)</label>
+    <textarea id="{{.Action}}-reason" name="reason" rows="2" required placeholder="{{.Placeholder}}"></textarea>
+    <div class="reason-actions"><button class="btn danger" type="submit">Confirm: {{.Verb}}</button> <button type="button" class="btn" data-reason-cancel data-js>Cancel</button></div>
+  </div>
+</form>{{end}}

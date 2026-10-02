@@ -19,17 +19,21 @@ const MaxSize = 1 << 20
 
 // File is a result submission in schema v1. YAML and JSON share it.
 type File struct {
-	Schema   string              `yaml:"schema" json:"schema"`
-	Config   string              `yaml:"config" json:"config"`
-	Source   FileSource          `yaml:"source" json:"source"`
-	Tester   FileTester          `yaml:"tester" json:"tester"`
-	TestedAt string              `yaml:"tested_at" json:"tested_at"`
-	Omarchy  FileOmarchy         `yaml:"omarchy" json:"omarchy"`
-	Kernel   string              `yaml:"kernel" json:"kernel"`
-	Notes    string              `yaml:"notes" json:"notes"`
-	Hardware map[string]any      `yaml:"hardware" json:"hardware"`
-	Items    map[string]FileItem `yaml:"items" json:"items"`
-	Extras   []FileExtra         `yaml:"extras" json:"extras"`
+	Schema     string              `yaml:"schema" json:"schema"`
+	Config     string              `yaml:"config" json:"config"`         // optional when identifier/hardware let the server find it
+	Identifier string              `yaml:"identifier" json:"identifier"` // the model identifier, e.g. MacBookPro15,2
+	Source     FileSource          `yaml:"source" json:"source"`
+	Tester     FileTester          `yaml:"tester" json:"tester"`
+	TestedAt   string              `yaml:"tested_at" json:"tested_at"`
+	Omarchy    FileOmarchy         `yaml:"omarchy" json:"omarchy"`
+	Kernel     string              `yaml:"kernel" json:"kernel"`
+	Notes      string              `yaml:"notes" json:"notes"`
+	Hardware   map[string]any      `yaml:"hardware" json:"hardware"`
+	Items      map[string]FileItem `yaml:"items" json:"items"`
+	Extras     []FileExtra         `yaml:"extras" json:"extras"`
+	// ConsentNotice is the notice the tool showed the tester before
+	// submitting (PLAN §22.1); stored for the record.
+	ConsentNotice string `yaml:"consent_notice" json:"consent_notice"`
 }
 
 // FileSource names the app that produced the result.

@@ -1,0 +1,66 @@
+{{define "content"}}
+<article class="privacy">
+<h1>Privacy</h1>
+<p class="privacy-intro">This site exists to share what works on old Macs. It doesn't need to know who you are, so it doesn't try to find out.</p>
+
+<section class="cta tldr">
+<h2>TLDR;</h2>
+<ul class="plain">
+  <li>No ads, no analytics, no tracking, no accounts, no cookies.</li>
+  <li>We keep as little as possible, and nothing that identifies you.</li>
+</ul>
+</section>
+
+<section>
+<h2>Visiting the site</h2>
+<ul class="plain">
+  <li><strong>What our server records:</strong> each request's method, page, response code and how long it took. Not your IP address, your browser, where you came from, or what you searched for.</li>
+  <li><strong>What stays on your device:</strong> your colour theme, saved in your browser and never sent to us.</li>
+  <li><strong>Nothing from elsewhere:</strong> fonts, icons and scripts all come from this site. No Google, social networks or ad companies.</li>
+</ul>
+</section>
+
+<section>
+<h2>Identify my Mac</h2>
+<p>Your browser reads what you paste and sends only the model identifier, board ID, CPU name and device IDs. Thousands of Macs share each one. Nothing is stored. Without JavaScript, our server picks out the same IDs and throws the rest away at once.</p>
+</section>
+
+<section>
+<h2>Diagnostic reports</h2>
+<ul class="plain">
+  <li><strong>What we keep:</strong> your Mac's hardware details, the test results and the Omarchy version. A public name and a contact address are optional; the contact is kept only as a one-way hash that even we can't read back.</li>
+  <li><strong>What we remove first:</strong> serial numbers, network and IP addresses, computer and user names, and e-mail addresses.</li>
+  <li><strong>What becomes public:</strong> once accepted, the results, the hardware and your public name, if you gave one. The full report stays with maintainers for now, but may be published later so anyone can check our work.</li>
+  <li><strong>Changing your mind:</strong> reports aren't deleted, so the history stays honest. We can withdraw one so it no longer counts, and take your name off it.</li>
+</ul>
+</section>
+
+<section>
+<h2>Who else is involved</h2>
+<ul class="plain">
+  <li><strong>Cloudflare</strong> delivers the site and guards it from abuse, so it sees visitors' IP addresses. It may set a short-lived cookie if it has to check you aren't a bot. It also handles sign-in for maintainers.</li>
+  <li><strong>DigitalOcean</strong> runs our server, in Toronto.</li>
+  <li><strong>Cloudflare R2</strong> keeps encrypted database backups for 30 days.</li>
+  <li><strong>GitHub</strong> hosts the code. Issues and pull requests there are public.</li>
+</ul>
+</section>
+
+<section>
+<h2>Maintainers</h2>
+<p>Only maintainers see reports waiting for review and full reports. They sign in with their e-mail address, and every decision is recorded with their name.</p>
+</section>
+
+<section>
+<h2>Questions</h2>
+<p>E-mail <strong>privacy@doesitomarchy.com</strong>. To withdraw a report, include its code, from its page address (like <code>/report/3f9a1c07be</code>).</p>
+</section>
+
+<section>
+<h2>Changes</h2>
+<p>Any change is listed here with its date.</p>
+<ul class="plain">
+  <li><time datetime="2026-10-02">2 October 2026</time>: first version.</li>
+</ul>
+</section>
+</article>
+{{end}}

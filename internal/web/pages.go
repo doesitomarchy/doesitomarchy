@@ -680,14 +680,14 @@ func article(s string) string {
 
 func (s *Server) robots(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, "User-agent: *\nAllow: /\nDisallow: /search/suggest\n\nSitemap: %s/sitemap.xml\n", BaseURL)
+	fmt.Fprintf(w, "User-agent: *\nAllow: /\nDisallow: /search/suggest\nDisallow: /admin\n\nSitemap: %s/sitemap.xml\n", BaseURL)
 }
 
 func (s *Server) sitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n" + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
-	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution", "/changelog"} {
+	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution", "/changelog", "/identify", "/api", "/privacy"} {
 		fmt.Fprintf(&b, "  <url><loc>%s%s</loc></url>\n", BaseURL, p)
 	}
 	d := s.data()
@@ -703,4 +703,54 @@ func (s *Server) sitemap(w http.ResponseWriter, r *http.Request) {
 	}
 	b.WriteString("</urlset>\n")
 	w.Write([]byte(b.String()))
+}
+
+// ── privacy and API docs (PLAN §22.7, §22.11) ─────────────────────────────
+
+func (s *Server) privacy(w http.ResponseWriter, r *http.Request) {
+	s.render(w, r, http.StatusOK, "privacy", page{Title: "Privacy",
+		Description: "What DoesItOmarchy does to protect your privacy: no ads, no analytics, no tracking, and personal data removed from diagnostic reports."})
+}
+
+// ConsentNotice is the notice test tools must show before submitting (PLAN §22.1).
+const ConsentNotice = "This sends your test results to DoesItOmarchy.com. Serial numbers, network and IP addresses, " +
+	"computer and user names, and e-mail addresses are removed first. Once a maintainer accepts the report, " +
+	"its results, your Mac's hardware details and your handle (if you give one) are public, and the full report, " +
+	"with that personal data removed, may be published later. Submitting means you agree. " +
+	"More at doesitomarchy.com/privacy."
+
+const apiExample = `{
+  "schema": "doesitomarchy/report/v1",
+  "identifier": "MacBookPro8,2",
+  "source": { "version": "1.2.0", "profile": "full" },
+  "tester": { "handle": "vintage-fan" },
+  "tested_at": "2026-10-01T18:30:00-04:00",
+  "omarchy": { "version": "4.0.4" },
+  "kernel": "6.16.2-arch1-1",
+  "hardware": {
+    "product_name": "MacBookPro8,2",
+    "board_id": "Mac-94245A3940C91C80",
+    "cpu": "Intel(R) Core(TM) i7-2635QM CPU @ 2.00GHz",
+    "pci": ["8086:0126", "1002:6760", "14e4:4331"]
+  },
+  "items": {
+    "boot.install":     { "status": "supported", "method": "observed" },
+    "network.wifi":     { "status": "partial", "method": "automatic",
+                          "evidence": "b43: firmware loaded; 5 GHz networks not listed" },
+    "power.sleep-wake": { "status": "failed", "method": "observed",
+                          "evidence": "resume hangs on a black screen" },
+    "audio.headphone":  { "status": "not_tested", "reason": "no-equipment" }
+  },
+  "consent_notice": "This sends your test results to DoesItOmarchy.com. …"
+}`
+
+type apiDocsData struct {
+	Base, Example, Notice string
+	PerHour               int
+}
+
+func (s *Server) apiDocs(w http.ResponseWriter, r *http.Request) {
+	s.render(w, r, http.StatusOK, "api", page{Title: "Open API", Nav: "api",
+		Description: "Read DoesItOmarchy's catalog and test results as JSON, or submit diagnostic reports from a test tool.",
+		Data:        apiDocsData{Base: BaseURL, Example: apiExample, Notice: ConsentNotice, PerHour: ReportsPerHour}})
 }

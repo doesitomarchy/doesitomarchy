@@ -45,7 +45,7 @@
   {{range .Data.Categories}}{{$caps := index $.Data.Caps .ID}}{{$cat := .}}
     {{range $i, $c := $caps}}<tr>
       {{if eq $i 0}}<th scope="rowgroup" rowspan="{{len $caps}}" class="catcell">{{template "icon" (index $.Data.Icons $cat.ID)}} {{$cat.Name}}{{if $cat.Blocking}}<br><span class="muted">failure blocks install</span>{{end}}</th>{{end}}
-      <td>{{$c.Name}}</td><td>{{with $c.Description}}{{.}}{{else}}<span class="muted">—</span>{{end}}</td><td class="muted">{{applies $c}}</td>
+      <td class="capname">{{$c.Name}}</td><td>{{with $c.Description}}{{.}}{{else}}<span class="muted">—</span>{{end}}</td><td class="muted">{{applies $c}}</td>
     </tr>{{end}}
   {{end}}
   </tbody>
