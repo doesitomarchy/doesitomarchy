@@ -43,8 +43,9 @@ type Issue struct {
 	Title       string     `json:"title"`
 	HTMLURL     string     `json:"html_url"`
 	State       string     `json:"state"`        // open | closed
-	StateReason string     `json:"state_reason"` // completed | not_planned | reopened
+	StateReason string     `json:"state_reason"` // completed | not_planned | duplicate | reopened
 	UpdatedAt   time.Time  `json:"updated_at"`
+	RepoURL     string     `json:"repository_url"` // the API URL of its repo: another repo's after a transfer
 	ClosedAt    *time.Time `json:"closed_at"`
 	Assignee    *User      `json:"assignee"`
 	Labels      []Label    `json:"labels"`
@@ -90,6 +91,19 @@ type APIError struct {
 }
 
 func (e *APIError) Error() string { return fmt.Sprintf("GitHub API: %d %s", e.Status, e.Message) }
+
+// gone reports whether GitHub says an issue doesn't exist (any more).
+func gone(err error) bool {
+	var api *APIError
+	return errorsAs(err, &api) && (api.Status == http.StatusNotFound || api.Status == http.StatusGone)
+}
+
+// inRepo reports whether an issue still lives in the client's repo. GitHub
+// redirects requests for a transferred issue to its new home, which the HTTP
+// client follows.
+func (c *Client) inRepo(is Issue) bool {
+	return is.RepoURL == "" || strings.HasSuffix(strings.ToLower(is.RepoURL), "/repos/"+strings.ToLower(c.Repo))
+}
 
 func (c *Client) do(ctx context.Context, method, path string, body, out any) (*http.Response, error) {
 	var rd io.Reader
@@ -148,15 +162,34 @@ func (c *Client) Issue(ctx context.Context, number int) (Issue, error) {
 
 var nextLink = regexp.MustCompile(`<([^>]+)>;\s*rel="next"`)
 
-// Issues lists issues (not pull requests) updated since a time, all pages.
+// maxPages bounds a listing (100 issues a page).
+const maxPages = 50
+
+// Issues lists issues (not pull requests) updated since a time, oldest
+// update first, all pages.
 func (c *Client) Issues(ctx context.Context, since time.Time) ([]Issue, error) {
 	q := url.Values{"state": {"all"}, "per_page": {"100"}, "sort": {"updated"}, "direction": {"asc"}}
 	if !since.IsZero() {
 		q.Set("since", since.UTC().Format(time.RFC3339))
 	}
-	path := c.repoPath("/issues?" + q.Encode())
+	return c.list(ctx, c.repoPath("/issues?"+q.Encode()))
+}
+
+// OpenIssuesLabelled lists the open issues carrying every one of labels.
+func (c *Client) OpenIssuesLabelled(ctx context.Context, labels []string) ([]Issue, error) {
+	q := url.Values{"state": {"open"}, "per_page": {"100"}, "labels": {strings.Join(labels, ",")}}
+	return c.list(ctx, c.repoPath("/issues?"+q.Encode()))
+}
+
+// list reads every page of an issue listing, leaving out pull requests. It
+// fails rather than return a cut-off list, which callers might take as
+// complete.
+func (c *Client) list(ctx context.Context, path string) ([]Issue, error) {
 	var out []Issue
-	for page := 0; path != "" && page < 50; page++ {
+	for page := 0; path != ""; page++ {
+		if page == maxPages {
+			return nil, fmt.Errorf("GitHub API: more than %d pages of issues", maxPages)
+		}
 		var batch []Issue
 		res, err := c.do(ctx, "GET", path, nil, &batch)
 		if err != nil {

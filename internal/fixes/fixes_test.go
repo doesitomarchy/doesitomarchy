@@ -5,6 +5,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"path/filepath"
@@ -13,7 +15,6 @@ import (
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/fixes/fakegithub"
-
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
@@ -37,10 +38,39 @@ func TestStateOf(t *testing.T) {
 		Proposed:   {Open: true, Assignee: "carl", Proposed: true, LastActivity: old},
 		Fixed:      {Open: false, StateReason: "completed"},
 		NotPlanned: {Open: false, StateReason: "not_planned"},
+		Duplicate:  {Open: false, StateReason: "duplicate"},
 	} {
 		if got := StateOf(f, now); got != want {
 			t.Errorf("%+v: %s, want %s", f, got, want)
 		}
+	}
+	// Closed before GitHub had reasons: completed.
+	if got := StateOf(store.Fix{Open: false}, now); got != Fixed {
+		t.Errorf("closed without a reason: %s", got)
+	}
+	// A duplicate is never the fix shown for a criterion.
+	dup := store.Fix{Issue: 2, Capability: "audio.speakers", Component: "audio/x", StateReason: "duplicate"}
+	if _, _, ok := Best([]store.Fix{dup}, "audio.speakers", "cfg", []string{"audio/x"}, now); ok {
+		t.Error("Best picked a duplicate")
+	}
+}
+
+func TestNextChange(t *testing.T) {
+	now := time.Date(2026, 10, 3, 12, 0, 0, 0, time.UTC)
+	ago := func(d time.Duration) string { return now.Add(-d).Format(time.RFC3339) }
+	all := []store.Fix{
+		{Open: true, LastActivity: ago(time.Hour)},                                          // unclaimed: never changes by time
+		{Open: true, Assignee: "a", LastActivity: ago(10 * 24 * time.Hour)},                 // stale in 50 days
+		{Open: true, Assignee: "b", LastActivity: ago(59 * 24 * time.Hour)},                 // stale in 1 day: first
+		{Open: true, Assignee: "c", LastActivity: ago(61 * 24 * time.Hour)},                 // already stale
+		{Open: true, Assignee: "d", Proposed: true, LastActivity: ago(59 * 24 * time.Hour)}, // proposed: doesn't go stale
+		{Open: false, Assignee: "e", LastActivity: ago(59 * 24 * time.Hour)},                // closed
+	}
+	if got, want := NextChange(all, now), now.Add(24*time.Hour); !got.Equal(want) {
+		t.Errorf("NextChange %v, want %v", got, want)
+	}
+	if got := NextChange(all[:1], now); !got.IsZero() {
+		t.Errorf("nothing changes by time: %v", got)
 	}
 }
 
@@ -85,6 +115,12 @@ func TestFromIssue(t *testing.T) {
 	if f.FixLink != "https://github.com/basecamp/omarchy/pull/99" {
 		t.Errorf("closed after merged PR: %+v", f)
 	}
+	// Closed as a duplicate: nothing landed here, so no fix link.
+	dup := closed
+	dup.StateReason = "duplicate"
+	if f, _ = FromIssue(dup, []Event{merged}, "x/y"); f.FixLink != "" {
+		t.Errorf("duplicate: %+v", f)
+	}
 }
 
 func TestOpenSyncAndGiveUp(t *testing.T) {
@@ -117,6 +153,12 @@ func TestOpenSyncAndGiveUp(t *testing.T) {
 	// Opening a second fix reuses the labels (GitHub answers 422 for existing ones).
 	if _, err := OpenIssue(ctx, c, st, "audio.speakers", "Built-in speakers", Scope{Config: "macbookpro16-1-16-2019-a", Name: "MacBook Pro (16-inch, 2019)"}, nil, "crh"); err != nil {
 		t.Fatal(err)
+	}
+	// The same fix again (a double click, another maintainer, the CLI): refused, naming the open issue.
+	_, err = OpenIssue(ctx, c, st, "audio.speakers", "Built-in speakers", Scope{Component: "audio/cirrus-cs8409", Name: "Cirrus Logic CS8409"}, affected, "crh")
+	var already *AlreadyOpenError
+	if !errors.As(err, &already) || already.Issue.Number != 1 || len(gh.Issues) != 2 {
+		t.Fatalf("second open of the same fix: %v, %d issues", err, len(gh.Issues))
 	}
 
 	// Someone claims issue 1 on GitHub; an unrelated issue appears; the poll catches both.
@@ -174,20 +216,116 @@ func TestWebhook(t *testing.T) {
 		ValidSignature("", body, sig) || ValidSignature("s3cret", append(body, ' '), sig) {
 		t.Error("signature checks")
 	}
-	if is, ok := WebhookIssue("issues", body, DefaultRepo); !ok || is.Number != 4 {
-		t.Errorf("issues event: %v %v", is, ok)
+	if is, action, ok := WebhookIssue("issues", body, DefaultRepo); !ok || is.Number != 4 || action != "assigned" || Gone(action) {
+		t.Errorf("issues event: %v %q %v", is, action, ok)
 	}
-	if _, ok := WebhookIssue("issue_comment", body, DefaultRepo); !ok {
+	if _, _, ok := WebhookIssue("issue_comment", body, DefaultRepo); !ok {
 		t.Error("issue_comment event")
 	}
-	if _, ok := WebhookIssue("issues", body, "someone/else"); ok {
+	if _, _, ok := WebhookIssue("issues", body, "someone/else"); ok {
 		t.Error("another repo's delivery")
 	}
-	if _, ok := WebhookIssue("push", body, DefaultRepo); ok {
+	if _, _, ok := WebhookIssue("push", body, DefaultRepo); ok {
 		t.Error("push event")
 	}
 	pr := []byte(`{"issue":{"number":5,"pull_request":{}},"repository":{"full_name":"doesitomarchy/wecanfixeverything"}}`)
-	if _, ok := WebhookIssue("issue_comment", pr, DefaultRepo); ok {
+	if _, _, ok := WebhookIssue("issue_comment", pr, DefaultRepo); ok {
 		t.Error("a comment on a pull request")
+	}
+	for _, a := range []string{"deleted", "transferred"} {
+		if !Gone(a) {
+			t.Errorf("%s: the issue left the repo", a)
+		}
+	}
+}
+
+// A copy of an issue older than the stored one never overwrites it: two
+// webhook syncs can finish in either order.
+func TestUpsertIgnoresOlder(t *testing.T) {
+	ctx := context.Background()
+	st := openStore(t)
+	newer := store.Fix{Issue: 1, Capability: "audio.speakers", Component: "audio/x", Title: "t", URL: "u",
+		Open: false, StateReason: "completed", LastActivity: "2026-10-03T12:00:05Z"}
+	older := newer
+	older.Open, older.StateReason, older.Assignee, older.LastActivity = true, "", "helper", "2026-10-03T12:00:01Z"
+	if _, err := st.UpsertFix(ctx, newer); err != nil {
+		t.Fatal(err)
+	}
+	if changed, err := st.UpsertFix(ctx, older); err != nil || changed {
+		t.Fatalf("older copy: changed %v, %v", changed, err)
+	}
+	all, _ := st.Fixes(ctx)
+	if all[0].Open || all[0].Assignee != "" {
+		t.Errorf("the older copy overwrote the newer: %+v", all[0])
+	}
+}
+
+// The catch-up poll survives a failing issue, notices linked pull requests
+// that don't touch the issue, and forgets issues that left the repo.
+func TestSyncAllRobust(t *testing.T) {
+	ctx := context.Background()
+	gh := fakegithub.New(t, DefaultRepo)
+	st := openStore(t)
+	c := NewClient(DefaultRepo, fakegithub.Token)
+	c.Base = gh.URL
+	sy := &Syncer{Client: c, Store: st}
+	labels := func(comp string) []fakegithub.Label {
+		return []fakegithub.Label{{Name: "criterion:audio.speakers"}, {Name: "component:" + comp}}
+	}
+	twoHoursAgo := time.Now().UTC().Add(-2 * time.Hour)
+	gh.Mu.Lock()
+	for n := 1; n <= 3; n++ {
+		gh.Issues[n] = &fakegithub.Issue{Number: n, Title: "fix", State: "open", UpdatedAt: twoHoursAgo.Add(time.Duration(n) * time.Minute),
+			Labels: labels(fmt.Sprintf("audio/c%d", n)), RepoURL: gh.URL + "/repos/" + DefaultRepo}
+	}
+	gh.Fail[2] = 502 // GitHub has a bad moment for issue 2
+	gh.Mu.Unlock()
+
+	n, err := sy.SyncAll(ctx)
+	if err == nil || !strings.Contains(err.Error(), "#2") || n != 2 {
+		t.Fatalf("first sync: %d updated, %v; want 2 and an error naming #2", n, err)
+	}
+	if v, _ := st.Setting(ctx, "fixes_synced_at"); v != gh.Issues[2].UpdatedAt.Format(time.RFC3339) {
+		t.Errorf("the next sync should start at issue 2's update, not %s", v)
+	}
+	gh.Mu.Lock()
+	delete(gh.Fail, 2)
+	gh.Mu.Unlock()
+	if n, err := sy.SyncAll(ctx); err != nil || n != 1 {
+		t.Fatalf("retry: %d updated, %v", n, err)
+	}
+
+	// A pull request in another repo now links issue 3. The issue itself
+	// doesn't change, so only re-reading open fixes notices it.
+	gh.Mu.Lock()
+	gh.Timeline[3] = []map[string]any{{"event": "cross-referenced", "created_at": twoHoursAgo,
+		"source": map[string]any{"issue": map[string]any{"html_url": "https://github.com/basecamp/omarchy/pull/7", "state": "open", "pull_request": map[string]any{}}}}}
+	gh.Mu.Unlock()
+	if _, err := sy.SyncAll(ctx); err != nil {
+		t.Fatal(err)
+	}
+	all, _ := st.Fixes(ctx)
+	if len(all) != 3 || all[0].Issue != 3 || !all[0].Proposed {
+		t.Fatalf("linked pull request not noticed: %+v", all)
+	}
+
+	// Issue 3 moves to another repo; issue 1 is deleted while no webhook comes.
+	gh.Mu.Lock()
+	gh.Issues[3].RepoURL = gh.URL + "/repos/someone/else"
+	delete(gh.Issues, 1)
+	gh.Mu.Unlock()
+	if removed, err := sy.SyncIssue(ctx, 3); err != nil || !removed {
+		t.Errorf("transferred issue: removed %v, %v", removed, err)
+	}
+	st.SetSetting(ctx, "fixes_reconciled_at", time.Now().UTC().Add(-ReconcileEvery).Format(time.RFC3339))
+	if _, err := sy.SyncAll(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if all, _ = st.Fixes(ctx); len(all) != 1 || all[0].Issue != 2 {
+		t.Errorf("after the deletion: %+v", all)
+	}
+	// A webhook saying it was deleted is believed without asking GitHub.
+	if removed, err := sy.Forget(ctx, 2); err != nil || !removed {
+		t.Errorf("forget: %v %v", removed, err)
 	}
 }

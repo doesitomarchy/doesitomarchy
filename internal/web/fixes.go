@@ -17,6 +17,8 @@ import (
 // githubHook takes a webhook delivery from the fix repo. It checks the
 // signature, answers at once, and refreshes the issue in the background
 // (the data-version watcher then rebuilds the site and purges the cache).
+// The delivery is recorded as handled only once that worked, so
+// redelivering a failed one from GitHub retries it.
 func (s *Server) githubHook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	if s.opt.WebhookSecret == "" {
@@ -38,17 +40,15 @@ func (s *Server) githubHook(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong\n"))
 		return
 	}
-	if id := r.Header.Get("X-GitHub-Delivery"); id != "" {
-		if seen, err := s.store.SeenDelivery(r.Context(), id); err == nil && seen {
+	delivery := r.Header.Get("X-GitHub-Delivery")
+	if delivery != "" {
+		if done, err := s.store.DeliveryHandled(r.Context(), delivery); err == nil && done {
 			w.WriteHeader(http.StatusOK) // a redelivery: already handled
 			return
 		}
 	}
-	repo := s.opt.FixRepo
-	if repo == "" {
-		repo = fixes.DefaultRepo
-	}
-	is, ok := fixes.WebhookIssue(event, body, repo)
+	repo := s.fixRepo()
+	is, action, ok := fixes.WebhookIssue(event, body, repo)
 	if !ok {
 		w.WriteHeader(http.StatusNoContent) // not about a fix issue
 		return
@@ -58,13 +58,28 @@ func (s *Server) githubHook(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 		var err error
-		if s.syncer != nil {
+		switch {
+		case fixes.Gone(action) && s.syncer != nil:
+			_, err = s.syncer.Forget(ctx, is.Number)
+		case fixes.Gone(action):
+			_, err = s.store.RemoveFix(ctx, is.Number)
+		case s.syncer != nil:
 			_, err = s.syncer.SyncIssue(ctx, is.Number) // with its timeline: linked pull requests, closing commit
-		} else if f, ok := fixes.FromIssue(is, nil, repo); ok {
-			_, err = s.store.UpsertFix(ctx, f)
+		default: // no token: the payload is all there is
+			if f, ok := fixes.FromIssue(is, nil, repo); ok {
+				_, err = s.store.UpsertFix(ctx, f)
+			} else {
+				_, err = s.store.RemoveFix(ctx, is.Number)
+			}
 		}
 		if err != nil {
-			s.log.Warn("webhook sync", "issue", is.Number, "err", err)
+			s.log.Warn("webhook sync", "issue", is.Number, "action", action, "err", err)
+			return
+		}
+		if delivery != "" {
+			if err := s.store.RecordDelivery(ctx, delivery); err != nil {
+				s.log.Warn("webhook delivery", "id", delivery, "err", err)
+			}
 		}
 	}()
 }
@@ -112,10 +127,9 @@ func (s *Server) fixRows() []fixRow {
 	for _, cp := range s.cat.Capabilities {
 		names[cp.ID] = cp.Name
 	}
-	now := time.Now()
 	var out []fixRow
 	for _, f := range v.rollup.Fixes {
-		row := fixRow{Fix: f, State: fixes.StateOf(f, now), Criterion: names[f.Capability], OpenedBy: f.OpenedBy}
+		row := fixRow{Fix: f, State: fixes.StateOf(f, v.at), Criterion: names[f.Capability], OpenedBy: f.OpenedBy}
 		if row.Criterion == "" {
 			row.Criterion = f.Capability
 		}
@@ -133,11 +147,8 @@ func (s *Server) fixRows() []fixRow {
 		}
 		for _, mv := range v.macs {
 			for _, cv := range mv.Configs {
-				comps := make([]string, 0, len(cv.Components))
-				for _, c := range cv.Components {
-					comps = append(comps, c.ID)
-				}
-				if !fixes.Covers(f, f.Capability, cv.ID, comps) {
+				// Standard components only, as on the configuration's own card.
+				if cfg := s.cfgs[cv.ID]; cfg == nil || !fixes.Covers(f, f.Capability, cv.ID, cfg.Components) {
 					continue
 				}
 				cs, applies := cv.Status.Caps[f.Capability]
@@ -179,24 +190,6 @@ func (s *Server) fixesPage(w http.ResponseWriter, r *http.Request) {
 			return rows[a].Fix.Issue > rows[b].Fix.Issue
 		})
 	}
-	repo := s.opt.FixRepo
-	if repo == "" {
-		repo = fixes.DefaultRepo
-	}
-	s.render(w, r, http.StatusOK, "fixes", page{Title: "Fixes", Nav: "fixes", Data: fixesPageData{Groups: order, Repo: repo},
+	s.render(w, r, http.StatusOK, "fixes", page{Title: "Fixes", Nav: "fixes", Data: fixesPageData{Groups: order, Repo: s.fixRepo()},
 		Description: "Fixes in progress for what doesn't work yet on Intel Macs running Omarchy. #WeCanFixEverything"})
-}
-
-// fixScopeName names what a fix covers, for people.
-func (s *Server) fixScopeName(component, config string) string {
-	if component != "" {
-		if comp := s.cat.Components[component]; comp != nil {
-			return comp.Name
-		}
-		return component
-	}
-	if cv := s.data().view.configs[config]; cv != nil {
-		return cv.ReleaseName + " · " + cv.Label
-	}
-	return config
 }

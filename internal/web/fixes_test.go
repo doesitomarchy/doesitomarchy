@@ -111,6 +111,10 @@ items:
 	if !strings.Contains(get(card), `href="https://github.com/doesitomarchy/wecanfixeverything/issues/1"`) {
 		t.Error("the card links the issue")
 	}
+	// Opening it again (a second click on a page from before): refused, no second issue.
+	if loc := post("/admin/fixes/open", url.Values{"capability": {"audio.speakers"}, "component": {"audio/cirrus-cs4208"}}); !strings.Contains(loc, "already+open") || len(gh.Issues) != 1 {
+		t.Fatalf("second open of the same fix: %s, %d issues", loc, len(gh.Issues))
+	}
 
 	// Webhook deliveries.
 	deliver := func(event, delivery, secret string, payload any) int {
@@ -144,14 +148,38 @@ items:
 		t.Errorf("assigned: %d", code)
 	}
 	waitFor(card, "Being worked on by <b>@helper</b>")
-	if code := deliver("issues", "d2", testSecret, map[string]any{"action": "assigned", "issue": is, "repository": repo}); code != 200 {
-		t.Errorf("a redelivery is a no-op: %d", code)
+	// Recorded once its sync finished, a redelivery is a no-op.
+	redelivered := 0
+	for i := 0; i < 100 && redelivered != 200; i++ {
+		redelivered = deliver("issues", "d2", testSecret, map[string]any{"action": "assigned", "issue": is, "repository": repo})
+		time.Sleep(10 * time.Millisecond)
 	}
+	if redelivered != 200 {
+		t.Errorf("a redelivery is a no-op: %d", redelivered)
+	}
+
+	// A delivery whose sync fails (GitHub is down) isn't recorded, so
+	// redelivering it from GitHub's settings retries it.
+	gh.Mu.Lock()
+	gh.Fail[1] = 502
+	is.Assignee, is.UpdatedAt = &fakegithub.User{Login: "second"}, time.Now().UTC()
+	gh.Mu.Unlock()
+	deliver("issues", "d2b", testSecret, map[string]any{"action": "assigned", "issue": is, "repository": repo})
+	time.Sleep(50 * time.Millisecond)
+	if code := deliver("issues", "d2b", testSecret, map[string]any{"action": "assigned", "issue": is, "repository": repo}); code != 202 {
+		t.Errorf("redelivery while its sync keeps failing: %d, want it handled again", code)
+	}
+	gh.Mu.Lock()
+	delete(gh.Fail, 1)
+	gh.Mu.Unlock()
+	deliver("issues", "d2b", testSecret, map[string]any{"action": "assigned", "issue": is, "repository": repo})
+	waitFor(card, "Being worked on by <b>@second</b>")
 
 	// It closes as completed by a commit: the card asks for a re-test.
 	gh.Mu.Lock()
 	now := time.Now().UTC()
-	is.State, is.StateReason, is.ClosedAt, is.UpdatedAt = "closed", "completed", &now, now
+	closedAt := now.Add(-2 * time.Hour)
+	is.State, is.StateReason, is.ClosedAt, is.UpdatedAt = "closed", "completed", &closedAt, now
 	gh.Timeline[1] = []map[string]any{{"event": "closed", "created_at": now, "commit_id": "abc123",
 		"commit_url": "https://api.github.com/repos/basecamp/omarchy/commits/abc123"}}
 	gh.Mu.Unlock()
@@ -180,6 +208,28 @@ items:
 		t.Error("the API shows the fix")
 	}
 
+	// A re-test an hour after the fix (the same day) still fails: no second
+	// re-test prompt, because the report is newer than the fix to the second.
+	f2, err := results.Parse([]byte(`schema: doesitomarchy/report/v1
+config: macbookpro11-3-15-late-2013-a
+tested_at: ` + now.Add(-time.Hour).Format(time.RFC3339) + `
+omarchy: { version: "4.0.4" }
+items:
+  audio.speakers: { status: failed, method: observed, evidence: "still silent after the fix" }
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r2, err := results.Validate(f2, c, time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	id2, _ := st.InsertResult(ctx, r2, nil, results.SchemaV1, "test")
+	if err := st.SetResultState(ctx, id2, store.Accepted, "", "test"); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(card, "but a later report still fails")
+
 	// A second failure, given up on: the issue opened for it closes as not planned.
 	loc = post("/admin/fixes/open", url.Values{"capability": {"audio.speakers"}, "config": {"macbookpro11-3-15-late-2013-a"}})
 	if !strings.Contains(loc, "%232") {
@@ -197,6 +247,44 @@ items:
 	}
 	if loc := post(lift[0], url.Values{}); !strings.Contains(loc, "lifted") {
 		t.Errorf("lift: %s", loc)
+	}
+
+	// Issue 1 is deleted on GitHub: the webhook says so and the site forgets it.
+	gh.Mu.Lock()
+	delete(gh.Issues, 1)
+	gh.Mu.Unlock()
+	deliver("issues", "d5", testSecret, map[string]any{"action": "deleted", "issue": is, "repository": repo})
+	for i := 0; i < 100; i++ {
+		if all, _ := st.Fixes(ctx); len(all) == 1 {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if all, _ := st.Fixes(ctx); len(all) != 1 || all[0].Issue != 2 {
+		t.Errorf("after deleting issue 1: %+v", all)
+	}
+}
+
+// A claim going stale changes what pages show without any data changing:
+// the snapshot expires then, and Refresh rebuilds it.
+func TestSnapshotExpires(t *testing.T) {
+	ctx := context.Background()
+	_, srv, _, _ := adminServer(t, Options{AdminInsecure: true})
+	cur := srv.data()
+	if !cur.current(cur.version, time.Now()) {
+		t.Fatal("a fresh snapshot without fixes is current")
+	}
+	expired := *cur
+	expired.expires = time.Now().Add(-time.Second)
+	srv.snap.Store(&expired)
+	if expired.current(expired.version, time.Now()) {
+		t.Error("an expired snapshot is current")
+	}
+	if changed, err := srv.Refresh(ctx); err != nil || !changed {
+		t.Errorf("Refresh after expiry: changed %v, %v", changed, err)
+	}
+	if changed, _ := srv.Refresh(ctx); changed {
+		t.Error("Refresh rebuilt a current snapshot")
 	}
 }
 

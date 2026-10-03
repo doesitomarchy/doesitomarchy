@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
-	"net/url"
 	"os"
 	"strconv"
 	"text/tabwriter"
@@ -13,7 +13,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
-	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/internal/web"
 )
 
 const fixesUsage = `doiomad fixes — fix issues in the fix repo (PLAN.md §26)
@@ -104,10 +104,10 @@ func cmdFixes(args []string, stdout, stderr io.Writer) int {
 			return fail(fmt.Errorf("GITHUB_TOKEN isn't set"))
 		}
 		n, err := (&fixes.Syncer{Client: gh, Store: st}).SyncAll(ctx)
+		fmt.Fprintf(stdout, "%d fix issues updated from GitHub\n", n)
 		if err != nil {
 			return fail(err)
 		}
-		fmt.Fprintf(stdout, "%d fix issues updated from GitHub\n", n)
 		return 0
 	}
 	// open
@@ -131,81 +131,20 @@ func cmdFixes(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err)
 	}
-	name := scopeName(c, *component, *config)
+	name := fixes.ScopeName(c, *component, *config)
 	f, err := fixes.OpenIssue(ctx, gh, st, cp.ID, cp.Name, fixes.Scope{Component: *component, Config: *config, Name: name},
-		affectedConfigs(c, ru, cp, *component, *config), actor())
+		fixes.AffectedConfigs(c, ru, cp.ID, *component, *config, web.BaseURL), actor())
+	var open *fixes.AlreadyOpenError
+	if errors.As(err, &open) {
+		if _, serr := (&fixes.Syncer{Client: gh, Store: st}).SyncIssue(ctx, open.Issue.Number); serr != nil {
+			fmt.Fprintf(stderr, "fixes open: reading issue #%d: %v\n", open.Issue.Number, serr)
+		}
+	}
 	if err != nil {
 		return fail(err)
 	}
 	fmt.Fprintf(stdout, "opened issue #%d: %s\n%s\n", f.Issue, f.Title, f.URL)
 	return 0
-}
-
-// scopeName names a component or configuration for people.
-func scopeName(c *catalog.Catalog, component, config string) string {
-	if component != "" {
-		if comp := c.Components[component]; comp != nil {
-			return comp.Name
-		}
-		return component
-	}
-	for _, m := range c.Macs {
-		for _, r := range m.Releases {
-			for _, cfg := range r.Configs {
-				if cfg.ID == config {
-					return r.Name + " · " + cfg.Label
-				}
-			}
-		}
-	}
-	return config
-}
-
-// affectedConfigs lists the configurations a fix covers, for the issue's
-// body, marking those whose latest accepted result for the criterion failed.
-func affectedConfigs(c *catalog.Catalog, ru *store.Rollup, cp catalog.Capability, component, config string) []fixes.Affected {
-	fx := store.Fix{Capability: cp.ID, Component: component, Config: config}
-	var out []fixes.Affected
-	for _, m := range c.Macs {
-		for _, r := range m.Releases {
-			for ci := range r.Configs {
-				cfg := &r.Configs[ci]
-				if !fixes.Covers(fx, cp.ID, cfg.ID, cfg.Components) {
-					continue
-				}
-				applies := false
-				for _, x := range c.Applicable(m, cfg) {
-					applies = applies || x.ID == cp.ID
-				}
-				if !applies {
-					continue
-				}
-				a := fixes.Affected{ConfigID: cfg.ID, Name: m.Identifier + " · " + r.Name + " · " + cfg.Label,
-					URL: "https://doesitomarchy.com/mac/" + url.PathEscape(catalog.FileSlug(m.Identifier)) + "#cfg-" + cfg.ID}
-				var latest *int
-				for i, it := range ru.Items[cfg.ID] {
-					if it.Capability == cp.ID && (latest == nil || it.TestedAt > ru.Items[cfg.ID][*latest].TestedAt) {
-						j := i
-						latest = &j
-					}
-				}
-				if latest != nil {
-					it := ru.Items[cfg.ID][*latest]
-					a.Failed = it.Verdict == "failed" || it.Verdict == "partial"
-					if a.Failed {
-						a.Evidence = it.Evidence
-						for _, rs := range ru.Accepted[cfg.ID] {
-							if rs.ID == it.ResultID {
-								a.Report = "https://doesitomarchy.com/report/" + rs.Code
-							}
-						}
-					}
-				}
-				out = append(out, a)
-			}
-		}
-	}
-	return out
 }
 
 func cmdUnsupported(args []string, stdout, stderr io.Writer) int {
@@ -278,17 +217,12 @@ func cmdUnsupported(args []string, stdout, stderr io.Writer) int {
 	}
 	fmt.Fprintf(stdout, "%s marked Unsupported\n", pos[0])
 	if gh := ghClient(); gh != nil {
-		all, err := st.Fixes(ctx)
+		closed, err := fixes.GiveUpAll(ctx, &fixes.Syncer{Client: gh, Store: st}, pos[0], *component, *config, *reason, who)
+		for _, n := range closed {
+			fmt.Fprintf(stdout, "issue #%d closed as not planned, with the reason\n", n)
+		}
 		if err != nil {
 			return fail(err)
-		}
-		for _, f := range all {
-			if f.Capability == pos[0] && f.Component == *component && f.Config == *config && f.Open {
-				if err := fixes.GiveUp(ctx, gh, f.Issue, *reason, who); err != nil {
-					return fail(fmt.Errorf("closing issue #%d: %w", f.Issue, err))
-				}
-				fmt.Fprintf(stdout, "issue #%d closed as not planned, with the reason\n", f.Issue)
-			}
 		}
 	}
 	return 0

@@ -54,20 +54,6 @@ func (s *Server) adminFixRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/unsupported/{id}/clear", s.admin(s.adminUnsupportedClear))
 }
 
-// catalogConfigs maps config IDs to their catalog entries.
-func (s *Server) catalogConfig(id string) (*catalog.Mac, *catalog.Config) {
-	for _, m := range s.cat.Macs {
-		for ri := range m.Releases {
-			for ci := range m.Releases[ri].Configs {
-				if cfg := &m.Releases[ri].Configs[ci]; cfg.ID == id {
-					return m, cfg
-				}
-			}
-		}
-	}
-	return nil, nil
-}
-
 // failures lists failing criteria with no fix in progress or landed,
 // grouped by what one fix would cover.
 func (s *Server) failures() []failure {
@@ -79,12 +65,12 @@ func (s *Server) failures() []failure {
 	for _, cp := range s.cat.Capabilities {
 		caps[cp.ID] = cp
 	}
-	now := time.Now()
+	now := v.at
 	byKey := map[string]*failure{}
 	var keys []string
 	for _, mv := range v.macs {
 		for _, cv := range mv.Configs {
-			_, cfg := s.catalogConfig(cv.ID)
+			cfg := s.cfgs[cv.ID]
 			if cfg == nil {
 				continue
 			}
@@ -107,7 +93,7 @@ func (s *Server) failures() []failure {
 					if comp == "" {
 						fl.Config = cv.ID
 					}
-					fl.Scope = s.fixScopeName(fl.Component, fl.Config)
+					fl.Scope = fixes.ScopeName(s.cat, fl.Component, fl.Config)
 					for i := range v.rollup.Fixes {
 						if f := v.rollup.Fixes[i]; f.Capability == capID && f.Component == comp && f.Config == fl.Config && fixes.StateOf(f, now) == fixes.NotPlanned {
 							fl.Closed = &f
@@ -149,7 +135,7 @@ func (s *Server) adminFixes(w http.ResponseWriter, r *http.Request, who string) 
 		names[cp.ID] = cp.Name
 	}
 	for _, u := range us {
-		d.Unsupported = append(d.Unsupported, unsupportedRow{u, names[u.Capability], s.fixScopeName(u.Component, u.Config)})
+		d.Unsupported = append(d.Unsupported, unsupportedRow{u, names[u.Capability], fixes.ScopeName(s.cat, u.Component, u.Config)})
 	}
 	s.render(w, r, http.StatusOK, "admin-fixes", page{Title: "Fixes", Data: d})
 }
@@ -171,38 +157,6 @@ func (s *Server) fixesBack(w http.ResponseWriter, r *http.Request, done string, 
 	http.Redirect(w, r, "/admin/fixes?"+q.Encode(), http.StatusSeeOther)
 }
 
-// affected lists the configurations a fix would cover, from the current
-// snapshot: those failing first, with their latest report.
-func (s *Server) affected(capability, component, config string) []fixes.Affected {
-	v := s.data().view
-	var out []fixes.Affected
-	for _, mv := range v.macs {
-		for _, cv := range mv.Configs {
-			_, cfg := s.catalogConfig(cv.ID)
-			if cfg == nil || !fixes.Covers(store.Fix{Capability: capability, Component: component, Config: config}, capability, cv.ID, cfg.Components) {
-				continue
-			}
-			cs, applies := cv.Status.Caps[capability]
-			if !applies {
-				continue
-			}
-			a := fixes.Affected{ConfigID: cv.ID, Name: mv.Identifier + " · " + cv.ReleaseName + " · " + cv.Label,
-				URL:    BaseURL + "/mac/" + url.PathEscape(mv.Slug) + "#cfg-" + cv.ID,
-				Failed: cs.Verdict == "failed" || cs.Verdict == "partial"}
-			if a.Failed && cs.Latest != nil {
-				a.Evidence = cs.Latest.Evidence
-				for _, rs := range cv.Results {
-					if rs.ID == cs.Latest.ResultID {
-						a.Report = BaseURL + "/report/" + rs.Code
-					}
-				}
-			}
-			out = append(out, a)
-		}
-	}
-	return out
-}
-
 func (s *Server) adminFixOpen(w http.ResponseWriter, r *http.Request, who string) {
 	if s.gh == nil {
 		s.fixesBack(w, r, "", errors.New("GITHUB_TOKEN isn't set on the server, so issues can't be opened from here"))
@@ -221,13 +175,23 @@ func (s *Server) adminFixOpen(w http.ResponseWriter, r *http.Request, who string
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), time.Minute)
 	defer cancel()
-	f, err := fixes.OpenIssue(ctx, s.gh, s.store, capability, name, fixes.Scope{Component: component, Config: config, Name: s.fixScopeName(component, config)},
-		s.affected(capability, component, config), who)
+	affected := fixes.AffectedConfigs(s.cat, s.data().view.rollup, capability, component, config, BaseURL)
+	f, err := fixes.OpenIssue(ctx, s.gh, s.store, capability, name, fixes.Scope{Component: component, Config: config,
+		Name: fixes.ScopeName(s.cat, component, config)}, affected, who)
+	var open *fixes.AlreadyOpenError
+	if errors.As(err, &open) && s.syncer != nil {
+		// Someone got there first (another tab, maintainer or the CLI): make
+		// sure the site knows that issue, rather than open a second one.
+		if _, serr := s.syncer.SyncIssue(ctx, open.Issue.Number); serr != nil {
+			s.log.Warn("sync existing fix issue", "issue", open.Issue.Number, "err", serr)
+		}
+		s.refreshNow(ctx)
+	}
 	if err != nil {
 		s.fixesBack(w, r, "", err)
 		return
 	}
-	s.refreshSoon()
+	s.refreshNow(ctx)
 	s.fixesBack(w, r, "opened issue #"+strconv.Itoa(f.Issue), nil)
 }
 
@@ -239,7 +203,7 @@ func (s *Server) adminFixSync(w http.ResponseWriter, r *http.Request, who string
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
 	defer cancel()
 	n, err := s.syncer.SyncAll(ctx)
-	s.refreshSoon()
+	s.refreshNow(ctx)
 	s.fixesBack(w, r, strconv.Itoa(n)+" fixes updated from GitHub", err)
 }
 
@@ -253,26 +217,18 @@ func (s *Server) adminUnsupportedSet(w http.ResponseWriter, r *http.Request, who
 	}
 	// Close any fix issue for it, with the reason (PLAN §26).
 	msg := "marked Unsupported"
-	if s.gh != nil {
-		all, err := s.store.Fixes(ctx) // not the snapshot: an issue opened a moment ago counts
+	if s.syncer != nil {
+		closed, err := fixes.GiveUpAll(ctx, s.syncer, capability, component, config, reason, who)
+		for _, n := range closed {
+			msg += "; issue #" + strconv.Itoa(n) + " closed as not planned"
+		}
 		if err != nil {
-			s.fixesBack(w, r, "", err)
+			s.refreshNow(ctx)
+			s.fixesBack(w, r, "", errors.New(msg+", but "+err.Error()))
 			return
 		}
-		for _, f := range all {
-			if f.Capability == capability && f.Component == component && f.Config == config && f.Open {
-				if err := fixes.GiveUp(ctx, s.gh, f.Issue, reason, who); err != nil {
-					s.fixesBack(w, r, "", errors.New("marked Unsupported, but closing issue #"+strconv.Itoa(f.Issue)+" failed: "+err.Error()))
-					return
-				}
-				if s.syncer != nil {
-					s.syncer.SyncIssue(ctx, f.Issue)
-				}
-				msg += "; issue #" + strconv.Itoa(f.Issue) + " closed as not planned"
-			}
-		}
 	}
-	s.refreshSoon()
+	s.refreshNow(ctx)
 	s.fixesBack(w, r, msg, nil)
 }
 
@@ -283,15 +239,18 @@ func (s *Server) adminUnsupportedClear(w http.ResponseWriter, r *http.Request, w
 		return
 	}
 	err = s.store.ClearUnsupported(r.Context(), id, who)
-	s.refreshSoon()
+	s.refreshNow(r.Context())
 	s.fixesBack(w, r, "Unsupported lifted", err)
 }
 
-// refreshSoon rebuilds the site now rather than at the watcher's next tick.
-func (s *Server) refreshSoon() {
-	go func() {
-		if changed, err := s.Refresh(context.Background()); err == nil && changed {
-			s.purge.schedule()
-		}
-	}()
+// refreshNow rebuilds the site before an /admin action redirects, rather
+// than at the watcher's next tick, so the page it lands on is current.
+func (s *Server) refreshNow(ctx context.Context) {
+	changed, err := s.Refresh(ctx)
+	if err != nil {
+		s.log.Warn("rebuild", "err", err)
+	}
+	if changed {
+		s.purge.schedule()
+	}
 }

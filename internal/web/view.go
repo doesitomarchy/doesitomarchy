@@ -1,8 +1,6 @@
 package web
 
 import (
-	"time"
-
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -10,10 +8,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
+	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -221,15 +219,6 @@ type capPort struct {
 	Suspect   bool   // failed while a group-mate passed: possibly a damaged port
 }
 
-// statusGroups converts the catalog's port groups for the status engine.
-func statusGroups(gs []catalog.PortGroup) []status.Group {
-	var out []status.Group
-	for _, g := range gs {
-		out = append(out, status.Group{ID: g.ID, Connectors: g.Connectors})
-	}
-	return out
-}
-
 // fixView is a fix issue as a criterion row shows it.
 type fixView struct {
 	Issue                  int
@@ -321,6 +310,7 @@ type catalogView struct {
 	components []componentUse
 	states     search.States
 	rollup     *store.Rollup
+	at         time.Time // when it was built: time-dependent states (a stale claim) are as of then
 }
 
 // componentUse is one component and the configs that use it (/components).
@@ -331,30 +321,18 @@ type componentUse struct {
 	Macs                                           []*macView
 }
 
-func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup) *catalogView {
+func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup, now time.Time) *catalogView {
 	if ru == nil {
 		ru = &store.Rollup{}
 	}
-	v := &catalogView{bySlug: map[string]*macView{}, configs: map[string]*configView{}, states: search.States{}, rollup: ru}
+	v := &catalogView{bySlug: map[string]*macView{}, configs: map[string]*configView{}, states: search.States{}, rollup: ru, at: now}
 	var statuses []status.ConfigStatus
 	lineStats := map[string]*lineStat{}
-	cats := map[string]catalog.Category{}
-	for _, k := range c.Categories {
-		cats[k.ID] = k
-	}
 	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) status.ConfigStatus {
-		caps := make([]status.Capability, len(applicable))
-		groups := c.CriterionGroups(m, cfg)
-		for i, cp := range applicable {
-			k := cats[cp.Category()]
-			caps[i] = status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking, Groups: statusGroups(groups[cp.ID])}
-		}
-		return status.Config(status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Caps: caps,
-			Items: ru.Items[cfg.ID], Unsupported: ru.Unsupported[cfg.ID], Results: ru.Results[cfg.ID],
-			LatestResult: ru.Latest[cfg.ID], CurrentMajor: ru.CurrentMajor})
+		return status.Config(ru.StatusInput(c, m, cfg, excl, applicable))
 	}
 	for _, m := range c.Macs {
-		mv := buildMac(c, m, stateOf, ru)
+		mv := buildMac(c, m, stateOf, ru, now)
 		v.macs = append(v.macs, mv)
 		v.bySlug[strings.ToLower(mv.Slug)] = mv
 		ls := lineStats[m.Line]
@@ -468,7 +446,7 @@ func machineIcon(m *catalog.Mac) string {
 
 type stateFunc func(*catalog.Mac, *catalog.Config, string, []catalog.Capability) status.ConfigStatus
 
-func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.Rollup) *macView {
+func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.Rollup, now time.Time) *macView {
 	mv := &macView{
 		Identifier: m.Identifier, Slug: catalog.FileSlug(m.Identifier), LineKey: m.Line, LineName: c.Vocab.Lines[m.Line].Name,
 		EFI: m.EFI, HardBlocker: m.HardBlocker, ResearchNotes: m.ResearchNotes, BoardIDs: m.BoardIDs, Sources: m.Sources,
@@ -494,7 +472,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 		excl := c.CoverageExclusion(m, r)
 		for ci := range r.Configs {
 			cfg := &r.Configs[ci]
-			cv := buildConfig(c, m, r, cfg, excl, stateOf, ru)
+			cv := buildConfig(c, m, r, cfg, excl, stateOf, ru, now)
 			cv.Mac = mv
 			cv.Results = ru.Accepted[cfg.ID]
 			for i := range cv.Results {
@@ -560,7 +538,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 	return mv
 }
 
-func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup) *configView {
+func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup, now time.Time) *configView {
 	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
 		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl}
 	for _, p := range cfg.CPU.Standard {
@@ -682,8 +660,9 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 			}
 		}
 		if ru != nil && (x.Verdict == status.Failed || x.Verdict == status.Partial) {
-			if f, st, ok := fixes.Best(ru.Fixes, cp.ID, cfg.ID, cfg.Components, time.Now()); ok {
+			if f, st, ok := fixes.Best(ru.Fixes, cp.ID, cfg.ID, cfg.Components, now); ok {
 				x.Fix = newFixView(f, st)
+				// Both RFC 3339 UTC, so they compare as strings, to the second.
 				x.Fix.Retest = st == fixes.Fixed && f.ClosedAt > x.Date
 			}
 		}

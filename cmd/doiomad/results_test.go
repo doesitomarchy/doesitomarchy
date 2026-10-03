@@ -226,6 +226,7 @@ func TestFixesCLI(t *testing.T) {
 	}{
 		{[]string{"fixes", "list"}, 0, "no fix issues"},
 		{[]string{"fixes", "open", "audio.speakers", "-component", "audio/cirrus-cs4208"}, 0, "opened issue #1: Built-in speakers on Cirrus Logic CS4208"},
+		{[]string{"fixes", "open", "audio.speakers", "-component", "audio/cirrus-cs4208"}, 1, "issue #1 is already open for this"},
 		{[]string{"fixes", "open", "audio.kazoo", "-component", "audio/cirrus-cs4208"}, 1, "unknown criterion"},
 		{[]string{"fixes", "open", "audio.speakers"}, 1, "give -component ID or -config ID"},
 		{[]string{"fixes", "list"}, 0, "#1     open"},

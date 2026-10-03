@@ -104,7 +104,7 @@ type Item struct {
 	Verdict    Verdict // Supported, Partial or Failed
 	Method     string  // automatic | observed | fixture
 	Omarchy    Version
-	TestedAt   string // YYYY-MM-DD
+	TestedAt   string // RFC 3339, UTC (so later timestamps sort later as strings)
 	ResultID   int64
 	Evidence   string // why it failed, as reported
 }

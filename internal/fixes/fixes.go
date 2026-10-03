@@ -31,18 +31,27 @@ const (
 	Proposed   State = "proposed"    // a fix is proposed (label or open linked pull request)
 	Fixed      State = "fixed"       // closed as completed
 	NotPlanned State = "not-planned" // closed as not planned: no fix (shown in /admin only)
+	Duplicate  State = "duplicate"   // closed as a duplicate: another issue tracks the fix (ignored)
 )
 
 // StaleAfter is how long a claim lasts without activity (PLAN §20.1).
 const StaleAfter = 60 * 24 * time.Hour
 
+// closedFixed reports whether an issue closed with this reason means the fix
+// landed. GitHub's reasons are completed, not_planned and duplicate; issues
+// closed before reasons existed have none, and count as completed.
+func closedFixed(reason string) bool { return reason == "completed" || reason == "" }
+
 // StateOf derives a fix's state at a time.
 func StateOf(f store.Fix, now time.Time) State {
 	if !f.Open {
-		if f.StateReason == "not_planned" {
-			return NotPlanned
+		switch {
+		case closedFixed(f.StateReason):
+			return Fixed
+		case f.StateReason == "duplicate":
+			return Duplicate
 		}
-		return Fixed
+		return NotPlanned
 	}
 	if f.Proposed {
 		return Proposed
@@ -69,6 +78,8 @@ func (s State) Label() string {
 		return "Fixed"
 	case NotPlanned:
 		return "Closed without a fix"
+	case Duplicate:
+		return "Closed as a duplicate"
 	default:
 		return "Open"
 	}
@@ -126,7 +137,7 @@ func FromIssue(is Issue, timeline []Event, repo string) (f store.Fix, ok bool) {
 	f.LastActivity = last.UTC().Format(time.RFC3339)
 	if !f.Open {
 		f.Proposed = false
-		if f.StateReason != "not_planned" {
+		if closedFixed(f.StateReason) {
 			f.FixLink = closingCommit
 			if f.FixLink == "" {
 				f.FixLink = mergedPR
@@ -167,7 +178,7 @@ func Covers(f store.Fix, capability, configID string, components []string) bool 
 
 // Best picks the fix to show for a criterion on a configuration: one still
 // in progress before a fixed one, and the newest of those; never one closed
-// as not planned.
+// as not planned or as a duplicate.
 func Best(all []store.Fix, capability, configID string, components []string, now time.Time) (store.Fix, State, bool) {
 	rank := map[State]int{Proposed: 5, Claimed: 4, Open: 3, Stale: 3, Fixed: 2}
 	var best store.Fix
@@ -186,6 +197,26 @@ func Best(all []store.Fix, capability, configID string, components []string, now
 		}
 	}
 	return best, bestState, found
+}
+
+// NextChange is when the first fix's state changes by time alone (a claim
+// going stale), after now; zero if none will. The site rebuilds then, so
+// every page shows the same state.
+func NextChange(all []store.Fix, now time.Time) time.Time {
+	var next time.Time
+	for _, f := range all {
+		if !f.Open || f.Proposed || f.Assignee == "" {
+			continue
+		}
+		last, err := time.Parse(time.RFC3339, f.LastActivity)
+		if err != nil {
+			continue
+		}
+		if at := last.Add(StaleAfter); at.After(now) && (next.IsZero() || at.Before(next)) {
+			next = at
+		}
+	}
+	return next
 }
 
 // Affected is one configuration a fix would cover, for the issue's body.

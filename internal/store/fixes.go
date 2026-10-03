@@ -15,7 +15,7 @@ type Fix struct {
 	Config       string // …or just this configuration
 	Title, URL   string
 	Open         bool
-	StateReason  string // completed | not_planned | reopened
+	StateReason  string // completed | not_planned | duplicate | reopened
 	Assignee     string
 	Proposed     bool
 	LastActivity string // RFC 3339, UTC
@@ -40,6 +40,10 @@ func scanFix(row interface{ Scan(...any) error }) (Fix, error) {
 // UpsertFix stores an issue's current state. It keeps opened_by from an
 // earlier insert, and bumps the data version when what the site shows
 // changes, so running servers rebuild. changed reports whether it did.
+//
+// A copy older than the stored one (its last activity is earlier) is
+// ignored: GitHub moves an issue's updated_at forward on every change, so
+// a fetch that finishes late can't overwrite newer state.
 func (s *Store) UpsertFix(ctx context.Context, f Fix) (changed bool, err error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -61,7 +65,7 @@ func (s *Store) UpsertFix(ctx context.Context, f Fix) (changed bool, err error) 
 			f.OpenedBy = prev.OpenedBy
 		}
 		if f.LastActivity < prev.LastActivity {
-			f.LastActivity = prev.LastActivity
+			return false, tx.Rollback()
 		}
 		if f.FixLink == "" && !f.Open {
 			f.FixLink = prev.FixLink
@@ -89,23 +93,26 @@ func (s *Store) UpsertFix(ctx context.Context, f Fix) (changed bool, err error) 
 	return changed, tx.Commit()
 }
 
-// RemoveFix forgets an issue that no longer carries a criterion: label.
-func (s *Store) RemoveFix(ctx context.Context, issue int) error {
+// RemoveFix forgets an issue: it no longer carries a criterion: label, or
+// it was deleted or moved to another repo. removed reports whether the site
+// had it.
+func (s *Store) RemoveFix(ctx context.Context, issue int) (removed bool, err error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return false, err
 	}
 	res, err := tx.ExecContext(ctx, "DELETE FROM fixes WHERE issue = ?", issue)
 	if err == nil {
 		if n, _ := res.RowsAffected(); n > 0 {
+			removed = true
 			err = bumpDataVersion(ctx, tx)
 		}
 	}
 	if err != nil {
 		tx.Rollback()
-		return err
+		return false, err
 	}
-	return tx.Commit()
+	return removed, tx.Commit()
 }
 
 // Fixes lists every tracked issue, newest first.
@@ -126,19 +133,23 @@ func (s *Store) Fixes(ctx context.Context) ([]Fix, error) {
 	return out, rows.Err()
 }
 
-// SeenDelivery records a webhook delivery ID and reports whether it was
-// already handled. IDs older than a week are forgotten.
-func (s *Store) SeenDelivery(ctx context.Context, id string) (bool, error) {
+// DeliveryHandled reports whether a webhook delivery ID was already handled.
+// IDs older than a week are forgotten.
+func (s *Store) DeliveryHandled(ctx context.Context, id string) (bool, error) {
 	cutoff := time.Now().UTC().Add(-7 * 24 * time.Hour).Format(time.RFC3339)
 	if _, err := s.db.ExecContext(ctx, "DELETE FROM fix_deliveries WHERE received_at < ?", cutoff); err != nil {
 		return false, err
 	}
-	res, err := s.db.ExecContext(ctx, "INSERT INTO fix_deliveries (id, received_at) VALUES (?, ?) ON CONFLICT (id) DO NOTHING", id, now())
-	if err != nil {
-		return false, err
-	}
-	n, _ := res.RowsAffected()
-	return n == 0, nil
+	var n int
+	err := s.db.QueryRowContext(ctx, "SELECT count(*) FROM fix_deliveries WHERE id = ?", id).Scan(&n)
+	return n > 0, err
+}
+
+// RecordDelivery marks a webhook delivery handled, once its work succeeded:
+// a delivery whose sync failed stays unrecorded, so redelivering it retries.
+func (s *Store) RecordDelivery(ctx context.Context, id string) error {
+	_, err := s.db.ExecContext(ctx, "INSERT INTO fix_deliveries (id, received_at) VALUES (?, ?) ON CONFLICT (id) DO NOTHING", id, now())
+	return err
 }
 
 // Unsupported is a maintainer's white flag on a criterion (PLAN §20.1).
