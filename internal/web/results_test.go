@@ -6,13 +6,13 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/doesitomarchy/doesitomarchy/data"
+	"github.com/doesitomarchy/doesitomarchy/internal/testdb"
+
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -23,19 +23,7 @@ func liveServer(t *testing.T) (*httptest.Server, *store.Store, *catalog.Catalog)
 	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
-	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "w.db"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { st.Close() })
-	c, err := catalog.LoadFS(data.FS)
-	if err != nil {
-		t.Fatal(err)
-	}
-	h, _ := catalog.HashFS(data.FS)
-	if _, err := st.SyncCatalog(ctx, c, h); err != nil {
-		t.Fatal(err)
-	}
+	st, c := testdb.Open(t)
 	srv, err := New(st, c, slog.New(slog.NewTextHandler(io.Discard, nil)), Options{Version: "test"})
 	if err != nil {
 		t.Fatal(err)

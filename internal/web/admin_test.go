@@ -14,13 +14,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/doesitomarchy/doesitomarchy/data"
+	"github.com/doesitomarchy/doesitomarchy/internal/testdb"
+
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -71,14 +71,7 @@ func adminServer(t *testing.T, opt Options) (*httptest.Server, *Server, *store.S
 	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
-	st, err := store.Open(ctx, filepath.Join(t.TempDir(), "a.db"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { st.Close() })
-	c, _ := catalog.LoadFS(data.FS)
-	h, _ := catalog.HashFS(data.FS)
-	st.SyncCatalog(ctx, c, h)
+	st, c := testdb.Open(t)
 	opt.Version = "test"
 	srv, err := New(st, c, slog.New(slog.NewTextHandler(io.Discard, nil)), opt)
 	if err != nil {
