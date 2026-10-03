@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/doesitomarchy/doesitomarchy/internal/testdb"
+
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
@@ -16,7 +18,7 @@ import (
 // accept, show, refused moves, retract, and validation errors. Reports are
 // named by their code; their number works too.
 func TestReportsCLI(t *testing.T) {
-	db := filepath.Join(t.TempDir(), "r.db")
+	db := testdb.Path(t) // a copy of a database with the catalog already synced
 	fixture := filepath.Join("..", "..", "internal", "results", "fixtures", "mbp152-synthetic.yaml")
 	t.Setenv("SUDO_USER", "carl")
 	run := func(args ...string) (int, string) {
@@ -83,7 +85,7 @@ func TestReportsCLI(t *testing.T) {
 // Sources, maintainers, and accepting an ambiguous report with -config.
 func TestSourcesCLI(t *testing.T) {
 	dir := t.TempDir()
-	db := filepath.Join(dir, "s.db")
+	db := testdb.Path(t) // a copy of a database with the catalog already synced
 	t.Setenv("SUDO_USER", "carl")
 	run := func(args ...string) (int, string) {
 		t.Helper()
@@ -147,7 +149,7 @@ items: { boot.install: { status: supported, method: observed } }
 }
 
 func TestSharesCLI(t *testing.T) {
-	db := filepath.Join(t.TempDir(), "sh.db")
+	db := testdb.Path(t) // a copy of a database with the catalog already synced
 	t.Setenv("SUDO_USER", "carl")
 	run := func(args ...string) (int, string) {
 		t.Helper()
@@ -187,7 +189,7 @@ func TestSharesCLI(t *testing.T) {
 }
 
 func TestImportOmacDiag(t *testing.T) {
-	db := filepath.Join(t.TempDir(), "o.db")
+	db := testdb.Path(t) // a copy of a database with the catalog already synced
 	t.Setenv("SUDO_USER", "carl")
 	var out, errb bytes.Buffer
 	fixture := "../../internal/results/fixtures/omacdiag-mbp113.json"

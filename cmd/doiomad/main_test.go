@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/doesitomarchy/doesitomarchy/internal/testdb"
 )
 
 func TestRun(t *testing.T) {
@@ -51,4 +53,10 @@ func TestRun(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testdb.Cleanup()
+	os.Exit(code)
 }

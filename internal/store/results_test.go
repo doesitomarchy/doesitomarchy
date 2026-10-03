@@ -4,23 +4,84 @@ import (
 	"context"
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 )
 
 // synced opens a temp store with the embedded catalog synced into it.
+// The synced template: the catalog is synced once per test binary into a
+// file that each test copies (internal/testdb does the same for the other
+// packages; it can't be used here without an import cycle).
+var (
+	templateOnce sync.Once
+	templateDir  string
+	templateCat  *catalog.Catalog
+	templateErr  error
+)
+
+// synced returns a store on a fresh copy of a database with the embedded
+// catalog synced, and that catalog (shared: treat it as read-only).
 func synced(t *testing.T) (*Store, *catalog.Catalog) {
 	t.Helper()
-	st := openTemp(t)
-	c, h := embedded(t)
-	if _, err := st.SyncCatalog(context.Background(), c, h); err != nil {
+	templateOnce.Do(func() {
+		c, err := catalog.LoadFS(data.FS)
+		if err != nil {
+			templateErr = err
+			return
+		}
+		h, err := catalog.HashFS(data.FS)
+		if err != nil {
+			templateErr = err
+			return
+		}
+		if templateDir, templateErr = os.MkdirTemp("", "doiomad-store-test-"); templateErr != nil {
+			return
+		}
+		st, err := Open(context.Background(), filepath.Join(templateDir, "template.db"))
+		if err != nil {
+			templateErr = err
+			return
+		}
+		if _, err := st.SyncCatalog(context.Background(), c, h); err != nil {
+			templateErr = err
+		}
+		if err := st.Close(); err != nil && templateErr == nil {
+			templateErr = err
+		}
+		templateCat = c
+	})
+	if templateErr != nil {
+		t.Fatal(templateErr)
+	}
+	b, err := os.ReadFile(filepath.Join(templateDir, "template.db"))
+	if err != nil {
 		t.Fatal(err)
 	}
-	return st, c
+	path := filepath.Join(t.TempDir(), "t.db")
+	if err := os.WriteFile(path, b, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	st, err := Open(context.Background(), path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	return st, templateCat
+}
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	if templateDir != "" {
+		os.RemoveAll(templateDir)
+	}
+	os.Exit(code)
 }
 
 func fixture(t *testing.T, c *catalog.Catalog) (*results.Result, []byte) {
