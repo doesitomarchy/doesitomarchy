@@ -93,7 +93,7 @@ func TestValidateErrors(t *testing.T) {
 		{"pre-Omarchy date", strings.Replace(valid(), "2026-10-01T12:00:00Z", "2019-05-01T00:00:00Z", 1), []string{"before Omarchy"}},
 		{"bad version", strings.Replace(valid(), `"4.0.4"`, `"four"`, 1), []string{"omarchy.version"}},
 		{"unknown capability", valid() + "  audio.kazoo: { status: supported, method: observed }\n", []string{"items.audio.kazoo", "unknown capability"}},
-		{"per-connector item", valid() + "  ports.usb-c@left-1: { status: supported, method: fixture }\n", []string{"per-connector"}},
+		{"unknown connector", valid() + "  ports.usb-c@left-9: { status: supported, method: fixture }\n", []string{"items.ports.usb-c@left-9"}},
 		{"bad status", valid() + "  audio.speakers: { status: works, method: observed }\n", []string{"items.audio.speakers.status"}},
 		{"missing method", valid() + "  audio.speakers: { status: failed }\n", []string{"items.audio.speakers.method", "required"}},
 		{"reason on a tested item", valid() + "  audio.speakers: { status: failed, method: observed, reason: uncertain }\n", []string{"only not_tested"}},

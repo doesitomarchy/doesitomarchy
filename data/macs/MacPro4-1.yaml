@@ -36,7 +36,7 @@ releases:
         storage: { interface: sata, standard: ["640 GB HDD"], bto: ["1 TB HDD", "2 TB HDD"] }
         components: [gpu/nvidia-geforce-gt-120, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
         bto_components: [wifi/broadcom-bcm4322]
-        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 1, dvi: 1 }
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1, mini-displayport: 1, dvi: 1 }
         features: [builtin-speaker, fan, optical-drive]
         notes: "Dual-processor models use Gainestown (Xeon 5500) CPUs."
       - id: macpro4-1-early-2009-hd4870
@@ -49,5 +49,5 @@ releases:
         storage: { interface: sata, standard: ["640 GB HDD"], bto: ["1 TB HDD", "2 TB HDD"] }
         components: [gpu/ati-radeon-hd-4870, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
         bto_components: [wifi/broadcom-bcm4322]
-        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, mini-displayport: 1, dvi: 1 }
+        ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1, mini-displayport: 1, dvi: 1 }
         features: [builtin-speaker, fan, optical-drive]

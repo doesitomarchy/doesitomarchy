@@ -2,6 +2,15 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-03"
+  title: Port layouts
+  summary: "Physical port layouts for 140 of the 154 Intel Mac releases, read from Apple's own manuals (and, for the Mid 2007 15-inch MacBook Pro, from a real machine): every connector by side and position, with the ports that share a controller grouped, so one test covers each group."
+  notes:
+    - "Connectors are named by side and numbered left to right as you face that side (top to bottom on a Mac Pro), e.g. left-2 or back-5."
+    - "Every layout adds up exactly to the configuration's ports. That check found a mistake: Mac Pros from 2006 to 2013 have two analog audio outputs (a headphone jack and a line out), not one."
+    - "Ports that share a controller form a group, and one passing port covers its group. The exceptions to one group per port type are the Macs with two Thunderbolt 3 controllers (12 releases), found from Linux hardware probes."
+    - "Not yet laid out: the other 2006–2007 MacBook, MacBook Air and MacBook Pro models and 2006–2007 Mac Pros (no manual on Apple's site), Xserve, the 2013 Mac Pro (its guide shows the ports without labels) and the 2019 Mac Pro (its ports depend on the modules fitted)."
+
 - date: "2026-09-30"
   title: MacBook Pro
   summary: "All 41 Intel MacBook Pro identifiers (2006–2020), 55 releases and 57 configurations, split by graphics chip and screen size."

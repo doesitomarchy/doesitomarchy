@@ -9,11 +9,12 @@ import (
 )
 
 // HashFS fingerprints the catalog files the loader reads (vocabulary,
-// capabilities, lock, coverage, aliases, components, macs), so a sync can skip an unchanged catalog.
-// Other files under data/ (README, LICENSE, embed.go) don't affect it.
+// capabilities, lock, coverage, aliases, changelog, components, macs, port
+// layouts), so a sync can skip an unchanged catalog. Other files under data/
+// (README, LICENSE, embed.go, the test tools' sources/ mappings) don't affect it.
 func HashFS(fsys fs.FS) (string, error) {
 	names := []string{"vocabulary.yaml", "capabilities.yaml", LockFile, "coverage.yaml", "aliases.yaml", "changelog.yaml"}
-	for _, pat := range []string{"components/*.yaml", "macs/*.yaml"} {
+	for _, pat := range []string{"components/*.yaml", "macs/*.yaml", "layouts/*.yaml"} {
 		m, err := fs.Glob(fsys, pat)
 		if err != nil {
 			return "", err

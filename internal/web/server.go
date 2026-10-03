@@ -112,6 +112,12 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"utc":         formatUTC,
 		"itemLabel":   itemLabel,
 		"reasonLabel": reasonLabel,
+		"srcLabel": func(u string) string {
+			if strings.Contains(u, "cdsassets.apple.com") {
+				return "Apple manual"
+			}
+			return "Apple Support"
+		},
 	}
 	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {

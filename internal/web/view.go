@@ -129,6 +129,10 @@ type configView struct {
 	Display      string
 	Components   []compView
 	Ports        []string
+	Layout       []layoutSide // the port layout by side, when researched
+	LayoutSrc    []string
+	LayoutNote   string
+	Conns        []connInfo // the same, flat, for the API
 	Features     []string
 	Categories   []categoryView
 	Status       status.ConfigStatus
@@ -191,7 +195,51 @@ type capView struct {
 	// FromLatest: the result is the config's latest, already named once at
 	// the top of the card, so the row only shows its method.
 	FromLatest bool
+	// Ports: per-connector criteria (PLAN §25), each connector's status and
+	// how many port groups are covered.
+	Ports        []capPort
+	GroupsPassed int
+	GroupsTotal  int
 }
+
+type capPort struct {
+	ID, Name  string
+	Verdict   status.Verdict
+	CoveredBy string // untested, covered by a group-mate that passed
+	Suspect   bool   // failed while a group-mate passed: possibly a damaged port
+}
+
+// statusGroups converts the catalog's port groups for the status engine.
+func statusGroups(gs []catalog.PortGroup) []status.Group {
+	var out []status.Group
+	for _, g := range gs {
+		out = append(out, status.Group{ID: g.ID, Connectors: g.Connectors})
+	}
+	return out
+}
+
+// layoutSide is one side of a configuration's port layout.
+type layoutSide struct {
+	Side  string // "Left side", "Back"
+	Conns []layoutConn
+}
+
+type layoutConn struct {
+	ID, Name, Note string
+}
+
+// connInfo is one connector as the API serves it (PLAN §25).
+type connInfo struct {
+	ID       string   `json:"id"`
+	Side     string   `json:"side"`
+	Type     string   `json:"type"`
+	Also     []string `json:"also,omitempty"`
+	Name     string   `json:"name"`
+	Note     string   `json:"note,omitempty"`
+	Criteria []string `json:"criteria"` // what this connector is tested for; empty for power inlets
+}
+
+var sideNames = map[string]string{"left": "Left side", "right": "Right side", "back": "Back", "front": "Front", "top": "Top"}
 
 // matrixView is a criteria × configurations table (model page and /criteria).
 type matrixView struct {
@@ -259,9 +307,10 @@ func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup) *catalogView {
 	}
 	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) status.ConfigStatus {
 		caps := make([]status.Capability, len(applicable))
+		groups := c.CriterionGroups(m, cfg)
 		for i, cp := range applicable {
 			k := cats[cp.Category()]
-			caps[i] = status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking}
+			caps[i] = status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking, Groups: statusGroups(groups[cp.ID])}
 		}
 		return status.Config(status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Caps: caps,
 			Items: ru.Items[cfg.ID], Unsupported: ru.Unsupported[cfg.ID], Results: ru.Results[cfg.ID],
@@ -524,6 +573,31 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		}
 		cv.Ports = append(cv.Ports, name)
 	}
+	conn := map[string]catalog.Connector{}
+	for _, side := range catalog.Sides {
+		ls := layoutSide{Side: sideNames[side]}
+		for _, cn := range cfg.Connectors {
+			conn[cn.ID] = cn
+			if cn.Side() == side {
+				name := c.ConnectorName(cn)
+				for _, a := range cn.Also {
+					name += " + " + c.Vocab.Ports[a].Name
+				}
+				ls.Conns = append(ls.Conns, layoutConn{cn.ID, name, cn.Note})
+			}
+		}
+		if len(ls.Conns) > 0 {
+			cv.Layout = append(cv.Layout, ls)
+		}
+	}
+	cv.LayoutSrc, cv.LayoutNote = cfg.LayoutSources, cfg.LayoutNote
+	for _, cn := range cfg.Connectors {
+		crit := c.ConnectorCriteria(m, cfg, cn)
+		if crit == nil {
+			crit = []string{}
+		}
+		cv.Conns = append(cv.Conns, connInfo{cn.ID, cn.Side(), cn.Type, cn.Also, c.ConnectorName(cn), cn.Note, crit})
+	}
 	for _, f := range cfg.Features {
 		cv.Features = append(cv.Features, c.Vocab.Features[f].Name)
 	}
@@ -558,6 +632,16 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 			x.Result, x.Date, x.Omarchy, x.Method = l.ResultID, l.TestedAt, l.Omarchy.String(), l.Method
 			if l.Verdict != status.Supported {
 				x.Error = l.Evidence
+			}
+		}
+		if cs.GroupsTotal > 0 {
+			x.GroupsPassed, x.GroupsTotal = cs.GroupsPassed, cs.GroupsTotal
+			for _, id := range c.CriterionConnectors(m, cfg)[cp.ID] {
+				ps := cs.Ports[id]
+				if ps.Verdict == "" {
+					ps.Verdict = status.Untested
+				}
+				x.Ports = append(x.Ports, capPort{id, c.ConnectorName(conn[id]), ps.Verdict, ps.CoveredBy, ps.Suspect})
 			}
 		}
 		if x.Verdict == status.Supported {

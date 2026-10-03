@@ -191,3 +191,62 @@ func TestVerdictText(t *testing.T) {
 		t.Error("unknown verdicts render as Untested")
 	}
 }
+
+// Per-connector criteria judged by port group (PLAN §25.1a).
+func TestGroupRollup(t *testing.T) {
+	boot := item("boot.install", Supported, "4.0.4", "2026-10-01", 1)
+	port := func(cap, conn string, verdict Verdict, id int64) Item {
+		it := item(cap, verdict, "4.0.4", "2026-10-01", id)
+		it.Connector = conn
+		return it
+	}
+	whole := func(cap string, v Verdict) Item { return item(cap, v, "4.0.4", "2026-10-01", 1) }
+	// USB-A: two connectors on one controller (one group).
+	usb := []Capability{{ID: "boot.install", Label: "Boot → Install", Blocking: true},
+		{ID: "ports.usb-a", Label: "Ports → USB-A", Groups: []Group{{"usb-a-3", []string{"left-4", "right-3"}}}}}
+	// Thunderbolt 3: left and right pairs on separate controllers.
+	tb := []Capability{{ID: "boot.install", Label: "Boot → Install", Blocking: true},
+		{ID: "ports.thunderbolt", Label: "Ports → Thunderbolt", Groups: []Group{{"tb-left", []string{"left-1", "left-2"}}, {"tb-right", []string{"right-1", "right-2"}}}}}
+	tests := []struct {
+		name       string
+		caps       []Capability
+		cap        string
+		items      []Item
+		verdict    Verdict
+		groupsPass int
+		verified   bool
+		covered    string // a connector expected to be covered by another
+		suspect    string // a connector expected to be marked suspect
+	}{
+		{"untested", usb, "ports.usb-a", []Item{boot}, Untested, 0, false, "", ""},
+		{"one port passes: its group is covered, verified", usb, "ports.usb-a", []Item{boot, port("ports.usb-a", "left-4", Supported, 2)}, Supported, 1, true, "right-3", ""},
+		{"a criterion-level pass covers the only group", usb, "ports.usb-a", []Item{boot, whole("ports.usb-a", Supported)}, Supported, 1, true, "left-4", ""},
+		{"a failure beside a pass: a suspect port, still supported", usb, "ports.usb-a",
+			[]Item{boot, port("ports.usb-a", "left-4", Supported, 2), port("ports.usb-a", "right-3", Failed, 3)}, Supported, 1, true, "", "right-3"},
+		{"the only tested port fails: failed", usb, "ports.usb-a", []Item{boot, port("ports.usb-a", "left-4", Failed, 2)}, Failed, 0, false, "", ""},
+		{"one of two groups passes: supported, not verified", tb, "ports.thunderbolt", []Item{boot, port("ports.thunderbolt", "left-2", Supported, 2)}, Supported, 1, false, "left-1", ""},
+		{"one group passes, the other fails: partial", tb, "ports.thunderbolt",
+			[]Item{boot, port("ports.thunderbolt", "left-2", Supported, 2), port("ports.thunderbolt", "right-1", Failed, 3)}, Partial, 1, false, "", ""},
+		{"both groups pass: verified", tb, "ports.thunderbolt",
+			[]Item{boot, port("ports.thunderbolt", "left-1", Supported, 2), port("ports.thunderbolt", "right-2", Supported, 3)}, Supported, 2, true, "left-2", ""},
+		{"a criterion-level pass with two groups decides the verdict, completes nothing", tb, "ports.thunderbolt",
+			[]Item{boot, whole("ports.thunderbolt", Supported)}, Supported, 0, false, "", ""},
+		{"connectors override a criterion-level item", tb, "ports.thunderbolt",
+			[]Item{boot, whole("ports.thunderbolt", Supported), port("ports.thunderbolt", "right-1", Failed, 3)}, Failed, 0, false, "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			st := Config(ConfigInput{Caps: tt.caps, Items: tt.items, CurrentMajor: 4})
+			cs := st.Caps[tt.cap]
+			if cs.Verdict != tt.verdict || cs.GroupsPassed != tt.groupsPass || st.Verified() != tt.verified {
+				t.Errorf("verdict %s, %d of %d groups, verified %v", cs.Verdict, cs.GroupsPassed, cs.GroupsTotal, st.Verified())
+			}
+			if tt.covered != "" && cs.Ports[tt.covered].CoveredBy == "" {
+				t.Errorf("%s isn't covered: %+v", tt.covered, cs.Ports)
+			}
+			if tt.suspect != "" && !cs.Ports[tt.suspect].Suspect {
+				t.Errorf("%s isn't suspect: %+v", tt.suspect, cs.Ports)
+			}
+		})
+	}
+}

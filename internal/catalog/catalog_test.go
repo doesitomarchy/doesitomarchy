@@ -202,7 +202,9 @@ cpu_codenames:
   penryn: { name: Penryn, family: core, bits: 64 }
 ports:
   usb-a-2: { name: USB 2.0 }
-  hdmi: { name: HDMI, video: true }
+  hdmi: { name: HDMI, video: true, tests: [graphics.external-display] }
+power_connectors:
+  power: { name: Power inlet }
 features:
   fan: { name: Fan }
   builtin-display: { name: Built-in display }
@@ -248,6 +250,17 @@ releases:
         features: [fan]
 `,
 	"config-ids.lock": "macmini9-9-mid-2099-a\n",
+	"layouts/Macmini9-9.yaml": `
+identifier: Macmini9,9
+releases:
+  mid-2099:
+    sources: [https://example.com/mini-guide.pdf]
+    connectors:
+      - { id: back-1, type: power }
+      - { id: back-2, type: hdmi }
+      - { id: back-3, type: usb-a-2 }
+      - { id: back-4, type: usb-a-2 }
+`,
 	"changelog.yaml": `
 - date: "2099-06-02"
   title: Test
@@ -300,6 +313,13 @@ func TestFixtureIsValid(t *testing.T) {
 	if got := capSet(c, m, cfg); !got["graphics.external-display"] || !got["boot.install"] {
 		t.Errorf("unexpected applicability: %v", got)
 	}
+	// The layout is attached, and each criterion knows its connectors.
+	if len(cfg.Connectors) != 4 || cfg.Connectors[1].Side() != "back" {
+		t.Fatalf("connectors: %+v", cfg.Connectors)
+	}
+	if got := c.CriterionConnectors(m, cfg); len(got) != 1 || strings.Join(got["graphics.external-display"], ",") != "back-2" {
+		t.Errorf("criterion connectors: %v", got)
+	}
 }
 
 func TestValidationRules(t *testing.T) {
@@ -339,6 +359,14 @@ func TestValidationRules(t *testing.T) {
 		{"changelog order", "changelog.yaml", `"2099-06-01"`, `"2099-07-01"`, "newest first"},
 		{"changelog no summary", "changelog.yaml", `summary: "An older entry."`, `summary: ""`, "title and summary are required"},
 		{"bad emc", mac, `emc: ["1234"]`, `emc: ["1234-12"]`, "must be four digits"},
+		{"layout count", "layouts/Macmini9-9.yaml", "{ id: back-4, type: usb-a-2 }", "{ id: back-4, type: hdmi }", "hdmi 2 in the layout, 1 in ports"},
+		{"layout id", "layouts/Macmini9-9.yaml", "id: back-1,", "id: rear-1,", "must be <side>-<n>"},
+		{"layout numbering", "layouts/Macmini9-9.yaml", "id: back-4,", "id: back-5,", "numbered 1 to 4"},
+		{"layout duplicate", "layouts/Macmini9-9.yaml", "id: back-4,", "id: back-3,", "appears twice"},
+		{"layout type", "layouts/Macmini9-9.yaml", "type: power", "type: toaster", `type "toaster"`},
+		{"layout release", "layouts/Macmini9-9.yaml", "mid-2099:", "late-2099:", `release "late-2099"`},
+		{"layout source", "layouts/Macmini9-9.yaml", "sources: [https://example.com/mini-guide.pdf]", "sources: []", "sources are required"},
+		{"port test", "vocabulary.yaml", "tests: [graphics.external-display]", "tests: [graphics.hologram]", `unknown capability "graphics.hologram"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

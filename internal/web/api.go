@@ -161,6 +161,15 @@ type apiCapStatus struct {
 	Stale        bool           `json:"stale,omitempty"`
 	Conflict     bool           `json:"conflict,omitempty"`
 	Reason       string         `json:"unsupported_reason,omitempty"`
+	// Per-connector criteria: each connector's status.
+	Ports []apiPortStatus `json:"ports,omitempty"`
+}
+
+type apiPortStatus struct {
+	Connector string         `json:"connector"`
+	Verdict   status.Verdict `json:"verdict"`
+	CoveredBy string         `json:"covered_by,omitempty"` // untested, but a connector in its group passed
+	Suspect   bool           `json:"possible_hardware_fault,omitempty"`
 }
 
 type apiReportRef struct {
@@ -181,6 +190,8 @@ type apiConfig struct {
 	OrderNumbers []string       `json:"order_numbers"`
 	Components   []apiComponent `json:"components"`
 	Ports        []string       `json:"ports"`
+	Connectors   []connInfo     `json:"connectors"` // the port layout; empty until researched
+	LayoutSource []string       `json:"layout_sources,omitempty"`
 	Features     []string       `json:"features"`
 	OutOfScope   string         `json:"out_of_scope,omitempty"`
 	Verdict      status.Verdict `json:"verdict"`
@@ -199,7 +210,11 @@ func configJSON(cv *configView) apiConfig {
 		OrderNumbers: cv.OrderNumbers, Ports: cv.Ports, Features: cv.Features, OutOfScope: cv.OutOfScope,
 		Verdict: cv.Status.Verdict, Blocker: cv.Status.Blocker, Applicable: cv.Status.Applicable, Tested: cv.Status.Tested,
 		Verified: cv.Verified, Counts: cv.Status.Counts, Components: []apiComponent{}, Capabilities: []apiCapStatus{},
-		Reports: []apiReportRef{}, URL: BaseURL + "/mac/" + url.PathEscape(cv.Mac.Slug) + "#cfg-" + cv.ID}
+		Reports: []apiReportRef{}, URL: BaseURL + "/mac/" + url.PathEscape(cv.Mac.Slug) + "#cfg-" + cv.ID,
+		Connectors: cv.Conns, LayoutSource: cv.LayoutSrc}
+	if x.Connectors == nil {
+		x.Connectors = []connInfo{}
+	}
 	for _, c := range cv.Components {
 		ids := c.IDs
 		if ids == nil {
@@ -209,8 +224,12 @@ func configJSON(cv *configView) apiConfig {
 	}
 	for _, cat := range cv.Categories {
 		for _, cp := range cat.Caps {
-			x.Capabilities = append(x.Capabilities, apiCapStatus{ID: cp.ID, Verdict: cp.Verdict, LatestReport: cp.Code,
-				Omarchy: cp.Omarchy, Kernel: cp.Kernel, TestedAt: cp.Date, Method: cp.Method, Stale: cp.Stale, Conflict: cp.Conflict, Reason: cp.Reason})
+			cs := apiCapStatus{ID: cp.ID, Verdict: cp.Verdict, LatestReport: cp.Code,
+				Omarchy: cp.Omarchy, Kernel: cp.Kernel, TestedAt: cp.Date, Method: cp.Method, Stale: cp.Stale, Conflict: cp.Conflict, Reason: cp.Reason}
+			for _, p := range cp.Ports {
+				cs.Ports = append(cs.Ports, apiPortStatus{p.ID, p.Verdict, p.CoveredBy, p.Suspect})
+			}
+			x.Capabilities = append(x.Capabilities, cs)
 		}
 	}
 	for _, rs := range cv.Results {

@@ -33,7 +33,7 @@ releases:
         memory: { type: DDR3-1866 ECC, standard_gb: [12, 16, 32], max_gb: 64 }
         storage: { interface: pcie-ahci, standard: ["256 GB SSD"], bto: ["512 GB SSD", "1 TB SSD"] }
         components: [gpu/amd-radeon-r9-m290x-firepro-d300, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4208, ethernet/broadcom-bcm57762, thunderbolt/intel-falcon-ridge, storage/apple-pcie-ssd-ahci]
-        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 1, audio-out-optical: 1 }
+        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 2, audio-out-optical: 1 }
         features: [builtin-speaker, fan]
       - id: macpro6-1-late-2013-d500
         label: "6-core Xeon \u00b7 dual FirePro D500"
@@ -45,7 +45,7 @@ releases:
         memory: { type: DDR3-1866 ECC, standard_gb: [12, 16, 32], max_gb: 64 }
         storage: { interface: pcie-ahci, standard: ["256 GB SSD"], bto: ["512 GB SSD", "1 TB SSD"] }
         components: [gpu/amd-firepro-d500, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4208, ethernet/broadcom-bcm57762, thunderbolt/intel-falcon-ridge, storage/apple-pcie-ssd-ahci]
-        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 1, audio-out-optical: 1 }
+        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 2, audio-out-optical: 1 }
         features: [builtin-speaker, fan]
       - id: macpro6-1-late-2013-d700
         label: "8-core Xeon (2017) or any Xeon \u00b7 dual FirePro D700"
@@ -57,6 +57,6 @@ releases:
         memory: { type: DDR3-1866 ECC, standard_gb: [12, 16, 32], max_gb: 64 }
         storage: { interface: pcie-ahci, standard: ["256 GB SSD"], bto: ["512 GB SSD", "1 TB SSD"] }
         components: [gpu/amd-firepro-d700, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828d, audio/cirrus-cs4208, ethernet/broadcom-bcm57762, thunderbolt/intel-falcon-ridge, storage/apple-pcie-ssd-ahci]
-        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 1, audio-out-optical: 1 }
+        ports: { usb-a-3: 4, thunderbolt-2: 6, hdmi: 1, ethernet-gbe: 2, audio-out: 2, audio-out-optical: 1 }
         features: [builtin-speaker, fan]
         notes: "Build to order until April 2017, when the 8-core MQGG2LL/A shipped with D700s as standard."

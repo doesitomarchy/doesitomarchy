@@ -50,7 +50,7 @@
     },
     "items": {
       "type": "object",
-      "description": "Capability ID (see GET /api/v1/capabilities) → result. Leave out what you didn't test.",
+      "description": "Capability ID (see GET /api/v1/capabilities) → result. Leave out what you didn't test. For a port criterion, add the connector from the configuration's layout (GET /api/v1/configs/{id}, connectors): \"ports.usb-a@left-2\". Each connector is then a result of its own.",
       "additionalProperties": {
         "type": "object", "additionalProperties": false, "required": ["status"],
         "properties": {
