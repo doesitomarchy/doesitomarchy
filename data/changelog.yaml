@@ -3,6 +3,10 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-03"
+  title: Omarchy channels, and Thunderbolt 1
+  summary: "Reports can come from any Omarchy channel: stable, rc, beta, edge or dev. Every version now reads the same everywhere, with its channel: Omarchy 4.0.4 (stable), 4.0.4rc2 (rc), 4.0.0.r6713.ga85e29a (edge). Verdicts count stable releases only; where a newer build on another channel has a different result, the criterion says so on its own line. The first Thunderbolt version is now called Thunderbolt 1, and searching for a port by name finds every Mac with it: \"thunderbolt 2\", \"tb2\", \"firewire 800\", \"mini displayport\"."
+
+- date: "2026-10-03"
   title: Fix tracking
   summary: "Each test criterion now names the part whose driver usually decides it (the audio codec for speakers, the Wi-Fi chip for Wi-Fi, the T2 bridge for Touch ID, and so on), so one fix issue in doesitomarchy/wecanfixeverything covers every Mac with that part. Failed criteria show who is working on a fix, and ask for a re-test once one lands."
 

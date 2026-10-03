@@ -154,17 +154,29 @@ type apiCapStatus struct {
 	ID           string         `json:"id"`
 	Verdict      status.Verdict `json:"verdict"`
 	LatestReport string         `json:"latest_report,omitempty"`
-	Omarchy      string         `json:"omarchy,omitempty"`
-	Kernel       string         `json:"kernel,omitempty"`
-	TestedAt     string         `json:"tested_at,omitempty"`
-	Method       string         `json:"method,omitempty"`
-	Stale        bool           `json:"stale,omitempty"`
-	Conflict     bool           `json:"conflict,omitempty"`
-	Reason       string         `json:"unsupported_reason,omitempty"`
+	// The verdict counts stable releases only (PLAN §28.2).
+	Omarchy        string `json:"omarchy,omitempty"`         // canonical: 4.0.4, 4.0.0rc2, 4.0.0.r6713.ga85e29a
+	OmarchyChannel string `json:"omarchy_channel,omitempty"` // stable (rc, beta, edge, dev only in newest_build)
+	Kernel         string `json:"kernel,omitempty"`
+	TestedAt       string `json:"tested_at,omitempty"`
+	Method         string `json:"method,omitempty"`
+	Stale          bool   `json:"stale,omitempty"`
+	Conflict       bool   `json:"conflict,omitempty"`
+	Reason         string `json:"unsupported_reason,omitempty"`
 	// Per-connector criteria: each connector's status.
 	Ports []apiPortStatus `json:"ports,omitempty"`
 	// Fix is the fix issue for a failed criterion (PLAN §26).
 	Fix *apiFix `json:"fix,omitempty"`
+	// NewestBuild is the result on the newest build of any channel, when it
+	// differs from the stable verdict.
+	NewestBuild *apiNewestBuild `json:"newest_build,omitempty"`
+}
+
+type apiNewestBuild struct {
+	Verdict        status.Verdict `json:"verdict"`
+	Omarchy        string         `json:"omarchy"`
+	OmarchyChannel string         `json:"omarchy_channel"` // rc | beta | edge | dev
+	Report         string         `json:"report"`
 }
 
 type apiFix struct {
@@ -185,12 +197,13 @@ type apiPortStatus struct {
 }
 
 type apiReportRef struct {
-	Code     string `json:"code"`
-	State    string `json:"state"`
-	TestedAt string `json:"tested_at"`
-	Omarchy  string `json:"omarchy"`
-	Kernel   string `json:"kernel,omitempty"`
-	URL      string `json:"url"`
+	Code           string `json:"code"`
+	State          string `json:"state"`
+	TestedAt       string `json:"tested_at"`
+	Omarchy        string `json:"omarchy"`
+	OmarchyChannel string `json:"omarchy_channel"`
+	Kernel         string `json:"kernel,omitempty"`
+	URL            string `json:"url"`
 }
 
 type apiConfig struct {
@@ -241,7 +254,10 @@ func configJSON(cv *configView) apiConfig {
 	for _, cat := range cv.Categories {
 		for _, cp := range cat.Caps {
 			cs := apiCapStatus{ID: cp.ID, Verdict: cp.Verdict, LatestReport: cp.Code,
-				Omarchy: cp.Omarchy, Kernel: cp.Kernel, TestedAt: cp.Date, Method: cp.Method, Stale: cp.Stale, Conflict: cp.Conflict, Reason: cp.Reason}
+				Omarchy: cp.Omarchy, OmarchyChannel: cp.Channel, Kernel: cp.Kernel, TestedAt: cp.Date, Method: cp.Method, Stale: cp.Stale, Conflict: cp.Conflict, Reason: cp.Reason}
+			if n := cp.Newer; n != nil {
+				cs.NewestBuild = &apiNewestBuild{n.Verdict, n.Omarchy, n.Channel, BaseURL + "/report/" + n.Code}
+			}
 			if f := cp.Fix; f != nil {
 				cs.Fix = &apiFix{f.Issue, f.URL, string(f.State), f.Assignee, f.LastActivity, f.FixLink, f.Retest}
 			}
@@ -252,7 +268,7 @@ func configJSON(cv *configView) apiConfig {
 		}
 	}
 	for _, rs := range cv.Results {
-		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Kernel, BaseURL + "/report/" + rs.Code})
+		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Channel, rs.Kernel, BaseURL + "/report/" + rs.Code})
 	}
 	return x
 }
@@ -396,6 +412,7 @@ func (s *Server) apiSubmit(w http.ResponseWriter, r *http.Request) {
 		apiFail(w, http.StatusBadRequest, "invalid report", err.Error())
 		return
 	}
+	s.prepareResult(ctx, res)
 	id, err := s.store.InsertResult(ctx, res, raw, results.SchemaV1, "source:"+src.ID)
 	if err != nil {
 		s.log.Error("store report", "source", src.ID, "err", err)

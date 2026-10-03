@@ -310,7 +310,8 @@ func (s *Server) adminImport(w http.ResponseWriter, r *http.Request, who string)
 		return
 	}
 	imp, err := results.Import(raw, r.FormValue("format"), s.cat, s.catalogFS(),
-		results.ImportOptions{Omarchy: r.FormValue("omarchy"), Tester: r.FormValue("tester")}, time.Now())
+		results.ImportOptions{Omarchy: r.FormValue("omarchy"), Channel: r.FormValue("channel"), Revision: r.FormValue("revision"),
+			Tester: r.FormValue("tester")}, time.Now())
 	if err != nil {
 		back(err.Error())
 		return
@@ -321,6 +322,7 @@ func (s *Server) adminImport(w http.ResponseWriter, r *http.Request, who string)
 			return
 		}
 	}
+	s.prepareResult(r.Context(), imp.Result)
 	id, err := s.store.InsertResult(r.Context(), imp.Result, imp.Raw, imp.Format, who)
 	if err != nil {
 		s.fail(w, r, err)

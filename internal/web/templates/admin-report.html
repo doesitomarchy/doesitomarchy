@@ -10,7 +10,8 @@
   <dl class="facts">
     <div><dt>Mac</dt><dd><a class="ident" href="/mac/{{$r.Slug}}">{{$r.Identifier}}</a></dd></div>
     <div><dt>Configuration</dt><dd>{{if .Ambiguous}}<span class="tag warn-tag">not decided</span> <span class="muted">fits {{len $r.Candidates}}; pick one below</span>{{else}}{{with .Config}}<span class="cfgref">{{.Diff}}</span> {{.Label}} <span class="muted">({{.ReleaseName}})</span>{{else}}<code>{{$r.ConfigID}}</code>{{end}}{{end}}</dd></div>
-    <div><dt>Ran</dt><dd>{{osver $r.Omarchy $r.Kernel}}</dd></div>
+    <div><dt>Ran</dt><dd>{{osver $r.Omarchy $r.Channel $r.Kernel}}</dd></div>
+      <div><dt>Built</dt><dd>{{with $r.OmarchyBuiltAt}}{{utc .}} · <a href="https://github.com/basecamp/omarchy/commit/{{$r.OmarchyCommit}}" rel="noopener">{{slice $r.OmarchyCommit 0 7}}</a>{{else}}<span class="muted">not known yet: the test date stands in</span>{{end}}</dd></div>
     <div><dt>Results</dt><dd>{{template "tally" $r}} <span class="muted">· {{$r.NotTested}} not tested</span></dd></div>
     <div><dt>Tested</dt><dd>{{utc $r.TestedAt}}</dd></div>
     <div><dt>Submitted</dt><dd>{{utc $r.SubmittedAt}} <span class="muted">by {{$r.SubmittedBy}}</span></dd></div>

@@ -83,6 +83,28 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	}, speakers), true); err != nil {
 		return err
 	}
+	// A newer edge build fixes those speakers (PLAN §28.2): the stable verdict
+	// stays Failed, with the edge result on its own line.
+	if _, err := add(file("macbookpro15-1-15-2018-a", "4.0.0.r6713.ga85e29a", "2026-10-02T15:30:00Z", "demo-tester", func(i int, id string) string {
+		if id == "audio.speakers" {
+			return "supported"
+		}
+		return ""
+	}, nil), true); err != nil {
+		return err
+	}
+	// Tested only on an edge build (MacBookAir5,2): untested on stable.
+	if _, err := add(file("macbookair5-2-mid-2012-a", "4.0.0.r6713.ga85e29a", "2026-10-03T16:49:05Z", "demo-tester", func(i int, id string) string {
+		switch {
+		case id == "camera.builtin":
+			return "failed"
+		case i%3 == 0:
+			return "supported"
+		}
+		return ""
+	}, map[string]string{"camera.builtin": "Captured 14.5 fps of 29.97 advertised, with visible flicker"}), true); err != nil {
+		return err
+	}
 	if err := st.SetUnsupported(ctx, "bridge.touch-bar-camera", "macbookpro15-1-15-2018-a", "",
 		"Given up after 3 fix attempts made no progress (demo).", "demo"); err != nil {
 		return err

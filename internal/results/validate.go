@@ -36,6 +36,12 @@ const (
 	// FlagPortSuspect: a connector failed while another in its port group
 	// passed, which points to a damaged port rather than Omarchy (PLAN §25.1a).
 	FlagPortSuspect = "port_suspect"
+	// FlagRegression: an item fails or only partly works on a newer build
+	// than the one it currently passes on, in the same view (PLAN §28.2).
+	FlagRegression = "regression"
+	// FlagUnknownBuild: the build's commit date isn't known yet (a dev commit
+	// never pushed, or GitHub unreachable), so the test date stands in.
+	FlagUnknownBuild = "unknown_build"
 )
 
 // Result is a validated, scrubbed submission, ready to store.
@@ -51,7 +57,10 @@ type Result struct {
 	Contact       string // raw; the store hashes it and never keeps it
 	TestedAt      string // RFC 3339, UTC
 	Omarchy       status.Version
-	OmarchyRaw    string
+	OmarchyRaw    string // the canonical form (Omarchy.String()), stored as omarchy_version
+	Channel       string // stable | rc | beta | edge | dev
+	Commit        string // the full commit tested, once looked up (internal/builds)
+	BuiltAt       string // that commit's date, RFC 3339 UTC; "" when unknown
 	Revision      string
 	Image         string
 	Kernel        string
@@ -173,8 +182,10 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 
 	if v, err := status.ParseVersion(f.Omarchy.Version); err != nil {
 		bad("omarchy.version: %v", err)
+	} else if ch, err := status.ValidChannel(v, strings.ToLower(strings.TrimSpace(f.Omarchy.Channel))); err != nil {
+		bad("omarchy.%v", err)
 	} else {
-		r.Omarchy, r.OmarchyRaw = v, strings.TrimSpace(f.Omarchy.Version)
+		r.Omarchy, r.OmarchyRaw, r.Channel = v, v.String(), ch
 	}
 	r.Revision, r.Image, r.Kernel = short(f.Omarchy.Revision), short(f.Omarchy.Image), short(f.Kernel)
 

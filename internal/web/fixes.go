@@ -7,7 +7,9 @@ import (
 	"sort"
 	"time"
 
+	"github.com/doesitomarchy/doesitomarchy/internal/builds"
 	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
+	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
@@ -192,4 +194,27 @@ func (s *Server) fixesPage(w http.ResponseWriter, r *http.Request) {
 	}
 	s.render(w, r, http.StatusOK, "fixes", page{Title: "Fixes", Nav: "fixes", Data: fixesPageData{Groups: order, Repo: s.fixRepo()},
 		Description: "Fixes in progress for what doesn't work yet on Intel Macs running Omarchy. #WeCanFixEverything"})
+}
+
+// prepareResult finishes a new report before it's stored (PLAN §28.2): the
+// Omarchy build it ran (or an unknown_build flag), and regression flags
+// against the current results.
+func (s *Server) prepareResult(ctx context.Context, res *results.Result) {
+	if s.builds != nil {
+		ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+		s.builds.Fill(ctx, res)
+		cancel()
+	}
+	if ru := s.data().view.rollup; ru != nil {
+		res.Flags = append(res.Flags, builds.Regressions(s.cat, ru, res)...)
+	}
+}
+
+// ResolveBuilds looks up builds that weren't known when their report
+// arrived, at start-up and then every interval; a no-op when lookups are off.
+func (s *Server) ResolveBuilds(ctx context.Context, every time.Duration) {
+	if s.builds == nil {
+		return
+	}
+	s.builds.Loop(ctx, every)
 }

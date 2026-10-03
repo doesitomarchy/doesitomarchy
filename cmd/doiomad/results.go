@@ -12,6 +12,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/doesitomarchy/doesitomarchy/internal/builds"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
@@ -23,7 +24,10 @@ const resultsUsage = `doiomad reports — moderate diagnostic reports (PLAN.md �
   reports import [-accept] FILE      validate a report file (YAML or JSON; "-" reads stdin),
                                      store it as pending and preview its effect
       -format omacdiag -omarchy V    an OmacDiag JSON report; -omarchy gives the Omarchy
-      [-tester HANDLE]               version it ran on, -tester the tester's public handle
+      [-channel dev -revision HASH]  version it ran on (/etc/os-release's VERSION_ID, any
+      [-tester HANDLE]               channel); a dev build adds -channel dev and its commit
+                                     (omarchy-version prints "dev (<hash>)"); -tester the
+                                     tester's public handle
   reports list [-state S] [-config ID] [-limit N]
   reports show CODE                  a report in full, with its flags and history
   reports accept CODE [-config ID]   make a pending report count; -config picks the
@@ -72,6 +76,8 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	format := fs.String("format", "", "import: the file's format: our schema (default) or omacdiag")
 	omarchy := fs.String("omarchy", "", "import -format omacdiag: the Omarchy version the report ran on")
 	tester := fs.String("tester", "", "import -format omacdiag: the tester's public handle")
+	channel := fs.String("channel", "", "import -format omacdiag: dev, for a dev build (it reads like edge)")
+	revision := fs.String("revision", "", "import -format omacdiag: a dev build's commit")
 	pos, ok := parseInterleaved(fs, rest)
 	if !ok {
 		return 2
@@ -128,7 +134,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		if err != nil {
 			return fail(err)
 		}
-		imp, err := results.Import(raw, *format, c, catalogFS(*dataDir), results.ImportOptions{Omarchy: *omarchy, Tester: *tester}, time.Now())
+		imp, err := results.Import(raw, *format, c, catalogFS(*dataDir), results.ImportOptions{Omarchy: *omarchy, Channel: *channel, Revision: *revision, Tester: *tester}, time.Now())
 		if results.IsValidation(err) {
 			fmt.Fprintln(stderr, err)
 			return 1
@@ -136,6 +142,17 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 			return fail(err)
 		}
 		r := imp.Result
+		// The Omarchy build it ran, and regressions against current results (PLAN §28.2).
+		if api := buildsAPI(false); api != "" {
+			rs := builds.New(st, os.Getenv("GITHUB_TOKEN"), nil)
+			rs.Base = api
+			bctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+			rs.Fill(bctx, r)
+			cancel()
+		}
+		if ru, err := st.RollupData(ctx); err == nil {
+			r.Flags = append(r.Flags, builds.Regressions(c, ru, r)...)
+		}
 		before, after, err := preview(ctx, st, c, r)
 		if err != nil {
 			return fail(err)
@@ -150,6 +167,9 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 			return fail(err)
 		}
 		fmt.Fprintf(stdout, "report %s · pending · %s · %s\n", code(n), r.Identifier, r.ConfigID)
+		if r.Channel != status.Stable {
+			fmt.Fprintf(stdout, "  Omarchy %s (%s): changes the newer-build view, not the stable verdict\n", r.Omarchy, r.Channel)
+		}
 		printEffect(stdout, before, after)
 		for _, fl := range r.Flags {
 			fmt.Fprintf(stdout, "  flag: %s: %s\n", fl.Kind, fl.Detail)
@@ -285,14 +305,24 @@ func preview(ctx context.Context, st *store.Store, c *catalog.Catalog, r *result
 	if cfg == nil {
 		return before, after, fmt.Errorf("config %s vanished from the catalog", r.ConfigID)
 	}
-	in := ru.StatusInput(c, m, cfg, excl, c.Applicable(m, cfg))
+	// A stable result changes the verdict; any other only the newer-build
+	// view (PLAN §28.2), so that's the one to preview.
+	view := store.StableView
+	if r.Channel != status.Stable {
+		view = store.NewestView
+	}
+	in := ru.StatusInput(c, m, cfg, excl, c.Applicable(m, cfg), view)
 	before = status.Config(in)
+	builtAt := r.BuiltAt
+	if builtAt == "" {
+		builtAt = r.TestedAt
+	}
 	verdicts := map[string]status.Verdict{"supported": status.Supported, "partial": status.Partial, "failed": status.Failed}
 	items := append([]status.Item(nil), in.Items...)
 	for _, it := range r.Items {
 		if it.Applicable && it.Status != "not_tested" {
 			items = append(items, status.Item{Capability: it.Capability, Connector: it.Connector, Verdict: verdicts[it.Status], Method: it.Method,
-				Omarchy: r.Omarchy, TestedAt: r.TestedAt, ResultID: 1 << 62, Evidence: it.Evidence})
+				Omarchy: r.Omarchy, Channel: r.Channel, BuiltAt: builtAt, TestedAt: r.TestedAt, ResultID: 1 << 62, Evidence: it.Evidence})
 		}
 	}
 	in.Items, in.Results = items, in.Results+1
@@ -337,7 +367,7 @@ func printDetail(w io.Writer, d *store.ResultDetail) {
 	if d.ConsentNotice != "" {
 		fmt.Fprintf(w, "  notice shown: %s\n", d.ConsentNotice)
 	}
-	fmt.Fprintf(w, "  tested %s · submitted %s · Omarchy %s", utcShort(d.TestedAt), utcShort(d.SubmittedAt), d.Omarchy)
+	fmt.Fprintf(w, "  tested %s · submitted %s · Omarchy %s (%s)", utcShort(d.TestedAt), utcShort(d.SubmittedAt), d.Omarchy, d.Channel)
 	if d.Kernel != "" {
 		fmt.Fprintf(w, " · kernel %s", d.Kernel)
 	}

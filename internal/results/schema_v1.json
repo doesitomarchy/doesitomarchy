@@ -30,8 +30,9 @@
     "omarchy": {
       "type": "object", "additionalProperties": false, "required": ["version"],
       "properties": {
-        "version": { "type": "string", "pattern": "^v?\\d+(\\.\\d+){0,2}$", "examples": ["4.0.4"] },
-        "revision": { "type": "string" },
+        "version": { "type": "string", "pattern": "^[vV]?\\d+(\\.\\d+){0,2}([-.]?([rR][cC]|[bB][eE][tT][aA])\\.?\\d+)?(\\.r\\d+\\.g[0-9a-fA-F]{7,40})?(-\\d+)?$", "examples": ["4.0.4", "4.0.4rc2", "4.0.0beta3", "4.0.0.r6713.ga85e29a"], "description": "/etc/os-release's VERSION_ID, from any channel: a release, a pre-release (rc, beta) or an edge build." },
+        "channel": { "enum": ["stable", "rc", "beta", "edge", "dev"], "description": "Only needed for dev (Omarchy run from a git checkout), whose version reads like an edge build. The others follow from the version." },
+        "revision": { "type": "string", "description": "A dev build's commit: omarchy-version prints \"dev (<hash>)\"." },
         "image": { "type": "string" }
       }
     },

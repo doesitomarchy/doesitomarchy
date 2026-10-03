@@ -59,6 +59,7 @@ curl -s -X POST {{.Base}}/api/v1/match \
 <pre tabindex="0"><code>{{.Example}}</code></pre>
 <ul>
   <li><code>tested_at</code> is when the test ran, with a time zone. The site shows every time in UTC.</li>
+  <li><code>omarchy.version</code> is <code>/etc/os-release</code>'s <code>VERSION_ID</code>, from any channel: a release (<code>4.0.4</code>), a pre-release (<code>4.0.4rc2</code>, <code>4.0.0beta3</code>) or an edge build (<code>4.0.0.r6713.ga85e29a</code>). For a dev install (Omarchy run from a git checkout), add <code>"channel": "dev"</code> and the checkout's commit as <code>revision</code>. Stable releases decide verdicts; results from the other channels show as the newest build where they differ (<code>newest_build</code> on a configuration's capabilities). Every version comes back with its <code>omarchy_channel</code>.</li>
   <li>Port criteria can be reported per connector: <code>ports.usb-a@left-2</code>, using the connector IDs in the configuration's layout. Connectors are named by side and numbered left to right as you face that side. A criterion counts as fully verified only when every connector it applies to has passed.</li>
   <li>Don't send serial numbers, network addresses, or user and computer names. They're removed anyway, but it's better never to send them.</li>
   <li>Put the check's output in <code>evidence</code> when something fails or only partly works. It's what helps someone fix it.</li>

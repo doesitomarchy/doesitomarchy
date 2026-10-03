@@ -52,8 +52,11 @@ type FileTester struct {
 
 // FileOmarchy is the Omarchy build that was tested.
 type FileOmarchy struct {
-	Version  string `yaml:"version" json:"version"`
-	Revision string `yaml:"revision" json:"revision"`
+	Version string `yaml:"version" json:"version"` // /etc/os-release's VERSION_ID, in any form (PLAN §28.1)
+	// Channel is only needed for dev, which reads like edge; the others
+	// follow from the version.
+	Channel  string `yaml:"channel" json:"channel"`
+	Revision string `yaml:"revision" json:"revision"` // a dev build's commit (`omarchy-version` prints "dev (<hash>)")
 	Image    string `yaml:"image" json:"image"`
 }
 

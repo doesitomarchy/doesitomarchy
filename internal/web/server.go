@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/data"
+	"github.com/doesitomarchy/doesitomarchy/internal/builds"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
 	"github.com/doesitomarchy/doesitomarchy/internal/match"
@@ -59,6 +60,8 @@ type Server struct {
 	syncer *fixes.Syncer
 	// cfgs maps config IDs to the catalog's configurations.
 	cfgs map[string]*catalog.Config
+	// builds looks up which Omarchy commit a result ran on; nil when off.
+	builds *builds.Resolver
 }
 
 // snapshot is everything built from the catalog and the accepted results.
@@ -105,6 +108,10 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 	if opt.GitHubToken != "" {
 		s.gh = fixes.NewClient(opt.FixRepo, opt.GitHubToken)
 		s.syncer = &fixes.Syncer{Client: s.gh, Store: st, Log: log}
+	}
+	if opt.BuildsAPI != "" {
+		s.builds = builds.New(st, opt.GitHubToken, log)
+		s.builds.Base = opt.BuildsAPI
 	}
 	s.cfgs = map[string]*catalog.Config{}
 	for _, m := range c.Macs {
@@ -433,11 +440,18 @@ func nonEmptyLines(s string) []string {
 
 // osVersion names what a report ran: "Omarchy 4.0.4 · kernel 6.16.2-arch1-1".
 // Omarchy ships its own kernel builds, so the kernel matters as much.
-func osVersion(omarchy, kernel string) string {
-	if kernel == "" {
-		return "Omarchy " + omarchy
+// osVersion is how every page names the build a result ran on (PLAN §28.1):
+// "Omarchy 4.0.4 (stable) · kernel 7.2.5", the version always canonical and
+// with its channel.
+func osVersion(omarchy, channel, kernel string) string {
+	s := "Omarchy " + omarchy
+	if channel != "" {
+		s += " (" + channel + ")"
 	}
-	return "Omarchy " + omarchy + " · kernel " + kernel
+	if kernel != "" {
+		s += " · kernel " + kernel
+	}
+	return s
 }
 
 // dict builds a map for passing several values to a template.

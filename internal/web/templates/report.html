@@ -4,7 +4,7 @@
   <h1>Diagnostic Report <span class="report-code">{{$r.Code}}</span></h1>
   <p class="sub slash"><a class="ident" href="/mac/{{$r.Slug}}">{{$r.Identifier}}</a>{{with .Config}}<a href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}"><span class="cfgref">{{.Diff}}</span></a><span>{{.Label}}</span>{{end}}</p>
   <p class="sub slash"><span>tested <b>{{utc $r.TestedAt}}</b></span><span>submitted <b>{{utc $r.SubmittedAt}}</b></span></p>
-  <p class="sub slash"><span>Omarchy <b>{{$r.Omarchy}}</b></span>{{with $r.Kernel}}<span>kernel {{.}}</span>{{end}}
+  <p class="sub slash"><span>Omarchy <b>{{$r.Omarchy}}</b> ({{$r.Channel}}){{with $r.OmarchyBuiltAt}} · built <a href="https://github.com/basecamp/omarchy/commit/{{$r.OmarchyCommit}}" rel="noopener" title="When the Omarchy code tested was committed: the newest build's result counts">{{slice . 0 10}}</a>{{end}}</span>{{with $r.Kernel}}<span>kernel {{.}}</span>{{end}}
     <span>by {{if $r.TesterHandle}}<b>@{{$r.TesterHandle}}</b>{{else}}anonymous{{end}} via <b>{{$r.SourceName}}</b>{{with $r.SourceVersion}} {{.}}{{end}}{{with $r.Profile}} · {{.}} profile{{end}}</span></p>
   <p class="sub">{{template "verdict" (v "supported")}} <span class="muted">{{$r.Supported}}</span>
     {{template "verdict" (v "partial")}} <span class="muted">{{$r.Partial}}</span>

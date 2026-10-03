@@ -6,6 +6,7 @@ package status
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -63,37 +64,86 @@ func (v Verdict) Label() string {
 	}
 }
 
-// Version is an Omarchy release, compared numerically.
-type Version struct{ Major, Minor, Patch int }
-
-// ParseVersion reads "4", "4.1" or "4.1.2" (a leading "v" is allowed).
-func ParseVersion(s string) (Version, error) {
-	parts := strings.Split(strings.TrimPrefix(strings.TrimSpace(s), "v"), ".")
-	if len(parts) < 1 || len(parts) > 3 || parts[0] == "" {
-		return Version{}, fmt.Errorf("version %q: want major.minor[.patch]", s)
-	}
-	var n [3]int
-	for i, p := range parts {
-		v, err := strconv.Atoi(p)
-		if err != nil || v < 0 {
-			return Version{}, fmt.Errorf("version %q: want major.minor[.patch]", s)
-		}
-		n[i] = v
-	}
-	return Version{n[0], n[1], n[2]}, nil
+// Version is an Omarchy build, as /etc/os-release's VERSION_ID names it
+// (PLAN §28.1): a release (4.0.4), a pre-release (4.0.0rc2, 4.0.0beta3) or an
+// edge build (4.0.0.r6713.ga85e29a: the branch's commit count and commit).
+type Version struct {
+	Major, Minor, Patch int
+	Pre                 string // "rc2", "beta3"; "" for a release or an edge build
+	Rev                 int    // edge build: the branch's total commit count
+	Hash                string // edge build: the abbreviated commit
 }
 
-func (v Version) String() string { return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch) }
+// Channels a result can come from. Dev runs edge packages from a git
+// checkout, so its version reads like edge; it's only known when reported.
+const (
+	Stable = "stable"
+	RC     = "rc"
+	Beta   = "beta"
+	Edge   = "edge"
+	Dev    = "dev"
+)
 
-// Less orders versions numerically (4.10 > 4.9).
-func (v Version) Less(o Version) bool {
-	if v.Major != o.Major {
-		return v.Major < o.Major
+// Every form Omarchy versions take: an optional "v", major[.minor[.patch]],
+// a pre-release attached or after "-"/"." (git tags write v4.0.0-beta3), an
+// edge build's .rN.gHASH, and pacman's trailing release ("-1").
+var versionRe = regexp.MustCompile(`(?i)^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[-.]?(rc|beta)\.?(\d+))?(?:\.r(\d+)\.g([0-9a-f]{7,40}))?(?:-\d+)?$`)
+
+// ParseVersion reads any form an Omarchy version is written in (PLAN §28.1)
+// into the canonical one: "v4.0.4-1" is 4.0.4, "4.0.0-RC1" is 4.0.0rc1.
+func ParseVersion(s string) (Version, error) {
+	s = strings.TrimSpace(s)
+	if low := strings.ToLower(s); low == "dev" || strings.HasPrefix(low, "dev ") || strings.HasPrefix(low, "dev(") {
+		return Version{}, fmt.Errorf("version %q: a dev build names no version; give /etc/os-release's VERSION_ID (it reads like an edge build) and the channel dev", s)
 	}
-	if v.Minor != o.Minor {
-		return v.Minor < o.Minor
+	m := versionRe.FindStringSubmatch(s)
+	if m == nil {
+		return Version{}, fmt.Errorf("version %q: want an Omarchy version such as 4.0.4, 4.0.4rc2 or 4.0.0.r6713.ga85e29a", s)
 	}
-	return v.Patch < o.Patch
+	num := func(x string) int { n, _ := strconv.Atoi(x); return n }
+	v := Version{Major: num(m[1]), Minor: num(m[2]), Patch: num(m[3]), Rev: num(m[6]), Hash: strings.ToLower(m[7])}
+	if m[4] != "" {
+		v.Pre = strings.ToLower(m[4]) + strconv.Itoa(num(m[5]))
+	}
+	return v, nil
+}
+
+// String is the canonical form, shown everywhere.
+func (v Version) String() string {
+	s := fmt.Sprintf("%d.%d.%d%s", v.Major, v.Minor, v.Patch, v.Pre)
+	if v.Hash != "" {
+		s += fmt.Sprintf(".r%d.g%s", v.Rev, v.Hash)
+	}
+	return s
+}
+
+// Channel is the channel a version comes from, by its form; a dev build
+// reads as edge.
+func (v Version) Channel() string {
+	switch {
+	case v.Hash != "":
+		return Edge
+	case strings.HasPrefix(v.Pre, "rc"):
+		return RC
+	case v.Pre != "":
+		return Beta
+	}
+	return Stable
+}
+
+// ValidChannel checks a reported channel against a version: only dev can be
+// told apart from what the version says, and only for an edge build.
+func ValidChannel(v Version, channel string) (string, error) {
+	switch channel {
+	case "", v.Channel():
+		return v.Channel(), nil
+	case Dev:
+		if v.Channel() == Edge {
+			return Dev, nil
+		}
+		return "", fmt.Errorf("channel dev: %s isn't an edge-style version (a dev install's /etc/os-release reads like 4.0.0.r6713.ga85e29a)", v)
+	}
+	return "", fmt.Errorf("channel %q: %s is a %s version; the channel can only be given as dev, for an edge-style version", channel, v, v.Channel())
 }
 
 // Item is one accepted result item for an applicable capability. Items that
@@ -104,16 +154,22 @@ type Item struct {
 	Verdict    Verdict // Supported, Partial or Failed
 	Method     string  // automatic | observed | fixture
 	Omarchy    Version
-	TestedAt   string // RFC 3339, UTC (so later timestamps sort later as strings)
-	ResultID   int64
-	Evidence   string // why it failed, as reported
+	Channel    string // stable | rc | beta | edge | dev
+	// BuiltAt is when the Omarchy code tested was committed (RFC 3339, UTC);
+	// the test time when that isn't known, since the build can't be newer.
+	BuiltAt  string
+	TestedAt string // RFC 3339, UTC (so later timestamps sort later as strings)
+	ResultID int64
+	Evidence string // why it failed, as reported
 }
 
-// newer reports whether a should win over b as a capability's latest result:
-// the newest Omarchy version, then the latest test date, then the later result.
+// newer reports whether a should win over b as a capability's latest result
+// (PLAN §28.2): the newest build, by when its code was committed, whatever
+// the channel; then the later test (a fix from a kernel or package update);
+// then the later result.
 func newer(a, b Item) bool {
-	if a.Omarchy != b.Omarchy {
-		return b.Omarchy.Less(a.Omarchy)
+	if a.BuiltAt != b.BuiltAt {
+		return a.BuiltAt > b.BuiltAt
 	}
 	if a.TestedAt != b.TestedAt {
 		return a.TestedAt > b.TestedAt
@@ -161,7 +217,7 @@ type ConfigInput struct {
 type CapStatus struct {
 	Verdict  Verdict
 	Latest   *Item  // the winning result item; nil when untested
-	Conflict bool   // accepted results on the same latest Omarchy version disagree
+	Conflict bool   // accepted results on the same latest Omarchy build disagree
 	Stale    bool   // the latest result predates the current Omarchy major
 	Reason   string // the maintainer's reason when Unsupported
 	// Per-connector criteria: each connector's status, and how many port
@@ -211,7 +267,7 @@ func capStatus(items []Item, unsupported string, hasUnsupported bool, currentMaj
 		cs.Latest, cs.Verdict = &best, best.Verdict
 		cs.Stale = currentMajor > 0 && best.Omarchy.Major < currentMajor
 		for _, it := range items {
-			if it.Omarchy == best.Omarchy && it.Verdict != best.Verdict {
+			if it.Omarchy == best.Omarchy && it.BuiltAt == best.BuiltAt && it.Verdict != best.Verdict {
 				cs.Conflict, cs.Verdict = true, Partial
 				break
 			}

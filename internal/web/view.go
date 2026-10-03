@@ -57,6 +57,9 @@ type Options struct {
 	// webhook's shared secret. Without a token, fixes can't be opened from
 	// /admin; without the secret, /hooks/github refuses every delivery.
 	FixRepo, GitHubToken, WebhookSecret string
+	// BuildsAPI is the GitHub API root for looking up which Omarchy commit a
+	// result ran on (PLAN §28.2); "" turns lookups off (demo mode, tests).
+	BuildsAPI string
 }
 
 type site struct {
@@ -145,7 +148,9 @@ type configView struct {
 	Conns        []connInfo        // the same, flat, for the API
 	Features     []string
 	Categories   []categoryView
-	Status       status.ConfigStatus
+	Status       status.ConfigStatus   // stable results: the verdict (PLAN §28.2)
+	Newest       status.ConfigStatus   // every channel: the newer-build lines
+	NewerOnly    bool                  // tested only on newer builds (rc, beta, edge, dev)
 	Verified     bool                  // every applicable capability passed, no conflicts
 	Results      []store.ResultSummary // accepted and retracted results, newest first
 	Latest       *store.ResultSummary  // the newest accepted result
@@ -200,8 +205,12 @@ type capView struct {
 	Result                int64
 	Code                  string // its public code, for /report/{code}
 	Date, Omarchy, Method string
+	Channel               string // the report's Omarchy channel (PLAN §28.1)
 	Kernel                string // the report's kernel, when given
 	Stale, Conflict       bool
+	// Newer: a newer build (rc, beta, edge or dev) with a different result
+	// than the stable verdict (PLAN §28.2).
+	Newer *newerView
 	// FromLatest: the result is the config's latest, already named once at
 	// the top of the card, so the row only shows its method.
 	FromLatest bool
@@ -210,6 +219,15 @@ type capView struct {
 	Ports        []capPort
 	GroupsPassed int
 	GroupsTotal  int
+}
+
+// newerView is a criterion's result on the newest build of any channel,
+// where it differs from the stable verdict.
+type newerView struct {
+	Verdict          status.Verdict
+	Omarchy, Channel string
+	Result           int64
+	Code             string // its report
 }
 
 type capPort struct {
@@ -328,8 +346,8 @@ func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup, now time.Time)
 	v := &catalogView{bySlug: map[string]*macView{}, configs: map[string]*configView{}, states: search.States{}, rollup: ru, at: now}
 	var statuses []status.ConfigStatus
 	lineStats := map[string]*lineStat{}
-	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) status.ConfigStatus {
-		return status.Config(ru.StatusInput(c, m, cfg, excl, applicable))
+	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability, view store.View) status.ConfigStatus {
+		return status.Config(ru.StatusInput(c, m, cfg, excl, applicable, view))
 	}
 	for _, m := range c.Macs {
 		mv := buildMac(c, m, stateOf, ru, now)
@@ -444,7 +462,7 @@ func machineIcon(m *catalog.Mac) string {
 	return m.Line
 }
 
-type stateFunc func(*catalog.Mac, *catalog.Config, string, []catalog.Capability) status.ConfigStatus
+type stateFunc func(*catalog.Mac, *catalog.Config, string, []catalog.Capability, store.View) status.ConfigStatus
 
 func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.Rollup, now time.Time) *macView {
 	mv := &macView{
@@ -489,6 +507,9 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 				for k := range cv.Categories[ci].Caps {
 					x := &cv.Categories[ci].Caps[k]
 					x.Code, x.Kernel = codes[x.Result], kernels[x.Result]
+					if x.Newer != nil {
+						x.Newer.Code = codes[x.Newer.Result]
+					}
 					x.FromLatest = cv.Latest != nil && x.Result == cv.Latest.ID && !x.Stale && !x.Conflict
 				}
 			}
@@ -620,7 +641,9 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		cv.Uncertain = append(cv.Uncertain, uncertainView{u.Field, u.Note})
 	}
 	applicable := c.Applicable(m, cfg)
-	cv.Status = stateOf(m, cfg, excl, applicable)
+	cv.Status = stateOf(m, cfg, excl, applicable, store.StableView)
+	cv.Newest = stateOf(m, cfg, excl, applicable, store.NewestView)
+	cv.NewerOnly = cv.Status.Results == 0 && cv.Newest.Results > 0
 	cv.Verified = cv.Status.Verified()
 	byCat := map[string]*categoryView{}
 	for _, cp := range applicable {
@@ -643,8 +666,11 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		if cv.Status.Verdict == status.NotCompatible && cs.Latest == nil {
 			x.Verdict = status.NotCompatible
 		}
+		if n := cv.Newest.Caps[cp.ID]; n.Latest != nil && (cs.Latest == nil || n.Latest.ResultID != cs.Latest.ResultID) && n.Verdict != x.Verdict {
+			x.Newer = &newerView{Verdict: n.Verdict, Omarchy: n.Latest.Omarchy.String(), Channel: n.Latest.Channel, Result: n.Latest.ResultID}
+		}
 		if l := cs.Latest; l != nil {
-			x.Result, x.Date, x.Omarchy, x.Method = l.ResultID, l.TestedAt, l.Omarchy.String(), l.Method
+			x.Result, x.Date, x.Omarchy, x.Channel, x.Method = l.ResultID, l.TestedAt, l.Omarchy.String(), l.Channel, l.Method
 			if l.Verdict != status.Supported {
 				x.Error = l.Evidence
 			}
