@@ -1,6 +1,8 @@
 package web
 
 import (
+	"time"
+
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -8,6 +10,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
@@ -51,6 +55,10 @@ type Options struct {
 	// CatalogFS holds the catalog's data files, for source mappings
 	// (data/sources); nil means the catalog built into the binary.
 	CatalogFS fs.FS
+	// Fix tracking (PLAN §26): the fix repo, a token limited to it, and the
+	// webhook's shared secret. Without a token, fixes can't be opened from
+	// /admin; without the secret, /hooks/github refuses every delivery.
+	FixRepo, GitHubToken, WebhookSecret string
 }
 
 type site struct {
@@ -187,9 +195,9 @@ func (c categoryView) Pct() string { return fmt.Sprintf("%.2f", pctOf(c.Passed, 
 type capView struct {
 	ID, Name, Description string
 	Verdict               status.Verdict
-	Error                 string // why it failed or only partly works, as reported (evidence)
-	Fix                   string // who is working on it / where it's tracked (fix tracking, 7d)
-	Reason                string // the maintainer's reason, when Unsupported
+	Error                 string   // why it failed or only partly works, as reported (evidence)
+	Fix                   *fixView // the fix issue for a failed criterion, if any (PLAN §26)
+	Reason                string   // the maintainer's reason, when Unsupported
 	// The latest report for this capability (Result 0 when untested).
 	Result                int64
 	Code                  string // its public code, for /report/{code}
@@ -220,6 +228,29 @@ func statusGroups(gs []catalog.PortGroup) []status.Group {
 		out = append(out, status.Group{ID: g.ID, Connectors: g.Connectors})
 	}
 	return out
+}
+
+// fixView is a fix issue as a criterion row shows it.
+type fixView struct {
+	Issue                  int
+	URL, Title             string
+	State                  fixes.State
+	Assignee               string
+	LastActivity, ClosedAt string // dates
+	FixLink                string
+	Retest                 bool // fixed after the criterion's latest result: please re-test
+}
+
+func newFixView(f store.Fix, st fixes.State) *fixView {
+	return &fixView{Issue: f.Issue, URL: f.URL, Title: f.Title, State: st, Assignee: f.Assignee,
+		LastActivity: dateOnly(f.LastActivity), ClosedAt: dateOnly(f.ClosedAt), FixLink: f.FixLink}
+}
+
+func dateOnly(ts string) string {
+	if len(ts) >= 10 {
+		return ts[:10]
+	}
+	return ts
 }
 
 // layoutSide is one side of a configuration's port layout.
@@ -463,7 +494,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 		excl := c.CoverageExclusion(m, r)
 		for ci := range r.Configs {
 			cfg := &r.Configs[ci]
-			cv := buildConfig(c, m, r, cfg, excl, stateOf)
+			cv := buildConfig(c, m, r, cfg, excl, stateOf, ru)
 			cv.Mac = mv
 			cv.Results = ru.Accepted[cfg.ID]
 			for i := range cv.Results {
@@ -529,7 +560,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 	return mv
 }
 
-func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc) *configView {
+func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup) *configView {
 	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
 		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl}
 	for _, p := range cfg.CPU.Standard {
@@ -648,6 +679,12 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 					ps.Verdict = status.Untested
 				}
 				x.Ports = append(x.Ports, capPort{id, c.ConnectorName(conn[id]), ps.Verdict, ps.CoveredBy, ps.Suspect})
+			}
+		}
+		if ru != nil && (x.Verdict == status.Failed || x.Verdict == status.Partial) {
+			if f, st, ok := fixes.Best(ru.Fixes, cp.ID, cfg.ID, cfg.Components, time.Now()); ok {
+				x.Fix = newFixView(f, st)
+				x.Fix.Retest = st == fixes.Fixed && f.ClosedAt > x.Date
 			}
 		}
 		if x.Verdict == status.Supported {

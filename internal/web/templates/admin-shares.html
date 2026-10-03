@@ -1,6 +1,6 @@
 {{define "content"}}{{with .Data}}
 <div class="admin">
-<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
+<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
 {{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
 <h1>Shared IDs</h1>
 <p class="muted">Hardware IDs visitors chose to share from Identify my Mac, read against today's catalog. IDs marked <span class="unk-tag">new</span> aren't in the catalog. Shares never change the catalog; turn good ones into a catalog PR. Dates are UTC.

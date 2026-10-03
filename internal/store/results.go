@@ -600,7 +600,6 @@ func (s *Store) Sources(ctx context.Context) ([]Source, error) {
 
 // SetUnsupported raises the maintainer's white flag for a capability on one
 // config or on every config with a component, with a reason (PLAN §20.1).
-// The CLI for it arrives with fix tracking (7d); demo mode uses it now.
 func (s *Store) SetUnsupported(ctx context.Context, capability, configID, componentID, reason, actor string) (err error) {
 	if (configID == "") == (componentID == "") {
 		return errors.New("give exactly one of a config or a component")
@@ -634,6 +633,7 @@ type Rollup struct {
 	Latest       map[string]string            // config → newest accepted test date
 	Accepted     map[string][]ResultSummary   // config → accepted (and retracted) results, newest first
 	Unsupported  map[string]map[string]string // config → capability → reason
+	Fixes        []Fix                        // fix issues, newest first
 	CurrentMajor int
 	Version      int64 // the data version this was read at
 }
@@ -719,6 +719,24 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 			r.Unsupported[cfg] = map[string]string{}
 		}
 		r.Unsupported[cfg][cp] = reason
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
+
+	// Fix issues (PLAN §26), in the same snapshot.
+	rows, err = tx.QueryContext(ctx, "SELECT "+fixCols+" FROM fixes ORDER BY issue DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		f, err := scanFix(rows)
+		if err != nil {
+			return nil, err
+		}
+		r.Fixes = append(r.Fixes, f)
 	}
 	return r, rows.Err()
 }

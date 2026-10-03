@@ -8,6 +8,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
 	"html/template"
 	"io/fs"
 	"log/slog"
@@ -53,6 +54,9 @@ type Server struct {
 	access  *accessVerifier
 	// shareLimit is PF-3's per-IP limit, held in memory only.
 	shareLimit *rateLimiter
+	// gh and syncer reach the fix repo (PLAN §26); gh is nil without a token.
+	gh     *fixes.Client
+	syncer *fixes.Syncer
 }
 
 // snapshot is everything built from the catalog and the accepted results.
@@ -89,6 +93,10 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 	s := &Server{store: st, cat: c, opt: opt, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{},
 		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD),
 		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour)}
+	if opt.GitHubToken != "" {
+		s.gh = fixes.NewClient(opt.FixRepo, opt.GitHubToken)
+		s.syncer = &fixes.Syncer{Client: s.gh, Store: st, Log: log}
+	}
 	if _, err := s.Refresh(context.Background()); err != nil {
 		return nil, fmt.Errorf("load results: %w", err)
 	}
@@ -119,7 +127,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 			return "Apple Support"
 		},
 	}
-	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "admin-fixes", "fixes", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
@@ -160,6 +168,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /identify", s.identify)
 	mux.HandleFunc("POST /identify", s.identifyPost)
 	mux.HandleFunc("POST /identify/share", s.identifyShare)
+	mux.HandleFunc("POST /hooks/github", s.githubHook)
+	mux.HandleFunc("GET /fixes", s.fixesPage)
 	mux.HandleFunc("GET /privacy", s.privacy)
 	mux.HandleFunc("GET /api", s.apiDocs)
 	s.apiRoutes(mux)

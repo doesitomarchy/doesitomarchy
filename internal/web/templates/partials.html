@@ -48,6 +48,7 @@
         <li><a href="/macs">Browse all Intel Macs</a></li>
         <li><a href="/criteria">Criteria matrix</a></li>
         <li><a href="/stats">Statistics</a></li>
+        <li><a href="/fixes">Fixes</a></li>
         <li><a href="/methodology">Methodology</a></li>
         <li><a href="/contribute">Contribute</a></li>
         <li><a href="/changelog">Catalog changelog</a></li>
@@ -161,3 +162,11 @@
 </table>
 </div>
 {{end}}
+
+{{/* fixline: a failed or partial criterion's fix, from the fix repo (PLAN §26). Pass a capView. */}}
+{{define "fixline"}}{{if eq .Verdict "failed" "partial"}}{{with .Fix}}<p class="fixline"><span class="lbl">Fix</span>
+{{if eq .State "claimed"}}Being worked on by <b>@{{.Assignee}}</b> in <a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a> · last activity {{.LastActivity}}
+{{else if eq .State "proposed"}}A fix is proposed in <a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>. <a href="{{.URL}}" rel="noopener">Help test it →</a>
+{{else if eq .State "fixed"}}{{if .Retest}}A fix landed{{with .FixLink}} in <a href="{{.}}" rel="noopener">this change</a>{{end}} on {{.ClosedAt}} (<a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>). <a href="/contribute">Please re-test →</a>{{else}}A fix landed on {{.ClosedAt}} (<a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>), but a later report still fails.{{end}}
+{{else}}Nobody is working on this yet{{if eq .State "stale"}} (the last claim went quiet){{end}}. <a href="{{.URL}}" rel="noopener">Help fix it in issue #{{.Issue}} →</a>{{end}}</p>
+{{else}}{{if eq .Verdict "failed"}}<p><a href="/contribute">Help fix it →</a></p>{{end}}{{end}}{{end}}{{end}}

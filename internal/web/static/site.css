@@ -656,3 +656,16 @@ ul.pmlist .conn.is-hot, ul.pmlist .conn:focus-visible { background: color-mix(in
   ul.pmlist .conn { white-space: normal; }
 }
 .report-ports h2 { font-size: 1rem; margin: 1rem 0 0.4rem; }
+
+/* Fix tracking (PLAN §26). */
+.fixline b { font-weight: 600; }
+.fixes-page .lead { max-width: 70ch; }
+.fix-group { margin: 1.5rem 0; }
+.fix-group h2 { display: flex; gap: 0.5rem; align-items: baseline; }
+.fix-group .count { font-size: 13px; }
+table.fixes td { vertical-align: top; font-size: 13px; }
+table.fixes td.num, table.fixes th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fix-actions { display: grid; gap: 0.4rem; justify-items: start; }
+.fix-actions > form > .btn { white-space: nowrap; }
+table.fixes a.inline-link { text-decoration: underline; }
+.admin-flags .inline-form { display: inline-flex; margin-left: 0.5rem; }
