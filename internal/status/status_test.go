@@ -191,3 +191,45 @@ func TestVerdictText(t *testing.T) {
 		t.Error("unknown verdicts render as Untested")
 	}
 }
+
+// Per-connector criteria (PLAN §25): USB-A on two connectors.
+func TestConnectorRollup(t *testing.T) {
+	pcaps := []Capability{{ID: "boot.install", Label: "Boot → Install", Blocking: true},
+		{ID: "ports.usb-a", Label: "Ports → USB-A", Connectors: []string{"left-4", "right-3"}}}
+	port := func(conn string, verdict Verdict, id int64) Item {
+		it := item("ports.usb-a", verdict, "4.0.4", "2026-10-01", id)
+		it.Connector = conn
+		return it
+	}
+	boot := item("boot.install", Supported, "4.0.4", "2026-10-01", 1)
+	whole := item("ports.usb-a", Supported, "4.0.4", "2026-10-01", 1)
+	tests := []struct {
+		name       string
+		items      []Item
+		verdict    Verdict
+		passed     int
+		tested     int
+		verified   bool
+		incomplete int
+	}{
+		{"untested", []Item{boot}, Untested, 0, 0, false, 1},
+		{"a criterion-level pass counts, but isn't every connector", []Item{boot, whole}, Supported, 0, 0, false, 1},
+		{"one connector passed, one untested", []Item{boot, port("left-4", Supported, 2)}, Supported, 1, 1, false, 1},
+		{"both connectors passed: verified", []Item{boot, port("left-4", Supported, 2), port("right-3", Supported, 3)}, Supported, 2, 2, true, 0},
+		{"one passed, one failed: partial", []Item{boot, port("left-4", Supported, 2), port("right-3", Failed, 3)}, Partial, 1, 2, false, 1},
+		{"every tested connector failed: failed", []Item{boot, port("left-4", Failed, 2)}, Failed, 0, 1, false, 1},
+		{"connectors override a criterion-level item", []Item{boot, whole, port("right-3", Failed, 3)}, Failed, 0, 1, false, 1},
+		{"a later pass on the same connector wins", []Item{boot, port("left-4", Failed, 2),
+			func() Item { it := port("left-4", Supported, 3); it.Omarchy = v("4.0.5"); return it }(), port("right-3", Supported, 4)}, Supported, 2, 2, true, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			st := Config(ConfigInput{Caps: pcaps, Items: tt.items, CurrentMajor: 4})
+			cs := st.Caps["ports.usb-a"]
+			if cs.Verdict != tt.verdict || cs.PortsPassed != tt.passed || cs.PortsTested != tt.tested || cs.PortsTotal != 2 ||
+				st.Verified() != tt.verified || st.Incomplete != tt.incomplete {
+				t.Errorf("verdict %s passed %d tested %d of %d, verified %v, incomplete %d", cs.Verdict, cs.PortsPassed, cs.PortsTested, cs.PortsTotal, st.Verified(), st.Incomplete)
+			}
+		})
+	}
+}

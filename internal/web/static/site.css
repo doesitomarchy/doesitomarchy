@@ -577,3 +577,13 @@ table.shares td:nth-child(2) { white-space: nowrap; }
 .import-form input[type="text"], .import-form select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); padding: 0.25rem 0.5rem; }
 .import-form .btn { justify-self: start; }
 code.evidence { white-space: pre-line; }
+
+/* Per-connector ports (7c, PLAN §25). */
+.capports { display: block; font-size: 12px; margin: 0.15rem 0 0 1.6rem; }
+.capport { white-space: nowrap; margin-left: 0.5rem; font-family: var(--mono); }
+.capport svg.v { margin-right: 0.15rem; }
+ul.layout { list-style: none; padding: 0; margin: 0 0 0.3rem; display: grid; gap: 0.2rem; }
+ul.layout .side { color: var(--muted); }
+ul.layout code { font-size: 11px; color: var(--muted); }
+ul.layout .conn { white-space: nowrap; }
+code.connref { font-size: 11px; color: var(--muted); }

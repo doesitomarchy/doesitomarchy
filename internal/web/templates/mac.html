@@ -52,6 +52,7 @@
       <summary><svg class="catprog" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true"><rect width="{{.Pct}}" height="1"/></svg>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Caps}}{{template "vicon" .Verdict}}{{end}}</span><span class="count">{{.Passed}}/{{len .Caps}} passed</span></summary>
       <ul>{{range .Caps}}{{$cap := .}}<li>{{template "vicon" .Verdict}}<span class="capname" title="{{.Description}}">{{.Name}}</span><span class="st st-{{.Verdict}}">{{.Verdict.Label}}</span>
         {{if .FromLatest}}<span class="capmeta inline">{{.Method}}</span>{{else if .Result}}<span class="capmeta"><a href="/report/{{.Code}}" title="The latest diagnostic report for this capability">{{osver .Omarchy .Kernel}} · {{utc .Date}}</a> · {{.Method}}{{if .Stale}} · <span class="stale" title="Tested on an older Omarchy major version">⌛ older Omarchy</span>{{end}}{{if .Conflict}} · <a href="#results-{{$cfg.ID}}" title="Reports for the same Omarchy version disagree">conflicting reports</a>{{end}}</span>{{end}}
+        {{with .Ports}}<span class="capports"><span class="muted">{{$cap.PortsPassed}} of {{len .}} ports:</span>{{range .}} <span class="capport" title="{{.ID}}: {{.Name}}, {{.Verdict.Label}}">{{template "vicon" .Verdict}}{{.ID}}</span>{{end}}</span>{{end}}
         {{if or .Error .Fix .Reason}}<div class="why{{if eq .Verdict "partial"}} minor{{end}}">{{with .Error}}<p><span class="lbl">{{if eq $cap.Verdict "failed"}}Why it failed{{else}}Reported{{end}}</span> <code>{{.}}</code></p>{{end}}{{with .Reason}}<p><span class="lbl">Unsupported</span> {{.}}</p>{{end}}{{with .Fix}}<p><span class="lbl">Fix</span> {{.}}</p>{{end}}{{if eq .Verdict "failed"}}<p><a href="/contribute">Help fix it →</a></p>{{end}}</div>{{end}}</li>{{end}}</ul>
     </details>
   {{end}}
@@ -72,6 +73,8 @@
       {{range .Components}}<div class="comp"><dt>{{.KindName}}</dt><dd>{{.Name}}{{if .BTO}} <span class="tag bto">BTO</span>{{end}}{{range .Uncertain}} <span class="q-mark" title="{{.Field}}: {{.Note}}">?</span>{{end}}
         {{with .IDs}}<br><span class="hw-id">{{join . " · "}}</span>{{end}}</dd></div>{{end}}
       <div class="wide"><dt>Ports</dt><dd>{{join .Ports " · "}}</dd></div>
+      {{with .Layout}}<div class="wide"><dt>Port layout</dt><dd><ul class="layout">{{range .}}<li><span class="side">{{.Side}}:</span> {{range $i, $c := .Conns}}{{if $i}} · {{end}}<span class="conn"><code>{{$c.ID}}</code> {{$c.Name}}{{with $c.Note}} <span class="alt">({{.}})</span>{{end}}</span>{{end}}</li>{{end}}</ul>
+        {{with $cfg.LayoutNote}}<span class="alt">{{.}}</span><br>{{end}}{{with $cfg.LayoutSrc}}<span class="alt">Numbered left to right as you face each side (top to bottom on a Mac Pro). Source: {{range $i, $u := .}}{{if $i}}, {{end}}<a href="{{$u}}" rel="noopener">{{if eq $i 0}}Apple manual{{else}}Apple Tech Specs{{end}}</a>{{end}}</span>{{end}}</dd></div>{{end}}
       <div class="wide"><dt>Features</dt><dd>{{join .Features " · "}}</dd></div>
       {{with .OrderNumbers}}<div class="wide"><dt>Order no.</dt><dd>{{join . " · "}}</dd></div>{{end}}
     </dl>

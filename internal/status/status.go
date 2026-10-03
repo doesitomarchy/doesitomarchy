@@ -100,6 +100,7 @@ func (v Version) Less(o Version) bool {
 // were not tested, or whose capability does not apply, are never passed in.
 type Item struct {
 	Capability string
+	Connector  string  // the physical connector, for per-connector port items; "" otherwise
 	Verdict    Verdict // Supported, Partial or Failed
 	Method     string  // automatic | observed | fixture
 	Omarchy    Version
@@ -125,6 +126,9 @@ type Capability struct {
 	ID       string
 	Label    string // "Category → Name", for the blocker
 	Blocking bool   // its category's failure blocks install (Boot)
+	// Connectors, when set, are the connectors this criterion is tested on
+	// one by one (PLAN §25): their results roll up into the criterion.
+	Connectors []string
 }
 
 // ConfigInput is what the engine knows about one configuration.
@@ -146,7 +150,17 @@ type CapStatus struct {
 	Conflict bool   // accepted results on the same latest Omarchy version disagree
 	Stale    bool   // the latest result predates the current Omarchy major
 	Reason   string // the maintainer's reason when Unsupported
+	// Per-connector criteria: each connector's own status, and how many
+	// connectors are supported out of all of them.
+	Ports       map[string]CapStatus
+	PortsPassed int
+	PortsTotal  int
+	PortsTested int
 }
+
+// Complete reports whether a per-connector criterion has every connector
+// supported (always true for other criteria).
+func (cs CapStatus) Complete() bool { return cs.PortsPassed == cs.PortsTotal }
 
 // Counts tallies applicable capabilities by their current status.
 type Counts struct {
@@ -163,6 +177,7 @@ type ConfigStatus struct {
 	Applicable int
 	Tested     int    // applicable capabilities with a current result
 	Conflicts  int    // capabilities with conflicting reports
+	Incomplete int    // per-connector criteria with connectors not yet supported
 	Stale      bool   // at least one current result predates the current Omarchy major
 	Results    int    // accepted results for this config
 	Latest     string // newest accepted result's test date ("" when none)
@@ -196,6 +211,66 @@ func capStatus(items []Item, unsupported string, hasUnsupported bool, currentMaj
 	return cs
 }
 
+// connectorStatus works out a per-connector criterion (PLAN §25): each
+// connector's latest result stands for that connector. When any connector
+// has been tested, the connectors decide: all supported → Supported; some
+// supported and some not → Partial; none supported → Failed (or Partial when
+// only partly working). Until then, a criterion-level item (no connector)
+// counts as before.
+func connectorStatus(conns []string, items []Item, unsupported string, hasUnsupported bool, currentMajor int) CapStatus {
+	byConn := map[string][]Item{}
+	var general []Item
+	for _, it := range items {
+		if it.Connector == "" {
+			general = append(general, it)
+		} else {
+			byConn[it.Connector] = append(byConn[it.Connector], it)
+		}
+	}
+	cs := CapStatus{Ports: map[string]CapStatus{}, PortsTotal: len(conns)}
+	var supported, failed, partial int
+	for _, cn := range conns {
+		pc := capStatus(byConn[cn], "", false, currentMajor)
+		cs.Ports[cn] = pc
+		if pc.Latest == nil {
+			continue
+		}
+		cs.PortsTested++
+		if cs.Latest == nil || newer(*pc.Latest, *cs.Latest) {
+			cs.Latest = pc.Latest
+		}
+		cs.Conflict = cs.Conflict || pc.Conflict
+		cs.Stale = cs.Stale || pc.Stale
+		switch pc.Verdict {
+		case Supported:
+			supported++
+		case Failed:
+			failed++
+		default:
+			partial++
+		}
+	}
+	cs.PortsPassed = supported
+	switch {
+	case cs.PortsTested == 0:
+		g := capStatus(general, "", false, currentMajor)
+		cs.Verdict, cs.Latest, cs.Conflict, cs.Stale = g.Verdict, g.Latest, g.Conflict, g.Stale
+	case supported == cs.PortsTested:
+		cs.Verdict = Supported
+	case supported > 0 || partial > 0:
+		cs.Verdict = Partial
+	default:
+		cs.Verdict = Failed
+	}
+	if cs.Conflict && cs.Verdict == Supported {
+		cs.Verdict = Partial
+	}
+	if hasUnsupported {
+		cs.Verdict, cs.Reason = Unsupported, unsupported
+	}
+	return cs
+}
+
 // Config computes one configuration's status.
 func Config(in ConfigInput) ConfigStatus {
 	st := ConfigStatus{Verdict: Untested, Excluded: in.Excluded, Applicable: len(in.Caps), Results: in.Results,
@@ -207,7 +282,15 @@ func Config(in ConfigInput) ConfigStatus {
 	bootUnsupported, bootFailed, problem := false, false, false
 	for _, c := range in.Caps {
 		reason, flagged := in.Unsupported[c.ID]
-		cs := capStatus(byCap[c.ID], reason, flagged, in.CurrentMajor)
+		var cs CapStatus
+		if len(c.Connectors) > 0 {
+			cs = connectorStatus(c.Connectors, byCap[c.ID], reason, flagged, in.CurrentMajor)
+			if !cs.Complete() {
+				st.Incomplete++
+			}
+		} else {
+			cs = capStatus(byCap[c.ID], reason, flagged, in.CurrentMajor)
+		}
 		st.Caps[c.ID] = cs
 		if cs.Latest != nil || flagged {
 			st.Tested++
@@ -260,10 +343,11 @@ func Config(in ConfigInput) ConfigStatus {
 	return st
 }
 
-// Verified reports whether every applicable capability passed, with no
-// conflicts: the Omarchy badge and the compatibility-coverage numerator.
+// Verified reports whether every applicable capability passed, on every
+// connector it applies to, with no conflicts: the Omarchy badge and the
+// compatibility-coverage numerator.
 func (s ConfigStatus) Verified() bool {
-	return s.Verdict != NotCompatible && s.Applicable > 0 && s.Counts.Supported == s.Applicable && s.Conflicts == 0
+	return s.Verdict != NotCompatible && s.Applicable > 0 && s.Counts.Supported == s.Applicable && s.Conflicts == 0 && s.Incomplete == 0
 }
 
 // Coverage holds the two home-page metrics (PLAN §6.1).

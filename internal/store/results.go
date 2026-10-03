@@ -659,7 +659,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	r.CurrentMajor, _ = strconv.Atoi(major)
 	r.Version, _ = strconv.ParseInt(version, 10, 64)
 
-	rows, err := tx.QueryContext(ctx, `SELECT r.id, r.config_id, i.capability_id, i.status, i.method, i.evidence,
+	rows, err := tx.QueryContext(ctx, `SELECT r.id, r.config_id, i.capability_id, i.connector, i.status, i.method, i.evidence,
 		r.omarchy_major, r.omarchy_minor, r.omarchy_patch, r.tested_at
 		FROM result_items i JOIN results r ON r.id = i.result_id
 		WHERE r.state = 'accepted' AND i.applicable = 1 AND i.status <> 'not_tested'`)
@@ -669,7 +669,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	for rows.Next() {
 		var it status.Item
 		var cfg, st string
-		if err := rows.Scan(&it.ResultID, &cfg, &it.Capability, &st, &it.Method, &it.Evidence,
+		if err := rows.Scan(&it.ResultID, &cfg, &it.Capability, &it.Connector, &st, &it.Method, &it.Evidence,
 			&it.Omarchy.Major, &it.Omarchy.Minor, &it.Omarchy.Patch, &it.TestedAt); err != nil {
 			rows.Close()
 			return nil, err

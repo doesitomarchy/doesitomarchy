@@ -67,29 +67,40 @@ cpu_codenames:
   ice-lake:       { name: Ice Lake,       family: ice-lake,       bits: 64 }
 
 # Port classes. A config lists the classes it has, with a count.
+# Port classes. `tests` lists the criteria each connector of the class is
+# tested for, one result per connector (PLAN.md §25); ports.usb-c-charging
+# also applies to USB-C and Thunderbolt 3 connectors on Macs with the
+# usb-c-charging feature.
 ports:
-  usb-a-2:            { name: USB 2.0 (Type-A) }
-  usb-a-3:            { name: USB 3 (Type-A) }
-  usb-c:              { name: USB-C (non-Thunderbolt), video: true }
-  thunderbolt-1:      { name: Thunderbolt, video: true }
-  thunderbolt-2:      { name: Thunderbolt 2, video: true }
-  thunderbolt-3:      { name: Thunderbolt 3 (USB-C), video: true }
-  hdmi:               { name: HDMI, video: true }
-  mini-displayport:   { name: Mini DisplayPort, video: true }
-  mini-dvi:           { name: Mini-DVI, video: true }
-  micro-dvi:          { name: Micro-DVI, video: true }
-  dvi:                { name: DVI, video: true }
-  firewire-400:       { name: FireWire 400 }
-  firewire-800:       { name: FireWire 800 }
-  ethernet-fast:      { name: Fast Ethernet (100 Mb/s) }
-  ethernet-gbe:       { name: Gigabit Ethernet }
-  ethernet-10gbe:     { name: 10Gb Ethernet }
-  sd-card:            { name: SD card slot }
-  expresscard-34:     { name: ExpressCard/34 }
-  audio-out:          { name: Headphone / line out (analog) }
-  audio-out-optical:  { name: Optical digital audio out }
-  audio-in:           { name: Line in (analog) }
-  audio-in-optical:   { name: Optical digital audio in }
+  usb-a-2:            { name: USB 2.0 (Type-A), tests: [ports.usb-a] }
+  usb-a-3:            { name: USB 3 (Type-A), tests: [ports.usb-a] }
+  usb-c:              { name: USB-C (non-Thunderbolt), video: true, tests: [ports.usb-c, graphics.external-display] }
+  thunderbolt-1:      { name: Thunderbolt, video: true, tests: [ports.thunderbolt, graphics.external-display] }
+  thunderbolt-2:      { name: Thunderbolt 2, video: true, tests: [ports.thunderbolt, graphics.external-display] }
+  thunderbolt-3:      { name: Thunderbolt 3 (USB-C), video: true, tests: [ports.usb-c, ports.thunderbolt, graphics.external-display] }
+  hdmi:               { name: HDMI, video: true, tests: [graphics.external-display] }
+  mini-displayport:   { name: Mini DisplayPort, video: true, tests: [graphics.external-display] }
+  mini-dvi:           { name: Mini-DVI, video: true, tests: [graphics.external-display] }
+  micro-dvi:          { name: Micro-DVI, video: true, tests: [graphics.external-display] }
+  dvi:                { name: DVI, video: true, tests: [graphics.external-display] }
+  firewire-400:       { name: FireWire 400, tests: [ports.firewire] }
+  firewire-800:       { name: FireWire 800, tests: [ports.firewire] }
+  ethernet-fast:      { name: Fast Ethernet (100 Mb/s), tests: [network.ethernet] }
+  ethernet-gbe:       { name: Gigabit Ethernet, tests: [network.ethernet] }
+  ethernet-10gbe:     { name: 10Gb Ethernet, tests: [network.ethernet] }
+  sd-card:            { name: SD card slot, tests: [ports.sd-card] }
+  expresscard-34:     { name: ExpressCard/34, tests: [ports.expresscard] }
+  audio-out:          { name: Headphone / line out (analog), tests: [audio.headphone] }
+  audio-out-optical:  { name: Optical digital audio out, tests: [audio.optical-out] }
+  audio-in:           { name: Line in (analog), tests: [audio.line-in] }
+  audio-in-optical:   { name: Optical digital audio in, tests: [audio.optical-in] }
+
+# Connectors in a port layout (data/layouts) that aren't port classes: power
+# inlets, listed so testers can find their way around. No criteria apply.
+power_connectors:
+  magsafe:            { name: MagSafe power }
+  magsafe-2:          { name: MagSafe 2 power }
+  power:              { name: Power inlet }
 
 # Physical features that decide which test criteria apply.
 features:

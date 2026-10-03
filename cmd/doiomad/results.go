@@ -290,9 +290,10 @@ func preview(ctx context.Context, st *store.Store, c *catalog.Catalog, r *result
 		cats[k.ID] = k
 	}
 	var caps []status.Capability
+	conns := c.CriterionConnectors(m, cfg)
 	for _, cp := range c.Applicable(m, cfg) {
 		k := cats[cp.Category()]
-		caps = append(caps, status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking})
+		caps = append(caps, status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking, Connectors: conns[cp.ID]})
 	}
 	in := status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Caps: caps, Items: ru.Items[cfg.ID],
 		Unsupported: ru.Unsupported[cfg.ID], Results: ru.Results[cfg.ID], LatestResult: ru.Latest[cfg.ID], CurrentMajor: ru.CurrentMajor}
@@ -301,7 +302,7 @@ func preview(ctx context.Context, st *store.Store, c *catalog.Catalog, r *result
 	items := append([]status.Item(nil), in.Items...)
 	for _, it := range r.Items {
 		if it.Applicable && it.Status != "not_tested" {
-			items = append(items, status.Item{Capability: it.Capability, Verdict: verdicts[it.Status], Method: it.Method,
+			items = append(items, status.Item{Capability: it.Capability, Connector: it.Connector, Verdict: verdicts[it.Status], Method: it.Method,
 				Omarchy: r.Omarchy, TestedAt: r.TestedAt, ResultID: 1 << 62, Evidence: it.Evidence})
 		}
 	}

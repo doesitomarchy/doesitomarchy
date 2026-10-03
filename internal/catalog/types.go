@@ -1,5 +1,7 @@
 package catalog
 
+import "strings"
+
 // Vocabulary is data/vocabulary.yaml: every controlled value the catalog may use.
 type Vocabulary struct {
 	Lines          map[string]Line        `yaml:"lines" json:"lines"`
@@ -7,6 +9,7 @@ type Vocabulary struct {
 	ComponentKinds map[string]Named       `yaml:"component_kinds" json:"component_kinds"`
 	CPUCodenames   map[string]CPUCodename `yaml:"cpu_codenames" json:"cpu_codenames"`
 	Ports          map[string]Port        `yaml:"ports" json:"ports"`
+	PowerConn      map[string]Named       `yaml:"power_connectors" json:"power_connectors"`
 	Features       map[string]Named       `yaml:"features" json:"features"`
 }
 
@@ -27,8 +30,9 @@ type CPUCodename struct {
 }
 
 type Port struct {
-	Name  string `yaml:"name" json:"name"`
-	Video bool   `yaml:"video" json:"video"`
+	Name  string   `yaml:"name" json:"name"`
+	Video bool     `yaml:"video" json:"video"`
+	Tests []string `yaml:"tests" json:"tests"` // criteria each connector of this class is tested for
 }
 
 // CapabilityFile is data/capabilities.yaml.
@@ -137,6 +141,43 @@ type Config struct {
 	Aliases       []string       `yaml:"aliases" json:"aliases"` // former IDs of this config
 	Sources       []string       `yaml:"sources" json:"sources"`
 	Uncertain     []Uncertain    `yaml:"uncertain" json:"uncertain"`
+
+	// Connectors is the configuration's port layout, from data/layouts
+	// (its release's, unless the configuration has its own); nil when not
+	// researched yet.
+	Connectors    []Connector `yaml:"-" json:"connectors,omitempty"`
+	LayoutSources []string    `yaml:"-" json:"layout_sources,omitempty"`
+	LayoutNote    string      `yaml:"-" json:"layout_note,omitempty"`
+}
+
+// Connector is one physical connector in a port layout (PLAN.md §25).
+type Connector struct {
+	ID   string   `yaml:"id" json:"id"`               // <side>-<n>, numbered left to right facing that side
+	Type string   `yaml:"type" json:"type"`           // a port class, a power connector, or "ethernet"
+	Also []string `yaml:"also" json:"also,omitempty"` // more port classes the same connector carries
+	Note string   `yaml:"note" json:"note,omitempty"` // e.g. "nearest the hinge"
+}
+
+// Side is the connector's side: left, right, back, front or top.
+func (c Connector) Side() string {
+	side, _, _ := strings.Cut(c.ID, "-")
+	return side
+}
+
+// LayoutFile is one data/layouts/<Identifier>.yaml file: port layouts per
+// release, researched from Apple's manuals.
+type LayoutFile struct {
+	Identifier string                   `yaml:"identifier"`
+	Releases   map[string]ReleaseLayout `yaml:"releases"`
+
+	File string `yaml:"-"`
+}
+
+type ReleaseLayout struct {
+	Sources    []string               `yaml:"sources"`
+	Note       string                 `yaml:"note"`
+	Connectors []Connector            `yaml:"connectors"`
+	Configs    map[string][]Connector `yaml:"configs"` // a configuration whose layout differs
 }
 
 type CPU struct {
@@ -182,4 +223,5 @@ type Catalog struct {
 	CoverageRules []CoverageRule // data/coverage.yaml (optional)
 	Aliases       []Alias        // data/aliases.yaml (optional)
 	Changelog     []ChangeEntry  // data/changelog.yaml (optional)
+	Layouts       []*LayoutFile  // data/layouts (optional, PLAN §25)
 }
