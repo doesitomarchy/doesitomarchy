@@ -3,17 +3,19 @@ identifier: MacBookPro15,2
 releases:
   "13-2018-4tb3":
     sources: [https://cdsassets.apple.com/live/6GJYWVAV/start/ma1828_macbook_pro_13_mid2018_4t3_qsg.pdf]
+    note: "Two Thunderbolt 3 controllers (every linuxhw probe of this model shows two); each side's pair shares one."
     connectors:
-      - { id: left-1, type: thunderbolt-3 }
-      - { id: left-2, type: thunderbolt-3 }
-      - { id: right-1, type: thunderbolt-3 }
-      - { id: right-2, type: thunderbolt-3 }
+      - { id: left-1, type: thunderbolt-3, group: tb3-left }
+      - { id: left-2, type: thunderbolt-3, group: tb3-left }
+      - { id: right-1, type: thunderbolt-3, group: tb3-right }
+      - { id: right-2, type: thunderbolt-3, group: tb3-right }
       - { id: right-3, type: audio-out }
   "13-2019-4tb3":
     sources: [https://cdsassets.apple.com/live/6GJYWVAV/start/ma1881_mbp-13-mid2019-4t3-macos-catalina-qsg.pdf]
+    note: "Two Thunderbolt 3 controllers (every linuxhw probe of this model shows two); each side's pair shares one."
     connectors:
-      - { id: left-1, type: thunderbolt-3 }
-      - { id: left-2, type: thunderbolt-3 }
-      - { id: right-1, type: thunderbolt-3 }
-      - { id: right-2, type: thunderbolt-3 }
+      - { id: left-1, type: thunderbolt-3, group: tb3-left }
+      - { id: left-2, type: thunderbolt-3, group: tb3-left }
+      - { id: right-1, type: thunderbolt-3, group: tb3-right }
+      - { id: right-2, type: thunderbolt-3, group: tb3-right }
       - { id: right-3, type: audio-out }

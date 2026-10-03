@@ -3,14 +3,14 @@ identifier: Macmini8,1
 releases:
   "2018":
     sources: [https://cdsassets.apple.com/live/6GJYWVAV/start/ma1843_mac-mini-2018-qsg.pdf]
-    note: "Gigabit Ethernet, or 10Gb Ethernet as a build-to-order option, in the same place."
+    note: "Gigabit Ethernet, or 10Gb Ethernet as a build-to-order option, in the same place. Two Thunderbolt 3 controllers (linuxhw probes), one per adjacent pair of ports."
     connectors:
       - { id: back-1, type: power }
       - { id: back-2, type: ethernet }
-      - { id: back-3, type: thunderbolt-3 }
-      - { id: back-4, type: thunderbolt-3 }
-      - { id: back-5, type: thunderbolt-3 }
-      - { id: back-6, type: thunderbolt-3 }
+      - { id: back-3, type: thunderbolt-3, group: tb3-pair-1 }
+      - { id: back-4, type: thunderbolt-3, group: tb3-pair-1 }
+      - { id: back-5, type: thunderbolt-3, group: tb3-pair-2 }
+      - { id: back-6, type: thunderbolt-3, group: tb3-pair-2 }
       - { id: back-7, type: hdmi }
       - { id: back-8, type: usb-a-3 }
       - { id: back-9, type: usb-a-3 }

@@ -3,9 +3,10 @@ identifier: MacBookPro14,3
 releases:
   "15-2017":
     sources: [https://cdsassets.apple.com/live/6GJYWVAV/start/ma1786_macbook_pro_15_mid2017_qsg.pdf]
+    note: "Two Thunderbolt 3 controllers (every linuxhw probe of this model shows two); each side's pair shares one."
     connectors:
-      - { id: left-1, type: thunderbolt-3 }
-      - { id: left-2, type: thunderbolt-3 }
-      - { id: right-1, type: thunderbolt-3 }
-      - { id: right-2, type: thunderbolt-3 }
+      - { id: left-1, type: thunderbolt-3, group: tb3-left }
+      - { id: left-2, type: thunderbolt-3, group: tb3-left }
+      - { id: right-1, type: thunderbolt-3, group: tb3-right }
+      - { id: right-2, type: thunderbolt-3, group: tb3-right }
       - { id: right-3, type: audio-out }

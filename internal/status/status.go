@@ -126,9 +126,23 @@ type Capability struct {
 	ID       string
 	Label    string // "Category → Name", for the blocker
 	Blocking bool   // its category's failure blocks install (Boot)
-	// Connectors, when set, are the connectors this criterion is tested on
-	// one by one (PLAN §25): their results roll up into the criterion.
+	// Groups, when set, are the port groups this criterion is judged on
+	// (PLAN §25.1a): connectors sharing a controller, where one passing
+	// connector covers the group.
+	Groups []Group
+}
+
+// Group is a set of connectors judged together.
+type Group struct {
+	ID         string
 	Connectors []string
+}
+
+// PortStatus is one connector's status within a per-connector criterion.
+type PortStatus struct {
+	Verdict   Verdict // its own latest result; Untested when none
+	CoveredBy string  // untested, but a connector in its group passed
+	Suspect   bool    // it failed while a connector in its group passed: probably a damaged port
 }
 
 // ConfigInput is what the engine knows about one configuration.
@@ -150,17 +164,17 @@ type CapStatus struct {
 	Conflict bool   // accepted results on the same latest Omarchy version disagree
 	Stale    bool   // the latest result predates the current Omarchy major
 	Reason   string // the maintainer's reason when Unsupported
-	// Per-connector criteria: each connector's own status, and how many
-	// connectors are supported out of all of them.
-	Ports       map[string]CapStatus
-	PortsPassed int
-	PortsTotal  int
-	PortsTested int
+	// Per-connector criteria: each connector's status, and how many port
+	// groups are covered by a passing connector.
+	Ports        map[string]PortStatus
+	GroupsPassed int
+	GroupsTotal  int
+	GroupsTested int
 }
 
-// Complete reports whether a per-connector criterion has every connector
-// supported (always true for other criteria).
-func (cs CapStatus) Complete() bool { return cs.PortsPassed == cs.PortsTotal }
+// Complete reports whether every port group of a per-connector criterion has
+// a passing connector (always true for other criteria).
+func (cs CapStatus) Complete() bool { return cs.GroupsPassed == cs.GroupsTotal }
 
 // Counts tallies applicable capabilities by their current status.
 type Counts struct {
@@ -177,7 +191,7 @@ type ConfigStatus struct {
 	Applicable int
 	Tested     int    // applicable capabilities with a current result
 	Conflicts  int    // capabilities with conflicting reports
-	Incomplete int    // per-connector criteria with connectors not yet supported
+	Incomplete int    // per-connector criteria with a port group not yet covered
 	Stale      bool   // at least one current result predates the current Omarchy major
 	Results    int    // accepted results for this config
 	Latest     string // newest accepted result's test date ("" when none)
@@ -211,13 +225,15 @@ func capStatus(items []Item, unsupported string, hasUnsupported bool, currentMaj
 	return cs
 }
 
-// connectorStatus works out a per-connector criterion (PLAN §25): each
-// connector's latest result stands for that connector. When any connector
-// has been tested, the connectors decide: all supported → Supported; some
-// supported and some not → Partial; none supported → Failed (or Partial when
-// only partly working). Until then, a criterion-level item (no connector)
-// counts as before.
-func connectorStatus(conns []string, items []Item, unsupported string, hasUnsupported bool, currentMajor int) CapStatus {
+// groupStatus works out a per-connector criterion by port group (PLAN
+// §25.1a). Each connector's latest result stands for that connector. A group
+// is Supported when any of its connectors passed; a connector that failed
+// while a group-mate passed is marked Suspect (a damaged port, not a driver
+// problem). The criterion: all tested groups supported → Supported; some
+// supported → Partial; none → Failed. A criterion-level item (no connector)
+// stands for the group when there is only one; otherwise it decides the
+// verdict only until a connector is tested, and completes nothing.
+func groupStatus(groups []Group, items []Item, unsupported string, hasUnsupported bool, currentMajor int) CapStatus {
 	byConn := map[string][]Item{}
 	var general []Item
 	for _, it := range items {
@@ -227,21 +243,60 @@ func connectorStatus(conns []string, items []Item, unsupported string, hasUnsupp
 			byConn[it.Connector] = append(byConn[it.Connector], it)
 		}
 	}
-	cs := CapStatus{Ports: map[string]CapStatus{}, PortsTotal: len(conns)}
+	cs := CapStatus{Ports: map[string]PortStatus{}, GroupsTotal: len(groups)}
+	use := func(l *Item, conflict, stale bool) {
+		if l != nil && (cs.Latest == nil || newer(*l, *cs.Latest)) {
+			cs.Latest = l
+		}
+		cs.Conflict = cs.Conflict || conflict
+		cs.Stale = cs.Stale || stale
+	}
 	var supported, failed, partial int
-	for _, cn := range conns {
-		pc := capStatus(byConn[cn], "", false, currentMajor)
-		cs.Ports[cn] = pc
-		if pc.Latest == nil {
+	for _, g := range groups {
+		var gv Verdict = Untested
+		passedBy, tested := "", false
+		own := map[string]CapStatus{}
+		for _, cn := range g.Connectors {
+			pc := capStatus(byConn[cn], "", false, currentMajor)
+			own[cn] = pc
+			if pc.Latest == nil {
+				continue
+			}
+			tested = true
+			use(pc.Latest, pc.Conflict, pc.Stale)
+			switch {
+			case pc.Verdict == Supported && passedBy == "":
+				passedBy = cn
+			case pc.Verdict == Partial && gv != Supported:
+				gv = Partial
+			case pc.Verdict == Failed && gv == Untested:
+				gv = Failed
+			}
+		}
+		if passedBy != "" {
+			gv = Supported
+		}
+		if !tested && len(groups) == 1 && len(general) > 0 {
+			gs := capStatus(general, "", false, currentMajor)
+			gv, tested = gs.Verdict, true
+			use(gs.Latest, gs.Conflict, gs.Stale)
+			if gv == Supported {
+				passedBy = "the whole criterion"
+			}
+		}
+		for _, cn := range g.Connectors {
+			ps := PortStatus{Verdict: own[cn].Verdict}
+			if gv == Supported && ps.Verdict == Untested {
+				ps.CoveredBy = passedBy
+			}
+			ps.Suspect = gv == Supported && (ps.Verdict == Failed || ps.Verdict == Partial)
+			cs.Ports[cn] = ps
+		}
+		if !tested {
 			continue
 		}
-		cs.PortsTested++
-		if cs.Latest == nil || newer(*pc.Latest, *cs.Latest) {
-			cs.Latest = pc.Latest
-		}
-		cs.Conflict = cs.Conflict || pc.Conflict
-		cs.Stale = cs.Stale || pc.Stale
-		switch pc.Verdict {
+		cs.GroupsTested++
+		switch gv {
 		case Supported:
 			supported++
 		case Failed:
@@ -250,12 +305,12 @@ func connectorStatus(conns []string, items []Item, unsupported string, hasUnsupp
 			partial++
 		}
 	}
-	cs.PortsPassed = supported
+	cs.GroupsPassed = supported
 	switch {
-	case cs.PortsTested == 0:
+	case cs.GroupsTested == 0:
 		g := capStatus(general, "", false, currentMajor)
 		cs.Verdict, cs.Latest, cs.Conflict, cs.Stale = g.Verdict, g.Latest, g.Conflict, g.Stale
-	case supported == cs.PortsTested:
+	case supported == cs.GroupsTested:
 		cs.Verdict = Supported
 	case supported > 0 || partial > 0:
 		cs.Verdict = Partial
@@ -283,8 +338,8 @@ func Config(in ConfigInput) ConfigStatus {
 	for _, c := range in.Caps {
 		reason, flagged := in.Unsupported[c.ID]
 		var cs CapStatus
-		if len(c.Connectors) > 0 {
-			cs = connectorStatus(c.Connectors, byCap[c.ID], reason, flagged, in.CurrentMajor)
+		if len(c.Groups) > 0 {
+			cs = groupStatus(c.Groups, byCap[c.ID], reason, flagged, in.CurrentMajor)
 			if !cs.Complete() {
 				st.Incomplete++
 			}
@@ -343,8 +398,8 @@ func Config(in ConfigInput) ConfigStatus {
 	return st
 }
 
-// Verified reports whether every applicable capability passed, on every
-// connector it applies to, with no conflicts: the Omarchy badge and the
+// Verified reports whether every applicable capability passed, in every
+// port group it applies to, with no conflicts: the Omarchy badge and the
 // compatibility-coverage numerator.
 func (s ConfigStatus) Verified() bool {
 	return s.Verdict != NotCompatible && s.Applicable > 0 && s.Counts.Supported == s.Applicable && s.Conflicts == 0 && s.Incomplete == 0

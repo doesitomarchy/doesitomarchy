@@ -163,8 +163,9 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	}
 
 	// Per-connector port results (PLAN §25) on MacBookPro11,3: one USB port
-	// passes and one fails, so USB-A is Partial; HDMI and one Thunderbolt
-	// port pass; the other connectors stay untested.
+	// passes and the other, on the same controller, fails (a suspect port,
+	// flagged; USB-A stays Supported); HDMI and one Thunderbolt port pass and
+	// cover their groups.
 	ports := &results.File{Schema: results.SchemaV1, Config: "macbookpro11-3-15-late-2013-a", TestedAt: "2026-09-29T15:30:00Z",
 		Omarchy: results.FileOmarchy{Version: "4.0.4"}, Tester: results.FileTester{Handle: "demo-tester"},
 		Source: results.FileSource{ID: "manual", Profile: "ports"}, Items: map[string]results.FileItem{

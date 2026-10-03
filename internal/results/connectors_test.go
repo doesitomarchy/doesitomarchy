@@ -40,6 +40,11 @@ items:
 		t.Errorf("items:\n%s\nwant\n%s", strings.Join(got, " "), want)
 	}
 
+	// USB-A left-4 passed and right-3 failed: same controller, so a suspect port.
+	if len(r.Flags) != 1 || r.Flags[0].Kind != FlagPortSuspect || !strings.Contains(r.Flags[0].Detail, "right-3 failed while left-4") {
+		t.Errorf("flags: %+v", r.Flags)
+	}
+
 	for name, tc := range map[string]struct{ item, want string }{
 		"no such connector":     {"ports.usb-a@left-9", `no connector "left-9"`},
 		"wrong kind of port":    {"ports.usb-a@right-1", "isn't tested for ports.usb-a"},
