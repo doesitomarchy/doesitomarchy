@@ -81,6 +81,8 @@ jobs:
 
   deploy:
     needs: release
+    # Without this, a skipped ci job (main's run was reused) skips the deploy too.
+    if: ${{ !cancelled() && needs.release.result == 'success' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
