@@ -42,6 +42,14 @@ func (l *loader) validateLayouts() {
 		macs[m.Identifier] = m
 	}
 	seen := map[string]bool{}
+	drawn := map[string]bool{} // port map drawings that belong to a laid-out release
+	defer func() {
+		for key := range c.Portmaps {
+			if !drawn[key] {
+				l.errf("portmaps/"+key+".svg", "no release with a port layout has this key (<Identifier>_<release>)")
+			}
+		}
+	}()
 	for _, lf := range c.Layouts {
 		p := lf.File
 		m := macs[lf.Identifier]
@@ -103,6 +111,9 @@ func (l *loader) validateLayouts() {
 					continue
 				}
 				cfg.Connectors, cfg.LayoutSources, cfg.LayoutNote = conns, rl.Sources, rl.Note
+				if key := l.matchPortmap(p, lf.Identifier, rid, cfg); key != "" {
+					drawn[key] = true
+				}
 			}
 		}
 	}

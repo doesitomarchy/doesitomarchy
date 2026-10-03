@@ -393,4 +393,30 @@
       window.location = "/identify?" + (q.toString() || "none=1");
     });
   }
+  // Port map drawings (PLAN §27): hovering or focusing a port, its callout or its
+  // line in the port list highlights all three.
+  function pmHot(e, on) {
+    var t = e.target && e.target.closest ? e.target.closest("[data-conn]") : null;
+    var scope = t && t.closest("dd, .report-ports");
+    if (!scope) return;
+    var id = t.getAttribute("data-conn");
+    scope.querySelectorAll('[data-conn="' + id + '"]').forEach(function (n) { n.classList.toggle("is-hot", on); });
+  }
+  document.addEventListener("mouseover", function (e) { pmHot(e, true); });
+  document.addEventListener("mouseout", function (e) { pmHot(e, false); });
+  document.addEventListener("focusin", function (e) { pmHot(e, true); });
+  document.addEventListener("focusout", function (e) { pmHot(e, false); });
+  // Drawings load when their Hardware details open (they'd weigh down pages
+  // with many configurations otherwise); <noscript> shows the plain drawing.
+  function pmLoad(d) {
+    d.querySelectorAll("figure[data-pmsrc]").forEach(function (f) {
+      var src = f.getAttribute("data-pmsrc");
+      f.removeAttribute("data-pmsrc");
+      fetch(src).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
+        if (t) f.querySelector(".pmslot").innerHTML = t;
+      });
+    });
+  }
+  document.addEventListener("toggle", function (e) { if (e.target.open && e.target.querySelectorAll) pmLoad(e.target); }, true);
+  document.querySelectorAll("details[open]").forEach(pmLoad);
 })();

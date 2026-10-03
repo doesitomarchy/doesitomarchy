@@ -33,7 +33,7 @@ func gzSize(t *testing.T, base, path string) int {
 func TestPageWeight(t *testing.T) {
 	ts := newTestServer(t)
 	for _, path := range []string{"/", "/search?q=mbp+2011", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
-		"/mac/MacPro7-1", "/criteria", "/stats", "/methodology", "/contribute", "/configs", "/components", "/releases", "/changelog", "/attribution"} {
+		"/mac/MacPro7-1", "/mac/MacPro5-1", "/mac/iMac18-3", "/criteria", "/stats", "/methodology", "/contribute", "/configs", "/components", "/releases", "/changelog", "/attribution"} {
 		res, err := ts.Client().Get(ts.URL + path)
 		if err != nil {
 			t.Fatal(err)

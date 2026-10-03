@@ -591,3 +591,68 @@ code.connref { font-size: 11px; color: var(--muted); }
 .capport.covered { color: var(--muted); }
 .capport.covered svg.v { color: var(--muted); }
 .capport.suspect .tag { font-size: 10px; }
+
+/* ── Port map drawings (PLAN §27) ──────────────────────────────────────────
+   Inline SVGs from data/portmaps, drawn in the text colour. The site CSP forbids
+   inline styles, so the drawing styles live here. Ports and their callouts carry
+   data-conn, and data-st when the connector has results. */
+.pmfig { margin: 0.2rem 0 0.7rem; }
+.pmfig figcaption { font-size: 12px; color: var(--muted); margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; align-items: center; }
+.pmimg { display: block; max-width: 100%; height: auto; }
+svg.pm { display: block; max-width: 100%; height: auto; color: var(--text); }
+.pm .pm-o { fill: none; stroke: currentColor; stroke-width: .45; stroke-linejoin: round; }
+.pm .pm-t { fill: none; stroke: currentColor; stroke-width: .25; }
+.pm .pm-f { fill: none; stroke: currentColor; stroke-width: .3; opacity: .45; }
+.pm .pm-p { fill: currentColor; fill-opacity: .1; stroke: currentColor; stroke-width: .35; stroke-linejoin: round; }
+.pm .pm-d { fill: none; stroke: currentColor; stroke-width: .3; }
+.pm .pm-k .pm-c, .pm .pm-c { fill: none; stroke: currentColor; stroke-width: .3; }
+.pm .pm-l { fill: none; stroke: currentColor; stroke-width: .25; stroke-dasharray: .5 .7; opacity: .7; }
+.pm .pm-x { fill: currentColor; font: 3.8px/1 var(--sans); }
+.pm .pm-n { fill: currentColor; font: 600 3.3px/1 var(--sans); text-anchor: middle; dominant-baseline: central; }
+.pm .pm-nb { fill: currentColor; font: 600 7.4px/1 var(--sans); text-anchor: middle; dominant-baseline: central; }
+.pm .pm-h { fill: currentColor; font: 600 3.4px/1 var(--sans); letter-spacing: .35px; text-transform: uppercase; }
+.pm .pm-e { fill: currentColor; font: 3px/1 var(--sans); opacity: .6; }
+.pm .pm-k { cursor: default; }
+/* The larger callout numbers replace the normal ones on narrow screens. */
+.pm .pm-lg { display: none; }
+@media (max-width: 600px) {
+  .pm .pm-sm { display: none; } .pm .pm-lg { display: inline; }
+  .pmfig:has(svg.pm-wide) { overflow-x: auto; }
+  svg.pm-wide { max-width: none; width: 560px; }
+}
+/* Status colours: green only for passed tests. */
+.pm [data-st="supported"], .pm [data-st="covered"], .pm [data-st="partly"] { color: var(--ok); }
+.pm [data-st="partial"], .pm [data-st="suspect"] { color: var(--warn); }
+.pm [data-st="failed"] { color: var(--bad); }
+.pm .pm-port[data-st] .pm-p { fill-opacity: .32; stroke-width: .5; }
+.pm .pm-port[data-st="partly"] .pm-p { fill-opacity: 0; stroke-width: .6; }
+.pm .pm-port[data-st="covered"] .pm-p { fill-opacity: .14; stroke-dasharray: .9 .5; }
+.pm .pm-port[data-st="suspect"] .pm-p { stroke-dasharray: .9 .5; }
+.pm .pm-k[data-st] .pm-c { fill: currentColor; fill-opacity: .16; stroke-width: .45; }
+.pm .pm-k[data-st] .pm-l { opacity: 1; }
+/* Hover or focus on a port, a callout or a list line highlights all three. */
+.pm .is-hot .pm-c, .pm .pm-port.is-hot .pm-p { stroke-width: .8; }
+.pm .pm-k.is-hot .pm-l { opacity: 1; stroke-width: .4; }
+ul.pmlist .conn { border-radius: 3px; padding: 0 0.15rem; }
+ul.pmlist .conn.is-hot, ul.pmlist .conn:focus-visible { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.pmnum { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; margin-right: 0.3rem; border: 1px solid currentColor;
+  border-radius: 1em; font: 600 10px/1 var(--sans); color: var(--text); padding: 0 0.15em; vertical-align: 1px; }
+.pmnum[data-st="supported"], .pmnum[data-st="covered"], .pmnum[data-st="partly"] { color: var(--ok); }
+.pmnum[data-st="partial"], .pmnum[data-st="suspect"] { color: var(--warn); }
+.pmnum[data-st="failed"] { color: var(--bad); }
+.pmnum[data-st]:not([data-st="partly"]) { background: color-mix(in srgb, currentColor 16%, transparent); }
+.pmkey { display: inline-flex; flex-wrap: wrap; gap: 0.15rem 0.8rem; align-items: center; }
+.pmkey > span { white-space: nowrap; display: inline-flex; align-items: center; gap: 0.3rem; }
+.pmkey .sw { display: inline-block; width: 0.85em; height: 0.85em; border-radius: 2px; border: 1px solid var(--muted); }
+.pmkey .sw[data-st="supported"] { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 32%, transparent); }
+.pmkey .sw[data-st="covered"] { border: 1px dashed var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+.pmkey .sw[data-st="partly"] { border: 1.5px solid var(--ok); }
+.pmkey .sw[data-st="partial"] { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 32%, transparent); }
+.pmkey .sw[data-st="failed"] { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 32%, transparent); }
+.pmkey .sw[data-st="suspect"] { border: 1px dashed var(--warn); background: color-mix(in srgb, var(--warn) 32%, transparent); }
+/* Narrow screens: the drawing takes the row's full width, and port lines wrap. */
+@media (max-width: 760px) {
+  .specs > .pmrow { grid-template-columns: 1fr; gap: 0.2rem; }
+  ul.pmlist .conn { white-space: normal; }
+}
+.report-ports h2 { font-size: 1rem; margin: 1rem 0 0.4rem; }

@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"html/template"
 	"io/fs"
 	"regexp"
 	"sort"
@@ -132,7 +133,10 @@ type configView struct {
 	Layout       []layoutSide // the port layout by side, when researched
 	LayoutSrc    []string
 	LayoutNote   string
-	Conns        []connInfo // the same, flat, for the API
+	Portmap      template.HTML     // the release's port map drawing, coloured by status (PLAN §27)
+	PortmapKey   string            // its key, for /portmap/<key>.svg
+	PortSt       map[string]string // each connector's status on the drawing
+	Conns        []connInfo        // the same, flat, for the API
 	Features     []string
 	Categories   []categoryView
 	Status       status.ConfigStatus
@@ -226,6 +230,8 @@ type layoutSide struct {
 
 type layoutConn struct {
 	ID, Name, Note string
+	Num            string // its number on the drawing ("3" for left-3)
+	St, StLabel    string // its status on the drawing, when it has results
 }
 
 // connInfo is one connector as the API serves it (PLAN §25).
@@ -583,7 +589,7 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 				for _, a := range cn.Also {
 					name += " + " + c.Vocab.Ports[a].Name
 				}
-				ls.Conns = append(ls.Conns, layoutConn{cn.ID, name, cn.Note})
+				ls.Conns = append(ls.Conns, layoutConn{ID: cn.ID, Name: name, Note: cn.Note})
 			}
 		}
 		if len(ls.Conns) > 0 {
@@ -652,6 +658,18 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 	for _, k := range c.Categories {
 		if cat := byCat[k.ID]; cat != nil {
 			cv.Categories = append(cv.Categories, *cat)
+		}
+	}
+	if pm := c.Portmaps[cfg.Portmap]; pm != nil {
+		cv.PortmapKey, cv.PortSt = pm.Key, connStatuses(cv)
+		cv.Portmap = portmapHTML(pm, cv.ID, cv.PortSt)
+		for i := range cv.Layout {
+			for j := range cv.Layout[i].Conns {
+				lc := &cv.Layout[i].Conns[j]
+				_, lc.Num, _ = strings.Cut(lc.ID, "-")
+				lc.St = cv.PortSt[lc.ID]
+				lc.StLabel = pmLabels[lc.St]
+			}
 		}
 	}
 	return cv

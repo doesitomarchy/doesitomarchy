@@ -3,6 +3,13 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-03"
+  title: Port map drawings
+  summary: "Original, to-scale line drawings of where every port sits, for the 140 releases with a port layout. Each model page shows its drawing with every port coloured by its test results, and offers it as an SVG download (CC BY-SA 4.0)."
+  notes:
+    - "Laptops are drawn from both sides as closed machines, Mac minis from the back, iMacs from the lower left of the back (and the right edge, for the 2009–2011 SD slot), and Mac Pros as front and back panels."
+    - "Chassis sizes come from Apple Tech Specs; port positions were read off the photos and diagrams in Apple's manuals."
+
+- date: "2026-10-03"
   title: Port layouts
   summary: "Physical port layouts for 140 of the 154 Intel Mac releases, read from Apple's own manuals (and, for the Mid 2007 15-inch MacBook Pro, from a real machine): every connector by side and position, with the ports that share a controller grouped, so one test covers each group."
   notes:
