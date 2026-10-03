@@ -22,6 +22,8 @@ const resultsUsage = `doiomad reports â€” moderate diagnostic reports (PLAN.md Â
 
   reports import [-accept] FILE      validate a report file (YAML or JSON; "-" reads stdin),
                                      store it as pending and preview its effect
+      -format omacdiag -omarchy V    an OmacDiag JSON report; -omarchy gives the Omarchy
+      [-tester HANDLE]               version it ran on, -tester the tester's public handle
   reports list [-state S] [-config ID] [-limit N]
   reports show CODE                  a report in full, with its flags and history
   reports accept CODE [-config ID]   make a pending report count; -config picks the
@@ -67,6 +69,9 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	reason := fs.String("reason", "", "reject, retract: why")
 	note := fs.String("note", "", "resolve: how the flag was dealt with")
 	all := fs.Bool("all", false, "flags: include resolved flags")
+	format := fs.String("format", "", "import: the file's format: our schema (default) or omacdiag")
+	omarchy := fs.String("omarchy", "", "import -format omacdiag: the Omarchy version the report ran on")
+	tester := fs.String("tester", "", "import -format omacdiag: the tester's public handle")
 	pos, ok := parseInterleaved(fs, rest)
 	if !ok {
 		return 2
@@ -123,20 +128,24 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		if err != nil {
 			return fail(err)
 		}
-		f, err := results.Parse(raw)
-		if err != nil {
-			return fail(err)
-		}
-		r, err := results.Validate(f, c, time.Now())
-		if err != nil {
+		imp, err := results.Import(raw, *format, c, catalogFS(*dataDir), results.ImportOptions{Omarchy: *omarchy, Tester: *tester}, time.Now())
+		if results.IsValidation(err) {
 			fmt.Fprintln(stderr, err)
 			return 1
+		} else if err != nil {
+			return fail(err)
 		}
+		r := imp.Result
 		before, after, err := preview(ctx, st, c, r)
 		if err != nil {
 			return fail(err)
 		}
-		n, err := st.InsertResult(ctx, r, raw, results.SchemaV1, who)
+		if src := imp.Source; src != nil {
+			if err := st.EnsureSource(ctx, src.ID, src.Name, src.Homepage); err != nil {
+				return fail(err)
+			}
+		}
+		n, err := st.InsertResult(ctx, r, imp.Raw, imp.Format, who)
 		if err != nil {
 			return fail(err)
 		}

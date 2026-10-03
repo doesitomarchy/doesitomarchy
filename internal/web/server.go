@@ -18,6 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/match"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
@@ -61,6 +62,14 @@ type snapshot struct {
 	view    *catalogView
 	index   *search.Index
 	version int64 // the store's data version it was built from
+}
+
+// catalogFS is where the catalog's data files are read from.
+func (s *Server) catalogFS() fs.FS {
+	if s.opt.CatalogFS != nil {
+		return s.opt.CatalogFS
+	}
+	return data.FS
 }
 
 // data returns the current snapshot.

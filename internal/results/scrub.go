@@ -18,14 +18,17 @@ var scrubRules = []struct {
 }{
 	// Values labelled as serials, UUIDs or hostnames: "serial: C02X…", "product_uuid=…", "Hostname: work-mbp".
 	{regexp.MustCompile(`(?i)\b((?:[a-z_]*serial[a-z_ ]*?(?:number)?|[a-z_]*uuid|host ?name|static hostname|computer ?name)(?:\s*\([^)]*\))?\s*["']?\s*[:=]\s*["']?)([^\s"',;]+)`), "${1}" + Redacted},
+	// "serial C02XG0FDH7JY" without a separator: only an upper-case code of
+	// 8–20 characters, so "serial port" and the like survive.
+	{regexp.MustCompile(`((?i:\bserial(?:\s+number)?)\s+)[A-Z0-9]{8,20}\b`), "${1}" + Redacted},
 	// MAC addresses: 6 hex pairs separated by ":" or "-".
 	{regexp.MustCompile(`(?i)\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b`), Redacted},
 	// IPv6: hex groups with "::", or at least four colon-separated groups (times have two).
 	{regexp.MustCompile(`(?i)(?:\b[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:)*[0-9a-f]{1,4}\b|\b(?:[0-9a-f]{1,4}:){4,7}[0-9a-f]{1,4}\b`), Redacted},
 	// IPv4.
 	{regexp.MustCompile(`\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b`), Redacted},
-	// User names in home-directory paths.
-	{regexp.MustCompile(`(/home/|/Users/|/var/home/)[^/\s"']+`), "${1}" + Redacted},
+	// User names in home-directory and removable-media paths.
+	{regexp.MustCompile(`(/home/|/Users/|/var/home/|/run/media/|/media/)[^/\s"']+`), "${1}" + Redacted},
 	// Shell prompts ("carl@work-mbp:~$", "[carl@work-mbp ~]$"). Only prompt-like
 	// contexts, so systemd units such as getty@tty1.service survive.
 	{regexp.MustCompile(`(?i)\b[a-z_][a-z0-9_-]*@[a-z0-9][a-z0-9-]*([:~ ]|\]|$)`), Redacted + "@" + Redacted + "${1}"},
@@ -54,7 +57,7 @@ func Scrub(s string) string {
 }
 
 // personalKey matches structured fields whose whole value is personal.
-var personalKey = regexp.MustCompile(`(?i)serial|uuid|hostname|host_name|mac_?addr|^mac$|ether|^ip$|ip_?addr|ipv[46]|user(name)?$|^login|email|owner`)
+var personalKey = regexp.MustCompile(`(?i)serial|uuid|hostname|host_name|mac_?addr|^mac$|ether|^ip$|ip_?addr|ipv[46]|user(name)?$|^login|email|owner|^address$|^peer$`)
 
 // ScrubValue scrubs a decoded structure (the hardware probe): values under
 // personal keys are replaced outright, and every other string is scrubbed.

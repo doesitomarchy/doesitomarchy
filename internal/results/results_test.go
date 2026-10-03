@@ -213,10 +213,13 @@ func TestScrub(t *testing.T) {
 		{"inet 192.168.1.42/24", "192.168.1.42", "inet "},
 		{"inet6 fe80::a6b1:c2ff:fe3d:1234/64", "fe80::a6b1", "inet6 "},
 		{"inet6 2001:db8:85a3:0:0:8a2e:370:7334", "2001:db8", "inet6"},
+		{"SMART PASSED (serial S1K5NYAF123456)", "S1K5NYAF123456", "(serial "},
 		{"Hostname: work-mbp", "work-mbp", "Hostname: "},
 		{"Static hostname: work-mbp", "work-mbp", "Static hostname"},
 		{"cp /home/carl/logs/x.log", "carl", "/home/"},
 		{"/Users/carl/Desktop", "carl", "/Users/"},
+		{"/run/media/carl/KIT/omacdiag-fixture.bin", "carl", "/run/media/[redacted]/KIT"},
+		{"/media/carl/SDKIT/x.bin", "carl", "/media/[redacted]/SDKIT"},
 		{"carl@work-mbp:~$ lspci", "work-mbp", "lspci"},
 		{"[carl@work-mbp ~]$ ls", "work-mbp", "ls"},
 		{"contact me at carl@example.com", "carl@example.com", "contact me at"},
@@ -236,6 +239,7 @@ func TestScrub(t *testing.T) {
 		"getty@tty1.service started",
 		"brcmfmac: brcmf_c_preinit_dcmds: Firmware: BCM4364/3 wl0: Mar 28 2021 22:55:10",
 		"std::vector in Foo::bar()",
+		"serial port ttyS0 at 0x3f8",
 	} {
 		if got := Scrub(keep); got != keep {
 			t.Errorf("Scrub(%q) = %q: should be unchanged", keep, got)

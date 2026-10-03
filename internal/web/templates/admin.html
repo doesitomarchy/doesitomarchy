@@ -16,6 +16,17 @@
 <h2>Open flags ({{len .Flags}})</h2>
 {{if .Flags}}<ul class="admin-flags">{{range .Flags}}<li><a href="/admin/report/{{.ResultCode}}">{{.ResultCode}}</a> · <b>{{.Kind}}</b>: {{.Detail}}</li>{{end}}</ul>{{else}}<p>None.</p>{{end}}
 
+<h2 id="import">Import a report</h2>
+{{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
+<form method="post" action="/admin/import" enctype="multipart/form-data" class="import-form">
+  <input type="hidden" name="csrf" value="{{.CSRF}}">
+  <label>Report file <input type="file" name="report" required></label>
+  <label>Format <select name="format"><option value="">DoesItOmarchy report (YAML or JSON)</option><option value="omacdiag">OmacDiag JSON report</option></select></label>
+  <label>Omarchy version <span class="muted">(OmacDiag reports don't record it)</span> <input type="text" name="omarchy" placeholder="4.0.4" pattern="[0-9][0-9A-Za-z.+-]*" maxlength="40"></label>
+  <label>Tester handle <span class="muted">(optional)</span> <input type="text" name="tester" maxlength="39"></label>
+  <button class="btn primary" type="submit">Import as pending</button>
+</form>
+
 <h2>Recent decisions</h2>
 {{if .Recent}}<ul class="admin-flags">{{range .Recent}}<li><a href="/admin/report/{{.Code}}">{{.Code}}</a> {{template "state" .State}} {{.Identifier}} · {{osver .Omarchy .Kernel}}{{with .StateBy}} · by {{.}}{{end}}{{with .StateAt}} · {{utc .}}{{end}}{{with .StateReason}} · {{.}}{{end}}</li>{{end}}</ul>{{else}}<p>None yet.</p>{{end}}
 </div>

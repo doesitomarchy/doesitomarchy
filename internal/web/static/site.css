@@ -570,3 +570,10 @@ table.shares td { vertical-align: top; font-size: 13px; }
 table.shares code { font-size: 12px; white-space: nowrap; }
 table.shares td:nth-child(2) { white-space: nowrap; }
 .unk-tag { font: 11px var(--mono); color: var(--accent); border: 1px solid var(--accent); padding: 0 0.25rem; white-space: nowrap; }
+
+/* /admin: import a report file. */
+.import-form { display: grid; gap: 0.5rem; max-width: 36rem; font-size: 13px; }
+.import-form label { display: grid; gap: 0.2rem; }
+.import-form input[type="text"], .import-form select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); padding: 0.25rem 0.5rem; }
+.import-form .btn { justify-self: start; }
+code.evidence { white-space: pre-line; }

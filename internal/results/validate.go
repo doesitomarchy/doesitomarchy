@@ -30,6 +30,9 @@ const (
 	FlagConflict     = "conflict"
 	FlagAmbiguous    = "config_ambiguous"
 	FlagDuplicate    = "duplicate"
+	// FlagDriverMissing: a native report said a device or its driver was
+	// missing, which counts as failed (PLAN §22.10); confirm it isn't absent hardware.
+	FlagDriverMissing = "driver_missing"
 )
 
 // Result is a validated, scrubbed submission, ready to store.

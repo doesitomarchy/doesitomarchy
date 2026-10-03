@@ -1,0 +1,1481 @@
+{
+  "schema_version": 1,
+  "application_version": "0.1.0",
+  "session_id": "1790960000000-4242-0",
+  "started_at": "1790960000000",
+  "finished_at": "1790960900000",
+  "state": "completed",
+  "overall": "incomplete",
+  "inventory": {
+    "schema_version": 1,
+    "machine": {
+      "manufacturer": "Apple Inc.",
+      "model": "MacBookPro11,3",
+      "serial": "C02LK1ABFD57",
+      "os": "linux",
+      "distribution": "Omarchy",
+      "kernel": "6.17.1-arch1-1",
+      "architecture": "x86_64",
+      "model_profile": "apple-notebook-baseline-v1",
+      "expected_ports": {},
+      "profile_sources": []
+    },
+    "devices": [
+      {
+        "id": "cpu:system",
+        "kind": "cpu",
+        "name": "Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "logical_cpus": "8"
+        },
+        "evidence": []
+      },
+      {
+        "id": "memory:system",
+        "kind": "memory",
+        "name": "System memory",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "MemTotal": "16312548 kB"
+        },
+        "evidence": []
+      },
+      {
+        "id": "gpu:0000:00:02.0",
+        "kind": "gpu",
+        "name": "gpu PCI 0000:00:02.0",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "vendor": "0x8086",
+          "device": "0x0d26",
+          "class": "0x030000"
+        },
+        "evidence": []
+      },
+      {
+        "id": "gpu:0000:01:00.0",
+        "kind": "gpu",
+        "name": "gpu PCI 0000:01:00.0",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "vendor": "0x10de",
+          "device": "0x0fe9",
+          "class": "0x030000"
+        },
+        "evidence": []
+      },
+      {
+        "id": "camera:0000:04:00.0",
+        "kind": "camera",
+        "name": "Broadcom PCIe FaceTime HD camera",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "vendor": "0x14e4",
+          "device": "0x1570",
+          "class": "0x048000"
+        },
+        "evidence": []
+      },
+      {
+        "id": "usb:0000:00:14.0",
+        "kind": "usb",
+        "name": "usb PCI 0000:00:14.0",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "vendor": "0x8086",
+          "device": "0x8c31",
+          "class": "0x0c0330"
+        },
+        "evidence": []
+      },
+      {
+        "id": "usb:usb1",
+        "kind": "usb",
+        "name": "xHCI Host Controller",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "idVendor": "1d6b",
+          "idProduct": "0002",
+          "role": "root_hub",
+          "serial": "0000:00:14.0"
+        },
+        "evidence": []
+      },
+      {
+        "id": "usb:1-3",
+        "kind": "usb",
+        "name": "Card Reader",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "idVendor": "05ac",
+          "idProduct": "8406",
+          "role": "device",
+          "serial": "000000000820"
+        },
+        "evidence": []
+      },
+      {
+        "id": "sd_reader:1-3",
+        "kind": "sd_reader",
+        "name": "Card Reader",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "transport": "usb"
+        },
+        "evidence": []
+      },
+      {
+        "id": "usb:1-5",
+        "kind": "usb",
+        "name": "Bluetooth USB Host Controller",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "idVendor": "05ac",
+          "idProduct": "8289",
+          "role": "device"
+        },
+        "evidence": []
+      },
+      {
+        "id": "speaker:pcmC1D0p",
+        "kind": "speaker",
+        "name": "PCH CS4208 Analog",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "playback_route": "analog",
+          "alsa_device": "plughw:CARD=PCH,DEV=0",
+          "card": "1"
+        },
+        "evidence": []
+      },
+      {
+        "id": "speaker:pcmC0D3p",
+        "kind": "speaker",
+        "name": "HDMI HDMI 0",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "playback_route": "display",
+          "alsa_device": "plughw:CARD=HDMI,DEV=3",
+          "card": "0"
+        },
+        "evidence": []
+      },
+      {
+        "id": "microphone:pcmC1D0c",
+        "kind": "microphone",
+        "name": "PCH CS4208 Analog",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "physical_input": "true",
+          "card": "1"
+        },
+        "evidence": []
+      },
+      {
+        "id": "audio_jack:card1",
+        "kind": "audio_jack",
+        "name": "PCH audio routing",
+        "recognition": "unknown",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "card": "1"
+        },
+        "evidence": []
+      },
+      {
+        "id": "storage:sda",
+        "kind": "storage",
+        "name": "APPLE SSD SM0512F",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "size": "1000215216",
+          "removable": "0",
+          "device/serial": "S1K5NYAF123456"
+        },
+        "evidence": []
+      },
+      {
+        "id": "display:card1-eDP-1",
+        "kind": "display",
+        "name": "card1-eDP-1",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "status": "connected",
+          "internal": "true",
+          "edid_bytes": "128"
+        },
+        "evidence": []
+      },
+      {
+        "id": "display:card1-HDMI-A-1",
+        "kind": "display",
+        "name": "card1-HDMI-A-1",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "status": "disconnected",
+          "internal": "false"
+        },
+        "evidence": []
+      },
+      {
+        "id": "battery:BAT0",
+        "kind": "battery",
+        "name": "BAT0",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "type": "Battery",
+          "status": "Discharging",
+          "capacity": "81",
+          "cycle_count": "412"
+        },
+        "evidence": []
+      },
+      {
+        "id": "power:ADP1",
+        "kind": "power",
+        "name": "ADP1",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "type": "Mains",
+          "online": "0"
+        },
+        "evidence": []
+      },
+      {
+        "id": "network:wlp3s0",
+        "kind": "network",
+        "name": "wlp3s0",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "operstate": "up",
+          "address": "a4:5e:60:12:34:56",
+          "wireless": "true",
+          "sysfs_target": "/sys/devices/pci0000:00/0000:00:1c.2/0000:03:00.0/net/wlp3s0"
+        },
+        "evidence": []
+      },
+      {
+        "id": "network:enx001122334455",
+        "kind": "network",
+        "name": "enx001122334455",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "operstate": "up",
+          "address": "00:11:22:33:44:55",
+          "wireless": "false",
+          "sysfs_target": "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/net/enx001122334455"
+        },
+        "evidence": []
+      },
+      {
+        "id": "bluetooth:hci0",
+        "kind": "bluetooth",
+        "name": "hci0",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "address": "a4:5e:60:ab:cd:ef"
+        },
+        "evidence": []
+      },
+      {
+        "id": "keyboard:event4",
+        "kind": "keyboard",
+        "name": "Apple Inc. Apple Internal Keyboard / Trackpad",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {},
+        "evidence": []
+      },
+      {
+        "id": "trackpad:event5",
+        "kind": "trackpad",
+        "name": "bcm5974",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {},
+        "evidence": []
+      },
+      {
+        "id": "thermal:hwmon2:temp1_input",
+        "kind": "thermal",
+        "name": "applesmc temp1_input",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {},
+        "evidence": []
+      },
+      {
+        "id": "fan:hwmon2:fan1_input",
+        "kind": "fan",
+        "name": "applesmc fan1_input",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {},
+        "evidence": []
+      },
+      {
+        "id": "thunderbolt:0-0",
+        "kind": "thunderbolt",
+        "name": "MacBook Pro",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "authorized": "1",
+          "generation": "2"
+        },
+        "evidence": []
+      },
+      {
+        "id": "keyboard_backlight:smc::kbd_backlight",
+        "kind": "keyboard_backlight",
+        "name": "Keyboard backlight",
+        "recognition": "detected",
+        "sysfs_path": null,
+        "node": null,
+        "driver": null,
+        "attributes": {
+          "brightness": "81",
+          "max_brightness": "255"
+        },
+        "evidence": []
+      }
+    ],
+    "warnings": []
+  },
+  "plan": {
+    "profile": "quick",
+    "mode": "guided",
+    "tests": [
+      {
+        "id": "cpu:system/compute",
+        "device_id": "cpu:system",
+        "name": "CPU computation",
+        "probe": "cpu",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "memory:system/patterns",
+        "device_id": "memory:system",
+        "name": "Allocated-memory patterns",
+        "probe": "memory",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "storage:sda/health",
+        "device_id": "storage:sda",
+        "name": "SMART/NVMe health",
+        "probe": "storage_health",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "storage:sda/read",
+        "device_id": "storage:sda",
+        "name": "Read-only sample",
+        "probe": "storage_read",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "gpu:0000:00:02.0/render",
+        "device_id": "gpu:0000:00:02.0",
+        "name": "Hardware render/readback",
+        "probe": "gpu",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "gpu:0000:01:00.0/render",
+        "device_id": "gpu:0000:01:00.0",
+        "name": "Hardware render/readback",
+        "probe": "gpu",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "camera:0000:04:00.0/capture",
+        "device_id": "camera:0000:04:00.0",
+        "name": "Camera capture",
+        "probe": "camera",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "camera:0000:04:00.0/quality",
+        "device_id": "camera:0000:04:00.0",
+        "name": "Camera image quality",
+        "probe": "camera_quality",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "usb:usb1/port",
+        "device_id": "usb:usb1",
+        "name": "USB connector and media",
+        "probe": "usb_port",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "sd_reader:1-3/card",
+        "device_id": "sd_reader:1-3",
+        "name": "SD reader and media",
+        "probe": "sd_card",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "speaker:pcmC1D0p/playback",
+        "device_id": "speaker:pcmC1D0p",
+        "name": "Left/right playback",
+        "probe": "speaker",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "speaker:pcmC1D0p/acoustic",
+        "device_id": "speaker:pcmC1D0p",
+        "name": "Acoustic speaker verification",
+        "probe": "acoustic",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "speaker:pcmC1D0p/quality",
+        "device_id": "speaker:pcmC1D0p",
+        "name": "Speaker sound quality",
+        "probe": "speaker_quality",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "speaker:pcmC0D3p/playback",
+        "device_id": "speaker:pcmC0D3p",
+        "name": "Digital display audio stream",
+        "probe": "speaker",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "speaker:pcmC0D3p/quality",
+        "device_id": "speaker:pcmC0D3p",
+        "name": "Digital display audio assessment",
+        "probe": "speaker_quality",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "microphone:pcmC1D0c/capture",
+        "device_id": "microphone:pcmC1D0c",
+        "name": "Physical microphone capture",
+        "probe": "microphone",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "microphone:pcmC1D0c/speech",
+        "device_id": "microphone:pcmC1D0c",
+        "name": "Microphone response",
+        "probe": "microphone_speech",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "audio_jack:card1/headset",
+        "device_id": "audio_jack:card1",
+        "name": "Headset and jack routing",
+        "probe": "audio_jack",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "display:card1-eDP-1/connection",
+        "device_id": "display:card1-eDP-1",
+        "name": "Display connector/EDID",
+        "probe": "display",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "display:card1-eDP-1/visual",
+        "device_id": "display:card1-eDP-1",
+        "name": "Display patterns",
+        "probe": "manual",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "display:card1-HDMI-A-1/connection",
+        "device_id": "display:card1-HDMI-A-1",
+        "name": "Display connector/EDID",
+        "probe": "display",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "display:card1-HDMI-A-1/visual",
+        "device_id": "display:card1-HDMI-A-1",
+        "name": "Display patterns",
+        "probe": "manual",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "battery:BAT0/health",
+        "device_id": "battery:BAT0",
+        "name": "Battery telemetry",
+        "probe": "battery",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "battery:BAT0/charging",
+        "device_id": "battery:BAT0",
+        "name": "Charging transition",
+        "probe": "charging",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "power:ADP1/supply",
+        "device_id": "power:ADP1",
+        "name": "Supply telemetry",
+        "probe": "power",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "network:wlp3s0/link",
+        "device_id": "network:wlp3s0",
+        "name": "Interface/link",
+        "probe": "network",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "network:wlp3s0/peer",
+        "device_id": "network:wlp3s0",
+        "name": "Network peer exchange",
+        "probe": "network_peer",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "network:enx001122334455/link",
+        "device_id": "network:enx001122334455",
+        "name": "Interface/link",
+        "probe": "network",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "bluetooth:hci0/peripheral",
+        "device_id": "bluetooth:hci0",
+        "name": "Bluetooth peripheral",
+        "probe": "bluetooth",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "keyboard:event4/keys",
+        "device_id": "keyboard:event4",
+        "name": "Keyboard coverage",
+        "probe": "manual",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "trackpad:event5/input",
+        "device_id": "trackpad:event5",
+        "name": "Trackpad functions",
+        "probe": "manual",
+        "guided": false,
+        "required": false,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "trackpad:event5/input/retake-1",
+        "device_id": "trackpad:event5",
+        "name": "Trackpad functions",
+        "probe": "manual",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "thermal:hwmon2:temp1_input/telemetry",
+        "device_id": "thermal:hwmon2:temp1_input",
+        "name": "Sensor telemetry",
+        "probe": "sensor",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "fan:hwmon2:fan1_input/telemetry",
+        "device_id": "fan:hwmon2:fan1_input",
+        "name": "Sensor telemetry",
+        "probe": "sensor",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "thunderbolt:0-0/device",
+        "device_id": "thunderbolt:0-0",
+        "name": "Thunderbolt link",
+        "probe": "thunderbolt",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      },
+      {
+        "id": "keyboard_backlight:smc::kbd_backlight/visual",
+        "device_id": "keyboard_backlight:smc::kbd_backlight",
+        "name": "Keyboard backlight brightness",
+        "probe": "keyboard_backlight",
+        "guided": false,
+        "required": true,
+        "equipment": [],
+        "permission": null,
+        "instructions": "",
+        "estimated_seconds": 1,
+        "deadline_seconds": 20
+      }
+    ],
+    "equipment": [],
+    "estimated_seconds": 300,
+    "notices": []
+  },
+  "results": [
+    {
+      "test_id": "cpu:system/compute",
+      "device_id": "cpu:system",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Deterministic computation matched in 2.0 s",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "memory:system/patterns",
+      "device_id": "memory:system",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "256 MiB of patterns verified",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "storage:sda/health",
+      "device_id": "storage:sda",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "SMART overall-health: PASSED (serial S1K5NYAF123456)",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "storage:sda/read",
+      "device_id": "storage:sda",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Read 16 MiB in distributed samples",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "gpu:0000:00:02.0/render",
+      "device_id": "gpu:0000:00:02.0",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Mesa Intel(R) Iris(R) Pro Graphics 5200 rendered the colour quadrants",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "gpu:0000:01:00.0/render",
+      "device_id": "gpu:0000:01:00.0",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "NVE7 (nouveau) rendered the colour quadrants",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "camera:0000:04:00.0/capture",
+      "device_id": "camera:0000:04:00.0",
+      "outcome": "blocked",
+      "reason_code": "capture_endpoint_missing",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "The PCI camera has no V4L2 capture endpoint",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "camera:0000:04:00.0/quality",
+      "device_id": "camera:0000:04:00.0",
+      "outcome": "blocked",
+      "reason_code": "capture_endpoint_missing",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "The PCI camera has no V4L2 capture endpoint",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "usb:usb1/port",
+      "device_id": "usb:usb1",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Fixture content verified on a device under this controller",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "left USB-A port",
+        "recorded_at": "1790960100000",
+        "details": {
+          "port_label": "left USB-A",
+          "fixture_path": "/run/media/carl/KIT/omacdiag-fixture.bin"
+        }
+      }
+    },
+    {
+      "test_id": "sd_reader:1-3/card",
+      "device_id": "sd_reader:1-3",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Fixture content verified",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "",
+        "recorded_at": "1790960100000",
+        "details": {
+          "fixture_path": "/media/carl/SDKIT/omacdiag-fixture.bin"
+        }
+      }
+    },
+    {
+      "test_id": "speaker:pcmC1D0p/playback",
+      "device_id": "speaker:pcmC1D0p",
+      "outcome": "inconclusive",
+      "reason_code": "stream_delivered",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Stream delivered; audibility needs acoustic or operator evidence",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "speaker:pcmC1D0p/acoustic",
+      "device_id": "speaker:pcmC1D0p",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Correlation 0.61, 27 dB above baseline",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "speaker:pcmC1D0p/quality",
+      "device_id": "speaker:pcmC1D0p",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Operator assessed playback",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "both channels clear",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    },
+    {
+      "test_id": "speaker:pcmC0D3p/playback",
+      "device_id": "speaker:pcmC0D3p",
+      "outcome": "skipped",
+      "reason_code": "equipment_unavailable",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "No audio-capable display available",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "speaker:pcmC0D3p/quality",
+      "device_id": "speaker:pcmC0D3p",
+      "outcome": "skipped",
+      "reason_code": "equipment_unavailable",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "No audio-capable display available",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "microphone:pcmC1D0c/capture",
+      "device_id": "microphone:pcmC1D0c",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "-48.2 dBFS RMS, no clipping",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "microphone:pcmC1D0c/speech",
+      "device_id": "microphone:pcmC1D0c",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Replay heard",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "voice clearly audible",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    },
+    {
+      "test_id": "audio_jack:card1/headset",
+      "device_id": "audio_jack:card1",
+      "outcome": "skipped",
+      "reason_code": "equipment_unavailable",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "No headset available",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "display:card1-eDP-1/connection",
+      "device_id": "display:card1-eDP-1",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Connected, valid 128-byte EDID",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "display:card1-eDP-1/visual",
+      "device_id": "display:card1-eDP-1",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Patterns shown",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "no dead pixels",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    },
+    {
+      "test_id": "display:card1-HDMI-A-1/connection",
+      "device_id": "display:card1-HDMI-A-1",
+      "outcome": "inconclusive",
+      "reason_code": "connector_disconnected",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Connector disconnected",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "display:card1-HDMI-A-1/visual",
+      "device_id": "display:card1-HDMI-A-1",
+      "outcome": "skipped",
+      "reason_code": "equipment_unavailable",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "No external display available",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "battery:BAT0/health",
+      "device_id": "battery:BAT0",
+      "outcome": "inconclusive",
+      "reason_code": "telemetry_only",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "81% capacity, 412 cycles",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "battery:BAT0/charging",
+      "device_id": "battery:BAT0",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Charging started after connection",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    },
+    {
+      "test_id": "power:ADP1/supply",
+      "device_id": "power:ADP1",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Supply online",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "network:wlp3s0/link",
+      "device_id": "network:wlp3s0",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Link up (a4:5e:60:12:34:56)",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "network:wlp3s0/peer",
+      "device_id": "network:wlp3s0",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "3/3 replies from 192.168.1.20",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "",
+        "recorded_at": "1790960100000",
+        "details": {
+          "peer": "192.168.1.20"
+        }
+      }
+    },
+    {
+      "test_id": "network:enx001122334455/link",
+      "device_id": "network:enx001122334455",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Link up",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "bluetooth:hci0/peripheral",
+      "device_id": "bluetooth:hci0",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Connected peripheral verified",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "mouse moves",
+        "recorded_at": "1790960100000",
+        "details": {
+          "address": "AA:BB:CC:DD:EE:FF"
+        }
+      }
+    },
+    {
+      "test_id": "keyboard:event4/keys",
+      "device_id": "keyboard:event4",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Operator exercised every key",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "all keys incl. Fn row",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    },
+    {
+      "test_id": "trackpad:event5/input",
+      "device_id": "trackpad:event5",
+      "outcome": "failed",
+      "reason_code": "failed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Operator reported a problem",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "failed",
+        "note": "forgot to try right click",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    },
+    {
+      "test_id": "trackpad:event5/input/retake-1",
+      "device_id": "trackpad:event5",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Operator exercised the trackpad",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    },
+    {
+      "test_id": "thermal:hwmon2:temp1_input/telemetry",
+      "device_id": "thermal:hwmon2:temp1_input",
+      "outcome": "inconclusive",
+      "reason_code": "telemetry_only",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "52 \u00b0C",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "fan:hwmon2:fan1_input/telemetry",
+      "device_id": "fan:hwmon2:fan1_input",
+      "outcome": "inconclusive",
+      "reason_code": "telemetry_only",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "1299 RPM",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "thunderbolt:0-0/device",
+      "device_id": "thunderbolt:0-0",
+      "outcome": "skipped",
+      "reason_code": "equipment_unavailable",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "No Thunderbolt device available",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": null
+    },
+    {
+      "test_id": "keyboard_backlight:smc::kbd_backlight/visual",
+      "device_id": "keyboard_backlight:smc::kbd_backlight",
+      "outcome": "passed",
+      "reason_code": "passed",
+      "automatic_outcome": null,
+      "automatic_reason_code": null,
+      "summary": "Read 81, low 0, high 255, restored 81",
+      "started_at": "1790960000000",
+      "duration_ms": 1000,
+      "measurements": {},
+      "evidence": [],
+      "observation": {
+        "verdict": "passed",
+        "note": "",
+        "recorded_at": "1790960100000",
+        "details": {}
+      }
+    }
+  ],
+  "coverage": {
+    "selected": 36,
+    "completed": 36,
+    "passed": 0,
+    "failed": 0,
+    "incomplete": 0,
+    "gaps": []
+  }
+}

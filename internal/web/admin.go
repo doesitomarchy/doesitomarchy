@@ -7,10 +7,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -28,6 +30,7 @@ func (s *Server) adminRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/flag/{id}/resolve", s.admin(s.adminResolve))
 	mux.HandleFunc("GET /admin/sources", s.admin(s.adminSources))
 	mux.HandleFunc("GET /admin/shares", s.admin(s.adminShares))
+	mux.HandleFunc("POST /admin/import", limitBody(results.MaxSize+64<<10, s.admin(s.adminImport)))
 	mux.HandleFunc("POST /admin/shares/review", s.admin(s.adminSharesReview))
 }
 
@@ -113,6 +116,8 @@ func (s *Server) validPost(r *http.Request, who string) bool {
 
 type adminQueueData struct {
 	Who     string
+	CSRF    string
+	Err     string
 	Pending []store.ResultSummary
 	Flags   []store.ResultFlag
 	Recent  []store.ResultSummary
@@ -120,7 +125,7 @@ type adminQueueData struct {
 
 func (s *Server) adminQueue(w http.ResponseWriter, r *http.Request, who string) {
 	ctx := r.Context()
-	d := adminQueueData{Who: who}
+	d := adminQueueData{Who: who, CSRF: s.csrf(ctx, who), Err: r.URL.Query().Get("err")}
 	var err error
 	if d.Pending, err = s.store.ListResults(ctx, store.ResultFilter{State: store.Pending, Limit: 200}); err == nil {
 		if d.Flags, err = s.store.Flags(ctx, true); err == nil {
@@ -275,4 +280,55 @@ func (s *Server) adminSources(w http.ResponseWriter, r *http.Request, who string
 		return
 	}
 	s.render(w, r, http.StatusOK, "admin-sources", page{Title: "Sources", Data: d})
+}
+
+// limitBody caps a request body before anything reads it (the admin
+// wrapper reads the form token first).
+func limitBody(n int64, h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, n)
+		h(w, r)
+	}
+}
+
+// adminImport stores an uploaded report (our schema or a source's native
+// format, PLAN §24) as pending, then opens it.
+func (s *Server) adminImport(w http.ResponseWriter, r *http.Request, who string) {
+	back := func(msg string) {
+		http.Redirect(w, r, "/admin?"+url.Values{"err": {msg}}.Encode()+"#import", http.StatusSeeOther)
+	}
+	file, _, err := r.FormFile("report")
+	if err != nil {
+		back("Choose a report file to import.")
+		return
+	}
+	defer file.Close()
+	raw, err := io.ReadAll(io.LimitReader(file, results.MaxSize+1))
+	if err != nil || len(raw) > results.MaxSize {
+		back("Reports are limited to 1 MiB.")
+		return
+	}
+	imp, err := results.Import(raw, r.FormValue("format"), s.cat, s.catalogFS(),
+		results.ImportOptions{Omarchy: r.FormValue("omarchy"), Tester: r.FormValue("tester")}, time.Now())
+	if err != nil {
+		back(err.Error())
+		return
+	}
+	if src := imp.Source; src != nil {
+		if err := s.store.EnsureSource(r.Context(), src.ID, src.Name, src.Homepage); err != nil {
+			s.fail(w, r, err)
+			return
+		}
+	}
+	id, err := s.store.InsertResult(r.Context(), imp.Result, imp.Raw, imp.Format, who)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	rd, err := s.store.Result(r.Context(), id)
+	if err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	http.Redirect(w, r, "/admin/report/"+rd.Code+"?done=import", http.StatusSeeOther)
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/doesitomarchy/doesitomarchy/data"
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
@@ -158,6 +159,18 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 
 	// A pending result: stored, never shown.
 	if _, err = add(file("macbookpro11-1-13-late-2013-a", "4.0.4", "2026-10-01T15:30:00Z", "", allPass, nil), false); err != nil {
+		return err
+	}
+
+	// An OmacDiag report imported by a maintainer, pending (PLAN §24).
+	imp, err := results.Import(results.OmacDiagFixture, "omacdiag", c, data.FS, results.ImportOptions{Omarchy: "4.0.4", Tester: "demo-tester"}, now)
+	if err != nil {
+		return fmt.Errorf("demo OmacDiag report: %w", err)
+	}
+	if err := st.EnsureSource(ctx, imp.Source.ID, imp.Source.Name, imp.Source.Homepage); err != nil {
+		return err
+	}
+	if _, err := st.InsertResult(ctx, imp.Result, imp.Raw, imp.Format, "demo"); err != nil {
 		return err
 	}
 
