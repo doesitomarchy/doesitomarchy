@@ -144,6 +144,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /macs", s.macs)
 	mux.HandleFunc("GET /mac/{id}", s.mac)
 	mux.HandleFunc("GET /report/{code}", s.report)
+	mux.HandleFunc("GET /portmap/{file}", s.portmap)
+	mux.HandleFunc("GET /portmap/{key}/{cfg}", s.portmapFragment)
 	mux.HandleFunc("GET /search", s.search)
 	mux.HandleFunc("GET /search/suggest", s.suggest)
 	mux.HandleFunc("GET /stats", s.stats)

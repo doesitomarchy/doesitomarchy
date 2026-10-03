@@ -13,6 +13,11 @@
 </header>
 {{if eq $r.State "retracted"}}<p class="notice">{{template "vicon" "untested"}}<strong>Retracted</strong> {{utc $r.StateAt}}: {{$r.StateReason}}. This report no longer counts toward any verdict.</p>{{end}}
 {{with $r.Notes}}<div class="result-notes"><p>{{.}}</p></div>{{end}}
+{{with .Portmap}}<section class="report-ports">
+  <h2>Ports</h2>
+  <figure class="pmfig" data-pmfig>{{.}}
+    <figcaption>{{if $.Data.PortItems}}{{template "pmkey"}}Coloured by this report's own results for each port.{{else}}This report has no results for individual ports.{{end}}</figcaption></figure>
+</section>{{end}}
 
 <div class="card result-items"><div class="caps">
 {{range .Groups}}

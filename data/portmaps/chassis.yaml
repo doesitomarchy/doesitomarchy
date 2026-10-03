@@ -1,0 +1,678 @@
+# Port map drawings (gen/portmaps.py). Original line drawings, to scale, in millimetres.
+#
+# chassis: one physical shape. Laptops are drawn as side elevations of the closed
+# machine; `depth` is front-to-back, `thick` the closed height (the wedge Airs take
+# `thick` at the hinge and `front` at the tip). Dimensions are Apple Tech Specs.
+# Features are unlabelled context (drive slots, lock slots, vents, microphones),
+# drawn faintly. Feature x is in view coordinates: mm from the left end of the side
+# as you face it (hinge end on the left side, front end on the right side).
+#
+# drawings: which releases share a drawing, and where each connector sits, in the
+# order of data/layouts. Laptop ports take an x (mm, view coordinates); the height
+# comes from the profile. Panel ports take [x, y] or [x, y, rotation]. A drawing's
+# `features` replace the chassis features for the sides it names.
+# Positions were read off the side photos and diagrams in Apple's manuals by eye,
+# using a 5% grid over each image or pixel runs; `ref` names the manual images used.
+
+chassis:
+  # ── MacBook Pro ──
+  mbp-pre-15:            # 15-inch aluminium, 2006–2008 (A1226/A1260): 35.7 × 24.3 × 2.59 cm
+    kind: laptop
+    profile: slab
+    depth: 243
+    thick: 25.9
+    lid: .3
+    rtop: .24
+    wall: .86
+    inset: 2.5
+    gap: .8
+    features:
+      left:
+        - { kind: screw, x: 8, dy: -3.5 }
+        - { kind: screw, x: 82.6, dy: -3.5 }
+        - { kind: screw, x: 161.6, dy: -3.5 }
+        - { kind: screw, x: 234.7, dy: -3.5 }
+      right:
+        - { kind: screw, x: 7.5, dy: -3.5 }
+        - { kind: screw, x: 81.4, dy: -3.5 }
+        - { kind: screw, x: 169.9, dy: -3.5 }
+        - { kind: screw, x: 234.5, dy: -3.5 }
+        - { kind: lock, x: 103.5 }
+
+  mbp-pre-17:            # 17-inch aluminium, 2006–2008: 39.2 × 26.5 × 2.59 cm
+    kind: laptop
+    profile: slab
+    depth: 265
+    thick: 25.9
+    lid: .3
+    rtop: .24
+    wall: .86
+    inset: 2.5
+    gap: .8
+    features:
+      left:
+        - { kind: screw, x: 12.7, dy: -3.5 }
+        - { kind: screw, x: 91.4, dy: -3.5 }
+        - { kind: screw, x: 172.3, dy: -3.5 }
+        - { kind: screw, x: 252.3, dy: -3.5 }
+      right:
+        - { kind: screw, x: 12.2, dy: -3.5 }
+        - { kind: screw, x: 91.4, dy: -3.5 }
+        - { kind: screw, x: 184.2, dy: -3.5 }
+        - { kind: screw, x: 251.5, dy: -3.5 }
+        - { kind: lock, x: 114.5 }
+
+  mbp-uni-13:            # 13-inch unibody, 2008–2012: 32.5 × 22.7 × 2.41 cm
+    kind: laptop
+    profile: unibody
+    depth: 227
+    thick: 24.1
+    features:
+      left:
+        - { kind: indicator, x: 186 }
+      right:
+        - { kind: lock, x: 80.6 }
+        - { kind: slot, x0: 88.5, x1: 211 }
+
+  mbp-uni-15:            # 15-inch unibody, 2008–2012: 36.4 × 24.9 × 2.41 cm
+    kind: laptop
+    profile: unibody
+    depth: 249
+    thick: 24.1
+    features:
+      left:
+        - { kind: indicator, x: 216 }
+      right:
+        - { kind: lock, x: 99.6 }
+        - { kind: slot, x0: 109.6, x1: 231.6 }
+
+  mbp-uni-17:            # 17-inch unibody, 2009–2011: 39.3 × 26.7 × 2.5 cm
+    kind: laptop
+    profile: unibody
+    depth: 267
+    thick: 25
+    features:
+      left:
+        - { kind: indicator, x: 236 }
+      right:
+        - { kind: lock, x: 107 }
+        - { kind: slot, x0: 117.5, x1: 248 }
+
+  mbp-retina-13:         # 13-inch Retina, 2012–2015: 31.4 × 21.9 × 1.8 cm
+    kind: laptop
+    profile: retina
+    depth: 219
+    thick: 18
+    features:
+      left:
+        - { kind: mic, x: 101.8 }
+        - { kind: mic, x: 117.2 }
+        - { kind: vents, x0: 92, x1: 190.5, n: 3 }
+      right:
+        - { kind: vents, x0: 26, x1: 125, n: 3 }
+
+  mbp-retina-15:         # 15-inch Retina, 2012–2015: 35.9 × 24.7 × 1.8 cm
+    kind: laptop
+    profile: retina
+    depth: 247
+    thick: 18
+    features:
+      left:
+        - { kind: vents, x0: 103.7, x1: 222.3, n: 3 }
+      right:
+        - { kind: vents, x0: 24.7, x1: 143.3, n: 3 }
+
+  mbp-tb3-13:            # 13-inch, 2016–2020: 30.4 × 21.2 × 1.49 cm
+    kind: laptop
+    profile: slab
+    depth: 212.4
+    thick: 14.9
+    lid: .28
+    rtop: .3
+    wall: .55
+    inset: 9
+    gap: .5
+    port_lo: 1
+
+  mbp-tb3-15:            # 15-inch, 2016–2019: 34.9 × 24.1 × 1.55 cm
+    kind: laptop
+    profile: slab
+    depth: 240.7
+    thick: 15.5
+    lid: .28
+    rtop: .3
+    wall: .55
+    inset: 9
+    gap: .5
+    port_lo: 1
+
+  mbp-16:                # 16-inch, 2019: 35.8 × 24.6 × 1.62 cm
+    kind: laptop
+    profile: slab
+    depth: 245.9
+    thick: 16.2
+    lid: .28
+    rtop: .3
+    wall: .55
+    inset: 9
+    gap: .5
+    port_lo: 1
+
+  # ── MacBook ──
+  mb-poly:               # 13-inch polycarbonate, 2006–2009: 32.5 × 22.7 × 2.75 cm
+    kind: laptop
+    profile: slab
+    depth: 227
+    thick: 27.5
+    lid: .27
+    rtop: .26
+    wall: .84
+    inset: 3.5
+    gap: .7
+    features:
+      left:
+        - { kind: lock, x: 162.5 }
+      right:
+        - { kind: slot, x0: 45, x1: 175 }
+
+  mb-white-uni:          # 13-inch polycarbonate unibody, 2009–2010: 33 × 23.2 × 2.74 cm
+    kind: laptop
+    profile: slab
+    depth: 232
+    thick: 27.4
+    lid: .25
+    rtop: .3
+    wall: .5
+    inset: 14
+    gap: .6
+    port_lo: 1
+    features:
+      left:
+        - { kind: lock, x: 115.6 }
+      right:
+        - { kind: slot, x0: 52, x1: 182 }
+
+  mb-12:                 # 12-inch Retina, 2015–2017: 0.35–1.31 × 19.65 cm
+    kind: laptop
+    profile: wedge
+    depth: 196.5
+    thick: 13.1
+    front: 3.5
+    features:
+      right:
+        - { kind: mic, x: 159.2 }
+        - { kind: mic, x: 172.9 }
+
+  # ── MacBook Air ──
+  mba-2008:              # 2008–2009: 0.4–1.94 × 22.7 cm; the right-side ports sit behind a fold-down hatch
+    kind: laptop
+    profile: wedge
+    depth: 227
+    thick: 19.4
+    front: 4
+    features:
+      right:
+        - { kind: hatch, x0: 166, x1: 214, h: 7 }
+
+  mba-11:                # 11-inch, 2010–2015: 0.3–1.7 × 19.2 cm
+    kind: laptop
+    profile: wedge
+    depth: 192
+    thick: 17
+    front: 3
+    features:
+      left:
+        - { kind: mic, x: 75.8 }
+        - { kind: mic, x: 94 }
+
+  mba-13:                # 13-inch, 2010–2017: 0.3–1.7 × 22.7 cm
+    kind: laptop
+    profile: wedge
+    depth: 227
+    thick: 17
+    front: 3
+    features:
+      left:
+        - { kind: mic, x: 78.3 }
+        - { kind: mic, x: 96.5 }
+
+  mba-retina:            # 13-inch Retina, 2018–2020: 0.41–1.56 × 21.2 cm
+    kind: laptop
+    profile: wedge
+    depth: 212
+    thick: 15.6
+    front: 4.1
+
+  # ── Desktops ──
+  macmini-2018:
+    kind: panel
+    profile: macmini-2018
+    width: 197
+    height: 36
+    features:
+      back:
+        - { kind: power-button, at: [13.6, 9.5] }
+        - { kind: grille, x0: 62.6, x1: 134.3, y: 20.5, h: 8 }
+
+  macmini-poly:          # Mac mini 2006–2009: 16.51 × 16.51 × 5.08 cm
+    kind: panel
+    profile: macmini-poly
+    width: 165.1
+    height: 50.8
+    features:
+      back:
+        - { kind: power-button, at: [15.2, 14] }
+        - { kind: vslots, x0: 30.9, x1: 96.3, y: 14, h: 10, n: 9 }
+        - { kind: lockp, at: [110, 14] }
+
+  macmini-uni:           # Mac mini 2010–2014: 19.7 × 19.7 × 3.6 cm (same shell as the 2018)
+    kind: panel
+    profile: macmini-2018
+    width: 197
+    height: 36
+    features:
+      back:
+        - { kind: power-button, at: [9.9, 11.8] }
+        - { kind: grille, x0: 61, x1: 134, y: 21.5, h: 7 }
+
+  imac-white-17:         # iMac 17-inch polycarbonate, 2006: 43 cm wide
+    kind: panel
+    profile: imac-back
+    width: 427
+    height: 73
+    radius: 16
+    stand: 108
+    join: 60
+  imac-white-20:         # iMac 20-inch polycarbonate, 2006: 48.4 cm wide
+    kind: panel
+    profile: imac-back
+    width: 484
+    height: 73
+    radius: 16
+    stand: 108
+    join: 60
+  imac-white-24:         # iMac 24-inch polycarbonate, Late 2006: 56.6 cm wide
+    kind: panel
+    profile: imac-back
+    width: 566
+    height: 73
+    radius: 16
+    stand: 108
+    join: 60
+  imac-alu-20:           # iMac 20-inch aluminium, 2007–2009: 48.5 cm wide
+    kind: panel
+    profile: imac-back
+    width: 485
+    height: 72
+    radius: 7
+    stand: 99
+    join: 60
+  imac-alu-24:           # iMac 24-inch aluminium, 2007–2009: 57 cm wide
+    kind: panel
+    profile: imac-back
+    width: 570
+    height: 72
+    radius: 7
+    stand: 99
+    join: 60
+  imac-2009-21:          # iMac 21.5-inch, 2009–2011: 54.6 cm wide; SD card slot on the right edge
+    kind: panel
+    profile: imac-back
+    width: 546
+    height: 67
+    radius: 14
+    stand: 126
+    join: 60
+    views:
+      right: { profile: imac-edge, height: 150, edge: 30, view_width: 90 }
+    features:
+      right:
+        - { kind: vslot, x: 35, y0: 8, y1: 70 }
+  imac-2009-27:          # iMac 27-inch, 2009–2011: 65 cm wide; SD card slot on the right edge
+    kind: panel
+    profile: imac-back
+    width: 650
+    height: 67
+    radius: 14
+    stand: 126
+    join: 60
+    views:
+      right: { profile: imac-edge, height: 150, edge: 30, view_width: 90 }
+    features:
+      right:
+        - { kind: vslot, x: 35, y0: 8, y1: 70 }
+  imac-thin-21:          # iMac 21.5-inch, 2012–2019: 52.8 cm wide
+    kind: panel
+    profile: imac-back
+    width: 528
+    height: 72
+    radius: 14
+    stand: 125
+  imac-thin-27:          # iMac 27-inch and iMac Pro, 2012–2020: 65 cm wide
+    kind: panel
+    profile: imac-back
+    width: 650
+    height: 72
+    radius: 14
+    stand: 146
+
+  macpro:                # Mac Pro 2006–2012 tower: 20.6 × 51.1 × 47.5 cm. Each face is shown as a
+    kind: panel          # window around its ports, front and back side by side.
+    profile: macpro
+    width: 206
+    height: 511
+    layout: row
+    callouts: right
+    power_glyph: power-iec
+    views:
+      front:
+        window: [0, 0, 112, 395]
+        solid: [[23, 45.5, 160, 9], [23, 119.5, 160, 9], [17, 274, 20, 92]]
+      back:
+        window: [62, 92, 206, 438]
+        solid: [[92, 109.8, 26, 26], [80, 194, 100, 112], [149, 317, 40, 106]]
+    features:
+      front:
+        - { kind: power-button, at: [26.7, 290] }
+      back:
+        - { kind: pci, x0: 84, x1: 176, y0: 197, n: 4, pitch: 25.6, h: 21 }
+        - { kind: fan, at: [84.2, 377], r: 58 }
+
+drawings:
+  # ── MacBook Pro ──
+  - chassis: mbp-pre-15
+    releases: ["MacBookPro3,1/15-mid-2007", "MacBookPro4,1/15-early-2008"]
+    ref: maintainer's A1226 side photos (2026-10-02); ma427 p24 (same layout)
+    x:
+      left: [26, 46.9, 63.7, 77.3, 107.9]
+      right: [122, 141.7, 158.7, 183.5, 212.6]
+
+  - chassis: mbp-pre-17
+    releases: ["MacBookPro4,1/17-early-2008"]
+    ref: ma427 p24 side drawings
+    x:
+      left: [30.5, 50.4, 69.2, 85.6, 98.6, 125.9]
+      right: [132.5, 153.4, 173.8, 194.2, 224.2]
+
+  - chassis: mbp-uni-15
+    releases: ["MacBookPro5,1/15-late-2008"]
+    ref: ma657 p22 port diagram, scaled by the ma1612 side photo (same chassis); the diagram draws the ExpressCard slot short, so it sits at its real 34 mm width
+    x:
+      left: [21.2, 38.9, 53.5, 69.2, 85.2, 100.7, 112.9, 124.2, 148]
+
+  - chassis: mbp-uni-15
+    releases: ["MacBookPro5,3/15-mid-2009", "MacBookPro5,4/15-2-53ghz-mid-2009", "MacBookPro6,2/15-mid-2010", "MacBookPro8,2/15-early-2011", "MacBookPro8,2/15-late-2011", "MacBookPro9,1/15-mid-2012"]
+    ref: ma1612 p1 side photos; ma1527 p24 port diagram
+    x:
+      left: [21.2, 37.4, 51, 64.7, 77.2, 94.6, 122, 139.4, 151.9]
+
+  - chassis: mbp-uni-13
+    releases: ["MacBookPro5,5/13-mid-2009", "MacBookPro7,1/13-mid-2010", "MacBookPro8,1/13-early-2011", "MacBookPro8,1/13-late-2011", "MacBookPro9,2/13-mid-2012"]
+    ref: ma1611 p3 side photos
+    x:
+      left: [21.6, 34, 52.2, 64.7, 78.3, 95.3, 115.8, 138.5]
+
+  - chassis: mbp-uni-17
+    releases: ["MacBookPro5,2/17-early-2009", "MacBookPro5,2/17-mid-2009", "MacBookPro6,1/17-mid-2010", "MacBookPro8,3/17-early-2011", "MacBookPro8,3/17-late-2011"]
+    ref: ma1526 p24 port diagram, scaled by its USB ports; offset as on the 15-inch photo; ExpressCard at its real width
+    x:
+      left: [22, 38.9, 52.9, 65.3, 78.6, 94, 109.5, 123.8, 135.9, 157]
+
+  - chassis: mbp-retina-15
+    releases: ["MacBookPro10,1/15-mid-2012", "MacBookPro10,1/15-early-2013", "MacBookPro11,2/15-late-2013", "MacBookPro11,2/15-mid-2014", "MacBookPro11,3/15-late-2013", "MacBookPro11,3/15-mid-2014", "MacBookPro11,4/15-mid-2015", "MacBookPro11,5/15-mid-2015"]
+    ref: ma1695 p5 side photos (15-inch)
+    x:
+      left: [23, 40.5, 54.3, 69.7, 87.2]
+      right: [179, 206.2, 227.2]
+
+  - chassis: mbp-retina-13
+    releases: ["MacBookPro10,2/13-late-2012", "MacBookPro10,2/13-early-2013", "MacBookPro11,1/13-late-2013", "MacBookPro11,1/13-mid-2014", "MacBookPro12,1/13-early-2015"]
+    ref: ma1663 p3 side photos (13-inch)
+    x:
+      left: [21.9, 41.6, 55.8, 71.2, 87.6]
+      right: [155.5, 176.3, 197.1]
+
+  - chassis: mbp-tb3-13
+    releases: ["MacBookPro13,1/13-2016-2tb3", "MacBookPro14,1/13-2017-2tb3", "MacBookPro15,4/13-2019-2tb3", "MacBookPro16,3/13-2020-2tb3"]
+    ref: ma1784 p2 side drawing (left); headphone placed as on the 15-inch
+    x:
+      left: [23, 37.5]
+      right: [194.4]
+
+  - chassis: mbp-tb3-13
+    releases: ["MacBookPro13,2/13-2016-4tb3", "MacBookPro14,2/13-2017-4tb3", "MacBookPro15,2/13-2018-4tb3", "MacBookPro15,2/13-2019-4tb3", "MacBookPro16,2/13-2020-4tb3"]
+    ref: ma1784 p2 (left); right side mirrors the left, headphone as on the 15-inch (ma1825 p2)
+    x:
+      left: [23, 37.5]
+      right: [167.4, 181.9, 194.4]
+
+  - chassis: mbp-tb3-15
+    releases: ["MacBookPro13,3/15-2016", "MacBookPro14,3/15-2017", "MacBookPro15,1/15-2018", "MacBookPro15,1/15-2019", "MacBookPro15,3/15-2018-vega", "MacBookPro15,3/15-2019-vega"]
+    ref: ma1825 p2 side drawing (right); left side mirrors it
+    x:
+      left: [33.9, 49.8]
+      right: [190.9, 206.8, 220]
+
+  - chassis: mbp-16
+    releases: ["MacBookPro16,1/16-2019", "MacBookPro16,4/16-2019-5600m"]
+    ref: ma1907 p2; spacing as on the 15-inch
+    x:
+      left: [33.9, 49.8]
+      right: [196.1, 212, 225.2]
+
+  # ── MacBook ──
+  - chassis: mb-poly
+    releases: ["MacBook2,1/late-2006", "MacBook2,1/mid-2007", "MacBook3,1/late-2007", "MacBook4,1/early-2008", "MacBook5,2/early-2009", "MacBook5,2/mid-2009"]
+    ref: ma198 p24 port diagram (drawn close to scale, ~1.95 px/mm at 110 dpi)
+    x:
+      left: [28, 46, 63.6, 80.5, 99, 117, 132, 145]
+
+  - chassis: mbp-uni-13
+    releases: ["MacBook5,1/late-2008"]
+    ref: ma656 p22 port diagram, scaled by its USB ports
+    features:
+      left:
+        - { kind: lock, x: 122 }
+        - { kind: indicator, x: 186 }
+      right:
+        - { kind: slot, x0: 88.5, x1: 211 }
+    x:
+      left: [28, 42, 57, 72, 85.5, 97.5, 108]
+
+  - chassis: mb-white-uni
+    releases: ["MacBook6,1/late-2009", "MacBook7,1/mid-2010"]
+    ref: ma1205 p24 port diagram, scaled by its USB ports
+    x:
+      left: [26, 41, 54, 69, 84.5, 101.5]
+
+  - chassis: mb-12
+    releases: ["MacBook8,1/early-2015", "MacBook9,1/early-2016", "MacBook10,1/2017"]
+    ref: ma1704 p5 side photos
+    x:
+      left: [13.4]
+      right: [185.7]
+
+  # ── MacBook Air ──
+  - chassis: mba-2008
+    releases: ["MacBookAir2,1/late-2008", "MacBookAir2,1/mid-2009"]
+    ref: ma658 p30 (perspective drawing only; positions approximate)
+    x:
+      left: [17]
+      right: [176, 190, 204]
+
+  - chassis: mba-11
+    releases: ["MacBookAir3,1/late-2010", "MacBookAir4,1/mid-2011", "MacBookAir5,1/mid-2012", "MacBookAir6,1/mid-2013", "MacBookAir6,1/early-2014", "MacBookAir7,1/early-2015"]
+    ref: ma1696 p3 side photos (same chassis throughout)
+    x:
+      left: [20.2, 38.4, 57.6]
+      right: [156.5, 174.7]
+
+  - chassis: mba-13
+    releases: ["MacBookAir3,2/late-2010", "MacBookAir4,2/mid-2011", "MacBookAir5,2/mid-2012", "MacBookAir6,2/mid-2013", "MacBookAir6,2/early-2014", "MacBookAir7,2/early-2015", "MacBookAir7,2/2017"]
+    ref: ma1699 p3 side photos (same chassis throughout)
+    x:
+      left: [23.8, 42, 60.2]
+      right: [170.3, 193, 210]
+
+  - chassis: mba-retina
+    releases: ["MacBookAir8,1/2018", "MacBookAir8,2/2019", "MacBookAir9,1/2020"]
+    ref: ma1846 p2 side drawing; headphone placed as on the MacBook Pro
+    x:
+      left: [19.5, 33]
+      right: [194]
+
+  # ── Desktops ──
+  - chassis: macmini-2018
+    releases: ["Macmini8,1/2018"]
+    ref: ma1843 p2 back panel (centres measured from pixel runs, 3.96 px/mm)
+    at:
+      back: [[30.8, 9.5], [50, 9.5], [66.4, 9.5], [81.1, 9.5], [95.7, 9.5], [110.6, 9.5], [128, 9.5], [147.5, 9.5], [164.9, 9.5], [156.1, 20.5]]
+
+  - chassis: macmini-poly
+    releases: ["Macmini1,1/early-2006", "Macmini1,1/late-2006", "Macmini2,1/mid-2007"]
+    ref: ma236 p24 back drawing (perspective; scaled by the port plate)
+    at:
+      back: [[16.5, 33, 90], [36.1, 33], [51.8, 33, 90], [80.6, 33], [113.3, 33, 90], [124.3, 33, 90], [135, 33, 90], [146, 33, 90], [134.3, 14], [146.8, 14]]
+
+  - chassis: macmini-poly
+    releases: ["Macmini3,1/early-2009", "Macmini3,1/late-2009"]
+    ref: ma909 p24 back drawing (perspective; scaled by the port plate)
+    features:
+      back:
+        - { kind: power-button, at: [14.9, 14] }
+        - { kind: vslots, x0: 29.9, x1: 94.4, y: 14, h: 10, n: 9 }
+        - { kind: lockp, at: [107.8, 14] }
+    at:
+      back: [[14.9, 33, 90], [30, 33], [47.8, 33, 90], [64.7, 33], [81.9, 33], [98.4, 33, 90], [109, 33, 90], [119.9, 33, 90], [130.8, 33, 90], [141.4, 33, 90], [130.6, 14], [142, 14]]
+
+  - chassis: macmini-uni
+    releases: ["Macmini4,1/mid-2010", "Macmini5,1/mid-2011", "Macmini5,2/mid-2011", "Macmini5,3/mid-2011", "Macmini6,1/late-2012", "Macmini6,2/late-2012"]
+    ref: ma1631 p3 back photo (2012; the 2010–2011 drawings show the same places); ma1538 p24
+    at:
+      back: [[30.5, 11.8], [50.2, 11.8], [62.1, 11.8, 90], [78.8, 11.8], [96.5, 11.8], [109.3, 11.8, 90], [119.8, 11.8, 90], [130, 11.8, 90], [140.3, 11.8, 90], [161.5, 11.8], [158.6, 21.5], [170.4, 21.5]]
+
+  - chassis: macmini-uni
+    releases: ["Macmini7,1/late-2014"]
+    ref: ma1687 p2 back photo
+    at:
+      back: [[30.5, 11.8], [50.2, 11.8], [67, 11.8], [82.7, 11.8], [95.5, 11.8], [109.3, 11.8, 90], [119.8, 11.8, 90], [130, 11.8, 90], [140.3, 11.8, 90], [161.5, 11.8], [158.6, 21.5], [170.4, 21.5]]
+
+  - chassis: imac-thin-27
+    releases: ["iMac13,2/27-late-2012"]
+    ref: ma1635 p4 back panel photo
+    at:
+      back: [[69, 24], [93, 24], [116, 24, 90], [129, 24, 90], [142, 24, 90], [154.5, 24, 90], [167, 24, 90], [180, 24, 90], [197, 24]]
+
+  - chassis: imac-white-17
+    releases: ["iMac4,1/17-early-2006", "iMac4,2/17-mid-2006", "iMac5,1/17-late-2006", "iMac5,2/17-late-2006-cd"]
+    ref: ma181 p24 rear photo (20-inch; ports keep their distance from the stand on every size)
+    at:
+      back: [[16.2, 25], [30.8, 25], [46.3, 25, 90], [59.3, 25, 90], [72.3, 25, 90], [86.9, 25], [101.5, 25], [122.7, 25], [139.8, 25, 90]]
+
+  - chassis: imac-white-20
+    releases: ["iMac4,1/20-early-2006", "iMac5,1/20-late-2006"]
+    ref: ma181 p24 rear photo (20-inch; ports keep their distance from the stand on every size)
+    at:
+      back: [[44.7, 25], [59.3, 25], [74.8, 25, 90], [87.8, 25, 90], [100.8, 25, 90], [115.4, 25], [130, 25], [151.2, 25], [168.3, 25, 90]]
+
+  - chassis: imac-white-24
+    releases: ["iMac6,1/24-late-2006"]
+    ref: ma181 p24 rear photo (20-inch; ports keep their distance from the stand on every size)
+    at:
+      back: [[85.7, 25], [100.3, 25], [115.8, 25, 90], [128.8, 25, 90], [141.8, 25, 90], [156.4, 25], [171, 25], [192.2, 25], [209.3, 25, 90]]
+
+  - chassis: imac-alu-20
+    releases: ["iMac7,1/20-mid-2007", "iMac8,1/20-early-2008"]
+    ref: ma273 p24 rear photo (20-inch; ports keep their distance from the stand on every size)
+    at:
+      back: [[52, 25], [65.2, 25], [79.2, 25, 90], [91.6, 25, 90], [104, 25, 90], [117.2, 25], [130.4, 25], [146.9, 25], [164.2, 25, 90]]
+
+  - chassis: imac-alu-24
+    releases: ["iMac7,1/24-mid-2007", "iMac8,1/24-early-2008"]
+    ref: ma273 p24 rear photo (20-inch; ports keep their distance from the stand on every size)
+    at:
+      back: [[94.5, 25], [107.7, 25], [121.7, 25, 90], [134.1, 25, 90], [146.5, 25, 90], [159.7, 25], [172.9, 25], [189.4, 25], [206.7, 25, 90]]
+
+  - chassis: imac-alu-20
+    releases: ["iMac9,1/20-early-2009", "iMac9,1/20-mid-2009"]
+    ref: ma273 p24 rear photo (20-inch; ports keep their distance from the stand on every size); ma913
+    at:
+      back: [[52, 25], [65.2, 25], [79.2, 25, 90], [91.6, 25, 90], [104, 25, 90], [117.2, 25, 90], [130.4, 25], [146.9, 25], [164.2, 25, 90]]
+
+  - chassis: imac-alu-24
+    releases: ["iMac9,1/24-early-2009"]
+    ref: ma273 p24 rear photo (20-inch; ports keep their distance from the stand on every size); ma913
+    at:
+      back: [[94.5, 25], [107.7, 25], [121.7, 25, 90], [134.1, 25, 90], [146.5, 25, 90], [159.7, 25, 90], [172.9, 25], [189.4, 25], [206.7, 25, 90]]
+
+  - chassis: imac-2009-21
+    releases: ["iMac10,1/21-late-2009", "iMac11,2/21-mid-2010", "iMac12,1/21-mid-2011", "iMac12,1/21-late-2011"]
+    ref: ma1206 p22 rear drawing (27-inch scale); SD slot on the right edge below the SuperDrive slot, height approximate
+    at:
+      back: [[58.7, 25], [71, 25], [84.5, 25, 90], [96.8, 25, 90], [109.1, 25, 90], [121.4, 25, 90], [134.8, 25], [147.7, 25, 90], [162.8, 25]]
+      right: [[35, 95, 90]]
+
+  - chassis: imac-2009-27
+    releases: ["iMac10,1/27-late-2009", "iMac11,1/27-late-2009", "iMac11,3/27-mid-2010"]
+    ref: ma1206 p22 rear drawing (27-inch scale); SD slot on the right edge below the SuperDrive slot, height approximate
+    at:
+      back: [[58.7, 25], [71, 25], [84.5, 25, 90], [96.8, 25, 90], [109.1, 25, 90], [121.4, 25, 90], [134.8, 25], [147.7, 25, 90], [162.8, 25]]
+      right: [[35, 95, 90]]
+
+  - chassis: imac-2009-27
+    releases: ["iMac12,2/27-mid-2011"]
+    ref: ma1206 p22 rear drawing (27-inch scale); SD slot on the right edge below the SuperDrive slot, height approximate; second Thunderbolt port beside the first (ma1574 p22)
+    at:
+      back: [[58.7, 25], [71, 25], [84.5, 25, 90], [96.8, 25, 90], [109.1, 25, 90], [121.4, 25, 90], [134.8, 25], [147.7, 25, 90], [158.4, 25, 90], [172.5, 25]]
+      right: [[35, 95, 90]]
+
+  - chassis: imac-thin-21
+    releases: ["iMac13,1/21-late-2012", "iMac13,3/21-early-2013", "iMac14,1/21-late-2013", "iMac14,3/21-late-2013", "iMac14,4/21-mid-2014", "iMac16,1/21-late-2015", "iMac16,2/21-late-2015", "iMac16,2/4k-late-2015"]
+    ref: ma1635 p4 / ma1733 p5 back photos (same port places on both sizes, measured from the left edge)
+    at:
+      back: [[69, 24], [93, 24], [116, 24, 90], [129, 24, 90], [142, 24, 90], [154.5, 24, 90], [167, 24, 90], [180, 24, 90], [197, 24]]
+
+  - chassis: imac-thin-27
+    releases: ["iMac14,2/27-late-2013", "iMac15,1/5k-late-2014", "iMac15,1/5k-mid-2015", "iMac17,1/5k-late-2015"]
+    ref: ma1635 p4 / ma1733 p5 back photos (same port places on both sizes, measured from the left edge)
+    at:
+      back: [[69, 24], [93, 24], [116, 24, 90], [129, 24, 90], [142, 24, 90], [154.5, 24, 90], [167, 24, 90], [180, 24, 90], [197, 24]]
+
+  - chassis: imac-thin-21
+    releases: ["iMac18,1/21-2017", "iMac18,2/4k-2017", "iMac19,2/4k-2019"]
+    ref: ma1789 p2 / ma1787 p2 / ma1942 p2 rear drawings (Thunderbolt 3 ports stand upright)
+    at:
+      back: [[72.7, 24], [96.3, 24], [120.2, 24, 90], [133.3, 24, 90], [146.1, 24, 90], [159, 24, 90], [170.6, 24, 90], [181.2, 24, 90], [196.5, 24]]
+
+  - chassis: imac-thin-27
+    releases: ["iMac18,3/5k-2017", "iMac19,1/5k-2019", "iMac20,1/5k-2020", "iMac20,2/5k-2020"]
+    ref: ma1789 p2 / ma1787 p2 / ma1942 p2 rear drawings (Thunderbolt 3 ports stand upright)
+    at:
+      back: [[72.7, 24], [96.3, 24], [120.2, 24, 90], [133.3, 24, 90], [146.1, 24, 90], [159, 24, 90], [170.6, 24, 90], [181.2, 24, 90], [196.5, 24]]
+
+  - chassis: imac-thin-27
+    releases: ["iMacPro1,1/2017"]
+    ref: ma1817 p2 rear drawing
+    at:
+      back: [[72.7, 24], [96.5, 24], [120.4, 24, 90], [133.3, 24, 90], [146.1, 24, 90], [159, 24, 90], [170.6, 24, 90], [181.2, 24, 90], [192, 24, 90], [202.7, 24, 90], [217.8, 24]]
+
+  - chassis: macpro
+    releases: ["MacPro3,1/early-2008"]
+    ref: ma361 p28 back drawing (scaled by the case height); ma361 front port close-up; front column placed from the ma914 front view
+    at:
+      front: [[26.7, 305.8], [26.7, 318.9], [26.7, 329.5], [26.7, 344.2], [26.7, 356.3]]
+      back: [[105.3, 122.8], [106.4, 287.7], [155.6, 286.5], [160.2, 328.7, 90], [170.2, 328.7, 90], [180.1, 328.7, 90], [159, 349.1], [178.9, 350.9], [159.6, 374.3], [178.4, 374.3], [159.6, 393.6], [178.4, 393.6], [159.6, 413.5], [177.8, 413.5]]
+
+  - chassis: macpro
+    releases: ["MacPro4,1/early-2009"]
+    ref: ma914 p26 back drawing; graphics card ports placed along the bottom slot bracket (approximate)
+    at:
+      front: [[26.7, 305.8], [26.7, 318.9], [26.7, 329.5], [26.7, 344.2], [26.7, 356.3]]
+      back: [[105.3, 122.8], [106.4, 287.7], [150, 287.7], [160.2, 328.7, 90], [170.2, 328.7, 90], [180.1, 328.7, 90], [159, 349.1], [178.9, 350.9], [159.6, 374.3], [178.4, 374.3], [159.6, 393.6], [178.4, 393.6], [159.6, 413.5], [177.8, 413.5]]
+
+  - chassis: macpro
+    releases: ["MacPro5,1/mid-2010", "MacPro5,1/mid-2012"]
+    ref: ma1547 p28 / ma1639 p30 back drawings; graphics card ports placed along the bottom slot bracket (approximate)
+    at:
+      front: [[26.7, 305.8], [26.7, 318.9], [26.7, 329.5], [26.7, 344.2], [26.7, 356.3]]
+      back: [[105.3, 122.8], [98, 287.7], [114, 287.7], [150, 287.7], [160.2, 328.7, 90], [170.2, 328.7, 90], [180.1, 328.7, 90], [159, 349.1], [178.9, 350.9], [159.6, 374.3], [178.4, 374.3], [159.6, 393.6], [178.4, 393.6], [159.6, 413.5], [177.8, 413.5]]

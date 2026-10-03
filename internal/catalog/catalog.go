@@ -188,6 +188,8 @@ func (l *loader) load() {
 		}
 	}
 
+	l.loadPortmaps()
+
 	ids, err := readLockFS(l.fsys, LockFile)
 	if err != nil {
 		l.errf(LockFile, "%v", err)

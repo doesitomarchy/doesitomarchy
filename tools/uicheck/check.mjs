@@ -1,6 +1,6 @@
 // UI quality gates for DoesItOmarchy (PLAN.md §17.5), run against a live server:
 //   - axe-core WCAG 2 A/AA on the key pages at 360px and 1440px
-//   - colour contrast on two pages in every theme
+//   - colour contrast on a few pages in every theme (port map colours included)
 //   - layout: no horizontal page scroll; matrix header links clickable
 //
 // Usage: BASE=http://127.0.0.1:8080 CHROME=/usr/bin/chromium node check.mjs
@@ -17,14 +17,14 @@ const JOBS = Math.max(1, Number(process.env.JOBS) || 4);
 
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
-  "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
+  "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/mac/MacPro5-1", "/mac/Macmini1-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
   "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
   "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
   "/api", "/privacy", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
-const contrastPages = ["/", "/mac/MacBookPro15-1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares"];
+const contrastPages = ["/", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares"];
 
 const failures = [];
 const fail = (where, msg) => failures.push(`${where}: ${msg}`);
@@ -41,8 +41,13 @@ async function open(path, width, theme) {
   const res = await page.goto(BASE + path, { waitUntil: "networkidle0" });
   if (!res.ok()) throw new Error(`${path}: HTTP ${res.status()}`);
   if (!(await page.evaluate(() => typeof window.axe !== "undefined"))) await page.evaluate(axeSource);
-  // Check what's folded away too: Identify my Mac's command explanations.
-  await page.evaluate(() => document.querySelectorAll("details.explain").forEach((d) => { d.open = true; }));
+  // Check what's folded away too: Identify my Mac's command explanations, and the
+  // Hardware details with their port map drawings (fetched on open, PLAN §27).
+  const drawings = await page.evaluate(() => {
+    document.querySelectorAll("details.explain, details.hw").forEach((d) => { d.open = true; });
+    return document.querySelectorAll("figure[data-pmsrc]").length;
+  });
+  if (drawings) await page.waitForNetworkIdle({ idleTime: 200 });
   return page;
 }
 

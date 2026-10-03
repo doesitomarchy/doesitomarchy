@@ -192,6 +192,7 @@ type apiConfig struct {
 	Ports        []string       `json:"ports"`
 	Connectors   []connInfo     `json:"connectors"` // the port layout; empty until researched
 	LayoutSource []string       `json:"layout_sources,omitempty"`
+	PortmapURL   string         `json:"portmap_url,omitempty"` // the port map drawing (SVG), when there is one
 	Features     []string       `json:"features"`
 	OutOfScope   string         `json:"out_of_scope,omitempty"`
 	Verdict      status.Verdict `json:"verdict"`
@@ -212,6 +213,9 @@ func configJSON(cv *configView) apiConfig {
 		Verified: cv.Verified, Counts: cv.Status.Counts, Components: []apiComponent{}, Capabilities: []apiCapStatus{},
 		Reports: []apiReportRef{}, URL: BaseURL + "/mac/" + url.PathEscape(cv.Mac.Slug) + "#cfg-" + cv.ID,
 		Connectors: cv.Conns, LayoutSource: cv.LayoutSrc}
+	if cv.PortmapKey != "" {
+		x.PortmapURL = BaseURL + "/portmap/" + cv.PortmapKey + ".svg"
+	}
 	if x.Connectors == nil {
 		x.Connectors = []connInfo{}
 	}

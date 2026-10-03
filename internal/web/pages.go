@@ -3,6 +3,7 @@ package web
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"sort"
@@ -393,6 +394,10 @@ type resultData struct {
 	Config *configView
 	Groups []resultGroup
 	Other  []store.ResultItem // stored but not counted: the capability doesn't apply
+	// Portmap is the configuration's drawing, coloured by this report's own
+	// per-port items (PLAN §27); PortItems counts those items.
+	Portmap   template.HTML
+	PortItems int
 }
 
 type resultGroup struct {
@@ -441,6 +446,10 @@ func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 		}
 		g := &d.Groups[len(d.Groups)-1]
 		g.Items = append(g.Items, it)
+	}
+	if cv := d.Config; cv != nil && cv.PortmapKey != "" {
+		st := reportStatuses(rd.Items)
+		d.Portmap, d.PortItems = portmapHTML(s.cat.Portmaps[cv.PortmapKey], "r", st), len(st)
 	}
 	title := fmt.Sprintf("Diagnostic Report %s · %s", rd.Code, rd.Identifier)
 	desc := fmt.Sprintf("Omarchy %s diagnostic report for %s, tested %s: %d passed, %d partly, %d failed.", rd.Omarchy, rd.Identifier,

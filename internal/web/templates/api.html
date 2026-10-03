@@ -9,7 +9,7 @@
   <li><code>GET /api/v1</code>: an index of the endpoints.</li>
   <li><code>GET /api/v1/macs</code>: every Intel Mac, with its verdict range and configuration IDs.</li>
   <li><code>GET /api/v1/macs/{identifier}</code>: one Mac (e.g. <code>MacBookPro11,3</code>) and all its configurations.</li>
-  <li><code>GET /api/v1/configs/{id}</code>: one configuration: components with hardware IDs, its port layout (<code>connectors</code>, with the criteria each connector is tested for), the criteria that apply, the current status of each, and its latest reports.</li>
+  <li><code>GET /api/v1/configs/{id}</code>: one configuration: components with hardware IDs, its port layout (<code>connectors</code>, with the criteria each connector is tested for, and <code>portmap_url</code>, the port map drawing as an SVG, when there is one), the criteria that apply, the current status of each, and its latest reports.</li>
   <li><code>GET /api/v1/capabilities</code>: the test criteria, including retired ones.</li>
   <li><code>GET /api/v1/schema</code>: the diagnostic report format, as JSON Schema.</li>
   <li><code>GET /api/v1/reports/{code}</code>: where a report stands: <code>pending</code>, <code>accepted</code>, <code>rejected</code> (with the reason) or <code>retracted</code>.</li>
