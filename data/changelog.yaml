@@ -3,6 +3,10 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-03"
+  title: Fix tracking
+  summary: "Each test criterion now names the part whose driver usually decides it (the audio codec for speakers, the Wi-Fi chip for Wi-Fi, the T2 bridge for Touch ID, and so on), so one fix issue in doesitomarchy/wecanfixeverything covers every Mac with that part. Failed criteria show who is working on a fix, and ask for a re-test once one lands."
+
+- date: "2026-10-03"
   title: Port map drawings
   summary: "Original, to-scale line drawings of where every port sits, for the 140 releases with a port layout. Each model page shows its drawing with every port coloured by its test results, and offers it as an SVG download (CC BY-SA 4.0)."
   notes:

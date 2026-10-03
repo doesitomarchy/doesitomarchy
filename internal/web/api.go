@@ -163,6 +163,18 @@ type apiCapStatus struct {
 	Reason       string         `json:"unsupported_reason,omitempty"`
 	// Per-connector criteria: each connector's status.
 	Ports []apiPortStatus `json:"ports,omitempty"`
+	// Fix is the fix issue for a failed criterion (PLAN §26).
+	Fix *apiFix `json:"fix,omitempty"`
+}
+
+type apiFix struct {
+	Issue        int    `json:"issue"`
+	URL          string `json:"url"`
+	State        string `json:"state"` // open | claimed | stale | proposed | fixed
+	Assignee     string `json:"assignee,omitempty"`
+	LastActivity string `json:"last_activity,omitempty"`
+	FixLink      string `json:"fix_link,omitempty"`
+	Retest       bool   `json:"retest,omitempty"` // fixed after the latest result: re-test it
 }
 
 type apiPortStatus struct {
@@ -230,6 +242,9 @@ func configJSON(cv *configView) apiConfig {
 		for _, cp := range cat.Caps {
 			cs := apiCapStatus{ID: cp.ID, Verdict: cp.Verdict, LatestReport: cp.Code,
 				Omarchy: cp.Omarchy, Kernel: cp.Kernel, TestedAt: cp.Date, Method: cp.Method, Stale: cp.Stale, Conflict: cp.Conflict, Reason: cp.Reason}
+			if f := cp.Fix; f != nil {
+				cs.Fix = &apiFix{f.Issue, f.URL, string(f.State), f.Assignee, f.LastActivity, f.FixLink, f.Retest}
+			}
 			for _, p := range cp.Ports {
 				cs.Ports = append(cs.Ports, apiPortStatus{p.ID, p.Verdict, p.CoveredBy, p.Suspect})
 			}

@@ -285,22 +285,7 @@ func preview(ctx context.Context, st *store.Store, c *catalog.Catalog, r *result
 	if cfg == nil {
 		return before, after, fmt.Errorf("config %s vanished from the catalog", r.ConfigID)
 	}
-	cats := map[string]catalog.Category{}
-	for _, k := range c.Categories {
-		cats[k.ID] = k
-	}
-	var caps []status.Capability
-	groups := c.CriterionGroups(m, cfg)
-	for _, cp := range c.Applicable(m, cfg) {
-		k := cats[cp.Category()]
-		var gs []status.Group
-		for _, g := range groups[cp.ID] {
-			gs = append(gs, status.Group{ID: g.ID, Connectors: g.Connectors})
-		}
-		caps = append(caps, status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking, Groups: gs})
-	}
-	in := status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Caps: caps, Items: ru.Items[cfg.ID],
-		Unsupported: ru.Unsupported[cfg.ID], Results: ru.Results[cfg.ID], LatestResult: ru.Latest[cfg.ID], CurrentMajor: ru.CurrentMajor}
+	in := ru.StatusInput(c, m, cfg, excl, c.Applicable(m, cfg))
 	before = status.Config(in)
 	verdicts := map[string]status.Verdict{"supported": status.Supported, "partial": status.Partial, "failed": status.Failed}
 	items := append([]status.Item(nil), in.Items...)

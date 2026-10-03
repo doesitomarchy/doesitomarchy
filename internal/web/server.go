@@ -20,6 +20,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
 	"github.com/doesitomarchy/doesitomarchy/internal/match"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
@@ -53,6 +54,11 @@ type Server struct {
 	access  *accessVerifier
 	// shareLimit is PF-3's per-IP limit, held in memory only.
 	shareLimit *rateLimiter
+	// gh and syncer reach the fix repo (PLAN §26); gh is nil without a token.
+	gh     *fixes.Client
+	syncer *fixes.Syncer
+	// cfgs maps config IDs to the catalog's configurations.
+	cfgs map[string]*catalog.Config
 }
 
 // snapshot is everything built from the catalog and the accepted results.
@@ -61,7 +67,14 @@ type Server struct {
 type snapshot struct {
 	view    *catalogView
 	index   *search.Index
-	version int64 // the store's data version it was built from
+	version int64     // the store's data version it was built from
+	expires time.Time // when a fix's state changes by time alone (zero: never), so it's rebuilt
+}
+
+// current reports whether the snapshot still matches the store's data
+// version at now.
+func (sn *snapshot) current(version int64, now time.Time) bool {
+	return sn != nil && sn.version == version && (sn.expires.IsZero() || now.Before(sn.expires))
 }
 
 // catalogFS is where the catalog's data files are read from.
@@ -89,6 +102,19 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 	s := &Server{store: st, cat: c, opt: opt, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{},
 		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD),
 		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour)}
+	if opt.GitHubToken != "" {
+		s.gh = fixes.NewClient(opt.FixRepo, opt.GitHubToken)
+		s.syncer = &fixes.Syncer{Client: s.gh, Store: st, Log: log}
+	}
+	s.cfgs = map[string]*catalog.Config{}
+	for _, m := range c.Macs {
+		for ri := range m.Releases {
+			for ci := range m.Releases[ri].Configs {
+				cfg := &m.Releases[ri].Configs[ci]
+				s.cfgs[cfg.ID] = cfg
+			}
+		}
+	}
 	if _, err := s.Refresh(context.Background()); err != nil {
 		return nil, fmt.Errorf("load results: %w", err)
 	}
@@ -119,7 +145,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 			return "Apple Support"
 		},
 	}
-	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "admin-fixes", "fixes", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
@@ -160,6 +186,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /identify", s.identify)
 	mux.HandleFunc("POST /identify", s.identifyPost)
 	mux.HandleFunc("POST /identify/share", s.identifyShare)
+	mux.HandleFunc("POST /hooks/github", s.githubHook)
+	mux.HandleFunc("GET /fixes", s.fixesPage)
 	mux.HandleFunc("GET /privacy", s.privacy)
 	mux.HandleFunc("GET /api", s.apiDocs)
 	s.apiRoutes(mux)
@@ -291,27 +319,29 @@ func joinLimit(xs []string, n int) string {
 }
 
 // Refresh rebuilds the views and search index from the store's accepted
-// results if they changed since the current snapshot, and swaps them in.
-// It reports whether anything changed.
+// results if they changed since the current snapshot, or a fix's state
+// changed with time, and swaps them in. It reports whether it rebuilt.
 func (s *Server) Refresh(ctx context.Context) (bool, error) {
 	ru, err := s.store.RollupData(ctx)
 	if err != nil {
 		return false, err
 	}
-	if cur := s.snap.Load(); cur != nil && cur.version == ru.Version {
+	start := time.Now()
+	if s.snap.Load().current(ru.Version, start) {
 		return false, nil
 	}
-	start := time.Now()
-	view := buildView(s.cat, s.opt, ru)
-	s.snap.Store(&snapshot{view: view, index: search.Build(s.cat, view.states), version: ru.Version})
+	view := buildView(s.cat, s.opt, ru, start)
+	s.snap.Store(&snapshot{view: view, index: search.Build(s.cat, view.states), version: ru.Version,
+		expires: fixes.NextChange(ru.Fixes, start)})
 	s.log.Info("results loaded", "data_version", ru.Version, "verified", view.site.Coverage.Verified,
 		"tested", view.site.Coverage.Tested, "ms", time.Since(start).Milliseconds())
 	return true, nil
 }
 
 // Watch polls the store's data version and rebuilds when it moves (an
-// accept, retract or Unsupported flag from the CLI or /admin), then asks
-// Cloudflare to drop its cached pages. It returns when ctx is done.
+// accept, retract or Unsupported flag from the CLI or /admin) or the
+// snapshot expires (a claim went stale), then asks Cloudflare to drop its
+// cached pages. It returns when ctx is done.
 func (s *Server) Watch(ctx context.Context, every time.Duration) {
 	t := time.NewTicker(every)
 	defer t.Stop()
@@ -328,7 +358,7 @@ func (s *Server) Watch(ctx context.Context, every time.Duration) {
 			}
 			continue
 		}
-		if cur := s.snap.Load(); cur != nil && cur.version == v {
+		if s.snap.Load().current(v, time.Now()) {
 			continue
 		}
 		changed, err := s.Refresh(ctx)

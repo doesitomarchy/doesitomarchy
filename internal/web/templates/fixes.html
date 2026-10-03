@@ -1,0 +1,21 @@
+{{define "content"}}{{with .Data}}
+<article class="fixes-page">
+<h1>Fixes</h1>
+<p class="lead">#WeCanFixEverything. Each fix is an issue in <a href="https://github.com/{{.Repo}}" rel="noopener">{{.Repo}}</a>, covering one test criterion on one component (so every Mac with that part) or on one configuration. Comment, ask to be assigned, or link a pull request; this page follows the issue within seconds.</p>
+{{range .Groups}}
+<section class="fix-group">
+  <h2>{{.Title}} <span class="muted count">{{len .Rows}}</span></h2>
+  {{if .Rows}}<div class="table-wrap" tabindex="0" role="region" aria-label="{{.Title}}"><table class="browse fixes">
+    <thead><tr><th scope="col">Issue</th><th scope="col">Criterion</th><th scope="col">On</th><th scope="col" class="num">Configurations</th><th scope="col">Status</th></tr></thead>
+    <tbody>{{range .Rows}}<tr>
+      <td><a href="{{.Fix.URL}}" rel="noopener">#{{.Fix.Issue}}</a></td>
+      <td>{{.Criterion}}</td>
+      <td>{{if .ScopeURL}}<a href="{{.ScopeURL}}">{{.Scope}}</a>{{else}}{{.Scope}}{{end}}</td>
+      <td class="num">{{.Configs}}{{if .Failing}} <span class="muted">({{.Failing}} failing)</span>{{end}}</td>
+      <td>{{if eq .State "claimed"}}@{{.Fix.Assignee}} · last activity {{slice .Fix.LastActivity 0 10}}{{else if eq .State "proposed"}}fix proposed{{if .Fix.Assignee}} by @{{.Fix.Assignee}}{{end}}{{else if eq .State "fixed"}}fixed {{slice .Fix.ClosedAt 0 10}}{{with .Fix.FixLink}} · <a class="inline-link" href="{{.}}" rel="noopener">the change</a>{{end}}{{else if eq .State "stale"}}open · the last claim went quiet{{else}}open{{end}}</td>
+    </tr>{{end}}</tbody>
+  </table></div>{{else}}<p class="muted">None right now.</p>{{end}}
+</section>
+{{end}}
+</article>
+{{end}}{{end}}

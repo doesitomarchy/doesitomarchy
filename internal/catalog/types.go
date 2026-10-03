@@ -53,6 +53,9 @@ type Capability struct {
 	Name        string     `yaml:"name" json:"name"`
 	Description string     `yaml:"description" json:"description"`
 	When        *Condition `yaml:"when" json:"when"`
+	// FixBy is the component kind (optionally "kind:role") whose driver
+	// usually decides this criterion, for fix tracking (PLAN §26).
+	FixBy string `yaml:"fix_by" json:"fix_by,omitempty"`
 	// Retired criteria no longer apply to any configuration. They stay in the
 	// catalog because results may reference them; IDs are never deleted.
 	Retired bool `yaml:"retired" json:"retired,omitempty"`

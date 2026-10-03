@@ -105,6 +105,12 @@ func (l *loader) validateCapabilities() {
 		if cap.Name == "" {
 			l.errf(path, "capability %q: name is required", cap.ID)
 		}
+		if cap.FixBy != "" {
+			kind, role, _ := strings.Cut(cap.FixBy, ":")
+			if _, ok := c.Vocab.ComponentKinds[kind]; !ok || (role != "" && role != "integrated" && role != "discrete") {
+				l.errf(path, "capability %q: fix_by %q must be a component kind, optionally with :integrated or :discrete", cap.ID, cap.FixBy)
+			}
+		}
 		if w := cap.When; w != nil {
 			if len(w.All)+len(w.Any)+len(w.None) == 0 {
 				l.errf(path, "capability %q: empty when (omit it to apply everywhere)", cap.ID)

@@ -160,7 +160,8 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	srv, err := web.New(st, c, log, web.Options{Version: version, CatalogHash: hash, CatalogDate: catalogDate, CatalogCommit: catalogCommit,
 		Demo: *demo, PurgeZone: os.Getenv("CF_ZONE_ID"), PurgeToken: os.Getenv("CF_PURGE_TOKEN"),
 		AccessTeam: os.Getenv("CF_ACCESS_TEAM"), AccessAUD: os.Getenv("CF_ACCESS_AUD"), AdminInsecure: *adminInsecure,
-		CatalogFS: catalogFS(*dataDir)})
+		CatalogFS: catalogFS(*dataDir), FixRepo: os.Getenv("FIX_REPO"), GitHubToken: os.Getenv("GITHUB_TOKEN"),
+		WebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET")})
 	log.Info("views and search index built", "ms", time.Since(start).Milliseconds(), "demo", *demo)
 	if err != nil {
 		log.Error("templates", "err", err)
@@ -184,6 +185,9 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	go func() { errc <- hs.Serve(ln) }()
 	if *watch > 0 {
 		go srv.Watch(ctx, *watch)
+	}
+	if !*demo {
+		go srv.SyncFixes(ctx, 6*time.Hour) // fix issues: at start-up, then every 6 hours (PLAN §26); no-op without a token
 	}
 	select {
 	case err := <-errc:

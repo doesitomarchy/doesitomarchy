@@ -15,6 +15,11 @@
 #
 # A capability's id is "<category>.<name>" and must never change once
 # results reference it.
+#
+# `fix_by` names the kind of component whose driver usually decides the
+# criterion ("audio", "wifi", or "gpu:integrated" for a GPU role). A fix issue
+# for a failure then covers every configuration with that component (PLAN.md
+# §26). Without it, fixes are opened per configuration.
 
 categories:
   - { id: boot,     name: Boot,       icon: power,     blocking: true }
@@ -48,9 +53,11 @@ capabilities:
   # ── Graphics ────────────────────────────────────────────────────────────
   - id: graphics.integrated
     name: Integrated GPU acceleration
+    fix_by: gpu:integrated
     when: { all: ["gpu:integrated"] }
   - id: graphics.discrete
     name: Discrete GPU acceleration
+    fix_by: gpu:discrete
     when: { all: ["gpu:discrete"] }
   - id: graphics.switching
     name: Integrated/discrete display switching
@@ -74,27 +81,34 @@ capabilities:
   # ── Input ───────────────────────────────────────────────────────────────
   - id: input.keyboard
     name: Built-in keyboard and function keys
+    fix_by: input
     when: { all: ["feature:builtin-keyboard"] }
   - id: input.trackpad
     name: Trackpad and multi-touch
+    fix_by: input
     when: { all: ["feature:trackpad"] }
   - id: input.keyboard-backlight
     name: Keyboard backlight
+    fix_by: input
     when: { all: ["feature:keyboard-backlight"] }
   - id: input.ambient-light-sensor
     name: Ambient light sensor
     when: { all: ["feature:ambient-light-sensor"] }
   - id: input.force-touch
     name: Force Touch click and pressure sensing
+    fix_by: input
     when: { all: ["feature:force-touch"] }
   - id: input.touch-bar
     name: Touch Bar
+    fix_by: input
     when: { all: ["feature:touch-bar"] }
   - id: input.touch-id
     name: Touch ID
+    fix_by: bridge
     when: { all: ["feature:touch-id"] }
   - id: input.ir-receiver
     name: IR receiver (Apple Remote)
+    fix_by: ir
     when: { all: ["feature:ir-receiver"] }
 
   # ── Power ───────────────────────────────────────────────────────────────
@@ -113,43 +127,55 @@ capabilities:
   # ── Audio ───────────────────────────────────────────────────────────────
   - id: audio.speakers
     name: Built-in speakers
+    fix_by: audio
     when: { all: ["feature:builtin-speaker"] }
   - id: audio.microphone
     name: Built-in microphone
+    fix_by: audio
     when: { all: ["feature:builtin-mic"] }
   - id: audio.headphone
     name: Headphone / analog audio output
+    fix_by: audio
     when: { all: ["port:audio-out"] }
   - id: audio.headset-mic
     name: Headset microphone via headphone jack
+    fix_by: audio
     when: { all: ["feature:headset-mic"] }
   - id: audio.line-in
     name: Line-in / analog audio input
+    fix_by: audio
     when: { all: ["port:audio-in"] }
   - id: audio.optical-out
     name: Optical digital audio output
+    fix_by: audio
     when: { all: ["port:audio-out-optical"] }
   - id: audio.optical-in
     name: Optical digital audio input
+    fix_by: audio
     when: { all: ["port:audio-in-optical"] }
   - id: audio.display-out
     name: Audio over HDMI / DisplayPort
+    fix_by: audio
     when: { any: ["port:hdmi", "feature:displayport-audio"] }
 
   # ── Camera ──────────────────────────────────────────────────────────────
   - id: camera.builtin
     name: Built-in webcam
+    fix_by: camera
     when: { all: ["has:camera"] }
 
   # ── Networking ──────────────────────────────────────────────────────────
   - id: network.wifi
     name: Wi-Fi
+    fix_by: wifi
     when: { all: ["has:wifi"] }
   - id: network.bluetooth
     name: Bluetooth
+    fix_by: bluetooth
     when: { all: ["has:bluetooth"] }
   - id: network.ethernet
     name: Ethernet
+    fix_by: ethernet
     when: { any: ["port:ethernet-fast", "port:ethernet-gbe", "port:ethernet-10gbe"] }
 
   # ── Ports ───────────────────────────────────────────────────────────────
@@ -164,12 +190,15 @@ capabilities:
     when: { all: ["feature:usb-c-charging"] }
   - id: ports.thunderbolt
     name: Thunderbolt devices (storage, docks, hotplug)
+    fix_by: thunderbolt
     when: { any: ["port:thunderbolt-1", "port:thunderbolt-2", "port:thunderbolt-3"] }
   - id: ports.firewire
     name: FireWire
+    fix_by: firewire
     when: { any: ["port:firewire-400", "port:firewire-800"] }
   - id: ports.sd-card
     name: SD card reader
+    fix_by: card-reader
     when: { all: ["port:sd-card"] }
   - id: ports.expresscard
     name: ExpressCard/34 slot
@@ -190,4 +219,5 @@ capabilities:
   # ── Bridge (T2) ─────────────────────────────────────────────────────────
   - id: bridge.touch-bar-camera
     name: Touch Bar and webcam operate concurrently
+    fix_by: bridge
     when: { all: ["chip:t2", "feature:touch-bar"] }

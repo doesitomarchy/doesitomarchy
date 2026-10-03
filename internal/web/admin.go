@@ -30,6 +30,7 @@ func (s *Server) adminRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/flag/{id}/resolve", s.admin(s.adminResolve))
 	mux.HandleFunc("GET /admin/sources", s.admin(s.adminSources))
 	mux.HandleFunc("GET /admin/shares", s.admin(s.adminShares))
+	s.adminFixRoutes(mux)
 	mux.HandleFunc("POST /admin/import", limitBody(results.MaxSize+64<<10, s.admin(s.adminImport)))
 	mux.HandleFunc("POST /admin/shares/review", s.admin(s.adminSharesReview))
 }

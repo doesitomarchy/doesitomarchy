@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/doesitomarchy/doesitomarchy/data"
 	"time"
+
+	"github.com/doesitomarchy/doesitomarchy/data"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
@@ -189,6 +190,30 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	}
 	if _, err := st.InsertResult(ctx, imp.Result, imp.Raw, imp.Format, "demo"); err != nil {
 		return err
+	}
+
+	// Fix issues (PLAN §26), one in each state. Made up, like the rest of the
+	// demo: the numbers don't exist in the fix repo.
+	day := func(d int) string { return now.UTC().AddDate(0, 0, -d).Format(time.RFC3339) }
+	issue := func(n int) string {
+		return fmt.Sprintf("https://github.com/doesitomarchy/wecanfixeverything/issues/%d", n)
+	}
+	for _, fx := range []store.Fix{
+		{Issue: 101, Capability: "audio.speakers", Component: "audio/apple-t2-audio", Title: "Built-in speakers on Apple T2 audio (demo)",
+			URL: issue(101), Open: true, Assignee: "t2-audio-dev", LastActivity: day(3), OpenedBy: "demo"},
+		{Issue: 102, Capability: "input.touch-id", Component: "bridge/apple-t2", Title: "Touch ID on Apple T2 (demo)",
+			URL: issue(102), Open: true, LastActivity: day(10), OpenedBy: "demo"},
+		{Issue: 103, Capability: "power.sleep-wake", Config: "macbookpro15-2-13-2018-4tb3-a", Title: "Sleep and wake on MacBook Pro (13-inch, 2018) (demo)",
+			URL: issue(103), Open: true, Assignee: "sleepy", Proposed: true, LastActivity: day(1), OpenedBy: "demo"},
+		{Issue: 104, Capability: "network.wifi", Component: "wifi/broadcom-bcm4360", Title: "Wi-Fi on Broadcom BCM4360 (demo)",
+			URL: issue(104), Open: false, StateReason: "completed", Assignee: "wl-fixer", LastActivity: "2026-09-30T12:00:00Z",
+			ClosedAt: "2026-09-30T12:00:00Z", FixLink: "https://github.com/basecamp/omarchy/pull/1", OpenedBy: "demo"},
+		{Issue: 105, Capability: "audio.microphone", Component: "audio/apple-t2-audio", Title: "Built-in microphone on Apple T2 audio (demo)",
+			URL: issue(105), Open: true, Assignee: "gone-quiet", LastActivity: day(90), OpenedBy: "demo"},
+	} {
+		if _, err := st.UpsertFix(ctx, fx); err != nil {
+			return err
+		}
 	}
 
 	// Shared IDs (PF-3) for /admin/shares: a known Mac with an aftermarket
