@@ -33,6 +33,9 @@ const (
 	// FlagDriverMissing: a native report said a device or its driver was
 	// missing, which counts as failed (PLAN §22.10); confirm it isn't absent hardware.
 	FlagDriverMissing = "driver_missing"
+	// FlagPortSuspect: a connector failed while another in its port group
+	// passed, which points to a damaged port rather than Omarchy (PLAN §25.1a).
+	FlagPortSuspect = "port_suspect"
 )
 
 // Result is a validated, scrubbed submission, ready to store.
@@ -294,6 +297,10 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 		r.Items = append(r.Items, it)
 	}
 
+	if cfg != nil {
+		r.Flags = append(r.Flags, portSuspects(c, m, cfg, r.Items)...)
+	}
+
 	seen := map[string]bool{}
 	for i, x := range f.Extras {
 		x.ID, x.Label, x.Status = strings.TrimSpace(x.ID), short(x.Label), short(x.Status)
@@ -465,4 +472,45 @@ func ApplicableSet(c *catalog.Catalog, configID string) (map[string]bool, error)
 		set[cp.ID] = true
 	}
 	return set, nil
+}
+
+// portSuspects flags connectors that failed while another connector in the
+// same port group passed in this report: probably a damaged port.
+func portSuspects(c *catalog.Catalog, m *catalog.Mac, cfg *catalog.Config, items []Item) []Flag {
+	status := map[string]string{}
+	for _, it := range items {
+		if it.Connector != "" {
+			status[it.Capability+"@"+it.Connector] = it.Status
+		}
+	}
+	if len(status) == 0 {
+		return nil
+	}
+	var flags []Flag
+	groups := c.CriterionGroups(m, cfg)
+	caps := make([]string, 0, len(groups))
+	for cp := range groups {
+		caps = append(caps, cp)
+	}
+	sort.Strings(caps)
+	for _, cp := range caps {
+		for _, g := range groups[cp] {
+			passed := ""
+			for _, cn := range g.Connectors {
+				if status[cp+"@"+cn] == "supported" && passed == "" {
+					passed = cn
+				}
+			}
+			if passed == "" {
+				continue
+			}
+			for _, cn := range g.Connectors {
+				if st := status[cp+"@"+cn]; st == "failed" || st == "partial" {
+					flags = append(flags, Flag{FlagPortSuspect, fmt.Sprintf("%s: %s %s while %s, on the same controller, passed; possibly a damaged port, so it doesn't count against Omarchy",
+						cp, cn, st, passed)})
+				}
+			}
+		}
+	}
+	return flags
 }

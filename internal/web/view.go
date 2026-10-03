@@ -195,14 +195,27 @@ type capView struct {
 	// FromLatest: the result is the config's latest, already named once at
 	// the top of the card, so the row only shows its method.
 	FromLatest bool
-	// Ports: per-connector criteria (PLAN §25), each connector's status.
-	Ports       []capPort
-	PortsPassed int
+	// Ports: per-connector criteria (PLAN §25), each connector's status and
+	// how many port groups are covered.
+	Ports        []capPort
+	GroupsPassed int
+	GroupsTotal  int
 }
 
 type capPort struct {
-	ID, Name string
-	Verdict  status.Verdict
+	ID, Name  string
+	Verdict   status.Verdict
+	CoveredBy string // untested, covered by a group-mate that passed
+	Suspect   bool   // failed while a group-mate passed: possibly a damaged port
+}
+
+// statusGroups converts the catalog's port groups for the status engine.
+func statusGroups(gs []catalog.PortGroup) []status.Group {
+	var out []status.Group
+	for _, g := range gs {
+		out = append(out, status.Group{ID: g.ID, Connectors: g.Connectors})
+	}
+	return out
 }
 
 // layoutSide is one side of a configuration's port layout.
@@ -294,10 +307,10 @@ func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup) *catalogView {
 	}
 	stateOf := func(m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability) status.ConfigStatus {
 		caps := make([]status.Capability, len(applicable))
-		conns := c.CriterionConnectors(m, cfg)
+		groups := c.CriterionGroups(m, cfg)
 		for i, cp := range applicable {
 			k := cats[cp.Category()]
-			caps[i] = status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking, Connectors: conns[cp.ID]}
+			caps[i] = status.Capability{ID: cp.ID, Label: k.Name + " → " + cp.Name, Blocking: k.Blocking, Groups: statusGroups(groups[cp.ID])}
 		}
 		return status.Config(status.ConfigInput{HardBlocker: m.HardBlocker, Excluded: excl, Caps: caps,
 			Items: ru.Items[cfg.ID], Unsupported: ru.Unsupported[cfg.ID], Results: ru.Results[cfg.ID],
@@ -621,14 +634,14 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 				x.Error = l.Evidence
 			}
 		}
-		if cs.PortsTotal > 0 {
-			x.PortsPassed = cs.PortsPassed
+		if cs.GroupsTotal > 0 {
+			x.GroupsPassed, x.GroupsTotal = cs.GroupsPassed, cs.GroupsTotal
 			for _, id := range c.CriterionConnectors(m, cfg)[cp.ID] {
-				pv := cs.Ports[id].Verdict
-				if pv == "" {
-					pv = status.Untested
+				ps := cs.Ports[id]
+				if ps.Verdict == "" {
+					ps.Verdict = status.Untested
 				}
-				x.Ports = append(x.Ports, capPort{id, c.ConnectorName(conn[id]), pv})
+				x.Ports = append(x.Ports, capPort{id, c.ConnectorName(conn[id]), ps.Verdict, ps.CoveredBy, ps.Suspect})
 			}
 		}
 		if x.Verdict == status.Supported {

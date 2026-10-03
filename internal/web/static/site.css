@@ -587,3 +587,7 @@ ul.layout .side { color: var(--muted); }
 ul.layout code { font-size: 11px; color: var(--muted); }
 ul.layout .conn { white-space: nowrap; }
 code.connref { font-size: 11px; color: var(--muted); }
+/* Covered by a group-mate: the check shape in muted ink, never the pass green. */
+.capport.covered { color: var(--muted); }
+.capport.covered svg.v { color: var(--muted); }
+.capport.suspect .tag { font-size: 10px; }

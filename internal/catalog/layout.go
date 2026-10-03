@@ -12,7 +12,10 @@ import (
 // release's physical connectors. They must add up to every configuration's
 // `ports` counts, which were reviewed with the catalog.
 
-var reConnectorID = regexp.MustCompile(`^(left|right|back|front|top)-([1-9][0-9]?)$`)
+var (
+	reConnectorID = regexp.MustCompile(`^(left|right|back|front|top)-([1-9][0-9]?)$`)
+	reGroup       = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+)
 
 // Sides in display order.
 var Sides = []string{"left", "right", "back", "front", "top"}
@@ -133,6 +136,9 @@ func (l *loader) checkConnectors(p, where string, conns []Connector) {
 				l.errf(p, "%s: also %q is not a port class", at, a)
 			}
 		}
+		if cn.Group != "" && !reGroup.MatchString(cn.Group) {
+			l.errf(p, "%s: group %q must be lower-case words joined by '-'", at, cn.Group)
+		}
 	}
 	for side, ns := range perSide {
 		sort.Ints(ns)
@@ -228,14 +234,72 @@ func (c *Catalog) ConnectorCriteria(m *Mac, cfg *Config, cn Connector) []string 
 	return out
 }
 
+// PortGroup is a set of connectors a criterion is judged on together: they
+// share a controller and driver path, so one passing connector covers them
+// all (PLAN §25.1a).
+type PortGroup struct {
+	ID         string   `json:"id"`
+	Connectors []string `json:"connectors"`
+}
+
+// CriterionGroups maps each per-connector criterion of a configuration to its
+// port groups, in layout order. A connector's group is its `group` when set,
+// else the port class that gives it the criterion. It's empty when the
+// configuration has no layout.
+func (c *Catalog) CriterionGroups(m *Mac, cfg *Config) map[string][]PortGroup {
+	out := map[string][]PortGroup{}
+	for _, cn := range cfg.Connectors {
+		for _, crit := range c.ConnectorCriteria(m, cfg, cn) {
+			gid := cn.Group
+			if gid == "" {
+				gid = c.criterionClass(cn, crit)
+			}
+			gs := out[crit]
+			i := 0
+			for i < len(gs) && gs[i].ID != gid {
+				i++
+			}
+			if i == len(gs) {
+				gs = append(gs, PortGroup{ID: gid})
+			}
+			gs[i].Connectors = append(gs[i].Connectors, cn.ID)
+			out[crit] = gs
+		}
+	}
+	return out
+}
+
+// criterionClass is the port class of a connector that gives it a criterion.
+func (c *Catalog) criterionClass(cn Connector, crit string) string {
+	for _, cl := range append([]string{cn.Type}, cn.Also...) {
+		if cl == ethernetType && crit == "network.ethernet" {
+			return cl
+		}
+		for _, t := range c.Vocab.Ports[cl].Tests {
+			if t == crit {
+				return cl
+			}
+		}
+		if crit == "ports.usb-c-charging" && (cl == "usb-c" || cl == "thunderbolt-3") {
+			return cl
+		}
+	}
+	return cn.Type
+}
+
 // CriterionConnectors maps each per-connector criterion of a configuration
-// to the IDs of the connectors it's tested on, in layout order. It's empty
-// when the configuration has no layout.
+// to the IDs of the connectors it's tested on, in layout order.
 func (c *Catalog) CriterionConnectors(m *Mac, cfg *Config) map[string][]string {
 	out := map[string][]string{}
-	for _, cn := range cfg.Connectors {
-		for _, id := range c.ConnectorCriteria(m, cfg, cn) {
-			out[id] = append(out[id], cn.ID)
+	for crit, gs := range c.CriterionGroups(m, cfg) {
+		for _, cn := range cfg.Connectors {
+			for _, g := range gs {
+				for _, id := range g.Connectors {
+					if id == cn.ID {
+						out[crit] = append(out[crit], id)
+					}
+				}
+			}
 		}
 	}
 	return out

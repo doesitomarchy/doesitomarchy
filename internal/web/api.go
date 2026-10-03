@@ -168,6 +168,8 @@ type apiCapStatus struct {
 type apiPortStatus struct {
 	Connector string         `json:"connector"`
 	Verdict   status.Verdict `json:"verdict"`
+	CoveredBy string         `json:"covered_by,omitempty"` // untested, but a connector in its group passed
+	Suspect   bool           `json:"possible_hardware_fault,omitempty"`
 }
 
 type apiReportRef struct {
@@ -225,7 +227,7 @@ func configJSON(cv *configView) apiConfig {
 			cs := apiCapStatus{ID: cp.ID, Verdict: cp.Verdict, LatestReport: cp.Code,
 				Omarchy: cp.Omarchy, Kernel: cp.Kernel, TestedAt: cp.Date, Method: cp.Method, Stale: cp.Stale, Conflict: cp.Conflict, Reason: cp.Reason}
 			for _, p := range cp.Ports {
-				cs.Ports = append(cs.Ports, apiPortStatus{p.ID, p.Verdict})
+				cs.Ports = append(cs.Ports, apiPortStatus{p.ID, p.Verdict, p.CoveredBy, p.Suspect})
 			}
 			x.Capabilities = append(x.Capabilities, cs)
 		}

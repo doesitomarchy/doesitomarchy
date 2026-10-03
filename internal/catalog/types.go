@@ -156,6 +156,9 @@ type Connector struct {
 	Type string   `yaml:"type" json:"type"`           // a port class, a power connector, or "ethernet"
 	Also []string `yaml:"also" json:"also,omitempty"` // more port classes the same connector carries
 	Note string   `yaml:"note" json:"note,omitempty"` // e.g. "nearest the hinge"
+	// Group names the connectors that share a controller and driver path,
+	// when that differs from the default (one group per connector type).
+	Group string `yaml:"group" json:"group,omitempty"`
 }
 
 // Side is the connector's side: left, right, back, front or top.
