@@ -1,8 +1,9 @@
 name: release
 
-# Pushing a version tag (git tag v0.5.0 && git push origin v0.5.0) runs every
-# CI check, publishes a GitHub Release with the binary, deploys it to the
-# droplet and purges Cloudflare's cache (PLAN.md §18.5).
+# Pushing a version tag (git tag v0.5.0 && git push origin v0.5.0) checks the
+# commit (reusing main's ci run for it when there is one), publishes a GitHub
+# Release with the binary, deploys it to the droplet and purges Cloudflare's
+# cache (PLAN.md §18.5).
 on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
@@ -15,11 +16,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The tag is pushed right after merging to main, whose push already runs
+  # every check on this exact commit. Wait for that run and reuse its result
+  # instead of checking the same code twice.
+  main-ci:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      passed: ${{ steps.find.outputs.passed }}
+    steps:
+      - id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=""
+          for i in $(seq 1 12); do # main's run can take a few seconds to appear
+            id=$(gh run list -R "$GITHUB_REPOSITORY" --workflow ci.yml --branch main --event push --commit "$GITHUB_SHA" \
+              --json databaseId -q '.[0].databaseId')
+            [ -n "$id" ] && break
+            sleep 5
+          done
+          if [ -z "$id" ]; then
+            echo "No ci run on main for $GITHUB_SHA; running the checks here."
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          elif gh run watch "$id" -R "$GITHUB_REPOSITORY" --interval 15 --exit-status > /dev/null; then
+            echo "ci run $id passed for $GITHUB_SHA; reusing it."
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ci run $id did not pass; running the checks here."
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   ci:
+    needs: main-ci
+    if: needs.main-ci.outputs.passed != 'true'
     uses: ./.github/workflows/ci.yml
 
   release:
-    needs: ci
+    needs: [main-ci, ci]
+    # ci is skipped when main's run was reused.
+    if: ${{ !cancelled() && (needs.main-ci.outputs.passed == 'true' || needs.ci.result == 'success') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

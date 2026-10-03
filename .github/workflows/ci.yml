@@ -3,11 +3,20 @@ name: ci
 on:
   push:
     branches: [main]
+    paths-ignore: ["**.md"]
   pull_request:
-  workflow_call: # the release workflow runs every check before deploying
+    paths-ignore: ["**.md"]
+  workflow_call: # the release workflow runs the checks when main's run for the tag can't be reused
 
 permissions:
   contents: read
+
+# A newer push to the same pull request cancels the run still checking the
+# old commit. Pushes to main and releases are keyed by commit, so each one
+# runs to the end (a release reuses main's run for its commit).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
