@@ -162,6 +162,22 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 		return err
 	}
 
+	// Per-connector port results (PLAN §25) on MacBookPro11,3: one USB port
+	// passes and one fails, so USB-A is Partial; HDMI and one Thunderbolt
+	// port pass; the other connectors stay untested.
+	ports := &results.File{Schema: results.SchemaV1, Config: "macbookpro11-3-15-late-2013-a", TestedAt: "2026-09-29T15:30:00Z",
+		Omarchy: results.FileOmarchy{Version: "4.0.4"}, Tester: results.FileTester{Handle: "demo-tester"},
+		Source: results.FileSource{ID: "manual", Profile: "ports"}, Items: map[string]results.FileItem{
+			"boot.install":                      {Status: "supported", Method: "observed"},
+			"ports.usb-a@left-4":                {Status: "supported", Method: "fixture"},
+			"ports.usb-a@right-3":               {Status: "failed", Method: "fixture", Evidence: "usb 2-1: device descriptor read/64, error -71"},
+			"graphics.external-display@right-2": {Status: "supported", Method: "observed"},
+			"ports.thunderbolt@left-2":          {Status: "supported", Method: "fixture"},
+		}}
+	if _, err := add(ports, true); err != nil {
+		return err
+	}
+
 	// An OmacDiag report imported by a maintainer, pending (PLAN §24).
 	imp, err := results.Import(results.OmacDiagFixture, "omacdiag", c, data.FS, results.ImportOptions{Omarchy: "4.0.4", Tester: "demo-tester"}, now)
 	if err != nil {

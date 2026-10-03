@@ -177,6 +177,17 @@ func (l *loader) load() {
 		}
 	}
 
+	layoutFiles, err := l.yamlFiles("layouts")
+	if err != nil {
+		l.errf("layouts", "%v", err)
+	}
+	for _, p := range layoutFiles {
+		lf := &LayoutFile{File: p}
+		if l.decode(p, lf) {
+			c.Layouts = append(c.Layouts, lf)
+		}
+	}
+
 	ids, err := readLockFS(l.fsys, LockFile)
 	if err != nil {
 		l.errf(LockFile, "%v", err)

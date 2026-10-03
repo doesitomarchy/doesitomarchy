@@ -206,9 +206,10 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 	for k := range f.Items {
 		keys = append(keys, k)
 	}
+	capOf := func(k string) string { c, _, _ := strings.Cut(k, "@"); return c }
 	sort.Slice(keys, func(i, j int) bool {
-		oi, iok := order[keys[i]]
-		oj, jok := order[keys[j]]
+		oi, iok := order[capOf(keys[i])]
+		oj, jok := order[capOf(keys[j])]
 		if iok != jok {
 			return iok
 		}
@@ -217,43 +218,69 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 		}
 		return keys[i] < keys[j]
 	})
-	for _, id := range keys {
-		fi := f.Items[id]
+	for _, key := range keys {
+		fi := f.Items[key]
+		id, conn, perConnector := strings.Cut(key, "@")
 		cp, known := byID[id]
 		if !known {
-			if strings.Contains(id, "@") {
-				bad("items.%s: per-connector items are not accepted yet (they arrive with structured port layouts)", id)
-			} else {
-				bad("items.%s: unknown capability (see /api/v1/capabilities, or send it as an extra)", id)
-			}
+			bad("items.%s: unknown capability (see /api/v1/capabilities, or send it as an extra)", key)
 			continue
 		}
-		it := Item{Capability: id, Status: strings.TrimSpace(fi.Status), Method: strings.TrimSpace(fi.Method),
+		if perConnector {
+			// capability@connector (PLAN §25): the connector must be in the
+			// configuration's port layout and take this criterion.
+			switch {
+			case cfg == nil:
+				continue // the config error is already reported
+			case len(cfg.Connectors) == 0:
+				bad("items.%s: %s has no port layout yet, so per-connector items can't be placed; send %s without a connector", key, cfg.ID, id)
+				continue
+			}
+			var found *catalog.Connector
+			for i := range cfg.Connectors {
+				if cfg.Connectors[i].ID == conn {
+					found = &cfg.Connectors[i]
+				}
+			}
+			if found == nil {
+				var ids []string
+				for _, cn := range cfg.Connectors {
+					ids = append(ids, cn.ID)
+				}
+				bad("items.%s: %s has no connector %q (it has %s)", key, cfg.ID, conn, strings.Join(ids, ", "))
+				continue
+			}
+			if !oneOf(id, c.ConnectorCriteria(m, cfg, *found)) {
+				bad("items.%s: connector %s (%s) isn't tested for %s", key, conn, c.ConnectorName(*found), id)
+				continue
+			}
+		}
+		it := Item{Capability: id, Connector: conn, Status: strings.TrimSpace(fi.Status), Method: strings.TrimSpace(fi.Method),
 			Reason: strings.TrimSpace(fi.Reason), Ord: order[id]}
 		switch {
 		case !oneOf(it.Status, Statuses):
-			bad("items.%s.status: %q must be one of %s", id, fi.Status, strings.Join(Statuses, ", "))
+			bad("items.%s.status: %q must be one of %s", key, fi.Status, strings.Join(Statuses, ", "))
 		case it.Status == "not_tested":
 			if it.Method != "" && !oneOf(it.Method, Methods) {
-				bad("items.%s.method: %q must be one of %s", id, fi.Method, strings.Join(Methods, ", "))
+				bad("items.%s.method: %q must be one of %s", key, fi.Method, strings.Join(Methods, ", "))
 			}
 			if it.Reason != "" && !oneOf(it.Reason, Reasons) {
-				bad("items.%s.reason: %q must be one of %s", id, fi.Reason, strings.Join(Reasons, ", "))
+				bad("items.%s.reason: %q must be one of %s", key, fi.Reason, strings.Join(Reasons, ", "))
 			}
 			it.Method = ""
 		default:
 			if !oneOf(it.Method, Methods) {
-				bad("items.%s.method: %q must be one of %s (required unless not_tested)", id, fi.Method, strings.Join(Methods, ", "))
+				bad("items.%s.method: %q must be one of %s (required unless not_tested)", key, fi.Method, strings.Join(Methods, ", "))
 			}
 			if it.Reason != "" {
-				bad("items.%s.reason: only not_tested items take a reason", id)
+				bad("items.%s.reason: only not_tested items take a reason", key)
 			}
 		}
 		if len(fi.Note) > maxNote {
-			bad("items.%s.note: %d bytes; the limit is %d", id, len(fi.Note), maxNote)
+			bad("items.%s.note: %d bytes; the limit is %d", key, len(fi.Note), maxNote)
 		}
 		if len(fi.Evidence) > maxEvidence {
-			bad("items.%s.evidence: %d bytes; the limit is %d", id, len(fi.Evidence), maxEvidence)
+			bad("items.%s.evidence: %d bytes; the limit is %d", key, len(fi.Evidence), maxEvidence)
 		}
 		it.Note, it.Evidence = Scrub(strings.TrimSpace(fi.Note)), Scrub(strings.TrimSpace(fi.Evidence))
 		it.Applicable = applies[id]

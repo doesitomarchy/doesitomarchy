@@ -18,7 +18,7 @@
 {{range .Groups}}
   <details open>
     <summary>{{template "icon" .Icon}}<span class="name">{{.Name}}</span><span class="dots" aria-hidden="true">{{range .Items}}{{template "vicon" (itemVerdict .Status)}}{{end}}</span></summary>
-    <ul>{{range .Items}}<li>{{template "vicon" (itemVerdict .Status)}}<span class="capname">{{.CapabilityName}}</span><span class="st st-{{itemVerdict .Status}}">{{itemLabel .Status}}</span>
+    <ul>{{range .Items}}<li>{{template "vicon" (itemVerdict .Status)}}<span class="capname">{{.CapabilityName}}{{with .Connector}} <code class="connref" title="The connector tested">{{.}}</code>{{end}}</span><span class="st st-{{itemVerdict .Status}}">{{itemLabel .Status}}</span>
       <span class="capmeta">{{if .Method}}{{.Method}}{{else}}{{reasonLabel .Reason}}{{end}}</span>
       {{if or .Evidence .Note}}<div class="why{{if ne .Status "failed"}} minor{{end}}">{{with .Evidence}}<p><span class="lbl">Reported</span> <code class="evidence">{{.}}</code></p>{{end}}{{with .Note}}<p><span class="lbl">Note</span> {{.}}</p>{{end}}</div>{{end}}</li>{{end}}</ul>
   </details>

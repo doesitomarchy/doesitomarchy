@@ -76,7 +76,7 @@
 {{with $r.Notes}}<div class="result-notes"><p>{{.}}</p></div>{{end}}
 <div class="table-wrap" tabindex="0" role="region" aria-label="Items"><table class="browse">
   <thead><tr><th scope="col">Category</th><th scope="col">Capability</th><th scope="col">Status</th><th scope="col">Method / reason</th><th scope="col">Evidence and notes</th></tr></thead>
-  <tbody>{{range $r.Items}}<tr{{if not .Applicable}} class="oos"{{end}}><td>{{.CategoryName}}</td><td><span class="capname">{{.CapabilityName}}</span>{{if not .Applicable}} <span class="tag">not counted</span>{{end}}</td>
+  <tbody>{{range $r.Items}}<tr{{if not .Applicable}} class="oos"{{end}}><td>{{.CategoryName}}</td><td><span class="capname">{{.CapabilityName}}</span>{{with .Connector}} <code class="connref">{{.}}</code>{{end}}{{if not .Applicable}} <span class="tag">not counted</span>{{end}}</td>
     <td>{{template "vicon" (itemVerdict .Status)}} {{itemLabel .Status}}</td><td>{{if .Method}}{{.Method}}{{else}}{{reasonLabel .Reason}}{{end}}</td><td>{{with .Evidence}}<code class="evidence">{{.}}</code>{{end}}{{with .Note}} {{.}}{{end}}</td></tr>{{end}}</tbody>
 </table></div>
 {{with $r.Extras}}<h2>Extras</h2><ul class="admin-flags">{{range .}}<li><code>{{.ID}}</code> {{.Label}} · {{.Status}} {{.Detail}}</li>{{end}}</ul>{{end}}

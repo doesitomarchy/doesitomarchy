@@ -30,7 +30,7 @@ releases:
         storage: { interface: sata, standard: ["250 GB HDD"], bto: ["500 GB HDD", "750 GB HDD"] }
         components: [gpu/nvidia-geforce-7300-gt, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-tsb82aa2, storage/intel-esb2-sata]
         bto_components: [bluetooth/apple-05ac-8206]
-        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1 }
         features: [builtin-speaker, fan, optical-drive]
         uncertain:
           - field: components.wifi
@@ -45,7 +45,7 @@ releases:
         storage: { interface: sata, standard: ["250 GB HDD"], bto: ["500 GB HDD", "750 GB HDD"] }
         components: [gpu/ati-radeon-x1900-xt, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-tsb82aa2, storage/intel-esb2-sata]
         bto_components: [bluetooth/apple-05ac-8206]
-        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1 }
         features: [builtin-speaker, fan, optical-drive]
         uncertain:
           - field: components.wifi
@@ -60,7 +60,7 @@ releases:
         storage: { interface: sata, standard: ["250 GB HDD"], bto: ["500 GB HDD", "750 GB HDD"] }
         components: [gpu/nvidia-quadro-fx-4500, audio/realtek-alc889a, ethernet/intel-80003es2lan, firewire/ti-tsb82aa2, storage/intel-esb2-sata]
         bto_components: [bluetooth/apple-05ac-8206]
-        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
+        ports: { usb-a-2: 5, firewire-400: 2, firewire-800: 2, ethernet-gbe: 2, dvi: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1 }
         features: [builtin-speaker, fan, optical-drive]
         uncertain:
           - field: components.wifi
