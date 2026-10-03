@@ -1,6 +1,9 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-CATALOG_DATE ?= $(shell TZ=UTC git log -1 --date=format-local:%Y-%m-%d --format=%cd -- data 2>/dev/null || echo unknown)
-CATALOG_COMMIT ?= $(shell git log -1 --format=%H -- data 2>/dev/null)
+# The catalog's date and commit: its last change to catalog data, not to the
+# Go embed file or the test tools' mappings in data/sources.
+CATALOG_PATHS := data ':(exclude)data/embed.go' ':(exclude)data/sources' ':(exclude)data/README.md' ':(exclude)data/LICENSE'
+CATALOG_DATE ?= $(shell TZ=UTC git log -1 --date=format-local:%Y-%m-%d --format=%cd -- $(CATALOG_PATHS) 2>/dev/null || echo unknown)
+CATALOG_COMMIT ?= $(shell git log -1 --format=%H -- $(CATALOG_PATHS) 2>/dev/null)
 LDFLAGS := -s -w -X main.version=$(VERSION) -X main.catalogDate=$(CATALOG_DATE) -X main.catalogCommit=$(CATALOG_COMMIT)
 
 .PHONY: build test check validate clean uicheck

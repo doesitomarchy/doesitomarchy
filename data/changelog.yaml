@@ -2,7 +2,7 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
-- date: "2026-10-02"
+- date: "2026-10-03"
   title: Port layouts
   summary: "Physical port layouts for 140 of the 154 Intel Mac releases, read from Apple's own manuals (and, for the Mid 2007 15-inch MacBook Pro, from a real machine): every connector by side and position, with the ports that share a controller grouped, so one test covers each group."
   notes:
