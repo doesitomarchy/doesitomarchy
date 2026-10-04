@@ -87,6 +87,12 @@
   exactly: ["MacBookPro9,2"]
 
 # ── fields ──
+- q: gles:2.0   # GPUs below Hyprland's OpenGL ES 3.0 floor (PLAN §30); MacBookPro6,x by its Intel GPU
+  exactly: ["MacBook1,1", "MacBook2,1", "MacBook3,1", "MacBook4,1", "MacBookAir1,1", "MacBookPro1,1", "MacBookPro1,2", "MacBookPro2,1", "MacBookPro2,2", "MacBookPro6,1", "MacBookPro6,2", "MacPro1,1", "MacPro2,1", "Macmini1,1", "Macmini2,1", "Xserve1,1", "Xserve2,1", "iMac4,1", "iMac4,2", "iMac5,1", "iMac5,2", "iMac6,1"]
+- q: gles:<3.0
+  exactly: ["MacBook1,1", "MacBook2,1", "MacBook3,1", "MacBook4,1", "MacBookAir1,1", "MacBookPro1,1", "MacBookPro1,2", "MacBookPro2,1", "MacBookPro2,2", "MacBookPro6,1", "MacBookPro6,2", "MacPro1,1", "MacPro2,1", "Macmini1,1", "Macmini2,1", "Xserve1,1", "Xserve2,1", "iMac4,1", "iMac4,2", "iMac5,1", "iMac5,2", "iMac6,1"]
+- q: gles:3.1 line:macbook-pro
+  exactly: ["MacBookPro8,2", "MacBookPro8,3", "MacBookPro9,1", "MacBookPro10,1", "MacBookPro11,3"]   # Radeon HD 6xxxM and Kepler
 - q: gpu:nvidia year:<2011
   contains: ["MacBookPro6,2", "Macmini4,1", "iMac9,1"]
   excludes: ["MacBookPro8,1", "MacBookPro9,1", "iMac12,1"]

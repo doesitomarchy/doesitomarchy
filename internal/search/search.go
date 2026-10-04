@@ -187,6 +187,8 @@ func (ix *Index) matchAlt(d *doc, c *clause, a *alt) int {
 			vals = d.sizes
 		case "cores":
 			vals = d.cores
+		case "gles":
+			vals = d.gles
 		}
 		for _, v := range vals {
 			if v >= a.lo && v <= a.hi {

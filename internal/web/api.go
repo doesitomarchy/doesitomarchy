@@ -147,6 +147,7 @@ type apiComponent struct {
 	Kind string   `json:"kind"`
 	Name string   `json:"name"`
 	IDs  []string `json:"hardware_ids"`
+	GLES string   `json:"gles,omitempty"` // gpu only: highest OpenGL ES version its Linux driver reaches (PLAN §30)
 	BTO  bool     `json:"build_to_order,omitempty"`
 }
 
@@ -212,7 +213,8 @@ type apiConfig struct {
 	Label        string         `json:"label"`
 	Distinction  string         `json:"distinction"`
 	Release      string         `json:"release"`
-	BoardIDs     []string       `json:"board_ids,omitempty"` // tied to the release by real machines (PLAN §29)
+	BoardIDs     []string       `json:"board_ids,omitempty"`         // tied to the release by real machines (PLAN §29)
+	Limitations  []string       `json:"known_limitations,omitempty"` // research, before testing (PLAN §30)
 	OrderNumbers []string       `json:"order_numbers"`
 	Components   []apiComponent `json:"components"`
 	Ports        []string       `json:"ports"`
@@ -233,7 +235,7 @@ type apiConfig struct {
 }
 
 func configJSON(cv *configView) apiConfig {
-	x := apiConfig{ID: cv.ID, Identifier: cv.Mac.Identifier, Label: cv.Label, Distinction: cv.Diff, Release: cv.ReleaseName, BoardIDs: cv.BoardIDs,
+	x := apiConfig{ID: cv.ID, Identifier: cv.Mac.Identifier, Label: cv.Label, Distinction: cv.Diff, Release: cv.ReleaseName, BoardIDs: cv.BoardIDs, Limitations: cv.Limitations,
 		OrderNumbers: cv.OrderNumbers, Ports: cv.Ports, Features: cv.Features, OutOfScope: cv.OutOfScope,
 		Verdict: cv.Status.Verdict, Blocker: cv.Status.Blocker, Applicable: cv.Status.Applicable, Tested: cv.Status.Tested,
 		Verified: cv.Verified, Counts: cv.Status.Counts, Components: []apiComponent{}, Capabilities: []apiCapStatus{},
@@ -250,7 +252,7 @@ func configJSON(cv *configView) apiConfig {
 		if ids == nil {
 			ids = []string{}
 		}
-		x.Components = append(x.Components, apiComponent{c.ID, c.Kind, c.Name, ids, c.BTO})
+		x.Components = append(x.Components, apiComponent{c.ID, c.Kind, c.Name, ids, c.GLES, c.BTO})
 	}
 	for _, cat := range cv.Categories {
 		for _, cp := range cat.Caps {

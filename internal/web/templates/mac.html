@@ -45,6 +45,7 @@
       <button type="button" class="caps-toggle" data-caps-toggle data-js aria-expanded="false" title="Expand all" aria-label="Expand all">{{template "icon" "expand"}}{{template "icon" "collapse"}}</button></span>
   </div>
   {{with .Status.Blocker}}<p class="blocker-line">Blocked by: {{.}}</p>{{end}}
+  {{range .Limitations}}<p class="limit-line"><span class="warn-i">{{template "icon" "alert"}}</span> Known limitation: {{.}}</p>{{end}}
   {{if .NewerOnly}}<p class="newer-line">Untested on stable. Newer builds (rc, beta, edge or dev) were tested: their results show under each criterion.</p>{{end}}
   {{with .Latest}}<p class="latest-line">Latest diagnostic report <a href="/report/{{.Code}}">{{.Code}}</a> · {{osver .Omarchy .Channel .Kernel}} · tested {{utc .TestedAt}} · {{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}{{if gt (len $cfg.Results) 1}} · <a href="#results-{{$cfg.ID}}">all {{len $cfg.Results}} reports</a>{{end}}</p>{{end}}
   <div class="caps">
@@ -72,7 +73,7 @@
       <div><dt>Memory</dt><dd>{{.Memory}}{{with .MemoryNote}}<br><span class="alt">{{.}}</span>{{end}}</dd></div>
       <div><dt>Storage</dt><dd>{{.Storage}}</dd></div>
       {{with .Display}}<div><dt>Display</dt><dd>{{.}}</dd></div>{{end}}
-      {{range .Components}}<div class="comp"><dt>{{.KindName}}</dt><dd>{{.Name}}{{if .BTO}} <span class="tag bto">BTO</span>{{end}}{{range .Uncertain}} <span class="q-mark" title="{{.Field}}: {{.Note}}">?</span>{{end}}
+      {{range .Components}}<div class="comp"><dt>{{.KindName}}</dt><dd>{{.Name}}{{with .GLES}} <span class="alt">· OpenGL ES {{.}}</span>{{end}}{{if .BTO}} <span class="tag bto">BTO</span>{{end}}{{range .Uncertain}} <span class="q-mark" title="{{.Field}}: {{.Note}}">?</span>{{end}}
         {{with .IDs}}<br><span class="hw-id">{{join . " · "}}</span>{{end}}</dd></div>{{end}}
       <div class="wide"><dt>Ports</dt><dd>{{join .Ports " · "}}</dd></div>
       {{with .Layout}}<div class="wide{{if $cfg.Portmap}} pmrow{{end}}"><dt>Port layout</dt><dd>{{with $cfg.PortmapKey}}<figure class="pmfig" data-pmsrc="/portmap/{{.}}/{{$cfg.ID}}"><div class="pmslot"><noscript><img class="pmimg" src="/portmap/{{.}}.svg" alt="Port map drawing: the connectors listed below, where they sit on the machine" loading="lazy"></noscript></div>

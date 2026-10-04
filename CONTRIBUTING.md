@@ -12,7 +12,7 @@
 |---|---|
 | `vocabulary.yaml` | Every allowed product line, port class, feature, component kind and CPU codename |
 | `capabilities.yaml` | The test criteria, each with a `when` rule saying which configurations it applies to |
-| `components/<kind>.yaml` | Shared hardware components with their PCI/USB IDs and the Linux driver seen on real machines |
+| `components/<kind>.yaml` | Shared hardware components with their PCI/USB IDs and the Linux driver seen on real machines. GPUs also give `gles`: the highest OpenGL ES version their Mesa driver reaches (see the header of `gpu.yaml`) |
 | `macs/<Identifier>.yaml` | One file per model identifier, using `-` in place of `,` (e.g. `Macmini3-1.yaml`), holding its releases and configurations |
 | `config-ids.lock` | Every configuration ID ever issued |
 | `aliases.yaml` | Search nicknames: phrases such as `mbp` or `trash can` and the query they stand for. `doiomad validate` checks each one parses and finds something |

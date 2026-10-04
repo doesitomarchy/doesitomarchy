@@ -90,6 +90,7 @@ type Component struct {
 	Name      string      `yaml:"name" json:"name"`
 	Vendor    string      `yaml:"vendor" json:"vendor"`
 	Role      string      `yaml:"role" json:"role"`     // gpu only: integrated | discrete
+	GLES      string      `yaml:"gles" json:"gles"`     // gpu only: highest OpenGL ES version its Linux driver reaches (PLAN §30)
 	IDs       []string    `yaml:"ids" json:"ids"`       // "pci:vvvv:dddd" or "usb:vvvv:pppp"
 	Driver    string      `yaml:"driver" json:"driver"` // Linux driver seen on real hardware (research, not a test result)
 	Notes     string      `yaml:"notes" json:"notes"`

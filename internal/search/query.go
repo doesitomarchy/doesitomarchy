@@ -15,7 +15,7 @@ const (
 	kText     clauseKind = iota // free text: words against the doc's bag
 	kField                      // text field (gpu:, cpu:, …): phrase against the field's phrases
 	kKey                        // exact key field (chip:, status:, …); values may carry a trailing * for prefix
-	kNumber                     // numeric field (year:, size:, cores:)
+	kNumber                     // numeric field (year:, size:, cores:, gles:)
 	kID                         // identifier, exact or prefix
 	kNumberID                   // order / A-number / EMC / hw / board exact key
 )
@@ -64,6 +64,7 @@ var fields = map[string]fieldSpec{
 	"display": {kField, "display", ""},
 	"cpu":     {kField, "cpu", ""}, "arch": {kField, "arch", ""},
 	"cores": {kNumber, "cores", "a number of cores"},
+	"gles":  {kNumber, "gles", "an OpenGL ES version: 2.0, 3.0, 3.1 or 3.2"},
 	"gpu":   {kField, "gpu", ""}, "wifi": {kField, "wifi", ""}, "bt": {kField, "bluetooth", ""}, "bluetooth": {kField, "bluetooth", ""},
 	"audio": {kField, "audio", ""}, "camera": {kField, "camera", ""}, "storage": {kField, "storage", ""},
 	"ethernet": {kField, "ethernet", ""}, "thunderbolt": {kField, "thunderbolt", ""}, "firewire": {kField, "firewire", ""},
@@ -81,7 +82,7 @@ var fields = map[string]fieldSpec{
 
 // FieldNames lists the canonical field names, for suggestions and help.
 var FieldNames = []string{"id", "line", "form", "year", "release", "size", "display", "cpu", "arch", "cores",
-	"gpu", "wifi", "bt", "audio", "camera", "storage", "ethernet", "thunderbolt", "firewire", "reader", "input", "bridge",
+	"gpu", "gles", "wifi", "bt", "audio", "camera", "storage", "ethernet", "thunderbolt", "firewire", "reader", "input", "bridge",
 	"hw", "board", "chip", "efi", "port", "feature", "status", "scope", "tested", "order", "a", "emc"}
 
 // token is one lexed piece of the query.

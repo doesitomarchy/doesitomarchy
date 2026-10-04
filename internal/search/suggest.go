@@ -126,6 +126,8 @@ func (ix *Index) fieldValues(spec fieldSpec) []string {
 		return []string{"11", "12", "13", "15", "16", "17", "20", "21.5", "24", "27"}
 	case "cores":
 		return []string{"2", "4", "6", "8", "10", "12", "18", "28"}
+	case "gles":
+		return []string{"2.0", "3.0", "3.1", "3.2"}
 	case "year":
 		for _, s := range ix.suggest["year"] {
 			out = append(out, s.Value)

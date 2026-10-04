@@ -11,6 +11,10 @@ import (
 // (which are cached across pages).
 const pageBudget = 60 * 1024
 
+// pageBudgets are exceptions the owner approved. /criteria deliberately puts
+// every criterion and configuration on one page (PLAN §30).
+var pageBudgets = map[string]int{"/criteria": 64 * 1024}
+
 var assetRef = regexp.MustCompile(`(?:href|src)="(/static/[^"#]+\.(?:css|js|svg))[^"]*"`)
 
 // gzSize fetches path with gzip, as browsers do, and returns the bytes on the wire.
@@ -49,8 +53,12 @@ func TestPageWeight(t *testing.T) {
 			}
 		}
 		t.Logf("%-32s %6.1f KB (%d assets)", path, float64(total)/1024, len(seen))
-		if total > pageBudget {
-			t.Errorf("%s: %d bytes, budget %d", path, total, pageBudget)
+		budget := pageBudget
+		if b, ok := pageBudgets[path]; ok {
+			budget = b
+		}
+		if total > budget {
+			t.Errorf("%s: %d bytes, budget %d", path, total, budget)
 		}
 	}
 }

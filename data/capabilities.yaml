@@ -53,10 +53,12 @@ capabilities:
   # ── Graphics ────────────────────────────────────────────────────────────
   - id: graphics.integrated
     name: Integrated GPU acceleration
+    description: Hyprland renders on this GPU with hardware acceleration, at OpenGL ES 3.0 or later, not with the llvmpipe software renderer. Check the renderer with hyprctl systeminfo or eglinfo. A GPU that reaches only OpenGL ES 2.0 fails on stock Omarchy; record any workaround in the notes.
     fix_by: gpu:integrated
     when: { all: ["gpu:integrated"] }
   - id: graphics.discrete
     name: Discrete GPU acceleration
+    description: Hyprland renders on this GPU with hardware acceleration, at OpenGL ES 3.0 or later, not with the llvmpipe software renderer. Check the renderer with hyprctl systeminfo or eglinfo. A GPU that reaches only OpenGL ES 2.0 fails on stock Omarchy; record any workaround in the notes.
     fix_by: gpu:discrete
     when: { all: ["gpu:discrete"] }
   - id: graphics.switching

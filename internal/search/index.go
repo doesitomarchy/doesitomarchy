@@ -45,6 +45,7 @@ type doc struct {
 	year        float64
 	sizes       []float64
 	cores       []float64
+	gles        []float64             // each GPU's OpenGL ES level (PLAN §30)
 	id          string                // normalized identifier
 	keys        map[string][]string   // key / number-ID fields
 	text        map[string][][]string // text fields: field → phrases (word lists)
@@ -234,6 +235,9 @@ func (ix *Index) newDoc(c *catalog.Catalog, m *catalog.Mac, mi *macInfo, r *cata
 		}
 		if comp.Kind == "gpu" {
 			addBag(comp.Name)
+			if v, err := strconv.ParseFloat(comp.GLES, 64); err == nil {
+				d.gles = append(d.gles, v)
+			}
 		}
 	}
 
