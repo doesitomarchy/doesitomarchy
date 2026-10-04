@@ -3,6 +3,13 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-04"
+  title: Charging over USB-C, judged per Mac
+  summary: "Any USB-C port can charge these Macs, and charging doesn't go through the Thunderbolt controllers that split the 2016-2020 MacBook Pros' ports into left and right pairs. So one port that charges now covers every USB-C port on the Mac, and a port that won't charge while another does is flagged as a possible hardware fault."
+  notes:
+    - "Each USB-C port has its own power-delivery chip, and all of them feed one charger run by the SMC. Linux has no driver for these chips: none of 219 machines in the Linux hardware probes (linuxhw) loads one, so charging works the same whatever the OS."
+    - "Apple: \"any of them can be used for charging\" (support.apple.com/en-us/102397)."
+
+- date: "2026-10-04"
   title: Plain names in lists
   summary: "The list of all Intel Macs and search results now name every Mac by size, season and year, such as MacBook Pro (13-inch, 2016). Each Mac's page keeps Apple's full name, which is what About This Mac shows, such as MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)."
   notes:

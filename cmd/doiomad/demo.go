@@ -72,7 +72,7 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 
 	// Partial: a failure and a capability given up on (MacBookPro15,1, 2018).
 	speakers := map[string]string{"audio.speakers": "snd_hda_intel 0000:00:1f.3: no codecs found (T2 audio needs the apple-bce aaudio driver)"}
-	if _, err := add(file("macbookpro15-1-15-2018-a", "4.0.4", "2026-09-30T15:30:00Z", "demo-tester", func(i int, id string) string {
+	mbp151 := file("macbookpro15-1-15-2018-a", "4.0.4", "2026-09-30T15:30:00Z", "demo-tester", func(i int, id string) string {
 		switch {
 		case id == "audio.speakers":
 			return "failed"
@@ -80,7 +80,22 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 			return ""
 		}
 		return "supported"
-	}, speakers), true); err != nil {
+	}, speakers)
+	// Its per-connector criteria are tested on the first port of each group
+	// (PLAN §25.1a): with two Thunderbolt 3 controllers, a result that names
+	// no port would cover neither group.
+	m, cfg := findDemoConfig(c, mbp151.Config)
+	for crit, groups := range c.CriterionGroups(m, cfg) {
+		it, ok := mbp151.Items[crit]
+		if !ok {
+			continue
+		}
+		delete(mbp151.Items, crit)
+		for _, g := range groups {
+			mbp151.Items[crit+"@"+g.Connectors[0]] = it
+		}
+	}
+	if _, err := add(mbp151, true); err != nil {
 		return err
 	}
 	// A newer edge build fixes those speakers (PLAN §28.2): the stable verdict

@@ -293,6 +293,8 @@ func TestGroupRollup(t *testing.T) {
 		{"one of two groups passes: supported, not verified", tb, "ports.thunderbolt", []Item{boot, port("ports.thunderbolt", "left-2", Supported, 2)}, Supported, 1, false, "left-1", ""},
 		{"one group passes, the other fails: partial", tb, "ports.thunderbolt",
 			[]Item{boot, port("ports.thunderbolt", "left-2", Supported, 2), port("ports.thunderbolt", "right-1", Failed, 3)}, Partial, 1, false, "", ""},
+		{"partial shows the failure even when the pass is newer", tb, "ports.thunderbolt",
+			[]Item{boot, port("ports.thunderbolt", "left-2", Supported, 3), port("ports.thunderbolt", "right-1", Failed, 2)}, Partial, 1, false, "", ""},
 		{"both groups pass: verified", tb, "ports.thunderbolt",
 			[]Item{boot, port("ports.thunderbolt", "left-1", Supported, 2), port("ports.thunderbolt", "right-2", Supported, 3)}, Supported, 2, true, "left-2", ""},
 		{"a criterion-level pass with two groups decides the verdict, completes nothing", tb, "ports.thunderbolt",
@@ -312,6 +314,10 @@ func TestGroupRollup(t *testing.T) {
 			}
 			if tt.suspect != "" && !cs.Ports[tt.suspect].Suspect {
 				t.Errorf("%s isn't suspect: %+v", tt.suspect, cs.Ports)
+			}
+			// A criterion that didn't pass shows why, not a passing port.
+			if (cs.Verdict == Partial || cs.Verdict == Failed) && (cs.Latest == nil || cs.Latest.Verdict == Supported) {
+				t.Errorf("%s criterion's latest result should explain it: %+v", cs.Verdict, cs.Latest)
 			}
 		})
 	}

@@ -28,7 +28,8 @@ func TestLoadFSMatchesLoadDir(t *testing.T) {
 }
 
 // The configurations below Hyprland's OpenGL ES 3.0 floor (PLAN §30,
-// GLES3-RESEARCH.md): 30 whose every GPU reaches 2.0 only, and the two
+// omarchaeology findings/gles3-floor.md): 29 whose every GPU reaches 2.0
+// only, and the two
 // Mid 2010 MacBook Pros whose Intel GPU does.
 func TestGLESLimitations(t *testing.T) {
 	c, err := catalog.LoadFS(data.FS)

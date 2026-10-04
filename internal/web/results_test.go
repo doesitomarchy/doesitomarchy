@@ -111,8 +111,8 @@ func TestResultLifecycleOnTheSite(t *testing.T) {
 	for _, want := range []string{
 		`class="verdict partial"`, // the verdict
 		"27/31 tested",            // counts
-		"Blocked by: Graphics → External display output",    // the blocker
-		"DisplayPort alt mode works on the left ports only", // evidence on the partial capability
+		"Blocked by: Graphics → External display output",     // the blocker
+		"DisplayPort alt mode: no signal on the right ports", // evidence on the partial capability
 		"Why it failed",               // failed capabilities explain themselves
 		`href="` + report + `"`,       // and link to the report
 		"tested 2026-09-30 18:05 UTC", // the test time, in UTC

@@ -288,7 +288,9 @@ func capStatus(items []Item, unsupported string, hasUnsupported bool, currentMaj
 // problem). The criterion: all tested groups supported → Supported; some
 // supported → Partial; none → Failed. A criterion-level item (no connector)
 // stands for the group when there is only one; otherwise it decides the
-// verdict only until a connector is tested, and completes nothing.
+// verdict only until a connector is tested, and completes nothing. Latest is
+// the newest result, except that a Partial or Failed criterion takes it from
+// a group that didn't pass, so the card shows why.
 func groupStatus(groups []Group, items []Item, unsupported string, hasUnsupported bool, currentMajor int) CapStatus {
 	byConn := map[string][]Item{}
 	var general []Item
@@ -308,6 +310,7 @@ func groupStatus(groups []Group, items []Item, unsupported string, hasUnsupporte
 		cs.Stale = cs.Stale || stale
 	}
 	var supported, failed, partial int
+	var why *Item // the newest result on a group that didn't pass
 	for _, g := range groups {
 		var gv Verdict = Untested
 		passedBy, tested := "", false
@@ -331,6 +334,11 @@ func groupStatus(groups []Group, items []Item, unsupported string, hasUnsupporte
 		}
 		if passedBy != "" {
 			gv = Supported
+		}
+		for _, cn := range g.Connectors {
+			if l := own[cn].Latest; gv != Supported && l != nil && (why == nil || newer(*l, *why)) {
+				why = l
+			}
 		}
 		if !tested && len(groups) == 1 && len(general) > 0 {
 			gs := capStatus(general, "", false, currentMajor)
@@ -372,6 +380,11 @@ func groupStatus(groups []Group, items []Item, unsupported string, hasUnsupporte
 		cs.Verdict = Partial
 	default:
 		cs.Verdict = Failed
+	}
+	// A criterion that didn't pass shows why: the latest result from a group
+	// that didn't pass, not a passing port's.
+	if (cs.Verdict == Partial || cs.Verdict == Failed) && why != nil {
+		cs.Latest = why
 	}
 	if cs.Conflict && cs.Verdict == Supported {
 		cs.Verdict = Partial

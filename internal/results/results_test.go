@@ -46,7 +46,7 @@ func TestSyntheticFixture(t *testing.T) {
 			t.Errorf("%s should apply", it.Capability)
 		}
 	}
-	if counts["supported"] != 19 || counts["partial"] != 3 || counts["failed"] != 5 || counts["not_tested"] != 3 {
+	if counts["supported"] != 21 || counts["partial"] != 2 || counts["failed"] != 6 || counts["not_tested"] != 3 {
 		t.Errorf("status counts: %v", counts)
 	}
 	if r.Items[0].Capability != "boot.installer-efi64" || r.Items[len(r.Items)-1].Capability != "bridge.touch-bar-camera" {

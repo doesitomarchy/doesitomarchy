@@ -255,14 +255,22 @@ type PortGroup struct {
 
 // CriterionGroups maps each per-connector criterion of a configuration to its
 // port groups, in layout order. A connector's group is its `group` when set,
-// else the port class that gives it the criterion. It's empty when the
-// configuration has no layout.
+// else the port class that gives it the criterion; a `one_group` criterion
+// has a single group named after it. It's empty when the configuration has
+// no layout.
 func (c *Catalog) CriterionGroups(m *Mac, cfg *Config) map[string][]PortGroup {
+	one := map[string]bool{}
+	for _, cp := range c.Capabilities {
+		one[cp.ID] = cp.OneGroup
+	}
 	out := map[string][]PortGroup{}
 	for _, cn := range cfg.Connectors {
 		for _, crit := range c.ConnectorCriteria(m, cfg, cn) {
 			gid := cn.Group
-			if gid == "" {
+			switch {
+			case one[crit]:
+				gid = crit
+			case gid == "":
 				gid = c.criterionClass(cn, crit)
 			}
 			gs := out[crit]

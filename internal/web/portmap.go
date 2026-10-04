@@ -19,26 +19,37 @@ import (
 // Connector statuses, as the data-st attribute the site CSS colours.
 const (
 	pmSupported = "supported" // every criterion that applies passed on this connector
-	pmCovered   = "covered"   // every criterion passed here or on a group-mate (same controller)
+	pmCovered   = "covered"   // every criterion passed here or on a group-mate (same port group)
 	pmPartly    = "partly"    // some passed, none failed, the rest untested
-	pmPartial   = "partial"   // a criterion only partly works on it
+	pmPartial   = "partial"   // a criterion only partly works on it, or some passed and some failed
 	pmFailed    = "failed"
 	pmSuspect   = "suspect" // failed while a group-mate passed: possibly a damaged port
 )
 
+// pmWords names each status as the colour key does (the breakdown under the
+// drawing).
+var pmWords = map[string]string{
+	pmSupported: "passed", pmCovered: "covered by port group", pmPartly: "partly tested",
+	pmPartial: "partly works", pmFailed: "failed", pmSuspect: "possible hardware fault",
+}
+
 // pmLabels explains each status (list markers' titles, the colour key).
 var pmLabels = map[string]string{
-	pmSupported: "passed every test", pmCovered: "passed, or covered by a port on the same controller",
+	pmSupported: "passed every test", pmCovered: "passed, or covered by a port in the same port group",
 	pmPartly: "partly tested, nothing failed", pmPartial: "partly works", pmFailed: "failed",
-	pmSuspect: "failed while a port on the same controller passed: possibly a damaged port",
+	pmSuspect: "failed while a port in the same port group passed: possibly a damaged port",
 }
 
 // connStatuses folds a configuration's per-connector criterion results
-// (PLAN §25) into one status per connector. Connectors without results, or
-// without per-connector criteria (MagSafe, power), are left out: untested.
-func connStatuses(cv *configView) map[string]string {
+// (PLAN §25) into one status per connector, and lists each criterion's
+// result on it ("External display output failed"). Connectors without results, or without
+// per-connector criteria (MagSafe, power), are left out: untested. A
+// connector that passed some criteria and failed others partly works, as a
+// criterion does when some port groups pass and others fail.
+func connStatuses(cv *configView) (st map[string]string, results map[string][]string) {
 	type tally struct{ total, passed, covered, partial, failed, suspect int }
 	t := map[string]*tally{}
+	each := map[string][]string{} // connector → "<criterion> <result>"
 	for _, cat := range cv.Categories {
 		for _, cp := range cat.Caps {
 			for _, p := range cp.Ports {
@@ -48,39 +59,48 @@ func connStatuses(cv *configView) map[string]string {
 					t[p.ID] = x
 				}
 				x.total++
+				res := "untested"
 				switch {
 				case p.Suspect:
 					x.suspect++
+					res = "failed while its port group passed"
 				case p.Verdict == status.Supported:
 					x.passed++
+					res = "passed"
 				case p.CoveredBy != "":
 					x.covered++
+					res = "covered by " + p.CoveredBy
 				case p.Verdict == status.Failed:
 					x.failed++
+					res = "failed"
 				case p.Verdict == status.Partial:
 					x.partial++
+					res = "partly works"
 				}
+				each[p.ID] = append(each[p.ID], cp.Name+" "+res)
 			}
 		}
 	}
-	out := map[string]string{}
+	st = map[string]string{}
 	for id, x := range t {
 		switch {
 		case x.suspect > 0:
-			out[id] = pmSuspect
+			st[id] = pmSuspect
+		case x.failed > 0 && x.passed+x.covered > 0:
+			st[id] = pmPartial
 		case x.failed > 0:
-			out[id] = pmFailed
+			st[id] = pmFailed
 		case x.partial > 0:
-			out[id] = pmPartial
+			st[id] = pmPartial
 		case x.passed == x.total:
-			out[id] = pmSupported
+			st[id] = pmSupported
 		case x.passed+x.covered == x.total:
-			out[id] = pmCovered
+			st[id] = pmCovered
 		case x.passed+x.covered > 0:
-			out[id] = pmPartly
+			st[id] = pmPartly
 		}
 	}
-	return out
+	return st, each
 }
 
 // reportStatuses is the same fold for one report's own per-connector items.
@@ -109,6 +129,8 @@ func reportStatuses(items []store.ResultItem) map[string]string {
 	out := map[string]string{}
 	for id, x := range t {
 		switch {
+		case x.failed > 0 && x.passed > 0:
+			out[id] = pmPartial
 		case x.failed > 0:
 			out[id] = pmFailed
 		case x.partial > 0:

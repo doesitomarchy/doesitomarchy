@@ -124,8 +124,8 @@ func TestResultLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.State != Pending || d.Identifier != "MacBookPro15,2" || d.SourceName != "Manual entry" || len(d.Items) != 30 ||
-		d.Supported != 19 || d.Partial != 3 || d.Failed != 5 || d.NotTested != 3 || len(d.Extras) != 1 || len(d.Events) != 1 {
+	if d.State != Pending || d.Identifier != "MacBookPro15,2" || d.SourceName != "Manual entry" || len(d.Items) != 32 ||
+		d.Supported != 21 || d.Partial != 2 || d.Failed != 6 || d.NotTested != 3 || len(d.Extras) != 1 || len(d.Events) != 1 {
 		t.Fatalf("detail: %+v", d.ResultSummary)
 	}
 	if d.Items[0].CategoryName != "Boot" || d.ReportVisibility != "private" || d.ReportSize == 0 {
@@ -160,7 +160,7 @@ func TestResultLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(ru.Items[r.ConfigID]) != 27 || ru.Results[r.ConfigID] != 1 || ru.Latest[r.ConfigID] != "2026-09-30T18:05:00Z" ||
+	if len(ru.Items[r.ConfigID]) != 29 || ru.Results[r.ConfigID] != 1 || ru.Latest[r.ConfigID] != "2026-09-30T18:05:00Z" ||
 		ru.CurrentMajor != 4 || ru.Version != v1 || len(ru.Accepted[r.ConfigID]) != 1 {
 		t.Fatalf("rollup after accept: items %d results %d latest %q major %d version %d",
 			len(ru.Items[r.ConfigID]), ru.Results[r.ConfigID], ru.Latest[r.ConfigID], ru.CurrentMajor, ru.Version)
@@ -314,7 +314,7 @@ func TestResultsSurviveSync(t *testing.T) {
 	if _, err := st.SyncCatalog(ctx, c, h+"-changed"); err != nil {
 		t.Fatalf("re-sync with results present: %v", err)
 	}
-	if d, err := st.Result(ctx, id); err != nil || d.State != Accepted || len(d.Items) != 30 {
+	if d, err := st.Result(ctx, id); err != nil || d.State != Accepted || len(d.Items) != 32 {
 		t.Fatalf("result after re-sync: %v", err)
 	}
 

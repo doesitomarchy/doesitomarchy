@@ -487,3 +487,45 @@ func TestConditionMatches(t *testing.T) {
 		}
 	}
 }
+
+// A one_group criterion ignores the layout's controller groups (PLAN §25.1a):
+// USB-C charging on a 13-inch 2018 MacBook Pro is one group, its USB data two.
+func TestOneGroupCriterion(t *testing.T) {
+	c := loadReal(t)
+	m, cfg := findConfig(t, c, "macbookpro15-2-13-2018-4tb3-a")
+	gs := c.CriterionGroups(m, cfg)
+	if n := len(gs["ports.usb-c"]); n != 2 {
+		t.Errorf("USB data: %d groups, want 2 (left and right controllers)", n)
+	}
+	if g := gs["ports.usb-c-charging"]; len(g) != 1 || len(g[0].Connectors) != 4 {
+		t.Errorf("charging: %+v, want one group of 4 connectors", g)
+	}
+	// Every configuration that charges over USB-C: one group holding every
+	// USB-C and Thunderbolt 3 connector (any of them can charge the Mac).
+	n := 0
+	for _, m := range c.Macs {
+		for ri := range m.Releases {
+			for ci := range m.Releases[ri].Configs {
+				cfg := &m.Releases[ri].Configs[ci]
+				g, ok := c.CriterionGroups(m, cfg)["ports.usb-c-charging"]
+				if !ok {
+					continue
+				}
+				n++
+				want := 0
+				for _, cn := range cfg.Connectors {
+					if cn.Type == "usb-c" || cn.Type == "thunderbolt-3" {
+						want++
+					}
+				}
+				if len(g) != 1 || len(g[0].Connectors) != want {
+					t.Errorf("%s: charging groups %+v, want one of %d", cfg.ID, g, want)
+				}
+			}
+		}
+	}
+	if n == 0 {
+		t.Error("no configuration charges over USB-C")
+	}
+	t.Logf("%d configurations charge over USB-C, each as one port group", n)
+}
