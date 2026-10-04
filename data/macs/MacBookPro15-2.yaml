@@ -19,6 +19,7 @@ sources:
 releases:
   - id: "13-2018-4tb3"
     name: "MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)"
+    short_name: "MacBook Pro (13-inch, 2018)"
     announced: 2018-07-12
     discontinued: 2019-05-21
     model_numbers: [A1989]
@@ -39,6 +40,7 @@ releases:
         features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, displayport-audio]
   - id: "13-2019-4tb3"
     name: "MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)"
+    short_name: "MacBook Pro (13-inch, 2019)"
     announced: 2019-05-21
     discontinued: 2020-05-04
     model_numbers: [A1989]

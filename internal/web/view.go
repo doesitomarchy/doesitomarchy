@@ -94,7 +94,8 @@ type macView struct {
 	LineKey       string
 	LineName      string
 	Icon          string // product-line icon in icons.svg (m-<Icon>)
-	Title         string // newest release name
+	Title         string // newest release name (Apple's)
+	ListTitle     string // the same in the plain form lists use (Release.ListName)
 	Years         string // "2009" or "2009–2010"
 	FirstYear     int
 	EFI           int
@@ -111,6 +112,7 @@ type macView struct {
 	Verdicts      []status.Verdict // distinct, in rank order
 	OutOfScope    string           // reason, when every config is out of coverage scope
 	AllVerified   bool             // every config passed every applicable test: earns the Omarchy badge
+	NoGLES3       bool             // no config has a GPU that reaches OpenGL ES 3.0 (PLAN §30)
 	Tested        int              // configs with at least one result
 	Matrix        *matrixView
 }
@@ -159,6 +161,8 @@ type configView struct {
 	OutOfScope   string
 	Notes        string
 	Uncertain    []uncertainView
+	Limitations  []string // research: hardware limits known before testing (PLAN §30)
+	NoGLES3      bool     // no GPU reaches OpenGL ES 3.0 (PLAN §30)
 	Mac          *macView
 }
 
@@ -170,6 +174,7 @@ type compView struct {
 	Role      string
 	IDs       []string
 	Driver    string
+	GLES      string // gpu only (PLAN §30)
 	BTO       bool
 	Uncertain []uncertainView
 }
@@ -336,6 +341,7 @@ type catalogView struct {
 // componentUse is one component and the configs that use it (/components).
 type componentUse struct {
 	ID, Kind, KindName, Name, Vendor, Role, Driver string
+	GLES                                           string // gpu only (PLAN §30)
 	IDs                                            []string
 	Configs                                        int
 	Macs                                           []*macView
@@ -488,7 +494,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 		rv := &releaseView{ID: r.ID, Name: r.Name, Announced: r.Announced, Discontinued: r.Discontinued, ModelNumbers: r.ModelNumbers, EMC: r.EMC, BoardIDs: r.BoardIDs, Mac: mv}
 		y, _ := strconv.Atoi(r.Announced[:4])
 		first, last = min(first, y), max(last, y)
-		mv.Title = r.Name
+		mv.Title, mv.ListTitle = r.Name, r.ListName()
 		excl := c.CoverageExclusion(m, r)
 		for ci := range r.Configs {
 			cfg := &r.Configs[ci]
@@ -553,8 +559,10 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 		}
 	}
 	mv.AllVerified = len(mv.Configs) > 0
+	mv.NoGLES3 = len(mv.Configs) > 0
 	for _, cv := range mv.Configs {
 		mv.AllVerified = mv.AllVerified && cv.Verified
+		mv.NoGLES3 = mv.NoGLES3 && cv.NoGLES3
 	}
 	diffLabels(c, mv, raw)
 	mv.Matrix = buildMatrix(c, mv.Configs, false)
@@ -563,7 +571,8 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 
 func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup, now time.Time) *configView {
 	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, BoardIDs: r.BoardIDs, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
-		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl}
+		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl,
+		Limitations: c.Limitations(cfg), NoGLES3: c.BelowGLESFloor(cfg)}
 	for _, p := range cfg.CPU.Standard {
 		cv.CPU = append(cv.CPU, processor(p))
 	}
@@ -590,7 +599,7 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 				continue
 			}
 			v := compView{ID: comp.ID, Kind: comp.Kind, KindName: c.Vocab.ComponentKinds[comp.Kind].Name, Name: comp.Name, Role: comp.Role,
-				IDs: comp.IDs, Driver: comp.Driver, BTO: bto}
+				IDs: comp.IDs, Driver: comp.Driver, GLES: comp.GLES, BTO: bto}
 			for _, u := range comp.Uncertain {
 				v.Uncertain = append(v.Uncertain, uncertainView{u.Field, u.Note})
 			}
@@ -965,7 +974,7 @@ func buildComponents(c *catalog.Catalog, v *catalogView) []componentUse {
 				if u == nil {
 					cc := c.Components[comp.ID]
 					u = &componentUse{ID: comp.ID, Kind: comp.Kind, KindName: comp.KindName, Name: comp.Name, Vendor: cc.Vendor,
-						Role: comp.Role, Driver: comp.Driver, IDs: comp.IDs}
+						Role: comp.Role, Driver: comp.Driver, GLES: comp.GLES, IDs: comp.IDs}
 					uses[comp.ID] = u
 				}
 				u.Configs++

@@ -18,7 +18,7 @@ sources:
   - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro16/MacBookPro16%2C4
 releases:
   - id: "16-2019-5600m"
-    name: "MacBook Pro (16-inch, 2019) with Radeon Pro 5600M"
+    name: "MacBook Pro (16-inch, 2019)"
     announced: 2020-06-15
     discontinued: 2021-10-18
     model_numbers: [A2141]

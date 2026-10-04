@@ -17,6 +17,7 @@ sources:
 releases:
   - id: "13-2020-4tb3"
     name: "MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)"
+    short_name: "MacBook Pro (13-inch, 2020)"
     announced: 2020-05-04
     discontinued: 2021-10-18
     model_numbers: [A2251]

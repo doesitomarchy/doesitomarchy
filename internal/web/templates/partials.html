@@ -20,6 +20,8 @@
 {{/* slot reserves the badge's width so names line up whether or not a row earned it. Pass a bool. */}}
 {{define "slot"}}<span class="slot">{{if .}}{{template "badge"}}{{end}}</span>{{end}}
 
+{{/* gles2 marks a Mac whose GPUs reach OpenGL ES 2.0 only (PLAN §30). */}}
+{{define "gles2"}}<span class="tag gles2" title="Its GPU reaches OpenGL ES 2.0 only. Hyprland 0.50 and later needs 3.0, so stock Omarchy's desktop won't start."><span class="warn-i">{{template "icon" "alert"}}</span>GLES2</span>{{end}}
 {{define "scope"}}<span class="tag scope" title="Listed and testable, but not counted in the coverage figures">Out of coverage scope · {{.}}</span>{{end}}
 
 {{/* Two coverage rows: pass the site. data-* feed the Konami easter egg. */}}
@@ -113,8 +115,8 @@
   <li{{if .Mac.OutOfScope}} class="oos"{{end}}>
     <a class="hit" href="/mac/{{.Slug}}">
       <span class="ident slotted">{{template "slot" .Mac.AllVerified}}{{.Identifier}}</span>
-      <span>{{.Mac.Title}}</span>
-      <span class="vs">{{range .Mac.Verdicts}}{{template "verdict" .}}{{end}}</span>
+      <span>{{.Mac.ListTitle}}</span>
+      <span class="vs">{{range .Mac.Verdicts}}{{template "verdict" .}}{{end}}{{if .Mac.NoGLES3}}{{template "gles2"}}{{end}}</span>
       <span class="facts">{{.Mac.Years}} · {{joinlim .Mac.GPUs 2}}{{with .Mac.Chip}} · {{.}}{{end}} · {{len .Mac.Configs}} {{plural (len .Mac.Configs) "config" "configs"}}{{with .Mac.OutOfScope}} {{template "scope" .}}{{end}}</span>
     </a>
     {{if not .AllConfigs}}<ul class="hits">{{$slug := .Slug}}{{range .Scoped}}

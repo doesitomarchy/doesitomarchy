@@ -90,6 +90,7 @@ type Component struct {
 	Name      string      `yaml:"name" json:"name"`
 	Vendor    string      `yaml:"vendor" json:"vendor"`
 	Role      string      `yaml:"role" json:"role"`     // gpu only: integrated | discrete
+	GLES      string      `yaml:"gles" json:"gles"`     // gpu only: highest OpenGL ES version its Linux driver reaches (PLAN §30)
 	IDs       []string    `yaml:"ids" json:"ids"`       // "pci:vvvv:dddd" or "usb:vvvv:pppp"
 	Driver    string      `yaml:"driver" json:"driver"` // Linux driver seen on real hardware (research, not a test result)
 	Notes     string      `yaml:"notes" json:"notes"`
@@ -118,14 +119,23 @@ type Mac struct {
 
 type Release struct {
 	ID           string   `yaml:"id" json:"id"`
-	Name         string   `yaml:"name" json:"name"`
-	Announced    string   `yaml:"announced" json:"announced"` // YYYY-MM-DD
+	Name         string   `yaml:"name" json:"name"`                       // Apple's name, as About This Mac shows it
+	ShortName    string   `yaml:"short_name" json:"short_name,omitempty"` // for lists, when Name doesn't follow ListNamePattern
+	Announced    string   `yaml:"announced" json:"announced"`             // YYYY-MM-DD
 	Discontinued string   `yaml:"discontinued" json:"discontinued"`
 	ModelNumbers []string `yaml:"model_numbers" json:"model_numbers"` // Apple "A" numbers
 	EMC          []string `yaml:"emc" json:"emc"`
 	BoardIDs     []string `yaml:"board_ids" json:"board_ids,omitempty"` // tied to this release by real machines; may be on several releases (PLAN.md §29)
 	Sources      []string `yaml:"sources" json:"sources"`
 	Configs      []Config `yaml:"configs" json:"configs"`
+}
+
+// ListName is the release's name for lists: its ShortName, else its Name.
+func (r *Release) ListName() string {
+	if r.ShortName != "" {
+		return r.ShortName
+	}
+	return r.Name
 }
 
 // BoardReleases returns the releases a board ID is tied to (any case), or

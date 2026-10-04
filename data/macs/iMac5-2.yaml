@@ -11,6 +11,7 @@ sources:
 releases:
   - id: "17-late-2006-cd"
     name: "iMac (17-inch, Late 2006 CD)"
+    short_name: "iMac (17-inch, Late 2006)"
     announced: 2006-09-06
     discontinued: 2007-08-07
     model_numbers: [A1195]

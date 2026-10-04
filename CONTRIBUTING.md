@@ -12,7 +12,7 @@
 |---|---|
 | `vocabulary.yaml` | Every allowed product line, port class, feature, component kind and CPU codename |
 | `capabilities.yaml` | The test criteria, each with a `when` rule saying which configurations it applies to |
-| `components/<kind>.yaml` | Shared hardware components with their PCI/USB IDs and the Linux driver seen on real machines |
+| `components/<kind>.yaml` | Shared hardware components with their PCI/USB IDs and the Linux driver seen on real machines. GPUs also give `gles`: the highest OpenGL ES version their Mesa driver reaches (see the header of `gpu.yaml`) |
 | `macs/<Identifier>.yaml` | One file per model identifier, using `-` in place of `,` (e.g. `Macmini3-1.yaml`), holding its releases and configurations |
 | `config-ids.lock` | Every configuration ID ever issued |
 | `aliases.yaml` | Search nicknames: phrases such as `mbp` or `trash can` and the query they stand for. `doiomad validate` checks each one parses and finds something |
@@ -29,6 +29,7 @@ Rules the validator enforces:
 - **Test results belong to a configuration**, never just to a model identifier, because one identifier can span several releases.
 - **Don't guess.** When sources disagree or are silent, record your best value and add an `uncertain` entry (`field` + `note`) explaining why.
 - **Unknown fields and values are errors.** Add new ports or features to `vocabulary.yaml` first.
+- **Release names are Apple's**, as Apple's identification pages and About This Mac give them. Lists use a plain "Product (size, season year)" form; when Apple's name says more (ports, CPU speed, finish), give the release a `short_name` in that form.
 - **Board IDs belong to the release they identify, when real machines show it.** List a board on its release's `board_ids` when at least 3 machines report it and their screen mode, GPU or CPU points to that release (omarchaeology `boardids.py` does the survey). A board shared by two releases goes on both. Boards that can't be tied stay in the Mac's `board_ids`; a board is never on both levels.
 
 ### Reviewing shared IDs (`/admin/shares`)

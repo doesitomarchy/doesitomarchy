@@ -224,6 +224,7 @@ capabilities:
   name: Test GPU
   vendor: Intel
   role: integrated
+  gles: "3.2"
   ids: [pci:8086:0001]
   sources: [https://example.com/gpu]
 `,
@@ -354,6 +355,8 @@ func TestValidationRules(t *testing.T) {
 		{"removed config", "config-ids.lock", "macmini9-9-mid-2099-a\n", "macmini9-9-mid-2099-a\nmacmini9-9-old\n", "was removed"},
 		{"unknown tag", "capabilities.yaml", `["video-out"]`, `["feature:jetpack"]`, `unknown tag "feature:jetpack"`},
 		{"gpu without role", "components/gpu.yaml", "role: integrated", "role: ''", "gpu role"},
+		{"gpu without gles", "components/gpu.yaml", `gles: "3.2"`, `gles: ""`, "gles must be one of"},
+		{"bad gles", "components/gpu.yaml", `gles: "3.2"`, `gles: "4.6"`, "gles must be one of"},
 		{"bad hardware id", "components/gpu.yaml", "pci:8086:0001", "8086:0001", "must look like pci:"},
 		{"duplicate key", mac, "efi: 64", "efi: 64\nefi: 32", "already defined"},
 		{"coverage without reason", "coverage.yaml", "reason: Old", "reason: ''", "reason is required"},

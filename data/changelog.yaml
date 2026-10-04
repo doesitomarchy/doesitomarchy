@@ -2,6 +2,20 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-04"
+  title: Plain names in lists
+  summary: "The list of all Intel Macs and search results now name every Mac by size, season and year, such as MacBook Pro (13-inch, 2016). Each Mac's page keeps Apple's full name, which is what About This Mac shows, such as MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)."
+  notes:
+    - "MacBookPro15,3 and MacBookPro16,4 are now called what Apple calls them: MacBook Pro (15-inch, 2018), MacBook Pro (15-inch, 2019) and MacBook Pro (16-inch, 2019). The catalog had added \"with Radeon Pro Vega\" and \"with Radeon Pro 5600M\"; the identifier and GPU already tell them apart."
+
+- date: "2026-10-04"
+  title: OpenGL ES level per GPU
+  summary: "Every GPU now records the highest OpenGL ES version its Linux driver reaches. Hyprland, Omarchy's desktop, has needed OpenGL ES 3.0 since version 0.50, so the 29 configurations whose GPU reaches only 2.0 carry a known-limitation note, as do the Mid 2010 MacBook Pros, whose Intel GPU can't run it. The notes change no status; only tests do. Search gles:2.0 to list them."
+  notes:
+    - "Levels come from Mesa's feature list (docs/features.txt): 2.0 for the GMA 950, GMA X3100, Arrandale Intel HD Graphics, Radeon X1300/X1600/X1900 and GeForce 7300/7600 GT and Quadro FX 4500; 3.0 for the HD 3000 and 4000, Radeon HD 2000-4000 and GeForce 8 to GT 330M; 3.1 for Radeon HD 5000-6000 and Kepler; 3.2 for later Intel and AMD GPUs."
+    - "Hyprland 0.50 release notes: \"Hyprland now requires at least GLES 3.0 to function\" (hypr.land/news/update50)."
+    - "The GPU acceleration criteria now say what passing means: Hyprland renders on the GPU in hardware, at OpenGL ES 3.0 or later, not with the llvmpipe software renderer."
+
 - date: "2026-10-03"
   title: Board IDs per release
   summary: "Where real machines show it, a board ID now belongs to the release it identifies, so Identify my Mac and test reports can tell apart releases that share every part, such as the 21.5- and 27-inch Late 2009 iMacs with the Radeon HD 4670. A report whose board belongs to another release of the Mac is flagged for review."

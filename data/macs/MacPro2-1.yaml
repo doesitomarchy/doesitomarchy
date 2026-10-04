@@ -15,6 +15,7 @@ sources:
 releases:
   - id: "2007"
     name: "Mac Pro (8-core, 2007)"
+    short_name: "Mac Pro (2007)"
     announced: 2007-04-04
     discontinued: 2008-01-08
     model_numbers: [A1186]

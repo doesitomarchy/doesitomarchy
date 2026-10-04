@@ -1,6 +1,7 @@
 // UI quality gates for DoesItOmarchy (PLAN.md §17.5), run against a live server:
 //   - axe-core WCAG 2 A/AA on the key pages at 360px and 1440px
-//   - colour contrast on a few pages in every theme (port map colours included)
+//   - colour contrast on a few pages in every theme (port map colours and the
+//     known-limitation warning icon included)
 //   - layout: no horizontal page scroll; matrix header links clickable
 //
 // Usage: BASE=http://127.0.0.1:8080 CHROME=/usr/bin/chromium node check.mjs
@@ -18,13 +19,13 @@ const JOBS = Math.max(1, Number(process.env.JOBS) || 4);
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/mac/MacPro5-1", "/mac/Macmini1-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
-  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2",
+  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2", "/mac/MacBook3-1", "/macs?q=gles%3A2.0", "/search?q=gles%3A2.0",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
   "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
   "/api", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
-const contrastPages = ["/", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares"];
+const contrastPages = ["/", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
 
 const failures = [];
 const fail = (where, msg) => failures.push(`${where}: ${msg}`);
@@ -118,6 +119,21 @@ for (const theme of themes) {
       const applied = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
       if (applied !== theme) fail(`${path} [${theme}]`, `theme not applied (got ${applied})`);
       for (const v of await axe(page, ["color-contrast"])) fail(`${path} [${theme}]`, v);
+      // axe checks text only. Icons that carry meaning on their own (the
+      // known-limitation warning, PLAN §30) need 3:1 against their
+      // background (WCAG 1.4.11).
+      const icons = await page.evaluate(() => {
+        const rgb = (c) => (c.match(/[\d.]+/g) || []).map(Number);
+        const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; })
+          .reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+        const bg = (el) => { for (; el; el = el.parentElement) { const c = rgb(getComputedStyle(el).backgroundColor); if (c.length === 3 || c[3] > 0) return c; } return [255, 255, 255]; };
+        return [...document.querySelectorAll(".warn-i")].map((el) => {
+          const a = lum(rgb(getComputedStyle(el).color)), b = lum(bg(el));
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        });
+      });
+      if ((path === "/mac/MacBook3-1" || path.startsWith("/macs?q=gles")) && icons.length === 0) fail(`${path} [${theme}]`, "no warning icon found");
+      for (const ratio of icons) if (ratio < 3) fail(`${path} [${theme}]`, `warning icon contrast ${ratio.toFixed(2)}:1, needs 3:1`);
       await page.close();
     });
   }

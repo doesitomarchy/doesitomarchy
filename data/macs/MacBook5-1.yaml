@@ -14,6 +14,7 @@ sources:
 releases:
   - id: late-2008
     name: "MacBook (13-inch, Aluminum, Late 2008)"
+    short_name: "MacBook (13-inch, Late 2008)"
     announced: 2008-10-14
     discontinued: 2009-06-08
     model_numbers: [A1278]

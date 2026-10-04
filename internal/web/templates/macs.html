@@ -15,6 +15,7 @@
     <th scope="col">Name</th>
     <th scope="col"><a href="/macs?q={{.Q}}&amp;sort={{if eq .Sort "year"}}-year{{else}}year{{end}}"{{if eq .Sort "year"}} aria-sort="ascending"{{else if eq .Sort "-year"}} aria-sort="descending"{{end}}>Year</a></th>
     <th scope="col">GPU</th>
+    <th scope="col" class="glescol"><span class="sr-only">OpenGL ES</span></th>
     <th scope="col">CPU</th>
     <th scope="col">Chip</th>
     <th scope="col" class="num"><a href="/macs?q={{.Q}}&amp;sort={{if eq .Sort "-configs"}}configs{{else}}-configs{{end}}"{{if eq .Sort "configs"}} aria-sort="ascending"{{else if eq .Sort "-configs"}} aria-sort="descending"{{end}}>Configs</a></th>
@@ -23,12 +24,13 @@
   <tbody>
   {{$line := ""}}{{$grouped := .Grouped}}
   {{range .Rows}}
-    {{if and $grouped (ne .LineName $line)}}{{$line = .LineName}}<tr class="line-break"><th colspan="8" scope="rowgroup"><span class="gh">{{template "machine" .LineKey}}{{.LineName}}</span></th></tr>{{end}}
+    {{if and $grouped (ne .LineName $line)}}{{$line = .LineName}}<tr class="line-break"><th colspan="9" scope="rowgroup"><span class="gh">{{template "machine" .LineKey}}{{.LineName}}</span></th></tr>{{end}}
     <tr{{if .OutOfScope}} class="oos"{{end}}>
       <td><a class="ident slotted" href="/mac/{{.Slug}}">{{template "slot" .AllVerified}}{{.Identifier}}</a></td>
-      <td class="nowrap">{{.Title}}</td>
+      <td class="nowrap">{{.ListTitle}}</td>
       <td>{{.Years}}</td>
       <td>{{joinlim .GPUs 2}}</td>
+      <td class="glescol">{{if .NoGLES3}}{{template "gles2"}}{{end}}</td>
       <td>{{join .Arch ", "}}</td>
       <td>{{if .Chip}}{{.Chip}}{{else}}<span class="muted">—</span>{{end}}</td>
       <td class="num">{{len .Configs}}</td>

@@ -16,6 +16,7 @@ sources:
 releases:
   - id: "13-2017-2tb3"
     name: "MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)"
+    short_name: "MacBook Pro (13-inch, 2017)"
     announced: 2017-06-05
     discontinued: 2019-07-09
     model_numbers: [A1708]
