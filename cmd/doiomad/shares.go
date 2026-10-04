@@ -16,8 +16,10 @@ const sharesUsage = `doiomad shares — hardware IDs shared from Identify my Mac
   shares review IDENTIFIER     mark a group's new shares reviewed ("none": the
                                group with no identifier)
 
-IDs the catalog doesn't have are marked "*". A review is recorded with who
-made it ($SUDO_USER, else $USER). /admin/shares shows the same.
+IDs the catalog doesn't have are marked "*". Chipset IDs the catalog leaves
+out on purpose (data/plumbing.yaml) aren't listed, only counted as chipset=N.
+A review is recorded with who made it ($SUDO_USER, else $USER).
+/admin/shares shows the same.
 `
 
 func cmdShares(args []string, stdout, stderr io.Writer) int {
@@ -87,7 +89,12 @@ func cmdShares(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stdout, "%s: %d shares, %d new\n", name, len(g.Shares), g.Unseen)
 		for _, sh := range g.Shares {
 			var pci []string
+			chipset := 0
 			for _, id := range sh.PCI {
+				if _, ok := m.Plumbing(id); ok && !m.KnownDevice(id, "pci") {
+					chipset++
+					continue
+				}
 				pci = append(pci, id+mark(m.KnownDevice(id, "pci")))
 			}
 			line := []string{sh.SharedOn}
@@ -99,6 +106,9 @@ func cmdShares(args []string, stdout, stderr io.Writer) int {
 			}
 			if len(pci) > 0 {
 				line = append(line, "pci="+strings.Join(pci, ","))
+			}
+			if chipset > 0 {
+				line = append(line, fmt.Sprintf("chipset=%d", chipset))
 			}
 			if sh.Modified != "" {
 				line = append(line, "modified="+sh.Modified)
