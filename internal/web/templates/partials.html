@@ -115,7 +115,7 @@
   <li{{if .Mac.OutOfScope}} class="oos"{{end}}>
     <a class="hit" href="/mac/{{.Slug}}">
       <span class="ident slotted">{{template "slot" .Mac.AllVerified}}{{.Identifier}}</span>
-      <span>{{.Mac.Title}}</span>
+      <span>{{.Mac.ListTitle}}</span>
       <span class="vs">{{range .Mac.Verdicts}}{{template "verdict" .}}{{end}}{{if .Mac.NoGLES3}}{{template "gles2"}}{{end}}</span>
       <span class="facts">{{.Mac.Years}} · {{joinlim .Mac.GPUs 2}}{{with .Mac.Chip}} · {{.}}{{end}} · {{len .Mac.Configs}} {{plural (len .Mac.Configs) "config" "configs"}}{{with .Mac.OutOfScope}} {{template "scope" .}}{{end}}</span>
     </a>

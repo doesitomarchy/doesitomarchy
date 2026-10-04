@@ -27,7 +27,7 @@
     {{if and $grouped (ne .LineName $line)}}{{$line = .LineName}}<tr class="line-break"><th colspan="9" scope="rowgroup"><span class="gh">{{template "machine" .LineKey}}{{.LineName}}</span></th></tr>{{end}}
     <tr{{if .OutOfScope}} class="oos"{{end}}>
       <td><a class="ident slotted" href="/mac/{{.Slug}}">{{template "slot" .AllVerified}}{{.Identifier}}</a></td>
-      <td class="nowrap">{{.Title}}</td>
+      <td class="nowrap">{{.ListTitle}}</td>
       <td>{{.Years}}</td>
       <td>{{joinlim .GPUs 2}}</td>
       <td class="glescol">{{if .NoGLES3}}{{template "gles2"}}{{end}}</td>

@@ -19,7 +19,7 @@ sources:
   - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookPro15/MacBookPro15%2C3
 releases:
   - id: "15-2018-vega"
-    name: "MacBook Pro (15-inch, 2018) with Radeon Pro Vega"
+    name: "MacBook Pro (15-inch, 2018)"
     announced: 2018-11-14
     discontinued: 2019-05-21
     model_numbers: [A1990]
@@ -39,7 +39,7 @@ releases:
         ports: { thunderbolt-3: 4, audio-out: 1 }
         features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, gpu-switching, displayport-audio]
   - id: "15-2019-vega"
-    name: "MacBook Pro (15-inch, 2019) with Radeon Pro Vega"
+    name: "MacBook Pro (15-inch, 2019)"
     announced: 2019-05-21
     discontinued: 2019-11-13
     model_numbers: [A1990]

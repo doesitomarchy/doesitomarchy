@@ -9,17 +9,22 @@ import (
 )
 
 var (
-	reSlug        = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-	reCapID       = regexp.MustCompile(`^[a-z]+\.[a-z0-9]+(-[a-z0-9]+)*$`)
-	reCompID      = regexp.MustCompile(`^[a-z-]+/[a-z0-9]+(-[a-z0-9]+)*$`)
-	reHWID        = regexp.MustCompile(`^(pci|usb):[0-9a-f]{4}:[0-9a-f]{4}$`)
-	reIdentifier  = regexp.MustCompile(`^([A-Za-z]+)[0-9]+,[0-9]+$`)
-	reBoardID     = regexp.MustCompile(`^Mac-[0-9A-F]{8}([0-9A-F]{8})?$`)
-	rePlumbingID  = regexp.MustCompile(`^pci:[0-9a-f]{4}:[0-9a-f]{4}$`)
-	reOrderNumber = regexp.MustCompile(`^[A-Z0-9]{4,5}[A-Z]{1,2}/[A-Z]$`) // MB463LL/A, MGEM2LL/A
-	reModelNumber = regexp.MustCompile(`^A[0-9]{4}$`)
-	reEMC         = regexp.MustCompile(`^[0-9]{4}(-[0-9])?$`) // Apple revision suffix, e.g. "2353-1"
-	reURL         = regexp.MustCompile(`^https?://\S+$`)
+	reSlug       = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	reCapID      = regexp.MustCompile(`^[a-z]+\.[a-z0-9]+(-[a-z0-9]+)*$`)
+	reCompID     = regexp.MustCompile(`^[a-z-]+/[a-z0-9]+(-[a-z0-9]+)*$`)
+	reHWID       = regexp.MustCompile(`^(pci|usb):[0-9a-f]{4}:[0-9a-f]{4}$`)
+	reIdentifier = regexp.MustCompile(`^([A-Za-z]+)[0-9]+,[0-9]+$`)
+	reBoardID    = regexp.MustCompile(`^Mac-[0-9A-F]{8}([0-9A-F]{8})?$`)
+	rePlumbingID = regexp.MustCompile(`^pci:[0-9a-f]{4}:[0-9a-f]{4}$`)
+	// ListNamePattern is the plain name lists use: product, then size,
+	// season and year, e.g. "MacBook Pro (13-inch, 2016)" or "iMac (Retina
+	// 5K, 27-inch, Late 2014)". A release whose Apple name says more (ports,
+	// CPU speed, finish) gives a short_name in this form.
+	ListNamePattern = regexp.MustCompile(`^(MacBook|MacBook Air|MacBook Pro|iMac|iMac Pro|Mac mini|Mac mini Server|Mac Pro|Xserve) \((Retina( 4K| 5K)?, )?([0-9.]+-inch, )?((Early|Mid|Late) )?[0-9]{4}\)$`)
+	reOrderNumber   = regexp.MustCompile(`^[A-Z0-9]{4,5}[A-Z]{1,2}/[A-Z]$`) // MB463LL/A, MGEM2LL/A
+	reModelNumber   = regexp.MustCompile(`^A[0-9]{4}$`)
+	reEMC           = regexp.MustCompile(`^[0-9]{4}(-[0-9])?$`) // Apple revision suffix, e.g. "2353-1"
+	reURL           = regexp.MustCompile(`^https?://\S+$`)
 )
 
 var storageInterfaces = map[string]bool{"pata": true, "sata": true, "pcie-ahci": true, "nvme": true}
@@ -277,6 +282,12 @@ func (l *loader) validateMacs() {
 			releaseIDs[r.ID] = true
 			if r.Name == "" {
 				l.errf(f, "%s: name is required", where)
+			}
+			if !ListNamePattern.MatchString(r.ListName()) {
+				l.errf(f, "%s: %q doesn't read like \"MacBook Pro (13-inch, Mid 2012)\"; give a short_name in that form", where, r.ListName())
+			}
+			if r.ShortName != "" && r.ShortName == r.Name {
+				l.errf(f, "%s: short_name repeats name; drop it", where)
 			}
 			if !validDate(r.Announced) {
 				l.errf(f, "%s: announced must be YYYY-MM-DD", where)

@@ -14,6 +14,7 @@ sources:
 releases:
   - id: mid-2006
     name: "MacBook (13-inch)"
+    short_name: "MacBook (13-inch, 2006)"
     announced: 2006-05-16
     discontinued: 2006-11-08
     model_numbers: [A1181]

@@ -94,7 +94,8 @@ type macView struct {
 	LineKey       string
 	LineName      string
 	Icon          string // product-line icon in icons.svg (m-<Icon>)
-	Title         string // newest release name
+	Title         string // newest release name (Apple's)
+	ListTitle     string // the same in the plain form lists use (Release.ListName)
 	Years         string // "2009" or "2009–2010"
 	FirstYear     int
 	EFI           int
@@ -493,7 +494,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 		rv := &releaseView{ID: r.ID, Name: r.Name, Announced: r.Announced, Discontinued: r.Discontinued, ModelNumbers: r.ModelNumbers, EMC: r.EMC, BoardIDs: r.BoardIDs, Mac: mv}
 		y, _ := strconv.Atoi(r.Announced[:4])
 		first, last = min(first, y), max(last, y)
-		mv.Title = r.Name
+		mv.Title, mv.ListTitle = r.Name, r.ListName()
 		excl := c.CoverageExclusion(m, r)
 		for ci := range r.Configs {
 			cfg := &r.Configs[ci]

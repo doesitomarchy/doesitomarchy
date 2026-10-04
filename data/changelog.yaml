@@ -3,6 +3,12 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-04"
+  title: Plain names in lists
+  summary: "The list of all Intel Macs and search results now name every Mac by size, season and year, such as MacBook Pro (13-inch, 2016). Each Mac's page keeps Apple's full name, which is what About This Mac shows, such as MacBook Pro (13-inch, 2016, Two Thunderbolt 3 ports)."
+  notes:
+    - "MacBookPro15,3 and MacBookPro16,4 are now called what Apple calls them: MacBook Pro (15-inch, 2018), MacBook Pro (15-inch, 2019) and MacBook Pro (16-inch, 2019). The catalog had added \"with Radeon Pro Vega\" and \"with Radeon Pro 5600M\"; the identifier and GPU already tell them apart."
+
+- date: "2026-10-04"
   title: OpenGL ES level per GPU
   summary: "Every GPU now records the highest OpenGL ES version its Linux driver reaches. Hyprland, Omarchy's desktop, has needed OpenGL ES 3.0 since version 0.50, so the 29 configurations whose GPU reaches only 2.0 carry a known-limitation note, as do the Mid 2010 MacBook Pros, whose Intel GPU can't run it. The notes change no status; only tests do. Search gles:2.0 to list them."
   notes:

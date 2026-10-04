@@ -29,6 +29,7 @@ Rules the validator enforces:
 - **Test results belong to a configuration**, never just to a model identifier, because one identifier can span several releases.
 - **Don't guess.** When sources disagree or are silent, record your best value and add an `uncertain` entry (`field` + `note`) explaining why.
 - **Unknown fields and values are errors.** Add new ports or features to `vocabulary.yaml` first.
+- **Release names are Apple's**, as Apple's identification pages and About This Mac give them. Lists use a plain "Product (size, season year)" form; when Apple's name says more (ports, CPU speed, finish), give the release a `short_name` in that form.
 - **Board IDs belong to the release they identify, when real machines show it.** List a board on its release's `board_ids` when at least 3 machines report it and their screen mode, GPU or CPU points to that release (omarchaeology `boardids.py` does the survey). A board shared by two releases goes on both. Boards that can't be tied stay in the Mac's `board_ids`; a board is never on both levels.
 
 ### Reviewing shared IDs (`/admin/shares`)

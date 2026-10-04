@@ -18,6 +18,7 @@ sources:
 releases:
   - id: "13-2019-2tb3"
     name: "MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)"
+    short_name: "MacBook Pro (13-inch, 2019)"
     announced: 2019-07-09
     discontinued: 2020-05-04
     model_numbers: [A2159]
