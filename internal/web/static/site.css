@@ -165,7 +165,8 @@ svg.bar.ok rect { fill: var(--ok); }
 .card-head { display: flex; gap: 0.4rem 0.8rem; align-items: center; flex-wrap: wrap; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--line); }
 .card-head .title { color: var(--muted); flex: 1 1 16rem; min-width: 0; font-size: 13px; }
 .card-head .right { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
-.blocker-line { margin: 0; padding: 0.35rem 0.8rem; border-bottom: 1px solid var(--line); color: var(--bad); font-size: 13px; }
+.blocker-line, .limit-line { margin: 0; padding: 0.35rem 0.8rem; border-bottom: 1px solid var(--line); color: var(--bad); font-size: 13px; }
+.limit-line { color: inherit; } .warn-i { color: var(--warn); }
 .caps details { border-bottom: 1px solid var(--line); }
 .caps summary { cursor: pointer; padding: 0.35rem 0.8rem; display: flex; gap: 0.5rem; align-items: center; list-style: none; position: relative; }
 .caps summary > :not(svg.catprog) { position: relative; }

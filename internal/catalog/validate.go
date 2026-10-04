@@ -186,6 +186,12 @@ func (l *loader) validateComponents() {
 		case comp.Kind != "gpu" && comp.Role != "":
 			l.errf(comp.File, "%s: role is only valid for gpu components", where)
 		}
+		switch {
+		case comp.Kind == "gpu" && !GLESLevels[comp.GLES]:
+			l.errf(comp.File, "%s: gles must be one of 2.0, 3.0, 3.1 or 3.2", where)
+		case comp.Kind != "gpu" && comp.GLES != "":
+			l.errf(comp.File, "%s: gles is only valid for gpu components", where)
+		}
 		for _, hw := range comp.IDs {
 			if !reHWID.MatchString(hw) {
 				l.errf(comp.File, "%s: hardware id %q must look like pci:vvvv:dddd or usb:vvvv:pppp", where, hw)

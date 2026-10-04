@@ -159,6 +159,7 @@ type configView struct {
 	OutOfScope   string
 	Notes        string
 	Uncertain    []uncertainView
+	Limitations  []string // research: hardware limits known before testing (PLAN §30)
 	Mac          *macView
 }
 
@@ -170,6 +171,7 @@ type compView struct {
 	Role      string
 	IDs       []string
 	Driver    string
+	GLES      string // gpu only (PLAN §30)
 	BTO       bool
 	Uncertain []uncertainView
 }
@@ -336,6 +338,7 @@ type catalogView struct {
 // componentUse is one component and the configs that use it (/components).
 type componentUse struct {
 	ID, Kind, KindName, Name, Vendor, Role, Driver string
+	GLES                                           string // gpu only (PLAN §30)
 	IDs                                            []string
 	Configs                                        int
 	Macs                                           []*macView
@@ -563,7 +566,8 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 
 func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup, now time.Time) *configView {
 	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, BoardIDs: r.BoardIDs, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
-		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl}
+		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl,
+		Limitations: c.Limitations(cfg)}
 	for _, p := range cfg.CPU.Standard {
 		cv.CPU = append(cv.CPU, processor(p))
 	}
@@ -590,7 +594,7 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 				continue
 			}
 			v := compView{ID: comp.ID, Kind: comp.Kind, KindName: c.Vocab.ComponentKinds[comp.Kind].Name, Name: comp.Name, Role: comp.Role,
-				IDs: comp.IDs, Driver: comp.Driver, BTO: bto}
+				IDs: comp.IDs, Driver: comp.Driver, GLES: comp.GLES, BTO: bto}
 			for _, u := range comp.Uncertain {
 				v.Uncertain = append(v.Uncertain, uncertainView{u.Field, u.Note})
 			}
@@ -965,7 +969,7 @@ func buildComponents(c *catalog.Catalog, v *catalogView) []componentUse {
 				if u == nil {
 					cc := c.Components[comp.ID]
 					u = &componentUse{ID: comp.ID, Kind: comp.Kind, KindName: comp.KindName, Name: comp.Name, Vendor: cc.Vendor,
-						Role: comp.Role, Driver: comp.Driver, IDs: comp.IDs}
+						Role: comp.Role, Driver: comp.Driver, GLES: comp.GLES, IDs: comp.IDs}
 					uses[comp.ID] = u
 				}
 				u.Configs++
