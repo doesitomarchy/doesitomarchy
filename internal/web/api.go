@@ -212,6 +212,7 @@ type apiConfig struct {
 	Label        string         `json:"label"`
 	Distinction  string         `json:"distinction"`
 	Release      string         `json:"release"`
+	BoardIDs     []string       `json:"board_ids,omitempty"` // tied to the release by real machines (PLAN §29)
 	OrderNumbers []string       `json:"order_numbers"`
 	Components   []apiComponent `json:"components"`
 	Ports        []string       `json:"ports"`
@@ -232,7 +233,7 @@ type apiConfig struct {
 }
 
 func configJSON(cv *configView) apiConfig {
-	x := apiConfig{ID: cv.ID, Identifier: cv.Mac.Identifier, Label: cv.Label, Distinction: cv.Diff, Release: cv.ReleaseName,
+	x := apiConfig{ID: cv.ID, Identifier: cv.Mac.Identifier, Label: cv.Label, Distinction: cv.Diff, Release: cv.ReleaseName, BoardIDs: cv.BoardIDs,
 		OrderNumbers: cv.OrderNumbers, Ports: cv.Ports, Features: cv.Features, OutOfScope: cv.OutOfScope,
 		Verdict: cv.Status.Verdict, Blocker: cv.Status.Blocker, Applicable: cv.Status.Applicable, Tested: cv.Status.Tested,
 		Verified: cv.Verified, Counts: cv.Status.Counts, Components: []apiComponent{}, Capabilities: []apiCapStatus{},

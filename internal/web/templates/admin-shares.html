@@ -3,12 +3,12 @@
 <p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
 {{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
 <h1>Shared IDs</h1>
-<p class="muted">Hardware IDs visitors chose to share from Identify my Mac, read against today's catalog. IDs marked <span class="unk-tag">new</span> aren't in the catalog. Shares never change the catalog; turn good ones into a catalog PR. Dates are UTC.
+<p class="muted">Hardware IDs visitors chose to share from Identify my Mac, read against today's catalog. IDs marked <span class="unk-tag">new</span> aren't in the catalog; "look up" names one on pci-ids.ucw.cz. Chipset IDs the catalog leaves out on purpose are folded away. Shares never change the catalog; turn good ones into a catalog PR. Dates are UTC.
   {{if .All}}<a href="/admin/shares">Hide reviewed</a>{{else}}<a href="/admin/shares?all=1">Show reviewed</a>{{end}}</p>
 
 {{range .Groups}}
 <section class="share-group">
-  <h2>{{if .Mac}}<a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a> · {{.Mac.Title}}{{else if .Product}}<code>{{.Product}}</code> <span class="unk-tag">new</span>{{else}}No identifier{{end}}</h2>
+  <h2>{{if .Mac}}<a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a> · {{range $i, $r := .Mac.Releases}}{{if $i}}, {{end}}{{$r.Name}}{{end}}{{else if .Product}}<code>{{.Product}}</code> <span class="unk-tag">new</span>{{else}}No identifier{{end}}</h2>
   <p class="muted">{{.Total}} {{plural .Total "share" "shares"}}{{if .Unseen}} · <b>{{.Unseen}} new</b>{{end}}{{with .Reviewed}} · last reviewed {{utc .}}{{end}}
     {{range .Modified}} · {{.Label}}: {{.N}}{{end}}</p>
   {{with .Releases}}<p class="muted">About This Mac says: {{range $i, $t := .}}{{if $i}}, {{end}}{{$t.Label}} ({{$t.N}}){{end}}</p>{{end}}
@@ -17,9 +17,10 @@
     <tbody>{{range .Probes}}<tr>
       <td>{{.Count}}</td>
       <td>{{.Last}}{{if ne .First .Last}}<br><span class="muted">since {{.First}}</span>{{end}}</td>
-      <td>{{if .Board}}<code>{{.Board}}</code>{{if not .BoardKnown}} <span class="unk-tag">new</span>{{end}}{{else}}<span class="muted">—</span>{{end}}</td>
+      <td>{{if .Board}}<code>{{.Board}}</code>{{if not .BoardKnown}} <span class="unk-tag">new</span>{{end}}{{with .BoardOf}}<br><span class="muted">{{join . " or "}}</span>{{end}}{{else}}<span class="muted">—</span>{{end}}</td>
       <td>{{if .CPU}}{{.CPU}}{{if not .CPUKnown}} <span class="unk-tag">new</span>{{end}}{{else}}<span class="muted">—</span>{{end}}</td>
-      <td>{{range .PCI}}<code>{{.ID}}</code>{{if not .Known}} <span class="unk-tag">new</span>{{end}} {{else}}<span class="muted">—</span>{{end}}</td>
+      <td>{{range .PCI}}<code>{{.ID}}</code>{{if not .Known}} <span class="unk-tag">new</span>{{with .Lookup}} <a href="{{.}}" rel="noopener noreferrer">look up</a>{{end}}{{end}} {{else}}{{if not .Plumbing}}<span class="muted">—</span>{{end}}{{end}}
+        {{with .Plumbing}}<details class="muted"><summary>{{len .}} chipset {{plural (len .) "ID" "IDs"}}</summary><ul>{{range .}}<li><code>{{.ID}}</code> {{.Name}}</li>{{end}}</ul></details>{{end}}</td>
       <td>{{with .Best}}<a href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}">{{.Diff}}</a> <span class="muted">{{.ReleaseName}}</span>{{else}}{{with .Tied}}<span class="muted">tied:</span> {{range $i, $c := .}}{{if $i}}, {{end}}<a href="/mac/{{$c.Mac.Slug}}#cfg-{{$c.ID}}">{{$c.Mac.Identifier}} {{$c.Diff}}</a>{{end}}{{else}}<span class="muted">nothing</span>{{end}}{{end}}</td>
     </tr>{{end}}</tbody>
   </table></div>

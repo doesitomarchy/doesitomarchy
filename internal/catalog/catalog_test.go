@@ -231,6 +231,7 @@ capabilities:
 identifier: Macmini9,9
 line: mac-mini
 efi: 64
+board_ids: [Mac-AAAAAAAA]
 sources: [https://example.com/mini]
 releases:
   - id: mid-2099
@@ -238,6 +239,7 @@ releases:
     announced: 2099-06-01
     model_numbers: [A1234]
     emc: ["1234"]
+    board_ids: [Mac-BBBBBBBB]
     configs:
       - id: macmini9-9-mid-2099-a
         label: Test config
@@ -268,6 +270,11 @@ releases:
 - date: "2099-06-01"
   title: Older
   summary: "An older entry."
+`,
+	"plumbing.yaml": `
+- vendor: Intel
+  ids:
+    pci:8086:0002: { name: "Test Host Bridge", class: "Host bridge" }
 `,
 	"coverage.yaml": `
 exclude:
@@ -366,6 +373,12 @@ func TestValidationRules(t *testing.T) {
 		{"layout type", "layouts/Macmini9-9.yaml", "type: power", "type: toaster", `type "toaster"`},
 		{"layout release", "layouts/Macmini9-9.yaml", "mid-2099:", "late-2099:", `release "late-2099"`},
 		{"layout source", "layouts/Macmini9-9.yaml", "sources: [https://example.com/mini-guide.pdf]", "sources: []", "sources are required"},
+		{"bad release board", mac, "board_ids: [Mac-BBBBBBBB]", "board_ids: [Mac-bbbb]", "must look like Mac-XXXXXXXX"},
+		{"board at both levels", mac, "board_ids: [Mac-BBBBBBBB]", "board_ids: [Mac-AAAAAAAA]", "also in the Mac's board_ids"},
+		{"release board twice", mac, "board_ids: [Mac-BBBBBBBB]", "board_ids: [Mac-BBBBBBBB, Mac-BBBBBBBB]", "listed twice"},
+		{"plumbing is a component", "plumbing.yaml", "pci:8086:0002", "pci:8086:0001", "is component gpu/test-gpu's ID"},
+		{"plumbing bad id", "plumbing.yaml", "pci:8086:0002", "pci:8086:00G2", "must look like pci:vvvv:dddd"},
+		{"plumbing without name", "plumbing.yaml", `name: "Test Host Bridge"`, `name: ""`, "name is required"},
 		{"port test", "vocabulary.yaml", "tests: [graphics.external-display]", "tests: [graphics.hologram]", `unknown capability "graphics.hologram"`},
 	}
 	for _, tt := range tests {
@@ -378,6 +391,31 @@ func TestValidationRules(t *testing.T) {
 				t.Fatalf("error should contain %q, got:\n%v", tt.wants, err)
 			}
 		})
+	}
+}
+
+// A Mac's board IDs after loading: its untied ones, then its releases'
+// (PLAN.md §29).
+func TestBoardIDsMerge(t *testing.T) {
+	c, err := Load(writeFixture(t, nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := c.Macs[0]
+	if strings.Join(m.BoardIDs, ",") != "Mac-AAAAAAAA,Mac-BBBBBBBB" {
+		t.Errorf("board IDs: %v", m.BoardIDs)
+	}
+	if rs := m.BoardReleases("mac-bbbbbbbb"); len(rs) != 1 || rs[0].ID != "mid-2099" {
+		t.Errorf("BoardReleases: %v", rs)
+	}
+	if rs := m.BoardReleases("Mac-AAAAAAAA"); rs != nil {
+		t.Errorf("an untied board has no release: %v", rs)
+	}
+	if r := m.ReleaseOf("macmini9-9-mid-2099-a"); r == nil || r.ID != "mid-2099" || m.ReleaseOf("nope") != nil {
+		t.Error("ReleaseOf")
+	}
+	if p, ok := c.Plumbing["pci:8086:0002"]; !ok || p.Name != "Test Host Bridge" {
+		t.Errorf("plumbing: %v", c.Plumbing)
 	}
 }
 

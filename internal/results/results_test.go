@@ -299,6 +299,12 @@ items:
 		{"identifier contradicts the config", "config: macbookpro15-2-13-2018-4tb3-a\nidentifier: MacBookPro8,2\n", "", nil, "is a MacBookPro15,2"},
 		{"probe contradicts the config", "config: macbookpro15-2-13-2018-4tb3-a\nhardware: { product_name: MacBookPro15,1, board_id: Mac-0000000000000000, pci: [\"1002:67ef\"] }\n",
 			"macbookpro15-2-13-2018-4tb3-a", []string{FlagHardware, FlagHardware, FlagHardware, FlagHardware}, ""},
+		{"board of another release (PLAN §29)", "config: imac10-1-27-late-2009-a\nhardware: { product_name: \"iMac10,1\", board_id: Mac-F2268CC8, pci: [\"1002:9488\", \"168c:002a\"] }\n",
+			"imac10-1-27-late-2009-a", []string{FlagHardware}, ""},
+		{"board of its own release", "config: imac10-1-21-late-2009-b\nhardware: { product_name: \"iMac10,1\", board_id: Mac-F2268CC8, pci: [\"1002:9488\", \"168c:002a\"] }\n",
+			"imac10-1-21-late-2009-b", nil, ""},
+		{"the board alone picks the 21.5-inch", "identifier: iMac10,1\nhardware: { board_id: Mac-F2268CC8, pci: [\"1002:9488\", \"168c:002a\"] }\n",
+			"imac10-1-21-late-2009-b", nil, ""},
 		{"nothing identifies the Mac", "", "", nil, "config: required"},
 	}
 	for _, tt := range tests {
@@ -323,6 +329,9 @@ items:
 			}
 			if r.ConfigID != tt.config || strings.Join(kinds, ",") != strings.Join(tt.flags, ",") {
 				t.Fatalf("config %s flags %v; want %s %v (%+v)", r.ConfigID, kinds, tt.config, tt.flags, r.Flags)
+			}
+			if strings.HasPrefix(tt.name, "board of another") && r.Flags[0].Detail != "board ID Mac-F2268CC8 belongs to the iMac (21.5-inch, Late 2009); the config is from the iMac (27-inch, Late 2009)" {
+				t.Errorf("message: %q", r.Flags[0].Detail)
 			}
 			if tt.flags != nil && tt.flags[0] == FlagAmbiguous && len(r.Candidates) != 2 {
 				t.Errorf("an ambiguous report lists its candidates: %v", r.Candidates)

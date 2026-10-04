@@ -28,7 +28,7 @@ type Probe struct {
 type Candidate struct {
 	Config  string   `json:"config"`
 	Score   int      `json:"score"`
-	Matched []string `json:"matched"` // probe IDs this config's components have ("cpu:…" for the CPU)
+	Matched []string `json:"matched"` // probe IDs this config's components have ("cpu:…" for the CPU, "board:…" for a board tied to its release)
 	// NotReported lists this config's distinguishing parts (GPU, Wi-Fi, CPU)
 	// that the probe doesn't show, one entry per part; a part known by several
 	// IDs lists them with "/": "pci:8086:0116/pci:8086:0126".
@@ -73,6 +73,11 @@ type part struct {
 type Matcher struct {
 	byIdentifier map[string]string // lower-case identifier → identifier
 	byBoard      map[string]string // lower-case board ID → identifier
+	// boardConfigs: lower-case board ID → the configs of the releases it's
+	// tied to (PLAN.md §29); boardName keeps the catalog's spelling.
+	boardConfigs map[string]map[string]bool
+	boardName    map[string]string
+	plumbing     map[string]catalog.Plumbing
 	configs      map[string][]*config
 	byDevice     map[string][]string // hardware ID → config IDs
 	known        map[string]bool     // every hardware ID, standard and build-to-order
@@ -82,6 +87,7 @@ type Matcher struct {
 // New indexes a catalog.
 func New(c *catalog.Catalog) *Matcher {
 	m := &Matcher{byIdentifier: map[string]string{}, byBoard: map[string]string{}, configs: map[string][]*config{},
+		boardConfigs: map[string]map[string]bool{}, boardName: map[string]string{}, plumbing: c.Plumbing,
 		byDevice: map[string][]string{}, known: map[string]bool{}}
 	for _, mac := range c.Macs {
 		m.order = append(m.order, mac.Identifier)
@@ -90,6 +96,16 @@ func New(c *catalog.Catalog) *Matcher {
 			m.byBoard[strings.ToLower(b)] = mac.Identifier
 		}
 		for _, r := range mac.Releases {
+			for _, b := range r.BoardIDs {
+				lb := strings.ToLower(b)
+				if m.boardConfigs[lb] == nil {
+					m.boardConfigs[lb] = map[string]bool{}
+				}
+				for _, cfg := range r.Configs {
+					m.boardConfigs[lb][cfg.ID] = true
+				}
+				m.boardName[lb] = b
+			}
 			for _, cfg := range r.Configs {
 				x := &config{id: cfg.ID, ids: map[string]string{}, bto: map[string]bool{}}
 				for _, ref := range cfg.Components {
@@ -205,6 +221,17 @@ func (m *Matcher) KnownBoard(board string) bool {
 	return m.byBoard[strings.ToLower(strings.TrimSpace(board))] != ""
 }
 
+// Plumbing returns the name and class of a chipset ID that the catalog
+// deliberately leaves out (data/plumbing.yaml), in any common form.
+func (m *Matcher) Plumbing(id string) (catalog.Plumbing, bool) {
+	ids := NormalizeIDs([]string{id}, "pci")
+	if len(ids) != 1 {
+		return catalog.Plumbing{}, false
+	}
+	p, ok := m.plumbing[ids[0]]
+	return p, ok
+}
+
 // KnownDevice reports whether any catalog component has a hardware ID, in
 // any common form ("10de:0647", "pci:10de:0647").
 func (m *Matcher) KnownDevice(id, kind string) bool {
@@ -237,6 +264,7 @@ func (m *Matcher) Match(p Probe) Result {
 	}
 	hasPCI := len(NormalizeIDs(p.PCI, "pci")) > 0
 	cpu := strings.Join(strings.Fields(strings.ToLower(p.CPU)), " ")
+	board := strings.ToLower(strings.TrimSpace(p.BoardID))
 	var res Result
 	res.Identifier, res.By = m.Identify(p)
 	var pool []*config
@@ -268,6 +296,12 @@ func (m *Matcher) Match(p Probe) Result {
 				cand.Matched = append(cand.Matched, d)
 			}
 		}
+		// A board tied to the config's release separates releases that share
+		// every part (21.5- and 27-inch iMacs with the same GPU). Untied
+		// boards, and other releases, score nothing either way.
+		if m.boardConfigs[board][cfg.id] {
+			cand.Matched = append(cand.Matched, "board:"+m.boardName[board])
+		}
 		if hasPCI {
 			for _, pt := range cfg.parts {
 				found := false
@@ -295,7 +329,7 @@ func (m *Matcher) Match(p Probe) Result {
 				cand.NotReported = append(cand.NotReported, "cpu:"+strings.Join(cfg.cpus, "/"))
 			}
 		}
-		// +10 per reported ID the config has, -10 per distinguishing part it
+		// +10 per reported ID the config has (a tied board included), -10 per distinguishing part it
 		// has that wasn't reported (per part, however many IDs it's known by).
 		cand.Score = 10*len(cand.Matched) - 10*len(cand.NotReported)
 		res.Candidates = append(res.Candidates, cand)

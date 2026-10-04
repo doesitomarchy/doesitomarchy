@@ -1,7 +1,6 @@
 identifier: iMac9,1
 line: imac
 efi: 64
-board_ids: [Mac-F2218FA9, Mac-F2218EA9, Mac-F2218FC8, Mac-F2218EC8]
 research_notes: |
   Early 2009 (20- and 24-inch) and the Mid 2009 20-inch education model share this identifier.
   Audio is a Realtek ALC889A codec on every observed machine.
@@ -23,6 +22,7 @@ releases:
     discontinued: 2009-10-20
     model_numbers: [A1224]
     emc: ["2266"]
+    board_ids: [Mac-F2218EA9, Mac-F2218EC8]
     configs:
       - id: imac9-1-20-early-2009-a
         label: "Core 2 Duo 2.66 GHz \u00b7 GeForce 9400M"
@@ -45,6 +45,7 @@ releases:
     discontinued: 2009-10-20
     model_numbers: [A1225]
     emc: ["2267"]
+    board_ids: [Mac-F2218FA9, Mac-F2218FC8]
     configs:
       - id: imac9-1-24-early-2009-a
         label: "Core 2 Duo 2.66 GHz \u00b7 GeForce 9400M"
@@ -100,6 +101,7 @@ releases:
     discontinued: 2010-03-04
     model_numbers: [A1224]
     emc: ["2266", "2316"]
+    board_ids: [Mac-F2218EA9]
     configs:
       - id: imac9-1-20-mid-2009-a
         label: "Core 2 Duo 2.0 or 2.26 GHz \u00b7 GeForce 9400M (education)"

@@ -1,7 +1,7 @@
 identifier: MacBook2,1
 line: macbook
 efi: 32
-board_ids: [Mac-F4208CA9, Mac-F4208CAA]
+board_ids: [Mac-F4208CA9]
 research_notes: |
   64-bit Core 2 Duo CPU with 32-bit EFI firmware: the stock installer needs a 32-bit EFI boot shim. GMA 950 has no modern OpenGL, so Hyprland will likely use software rendering.
   The iSight reports "no firmware loaded" and needs firmware extracted from macOS.
@@ -41,6 +41,7 @@ releases:
     discontinued: 2007-11-01
     model_numbers: [A1181]
     emc: ["2139"]
+    board_ids: [Mac-F4208CAA]
     configs:
       - id: macbook2-1-mid-2007-a
         label: "Core 2 Duo 2.0 or 2.16 GHz \u00b7 GMA 950 (white or black)"

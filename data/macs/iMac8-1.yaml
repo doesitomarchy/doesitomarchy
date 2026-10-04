@@ -1,7 +1,6 @@
 identifier: iMac8,1
 line: imac
 efi: 64
-board_ids: [Mac-F227BEC8, Mac-F226BEC8]
 research_notes: |
   Penryn refresh of the aluminum iMac.
 sources:
@@ -18,6 +17,7 @@ releases:
     discontinued: 2009-03-03
     model_numbers: [A1224]
     emc: ["2210"]
+    board_ids: [Mac-F226BEC8]
     configs:
       - id: imac8-1-20-early-2008-a
         label: "Core 2 Duo 2.4 GHz \u00b7 Radeon HD 2400 XT"
@@ -49,6 +49,7 @@ releases:
     discontinued: 2009-03-03
     model_numbers: [A1225]
     emc: ["2211"]
+    board_ids: [Mac-F227BEC8]
     configs:
       - id: imac8-1-24-early-2008-a
         label: "Core 2 Duo 2.8 GHz \u00b7 Radeon HD 2600 Pro"

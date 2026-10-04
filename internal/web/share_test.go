@@ -111,6 +111,13 @@ func TestIdentifyShare(t *testing.T) {
 		t.Errorf("stored %d shares, want 2", n)
 	}
 
+	// The owner's iMac10,1 (PLAN §29): its chipset IDs fold away, and the
+	// board names its release and settles the match.
+	imac := url.Values{"product": {"iMac10,1"}, "board": {"Mac-F2268CC8"}, "pci": {"1002:9488,1002:aa38,10de:0a84,10de:0ab0,168c:002a"}, "consent": {"yes"}}
+	if code, _ := share(imac, nil); code != http.StatusSeeOther {
+		t.Errorf("iMac10,1 share: %d", code)
+	}
+
 	// Refusals.
 	bad := func(name string, form url.Values, header map[string]string, want int) {
 		t.Helper()
@@ -141,10 +148,15 @@ func TestIdentifyShare(t *testing.T) {
 	if code != 200 || strings.Index(page, "MacBookPro18,1") > strings.Index(page, "MacBookPro8,2") {
 		t.Fatalf("/admin/shares: %d, unknown identifier not first", code)
 	}
-	for _, want := range []string{`<code>ffff:0001</code> <span class="unk-tag">new</span>`, "Not modified: 1", "MacBook Pro (15-inch, Early 2011) (1)", "Mark reviewed"} {
+	for _, want := range []string{`<code>ffff:0001</code> <span class="unk-tag">new</span> <a href="https://pci-ids.ucw.cz/read/PC/ffff/0001"`, "Not modified: 1", "MacBook Pro (15-inch, Early 2011) (1)", "Mark reviewed",
+		"iMac (21.5-inch, Late 2009), iMac (27-inch, Late 2009)</h2>", `<br><span class="muted">iMac (21.5-inch, Late 2009)</span>`,
+		"<summary>2 chipset IDs</summary>", "<li><code>10de:0a84</code> MCP79 Host Bridge</li>", "#cfg-imac10-1-21-late-2009-b"} {
 		if !strings.Contains(page, want) {
 			t.Errorf("/admin/shares: missing %q", want)
 		}
+	}
+	if strings.Contains(page, `<code>10de:0a84</code> <span class="unk-tag">`) || strings.Contains(page, "#cfg-imac10-1-27-late-2009-a") {
+		t.Error("/admin/shares: a chipset ID is marked new, or the iMac10,1 probe still ties with the 27-inch")
 	}
 	csrf := regexp.MustCompile(`name="csrf" value="([0-9a-f]+)"`).FindStringSubmatch(page)
 	if csrf == nil {

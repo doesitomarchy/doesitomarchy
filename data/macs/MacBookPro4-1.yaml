@@ -1,7 +1,7 @@
 identifier: MacBookPro4,1
 line: macbook-pro
 efi: 64
-board_ids: [Mac-F42C89C8, Mac-F42C86C8]
+board_ids: [Mac-F42C86C8]
 research_notes: |
   GeForce 8600M GT (G84, nouveau).
   The 15-inch and 17-inch models share this identifier; each size is its own release.
@@ -24,6 +24,7 @@ releases:
     discontinued: 2008-10-14
     model_numbers: [A1260]
     emc: ["2198"]
+    board_ids: [Mac-F42C89C8]
     configs:
       - id: macbookpro4-1-15-early-2008-a
         label: "Core 2 Duo 2.4 or 2.5 GHz \u00b7 GeForce 8600M GT"

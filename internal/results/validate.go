@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -440,6 +441,13 @@ func mismatches(c *catalog.Catalog, m *catalog.Mac, cfg *catalog.Config, p match
 		}
 		if !known {
 			out = append(out, Flag{FlagHardware, fmt.Sprintf("board ID %s isn't one of %s's (%s)", p.BoardID, m.Identifier, strings.Join(m.BoardIDs, ", "))})
+		} else if tied, own := m.BoardReleases(p.BoardID), m.ReleaseOf(cfg.ID); len(tied) > 0 && own != nil && !slices.Contains(tied, own) {
+			// The board belongs to another release of this Mac (PLAN.md §29).
+			names := make([]string, len(tied))
+			for i, r := range tied {
+				names[i] = r.Name
+			}
+			out = append(out, Flag{FlagHardware, fmt.Sprintf("board ID %s belongs to the %s; the config is from the %s", p.BoardID, strings.Join(names, " or "), own.Name)})
 		}
 	}
 	pci := match.NormalizeIDs(p.PCI, "pci")
