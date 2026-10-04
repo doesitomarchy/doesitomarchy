@@ -118,6 +118,7 @@ type macView struct {
 type releaseView struct {
 	ID, Name, Announced, Discontinued string
 	ModelNumbers, EMC                 []string
+	BoardIDs                          []string // tied to this release (PLAN.md §29)
 	Configs                           []*configView
 	Mac                               *macView
 }
@@ -128,6 +129,7 @@ type configView struct {
 	Diff         string // what sets this config apart from its siblings ("HD 6490M", "17-inch")
 	Label        string
 	ReleaseName  string
+	BoardIDs     []string // board IDs tied to the config's release (PLAN.md §29)
 	OrderNumbers []string
 	BTOOnly      bool
 	CPU          []string
@@ -483,7 +485,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 	var raw []*catalog.Config
 	for ri := range m.Releases {
 		r := &m.Releases[ri]
-		rv := &releaseView{ID: r.ID, Name: r.Name, Announced: r.Announced, Discontinued: r.Discontinued, ModelNumbers: r.ModelNumbers, EMC: r.EMC, Mac: mv}
+		rv := &releaseView{ID: r.ID, Name: r.Name, Announced: r.Announced, Discontinued: r.Discontinued, ModelNumbers: r.ModelNumbers, EMC: r.EMC, BoardIDs: r.BoardIDs, Mac: mv}
 		y, _ := strconv.Atoi(r.Announced[:4])
 		first, last = min(first, y), max(last, y)
 		mv.Title = r.Name
@@ -560,7 +562,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 }
 
 func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup, now time.Time) *configView {
-	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
+	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, BoardIDs: r.BoardIDs, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
 		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl}
 	for _, p := range cfg.CPU.Standard {
 		cv.CPU = append(cv.CPU, processor(p))

@@ -22,7 +22,7 @@
 {{range .Releases}}
 <section id="rel-{{.ID}}">
   <div class="rel-head"><h2>{{.Name}}</h2>
-    <span class="meta">announced <b>{{.Announced}}</b>{{with .Discontinued}} · discontinued <b>{{.}}</b>{{end}}{{with .ModelNumbers}} · <b>{{join . ", "}}</b>{{end}}{{with .EMC}} · EMC <b>{{join . ", "}}</b>{{end}}</span></div>
+    <span class="meta">announced <b>{{.Announced}}</b>{{with .Discontinued}} · discontinued <b>{{.}}</b>{{end}}{{with .ModelNumbers}} · <b>{{join . ", "}}</b>{{end}}{{with .EMC}} · EMC <b>{{join . ", "}}</b>{{end}}{{with .BoardIDs}} · board <b>{{join . ", "}}</b>{{end}}</span></div>
   {{range .Configs}}{{template "card" .}}{{end}}
 </section>
 {{end}}{{end}}

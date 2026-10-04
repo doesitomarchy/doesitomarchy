@@ -3,6 +3,7 @@ package web
 import (
 	"net/http"
 	"net/url"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -30,9 +31,11 @@ type shareGroupView struct {
 type shareProbeView struct {
 	Board      string
 	BoardKnown bool
+	BoardOf    []string // releases the board is tied to (PLAN.md §29)
 	CPU        string
 	CPUKnown   bool
-	PCI        []idView
+	PCI        []idView // new IDs first, then the catalog's components
+	Plumbing   []idView // chipset IDs the catalog leaves out on purpose (data/plumbing.yaml)
 	Count      int
 	First      string // shared_on of the oldest and newest share
 	Last       string
@@ -41,8 +44,10 @@ type shareProbeView struct {
 }
 
 type idView struct {
-	ID    string
-	Known bool
+	ID     string
+	Known  bool
+	Name   string // plumbing only
+	Lookup string // pci-ids.ucw.cz page, for new IDs
 }
 
 type tally struct {
@@ -97,6 +102,13 @@ func (s *Server) shareGroup(g store.ShareGroup) shareGroupView {
 		pv := probes[key]
 		if pv == nil {
 			pv = s.shareProbe(sh)
+			if gv.Mac != nil && sh.BoardID != "" {
+				for _, rv := range gv.Mac.Releases {
+					if slices.ContainsFunc(rv.BoardIDs, func(b string) bool { return strings.EqualFold(b, sh.BoardID) }) {
+						pv.BoardOf = append(pv.BoardOf, rv.Name)
+					}
+				}
+			}
 			probes[key] = pv
 			order = append(order, key)
 		}
@@ -140,9 +152,18 @@ func (s *Server) shareProbe(sh store.Share) *shareProbeView {
 	pv := &shareProbeView{Board: sh.BoardID, CPU: sh.CPU}
 	pv.BoardKnown = sh.BoardID == "" || s.match.KnownBoard(sh.BoardID)
 	pv.CPUKnown = sh.CPU == "" || s.match.KnownCPU(sh.CPU)
+	var known []idView
 	for _, id := range sh.PCI {
-		pv.PCI = append(pv.PCI, idView{id, s.match.KnownDevice(id, "pci")})
+		switch p, plumbing := s.match.Plumbing(id); {
+		case s.match.KnownDevice(id, "pci"):
+			known = append(known, idView{ID: id, Known: true})
+		case plumbing:
+			pv.Plumbing = append(pv.Plumbing, idView{ID: id, Known: true, Name: p.Name})
+		default:
+			pv.PCI = append(pv.PCI, idView{ID: id, Lookup: pciLookup(id)})
+		}
 	}
+	pv.PCI = append(pv.PCI, known...)
 	res := s.match.Match(match.Probe{ProductName: sh.Product, BoardID: sh.BoardID, CPU: sh.CPU, PCI: sh.PCI})
 	view := s.data().view
 	if res.Exact {
@@ -155,6 +176,15 @@ func (s *Server) shareProbe(sh store.Share) *shareProbeView {
 		}
 	}
 	return pv
+}
+
+// pciLookup is the pci-ids.ucw.cz page that names a PCI ID ("" if malformed).
+func pciLookup(id string) string {
+	ids := match.NormalizeIDs([]string{id}, "pci")
+	if len(ids) != 1 || !strings.HasPrefix(ids[0], "pci:") {
+		return ""
+	}
+	return "https://pci-ids.ucw.cz/read/PC/" + strings.ReplaceAll(strings.TrimPrefix(ids[0], "pci:"), ":", "/")
 }
 
 func (s *Server) adminSharesReview(w http.ResponseWriter, r *http.Request, who string) {

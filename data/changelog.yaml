@@ -3,6 +3,17 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-03"
+  title: Board IDs per release
+  summary: "Where real machines show it, a board ID now belongs to the release it identifies, so Identify my Mac and test reports can tell apart releases that share every part, such as the 21.5- and 27-inch Late 2009 iMacs with the Radeon HD 4670. A report whose board belongs to another release of the Mac is flagged for review."
+  notes:
+    - "Evidence: Linux hardware probes (linuxhw), at least 3 machines per board, each tied by its firmware screen mode, GPU or CPU."
+    - "iMac (Late 2009): Mac-F2268CC8 is the 21.5-inch (34 machines), Mac-F2268DC8 the 27-inch (16)."
+    - "iMac (2009): Mac-F2218FA9 and Mac-F2218FC8 are the 24-inch Early 2009. Mac-F2218EA9 is both 20-inch releases (Early and Mid 2009); Mac-F2218EC8 the 20-inch Early 2009."
+    - "iMac (Early 2008): Mac-F226BEC8 is the 20-inch, Mac-F227BEC8 the 24-inch. iMac (Mid 2007): Mac-F4238CC8 is the 20-inch, Mac-F42386C8 the 24-inch."
+    - "MacBook Pro (Early 2008): Mac-F42C89C8 is the 15-inch. MacBook (Mid 2007): Mac-F4208CAA. iMac (20-inch, Early 2006): Mac-F42787C8."
+    - "Not tied, for want of evidence: MacBook (Late 2006) Mac-F4208CA9, MacBook Pro (17-inch, Early 2008) Mac-F42C86C8, both iMac (Retina 5K, 27-inch) boards, and the other 2006 iMac boards."
+
+- date: "2026-10-03"
   title: Audio over DisplayPort and Thunderbolt
   summary: "92 configurations gain the \"Audio over HDMI / DisplayPort\" criterion: Macs whose Mini DisplayPort, Thunderbolt or USB-C port carries sound to an HDMI or DisplayPort display. It had applied only to Macs with an HDMI port and eight 2010 models."
   notes:

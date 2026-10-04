@@ -239,8 +239,14 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	}
 
 	// Shared IDs (PF-3) for /admin/shares: a known Mac with an aftermarket
-	// Wi-Fi card, the same set twice, and an identifier the catalog lacks.
+	// Wi-Fi card, the same set twice, an identifier the catalog lacks, and an
+	// iMac10,1 whose chipset IDs fold away and whose board picks the 21.5-inch
+	// (PLAN §29; model-level IDs only).
 	for _, sh := range []store.Share{
+		{Product: "iMac10,1", BoardID: "Mac-F2268CC8", CPU: "Intel(R) Core(TM)2 Duo CPU     E7600  @ 3.06GHz",
+			PCI: []string{"1002:9488", "1002:aa38", "104c:823e", "104c:823f", "10de:0a84", "10de:0a88", "10de:0a89", "10de:0a98", "10de:0aa2",
+				"10de:0aa3", "10de:0aa4", "10de:0aa5", "10de:0aa6", "10de:0aa7", "10de:0aa9", "10de:0aab", "10de:0aac", "10de:0ab0", "10de:0ab9",
+				"10de:0ac0", "10de:0ac4", "10de:0ac6", "10de:0ac7", "168c:002a"}, Modified: "yes", Release: "27-late-2009"},
 		{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", CPU: "Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz",
 			PCI: []string{"8086:0126", "1002:6760", "14e4:43a0"}, Modified: "yes", Release: "15-early-2011"},
 		{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", CPU: "Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz",

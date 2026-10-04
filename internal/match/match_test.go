@@ -2,6 +2,7 @@ package match
 
 import (
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/doesitomarchy/doesitomarchy/data"
@@ -133,5 +134,73 @@ func TestKnown(t *testing.T) {
 	}
 	if !m.KnownCPU("Intel(R) Core(TM) i7-2720QM CPU @ 2.20GHz") || m.KnownCPU("Intel(R) Core(TM) i9-99999 CPU") {
 		t.Error("KnownCPU")
+	}
+}
+
+// The owner's iMac10,1 share (2026-10-03): a 21.5-inch with the HD 4670,
+// which the 27-inch also has. Only the board ID tells them apart (PLAN.md §29).
+var ownerIMac = Probe{ProductName: "iMac10,1", BoardID: "Mac-F2268CC8", CPU: "Intel(R) Core(TM)2 Duo CPU     E7600  @ 3.06GHz",
+	PCI: []string{"1002:9488", "1002:aa38", "104c:823e", "104c:823f", "10de:0a84", "10de:0a88", "10de:0a89", "10de:0a98", "10de:0aa2",
+		"10de:0aa3", "10de:0aa4", "10de:0aa5", "10de:0aa6", "10de:0aa7", "10de:0aa9", "10de:0aab", "10de:0aac", "10de:0ab0", "10de:0ab9",
+		"10de:0ac0", "10de:0ac4", "10de:0ac6", "10de:0ac7", "168c:002a"}}
+
+func TestBoardBreaksTie(t *testing.T) {
+	m := matcher(t)
+	r := m.Match(ownerIMac)
+	if !r.Exact || r.Best() != "imac10-1-21-late-2009-b" {
+		t.Fatalf("the 21.5-inch board should decide: %+v", r.Candidates)
+	}
+	if !slices.Contains(r.Candidates[0].Matched, "board:Mac-F2268CC8") || r.Candidates[0].Score-r.Candidates[1].Score != 10 {
+		t.Errorf("the board should add one matched ID: %+v", r.Candidates)
+	}
+	// Without the board, the two HD 4670 configs tie, as before.
+	p := ownerIMac
+	p.BoardID = ""
+	if r := m.Match(p); r.Exact {
+		t.Fatalf("no board: %+v", r.Candidates)
+	}
+	// The 27-inch board, found by board ID alone.
+	r = m.Match(Probe{BoardID: "mac-f2268dc8", PCI: []string{"1002:9488"}})
+	if r.By != "board_id" || !r.Exact || r.Best() != "imac10-1-27-late-2009-a" {
+		t.Fatalf("27-inch board: %+v", r)
+	}
+	// iMac9,1: the 9400M and the E8135 are in both the 20- and 24-inch Early 2009.
+	nine := Probe{ProductName: "iMac9,1", PCI: []string{"10de:0869"}, CPU: "Intel(R) Core(TM)2 Duo CPU     E8135  @ 2.66GHz"}
+	if r := m.Match(nine); r.Exact {
+		t.Fatalf("iMac9,1 without a board should tie: %+v", r.Candidates)
+	}
+	for board, want := range map[string]string{"Mac-F2218FA9": "imac9-1-24-early-2009-a", "Mac-F2218EA9": "imac9-1-20-early-2009-a"} {
+		nine.BoardID = board
+		if r := m.Match(nine); !r.Exact || r.Best() != want {
+			t.Errorf("%s: %+v", board, r.Candidates)
+		}
+	}
+	// A board tied to no release (MacBook2,1's Late 2006 one) changes nothing.
+	r = m.Match(Probe{ProductName: "MacBook2,1", BoardID: "Mac-F4208CA9"})
+	for _, c := range r.Candidates {
+		if c.Score != 0 {
+			t.Errorf("untied board scored: %+v", r.Candidates)
+		}
+	}
+}
+
+func TestPlumbing(t *testing.T) {
+	m := matcher(t)
+	if p, ok := m.Plumbing("10DE:0A84"); !ok || p.Name != "MCP79 Host Bridge" {
+		t.Errorf("MCP79 host bridge: %+v %v", p, ok)
+	}
+	n := 0
+	for _, id := range ownerIMac.PCI {
+		if _, ok := m.Plumbing(id); ok {
+			n++
+		} else if !m.KnownDevice(id, "pci") {
+			t.Errorf("%s is neither plumbing nor a component", id)
+		}
+	}
+	if n != 19 {
+		t.Errorf("plumbing IDs in the owner's share: %d, want 19", n)
+	}
+	if _, ok := m.Plumbing("1002:9488"); ok {
+		t.Error("a GPU is never plumbing")
 	}
 }

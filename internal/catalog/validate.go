@@ -15,6 +15,7 @@ var (
 	reHWID        = regexp.MustCompile(`^(pci|usb):[0-9a-f]{4}:[0-9a-f]{4}$`)
 	reIdentifier  = regexp.MustCompile(`^([A-Za-z]+)[0-9]+,[0-9]+$`)
 	reBoardID     = regexp.MustCompile(`^Mac-[0-9A-F]{8}([0-9A-F]{8})?$`)
+	rePlumbingID  = regexp.MustCompile(`^pci:[0-9a-f]{4}:[0-9a-f]{4}$`)
 	reOrderNumber = regexp.MustCompile(`^[A-Z0-9]{4,5}[A-Z]{1,2}/[A-Z]$`) // MB463LL/A, MGEM2LL/A
 	reModelNumber = regexp.MustCompile(`^A[0-9]{4}$`)
 	reEMC         = regexp.MustCompile(`^[0-9]{4}(-[0-9])?$`) // Apple revision suffix, e.g. "2353-1"
@@ -37,7 +38,30 @@ func (l *loader) validate() {
 	l.validateCoverage()
 	l.validateAliases()
 	l.validateChangelog()
+	l.validatePlumbing()
 	l.validateLock()
+}
+
+// validatePlumbing: well-formed PCI IDs, each with a name, and none that is
+// also a component's (a component's ID is never plumbing).
+func (l *loader) validatePlumbing() {
+	compIDs := map[string]string{}
+	for _, comp := range l.cat.Components {
+		for _, id := range comp.IDs {
+			compIDs[id] = comp.ID
+		}
+	}
+	for id, p := range l.cat.Plumbing {
+		if !rePlumbingID.MatchString(id) {
+			l.errf("plumbing.yaml", "%q must look like pci:vvvv:dddd (lower-case hex)", id)
+		}
+		if p.Name == "" {
+			l.errf("plumbing.yaml", "%s: name is required", id)
+		}
+		if comp, ok := compIDs[id]; ok {
+			l.errf("plumbing.yaml", "%s is component %s's ID, so it isn't plumbing (re-run gen/plumbing.py)", id, comp)
+		}
+	}
 }
 
 func (l *loader) validateVocab() {
@@ -204,9 +228,28 @@ func (l *loader) validateMacs() {
 		if _, ok := c.Vocab.SecurityChips[m.SecurityChip]; !ok {
 			l.errf(f, "unknown security_chip %q", m.SecurityChip)
 		}
+		macBoards := map[string]bool{}
 		for _, b := range m.BoardIDs {
 			if !reBoardID.MatchString(b) {
 				l.errf(f, "board id %q must look like Mac-XXXXXXXX", b)
+			}
+			if macBoards[b] {
+				l.errf(f, "board id %s is listed twice", b)
+			}
+			macBoards[b] = true
+		}
+		for _, r := range m.Releases {
+			seen := map[string]bool{}
+			for _, b := range r.BoardIDs {
+				switch {
+				case !reBoardID.MatchString(b):
+					l.errf(f, "release %s: board id %q must look like Mac-XXXXXXXX", r.ID, b)
+				case seen[b]:
+					l.errf(f, "release %s: board id %s is listed twice", r.ID, b)
+				case macBoards[b]:
+					l.errf(f, "release %s: board id %s is also in the Mac's board_ids (list a tied board on its releases only)", r.ID, b)
+				}
+				seen[b] = true
 			}
 		}
 		l.checkSources(f, m.Identifier, m.Sources, true)

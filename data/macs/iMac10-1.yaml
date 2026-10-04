@@ -1,10 +1,8 @@
 identifier: iMac10,1
 line: imac
 efi: 64
-board_ids: [Mac-F2268CC8, Mac-F2268DC8]
 research_notes: |
   Core 2 Duo models of the first 16:9 iMacs (21.5- and 27-inch). The 27-inch Core i5/i7 models are iMac11,1.
-  Board IDs from real machines (dmesg DMI line): Mac-F2268CC8 on the 21.5-inch, Mac-F2268DC8 on the 27-inch.
 sources:
   - https://support.apple.com/en-us/112565
   - https://support.apple.com/en-us/112564
@@ -23,6 +21,7 @@ releases:
     discontinued: 2010-07-27
     model_numbers: [A1311]
     emc: ["2308"]
+    board_ids: [Mac-F2268CC8]
     configs:
       - id: imac10-1-21-late-2009-a
         label: "Core 2 Duo 3.06 GHz \u00b7 GeForce 9400M"
@@ -56,6 +55,7 @@ releases:
     discontinued: 2010-07-27
     model_numbers: [A1312]
     emc: ["2309"]
+    board_ids: [Mac-F2268DC8]
     configs:
       - id: imac10-1-27-late-2009-a
         label: "Core 2 Duo 3.06 GHz \u00b7 Radeon HD 4670"

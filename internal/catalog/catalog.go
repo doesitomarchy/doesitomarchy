@@ -53,7 +53,27 @@ func load(fsys fs.FS, requireLocked bool) (*Catalog, error) {
 		sort.Strings(l.problems)
 		return nil, errors.New(strings.Join(l.problems, "\n"))
 	}
+	l.cat.mergeBoards()
 	return l.cat, nil
+}
+
+// mergeBoards makes each Mac's BoardIDs its full list: the untied boards from
+// the file, then each release's, once each.
+func (c *Catalog) mergeBoards() {
+	for _, m := range c.Macs {
+		seen := map[string]bool{}
+		for _, b := range m.BoardIDs {
+			seen[b] = true
+		}
+		for _, r := range m.Releases {
+			for _, b := range r.BoardIDs {
+				if !seen[b] {
+					seen[b] = true
+					m.BoardIDs = append(m.BoardIDs, b)
+				}
+			}
+		}
+	}
 }
 
 // loader works on slash-separated paths relative to the catalog root.
@@ -161,6 +181,22 @@ func (l *loader) load() {
 	const changelogPath = "changelog.yaml" // optional: public changelog
 	if l.exists(changelogPath) {
 		l.decode(changelogPath, &c.Changelog)
+	}
+
+	const plumbingPath = "plumbing.yaml" // optional: chipset IDs for /admin/shares
+	if l.exists(plumbingPath) {
+		var vendors []PlumbingVendor
+		if l.decode(plumbingPath, &vendors) {
+			c.Plumbing = map[string]Plumbing{}
+			for _, v := range vendors {
+				for id, p := range v.IDs {
+					if _, dup := c.Plumbing[id]; dup {
+						l.errf(plumbingPath, "%s is listed twice", id)
+					}
+					c.Plumbing[id] = p
+				}
+			}
+		}
 	}
 
 	macFiles, err := l.yamlFiles("macs")
