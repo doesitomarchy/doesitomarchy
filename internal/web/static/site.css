@@ -85,6 +85,7 @@ a.cfgref:hover { border-color: var(--accent); text-decoration: none; }
 .slot { display: inline-flex; width: 1em; margin-right: 0.45em; flex: none; }
 .slot svg.badge { margin: 0; }
 .slotted { display: inline-flex; align-items: center; white-space: nowrap; }
+.browse a.slotted { vertical-align: top; } /* an empty slot would set the baseline 4px low */
 a.slotted:hover { text-decoration: none; }
 a.slotted:hover .cfgref { border-color: var(--accent); }
 .cfgref.big { font-size: 13px; color: var(--heading); font-weight: 500; }
