@@ -199,13 +199,18 @@ svg.bar.ok rect { fill: var(--ok); }
 .caps li .capmeta a { color: var(--muted); }
 .caps li .capmeta a:hover { color: var(--link); }
 .caps li .capmeta .stale { color: var(--warn); }
-/* Row order: glyph and name, inline method, status (pushed right), full meta line, evidence. */
+/* Row order: glyph and name, inline method, status (pushed right), full meta line and newer build, evidence. */
 .result-items .caps li .capmeta, .caps li .capmeta.inline { flex-basis: auto; margin: 0; order: 1; }
 .caps li .st { order: 2; }
 .caps li .capmeta { order: 3; }
 .caps li .why { order: 4; }
 .latest-line { margin: 0; padding: 0.35rem 0.8rem; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .latest-line a { color: var(--link); }
+.newer-line { margin: 0; padding: 0.35rem 0.8rem; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+/* A newer build's different result (PLAN §28.2): its own line under the row, muted, so the stable verdict leads. */
+.caps li .capnewer { order: 3; flex-basis: 100%; margin: -0.1rem 0 0.15rem 1.55rem; color: var(--muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.caps li .capnewer a { color: var(--link); }
+.caps li .capnewer svg { width: 12px; height: 12px; vertical-align: -1px; margin-right: 0.2rem; }
 details.results-list > summary .hw-toggle::before { content: "▸ Show results"; }
 details.results-list[open] > summary .hw-toggle::before { content: "▾ Hide results"; }
 .results-list ul { list-style: none; margin: 0; padding: 0.2rem 0.8rem 0.6rem; font-size: 13px; display: grid; gap: 0.25rem; }
@@ -241,7 +246,7 @@ details.more { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-to
 details.more summary { cursor: pointer; color: var(--heading); }
 details.more pre { white-space: pre-wrap; font: 13px/1.55 var(--mono); color: var(--text); background: var(--panel); border: 1px solid var(--line); padding: 0.7rem; }
 details.more ul { font-size: 13px; overflow-wrap: anywhere; }
-details.more ol.notes { font: 14px/1.55 var(--sans); padding-left: 1.6rem; display: grid; gap: 0.45rem; max-width: 80ch; }
+details.more ol.notes { font: 14px/1.55 var(--mono); padding-left: 1.6rem; display: grid; gap: 0.45rem; max-width: 80ch; }
 
 /* ── criteria matrix (review-report style) ──────────────────────────── */
 table { border-collapse: collapse; width: 100%; font-size: 13px; }

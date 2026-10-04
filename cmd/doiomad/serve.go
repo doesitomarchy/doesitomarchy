@@ -161,7 +161,7 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 		Demo: *demo, PurgeZone: os.Getenv("CF_ZONE_ID"), PurgeToken: os.Getenv("CF_PURGE_TOKEN"),
 		AccessTeam: os.Getenv("CF_ACCESS_TEAM"), AccessAUD: os.Getenv("CF_ACCESS_AUD"), AdminInsecure: *adminInsecure,
 		CatalogFS: catalogFS(*dataDir), FixRepo: os.Getenv("FIX_REPO"), GitHubToken: os.Getenv("GITHUB_TOKEN"),
-		WebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET")})
+		WebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET"), BuildsAPI: buildsAPI(*demo)})
 	log.Info("views and search index built", "ms", time.Since(start).Milliseconds(), "demo", *demo)
 	if err != nil {
 		log.Error("templates", "err", err)
@@ -187,7 +187,8 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 		go srv.Watch(ctx, *watch)
 	}
 	if !*demo {
-		go srv.SyncFixes(ctx, 6*time.Hour) // fix issues: at start-up, then every 6 hours (PLAN §26); no-op without a token
+		go srv.SyncFixes(ctx, 6*time.Hour)        // fix issues: at start-up, then every 6 hours (PLAN §26); no-op without a token
+		go srv.ResolveBuilds(ctx, 30*time.Minute) // Omarchy builds not known when their report arrived (PLAN §28.2)
 	}
 	select {
 	case err := <-errc:
@@ -203,4 +204,18 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 	return 0
+}
+
+// buildsAPI is where Omarchy builds are looked up (PLAN §28.2): GitHub,
+// unless DOIOMAD_BUILDS_API says otherwise ("off" turns lookups off, as
+// demo mode always does).
+func buildsAPI(demo bool) string {
+	api := os.Getenv("DOIOMAD_BUILDS_API")
+	switch {
+	case demo || api == "off":
+		return ""
+	case api != "":
+		return api
+	}
+	return "https://api.github.com"
 }

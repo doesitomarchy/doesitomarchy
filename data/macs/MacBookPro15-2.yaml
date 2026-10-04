@@ -36,7 +36,7 @@ releases:
         display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, P3, True Tone" }
         components: [gpu/intel-iris-plus-655, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-2018-13]
         ports: { thunderbolt-3: 4, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, displayport-audio]
   - id: "13-2019-4tb3"
     name: "MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)"
     announced: 2019-05-21
@@ -55,4 +55,4 @@ releases:
         display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, P3, True Tone" }
         components: [gpu/intel-iris-plus-655, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-2018-13]
         ports: { thunderbolt-3: 4, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, displayport-audio]

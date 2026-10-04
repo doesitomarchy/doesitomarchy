@@ -18,7 +18,7 @@ const JOBS = Math.max(1, Number(process.env.JOBS) || 4);
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/mac/MacPro5-1", "/mac/Macmini1-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
-  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2",
+  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
   "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
   "/api", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",

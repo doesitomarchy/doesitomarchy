@@ -135,8 +135,10 @@ type odResult struct {
 
 // ImportOptions are what a maintainer supplies alongside a native report.
 type ImportOptions struct {
-	Omarchy string // the Omarchy version, when the report lacks it
-	Tester  string // the tester's public handle, optional
+	Omarchy  string // the Omarchy version, when the report lacks it
+	Channel  string // dev, for a dev build (it reads like edge); the others follow from the version
+	Revision string // a dev build's commit (`omarchy-version` prints "dev (<hash>)")
+	Tester   string // the tester's public handle, optional
 }
 
 // Converted is a native report turned into our schema.
@@ -186,7 +188,7 @@ func FromOmacDiag(raw []byte, c *catalog.Catalog, mp *Mapping, opt ImportOptions
 	f := &File{Schema: SchemaV1, Identifier: od.Inventory.Machine.Model,
 		Source:   FileSource{ID: mp.ID, Version: od.ApplicationVersion, Profile: od.Plan.Profile, Workflow: od.Plan.Mode},
 		Tester:   FileTester{Handle: strings.TrimSpace(opt.Tester)},
-		Omarchy:  FileOmarchy{Version: version},
+		Omarchy:  FileOmarchy{Version: version, Channel: opt.Channel, Revision: opt.Revision},
 		Kernel:   od.Inventory.Machine.Kernel,
 		Hardware: odProbe(od),
 		Items:    map[string]FileItem{},
@@ -211,16 +213,60 @@ func FromOmacDiag(raw []byte, c *catalog.Catalog, mp *Mapping, opt ImportOptions
 	parts := map[string][]part{}
 	var flags []Flag
 	flagged := map[string]bool{}
+	tbPrefixes := thunderboltPrefixes(od.Inventory.Devices)
+
+	// Each check's attempts, in order: a retake repeats the same check.
+	type attempt struct {
+		res odResult
+		pt  part
+	}
+	attempts := map[string][]attempt{}
+	var order []string
 	for _, res := range od.Results {
-		t, ok := tests[res.TestID]
-		if ok && !t.Required {
-			continue // an earlier attempt, superseded by a retake
+		if res.Outcome == "cancelled" {
+			continue
 		}
 		d := devices[res.DeviceID]
-		check := strings.TrimPrefix(res.TestID, res.DeviceID+"/")
-		if i := strings.Index(check, "/retake-"); i >= 0 {
-			check = check[:i]
+		pt := part{evidence: odEvidence(res)}
+		switch {
+		case res.Outcome == "passed":
+			pt.status = "supported"
+		case res.Outcome == "failed":
+			pt.status = "failed"
+		case failed[res.ReasonCode] && !driverEvident(d):
+			pt.status, pt.missing = "failed", true
+		default:
+			// Includes a missing-driver reason on a device whose driver
+			// evidently works (PLAN §28.3): OmacDiag's check failed, not the driver.
+			pt.status, pt.reason = "not_tested", mp.SkipReasons[res.ReasonCode]
+			if pt.reason == "" {
+				pt.reason = "uncertain"
+			}
 		}
+		base := res.TestID
+		if i := strings.Index(base, "/retake-"); i >= 0 {
+			base = base[:i]
+		}
+		if attempts[base] == nil {
+			order = append(order, base)
+		}
+		attempts[base] = append(attempts[base], attempt{res, pt})
+	}
+	for _, base := range order {
+		// The last attempt that passed or failed counts; a later blocked or
+		// inconclusive retake doesn't undo it (PLAN §28.4). With none, the last.
+		as := attempts[base]
+		pick := as[len(as)-1]
+		for i := len(as) - 1; i >= 0; i-- {
+			if as[i].pt.status != "not_tested" {
+				pick = as[i]
+				break
+			}
+		}
+		res, pt := pick.res, pick.pt
+		t := tests[res.TestID]
+		d := devices[res.DeviceID]
+		check := strings.TrimPrefix(base, res.DeviceID+"/")
 		rule := mp.match(d, t.Probe, check)
 		to := ""
 		if rule != nil {
@@ -229,20 +275,14 @@ func FromOmacDiag(raw []byte, c *catalog.Catalog, mp *Mapping, opt ImportOptions
 				to = usbTo
 			}
 		}
-		pt := part{evidence: odEvidence(res)}
-		switch {
-		case res.Outcome == "cancelled":
-			continue
-		case res.Outcome == "passed":
-			pt.status = "supported"
-		case res.Outcome == "failed":
-			pt.status = "failed"
-		case failed[res.ReasonCode]:
-			pt.status, pt.missing = "failed", true
-		default:
-			pt.status, pt.reason = "not_tested", mp.SkipReasons[res.ReasonCode]
-			if pt.reason == "" {
-				pt.reason = "uncertain"
+		// A device attached through Thunderbolt (an Ethernet adapter, a dock)
+		// isn't built-in hardware: when its check passes, it proves the
+		// Thunderbolt port works (PLAN §28.5).
+		if d.Kind != "thunderbolt" && underAny(d.Attributes["sysfs_target"], tbPrefixes) {
+			to, rule = "extra", nil
+			if pt.status == "supported" {
+				to, rule = "ports.thunderbolt", &MapRule{Method: "automatic"}
+				pt.evidence = d.ID + " is attached through Thunderbolt. " + pt.evidence
 			}
 		}
 		if to == "" || to == "extra" {
@@ -317,6 +357,49 @@ func FromOmacDiag(raw []byte, c *catalog.Catalog, mp *Mapping, opt ImportOptions
 	}
 	sort.Slice(f.Extras, func(i, j int) bool { return f.Extras[i].ID < f.Extras[j].ID })
 	return &Converted{File: f, Flags: flags, Raw: scrubbed}, nil
+}
+
+// driverEvident reports whether a device's driver evidently works: it was
+// detected with something only its driver creates, a device node or, for an
+// LED or backlight, the class device itself. A "missing driver" reason on
+// such a device is OmacDiag's check failing, not the driver (PLAN §28.3).
+func driverEvident(d odDevice) bool {
+	if d.Recognition != "detected" {
+		return false
+	}
+	return d.Attributes["node_rdev"] != "" || d.Kind == "keyboard_backlight" || d.Kind == "backlight"
+}
+
+// thunderboltPrefixes are the sysfs paths under which devices are attached
+// through Thunderbolt: each Thunderbolt domain's controller, from its PCI
+// root port down to the controller's upstream port. Devices tunnelled over
+// Thunderbolt (PCIe adapters, docks) sit below it.
+func thunderboltPrefixes(devs []odDevice) []string {
+	var out []string
+	for _, d := range devs {
+		path := d.Attributes["sysfs_target"]
+		if d.Kind != "thunderbolt" || !strings.Contains(path, "/domain") {
+			continue
+		}
+		// /sys/devices/pci0000:00/<root port>/<controller upstream port>/…/domain0
+		parts := strings.Split(path, "/")
+		for i, p := range parts {
+			if strings.HasPrefix(p, "pci") && i+2 < len(parts) {
+				out = append(out, strings.Join(parts[:i+3], "/")+"/")
+				break
+			}
+		}
+	}
+	return out
+}
+
+func underAny(path string, prefixes []string) bool {
+	for _, p := range prefixes {
+		if strings.HasPrefix(path, p) {
+			return true
+		}
+	}
+	return false
 }
 
 // match returns the first rule a check satisfies, or nil.

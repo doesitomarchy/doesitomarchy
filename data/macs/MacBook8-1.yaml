@@ -33,7 +33,7 @@ releases:
         display: { inches: 12, resolution: 2304x1440, panel: "Retina LED IPS" }
         components: [gpu/intel-hd-5300, wifi/broadcom-bcm4350, bluetooth/broadcom-bcm4350-uart, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, storage/apple-s1x-nvme, input/apple-spi-keyboard]
         ports: { usb-c: 1, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, displayport-audio]
         uncertain:
           - field: components.bluetooth
             note: "hci_uart is seen on the 2016 and 2017 models; no observed MacBook8,1 boot logs Bluetooth, so the same UART attachment is assumed."

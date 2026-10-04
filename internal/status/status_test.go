@@ -1,6 +1,9 @@
 package status
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 // caps is a small config: two Boot capabilities, then audio and Wi-Fi.
 var caps = []Capability{
@@ -18,8 +21,12 @@ func v(s string) Version {
 	return ver
 }
 
+// item is a stable result. Its build stamp sorts with the version, as if
+// each release's code were committed after the last one's.
 func item(cap string, verdict Verdict, ver, on string, id int64) Item {
-	return Item{Capability: cap, Verdict: verdict, Method: "automatic", Omarchy: v(ver), TestedAt: on, ResultID: id}
+	o := v(ver)
+	return Item{Capability: cap, Verdict: verdict, Method: "automatic", Omarchy: o, Channel: o.Channel(), TestedAt: on, ResultID: id,
+		BuiltAt: fmt.Sprintf("b%03d.%03d.%03d", o.Major, o.Minor, o.Patch)}
 }
 
 // all returns an item for every capability with the same verdict.
@@ -141,15 +148,74 @@ func TestCapLatestAndReason(t *testing.T) {
 }
 
 func TestParseVersion(t *testing.T) {
-	for in, want := range map[string]Version{"4": {4, 0, 0}, "4.0.4": {4, 0, 4}, "v4.1": {4, 1, 0}, " 4.10.2 ": {4, 10, 2}} {
-		if got, err := ParseVersion(in); err != nil || got != want {
-			t.Errorf("ParseVersion(%q) = %v, %v", in, got, err)
+	// Every form PLAN §28.1 lists, and its canonical form and channel.
+	for in, want := range map[string][2]string{
+		"4":                      {"4.0.0", Stable},
+		"4.0.4":                  {"4.0.4", Stable},
+		"v4.1":                   {"4.1.0", Stable},
+		" 4.10.2 ":               {"4.10.2", Stable},
+		"4.0.4-1":                {"4.0.4", Stable}, // omarchy-version's pacman release
+		"4.0.0rc2":               {"4.0.0rc2", RC},
+		"4.0.1-RC3":              {"4.0.1rc3", RC},
+		"4.0.0.rc1":              {"4.0.0rc1", RC},
+		"v4.0.0-beta3":           {"4.0.0beta3", Beta}, // the git tag
+		"4.0.0beta3-2":           {"4.0.0beta3", Beta},
+		"4.0.0.r6713.ga85e29a":   {"4.0.0.r6713.ga85e29a", Edge},
+		"4.0.0.r6720.g8E02FC8-1": {"4.0.0.r6720.g8e02fc8", Edge},
+	} {
+		got, err := ParseVersion(in)
+		if err != nil || got.String() != want[0] || got.Channel() != want[1] {
+			t.Errorf("ParseVersion(%q) = %s (%s), %v; want %s (%s)", in, got, got.Channel(), err, want[0], want[1])
 		}
 	}
-	for _, bad := range []string{"", "four", "4.x", "4.0.1.2", "-1.0"} {
+	for _, bad := range []string{"", "four", "4.x", "4.0.1.2", "-1.0", "4.0.0alpha1", "4.0.0.r12", "dev", "dev (a85e29a)"} {
 		if _, err := ParseVersion(bad); err == nil {
 			t.Errorf("ParseVersion(%q) should fail", bad)
 		}
+	}
+	edge, rc := v("4.0.0.r6713.ga85e29a"), v("4.0.0rc2")
+	for _, c := range []struct {
+		v       Version
+		in, out string
+		ok      bool
+	}{{edge, "", Edge, true}, {edge, Edge, Edge, true}, {edge, Dev, Dev, true}, {rc, Dev, "", false}, {rc, Stable, "", false}, {rc, RC, RC, true}} {
+		got, err := ValidChannel(c.v, c.in)
+		if (err == nil) != c.ok || got != c.out {
+			t.Errorf("ValidChannel(%s, %q) = %q, %v", c.v, c.in, got, err)
+		}
+	}
+}
+
+// Across channels, the newest build wins by when its code was committed
+// (PLAN §28.2): a dev fix beats an older stable failure; a newer stable
+// regression beats an older dev pass; the same build agrees with itself.
+func TestNewestBuild(t *testing.T) {
+	at := func(verdict Verdict, ver, channel, built, tested string, id int64) Item {
+		return Item{Capability: "audio.speakers", Verdict: verdict, Omarchy: v(ver), Channel: channel, BuiltAt: built, TestedAt: tested, ResultID: id}
+	}
+	stableFail := at(Failed, "4.0.4", Stable, "2026-09-15T05:34:12Z", "2026-10-02T10:00:00Z", 1)
+	devFix := at(Supported, "4.0.0.r6800.g1a2b3c4", Dev, "2026-10-04T09:00:00Z", "2026-10-04T12:00:00Z", 2)
+	cs := Config(ConfigInput{Caps: caps[2:3], Items: []Item{stableFail, devFix}}).Caps["audio.speakers"]
+	if cs.Verdict != Supported || cs.Latest.Channel != Dev {
+		t.Errorf("dev fix: %s from %s", cs.Verdict, cs.Latest.Channel)
+	}
+	stableRegress := at(Failed, "4.0.5", Stable, "2026-10-10T00:00:00Z", "2026-10-11T00:00:00Z", 3)
+	cs = Config(ConfigInput{Caps: caps[2:3], Items: []Item{devFix, stableRegress}}).Caps["audio.speakers"]
+	if cs.Verdict != Failed {
+		t.Errorf("newer stable regression: %s", cs.Verdict)
+	}
+	// An edge build's version stays at the branch base (4.0.0) while stable
+	// moves on: only the build date says which is newer.
+	edgeOld := at(Supported, "4.0.0.r6500.gaaaaaaa", Edge, "2026-09-01T00:00:00Z", "2026-10-05T00:00:00Z", 4)
+	cs = Config(ConfigInput{Caps: caps[2:3], Items: []Item{edgeOld, stableFail}}).Caps["audio.speakers"]
+	if cs.Verdict != Failed {
+		t.Errorf("stable 4.0.4 (built 2026-09-15) should beat edge built 2026-09-01: %s", cs.Verdict)
+	}
+	// Two reports on the same build that disagree: a conflict.
+	again := stableFail
+	again.Verdict, again.TestedAt, again.ResultID = Supported, "2026-10-03T00:00:00Z", 5
+	if cs = Config(ConfigInput{Caps: caps[2:3], Items: []Item{stableFail, again}}).Caps["audio.speakers"]; !cs.Conflict {
+		t.Error("same build disagreeing: no conflict")
 	}
 }
 

@@ -16,3 +16,6 @@
 
 # uicheck dependencies
 node_modules/
+
+# Local todo list
+TODO.md

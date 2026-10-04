@@ -192,3 +192,52 @@ func BenchmarkBuild(b *testing.B) {
 		Build(c, nil)
 	}
 }
+
+// Ports by name (PLAN §28.7): "thunderbolt 2" and "tb2" find exactly the
+// configurations with a Thunderbolt 2 port, and so on for each version.
+func TestPortNames(t *testing.T) {
+	ix := index(t)
+	c, err := catalog.LoadFS(data.FS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for port, queries := range map[string][]string{
+		"thunderbolt-1":    {"thunderbolt 1", "tb1", "Thunderbolt1"},
+		"thunderbolt-2":    {"thunderbolt 2", "tb2"},
+		"thunderbolt-3":    {"thunderbolt 3", "tb3"},
+		"firewire-800":     {"firewire 800", "fw800"},
+		"mini-displayport": {"mini displayport", "mdp"},
+	} {
+		want := map[string]bool{}
+		for _, m := range c.Macs {
+			for _, r := range m.Releases {
+				for _, cfg := range r.Configs {
+					if cfg.Ports[port] > 0 {
+						want[cfg.ID] = true
+					}
+				}
+			}
+		}
+		for _, q := range queries {
+			resp := ix.Search(q)
+			got := map[string]bool{}
+			for _, res := range resp.Results {
+				for _, id := range configIDs(res) {
+					got[id] = true
+				}
+			}
+			if len(want) == 0 || len(got) != len(want) || len(resp.Errors) > 0 {
+				t.Errorf("%q: %d configurations (errors %v), want the %d with %s", q, len(got), resp.Errors, len(want), port)
+				continue
+			}
+			for id := range want {
+				if !got[id] {
+					t.Errorf("%q: missing %s", q, id)
+				}
+			}
+		}
+	}
+	if n := len(index(t).Search("thunderbolt 2").Results); n == 0 {
+		t.Error("thunderbolt 2 finds nothing")
+	}
+}

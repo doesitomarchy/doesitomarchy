@@ -32,7 +32,7 @@ releases:
         display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
         components: [gpu/nvidia-geforce-gt-640m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828b, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8511]
         ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]
       - id: imac13-1-21-late-2012-b
         label: "Quad-core Core i5 2.9 GHz or Core i7 3.1 GHz \u00b7 GeForce GT 650M"
         order_numbers: [MD094LL/A]
@@ -46,4 +46,4 @@ releases:
         components: [gpu/nvidia-geforce-gt-650m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-828b, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-cactus-ridge, storage/intel-7-series-sata, camera/apple-facetime-hd-05ac-8511]
         bto_components: [storage/apple-pcie-ssd-ahci]
         ports: { usb-a-3: 4, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]

@@ -56,6 +56,7 @@ func TestRun(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
+	os.Setenv("DOIOMAD_BUILDS_API", "off") // never reach GitHub from tests
 	code := m.Run()
 	testdb.Cleanup()
 	os.Exit(code)

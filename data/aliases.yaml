@@ -17,3 +17,54 @@
   means: 'id:"MacPro6,1"'
 - match: ["cheese grater", cheesegrater, "cheese-grater"]
   means: 'id:"MacPro1,1|MacPro2,1|MacPro3,1|MacPro4,1|MacPro5,1|MacPro7,1"'
+
+# Ports by name (PLAN.md §28.7): each port's name, and common shorthand,
+# filters by that port; "thunderbolt 2" finds every Thunderbolt 2 Mac.
+- match: [thunderbolt, tb]
+  means: "port:thunderbolt"
+- match: ["thunderbolt 1", thunderbolt1, tb1]
+  means: "port:thunderbolt-1"
+- match: ["thunderbolt 2", thunderbolt2, tb2]
+  means: "port:thunderbolt-2"
+- match: ["thunderbolt 3", thunderbolt3, tb3]
+  means: "port:thunderbolt-3"
+- match: [usb-c, "usb c", usbc, type-c, "type c"]
+  means: "port:usb-c"
+- match: [usb-a, "usb a", type-a, "type a"]
+  means: "port:usb-a"
+- match: ["usb 2", "usb 2.0", usb2]
+  means: "port:usb-a-2"
+- match: ["usb 3", usb3]
+  means: "port:usb-a-3"
+- match: [hdmi]
+  means: "port:hdmi"
+- match: ["mini displayport", minidisplayport, mini-displayport, mdp, "mini dp"]
+  means: "port:mini-displayport"
+- match: [mini-dvi, "mini dvi"]
+  means: "port:mini-dvi"
+- match: [micro-dvi, "micro dvi"]
+  means: "port:micro-dvi"
+- match: [dvi]
+  means: "port:dvi"
+- match: [firewire, "fire wire", ieee1394]
+  means: "port:firewire"
+- match: ["firewire 400", firewire400, fw400]
+  means: "port:firewire-400"
+- match: ["firewire 800", firewire800, fw800]
+  means: "port:firewire-800"
+- match: [ethernet]
+  means: "port:ethernet"
+- match: ["gigabit ethernet", gbe, gige]
+  means: "port:ethernet-gbe"
+- match: ["10gb ethernet", "10 gigabit ethernet", 10gbe]
+  means: "port:ethernet-10gbe"
+- match: ["sd card", "sd slot", sdcard]
+  means: "port:sd-card"
+- match: [expresscard, expresscard/34]
+  means: "port:expresscard"
+- match: ["optical audio", toslink, "optical out"]
+  means: "port:audio-out-optical"
+- match: ["optical in"]
+  means: "port:audio-in-optical"
+- match: ["line in"]
+  means: "port:audio-in"

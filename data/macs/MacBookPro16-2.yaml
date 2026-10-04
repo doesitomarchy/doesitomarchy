@@ -34,4 +34,4 @@ releases:
         display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, P3, True Tone" }
         components: [gpu/intel-iris-plus-g7-ice-lake-u, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-ice-lake, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mbp-2020-13]
         ports: { thunderbolt-3: 4, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, displayport-audio]

@@ -60,7 +60,7 @@ func TestAPIReads(t *testing.T) {
 		}
 	}
 	code, cfg, _ := apiCall(t, c, "GET", ts.URL+"/api/v1/configs/macbookpro15-2-13-2018-4tb3-a", "", nil)
-	if code != 200 || cfg["verdict"] != "untested" || cfg["applicable"] != float64(30) {
+	if code != 200 || cfg["verdict"] != "untested" || cfg["applicable"] != float64(31) {
 		t.Fatalf("config: %d %v", code, cfg)
 	}
 	if code, _, _ := apiCall(t, c, "GET", ts.URL+"/api/v1/configs/nope", "", nil); code != 404 {

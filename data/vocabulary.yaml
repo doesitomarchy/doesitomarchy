@@ -75,7 +75,7 @@ ports:
   usb-a-2:            { name: USB 2.0 (Type-A), tests: [ports.usb-a] }
   usb-a-3:            { name: USB 3 (Type-A), tests: [ports.usb-a] }
   usb-c:              { name: USB-C (non-Thunderbolt), video: true, tests: [ports.usb-c, graphics.external-display] }
-  thunderbolt-1:      { name: Thunderbolt, video: true, tests: [ports.thunderbolt, graphics.external-display] }
+  thunderbolt-1:      { name: Thunderbolt 1, video: true, tests: [ports.thunderbolt, graphics.external-display] }
   thunderbolt-2:      { name: Thunderbolt 2, video: true, tests: [ports.thunderbolt, graphics.external-display] }
   thunderbolt-3:      { name: Thunderbolt 3 (USB-C), video: true, tests: [ports.usb-c, ports.thunderbolt, graphics.external-display] }
   hdmi:               { name: HDMI, video: true, tests: [graphics.external-display] }

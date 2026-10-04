@@ -32,4 +32,4 @@ releases:
         display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, P3 wide color" }
         components: [gpu/intel-iris-540, wifi/broadcom-bcm4350, bluetooth/broadcom-bcm4350-uart, audio/cirrus-cs8409, camera/broadcom-1570-facetime-hd, thunderbolt/intel-alpine-ridge, storage/apple-s3x-nvme, input/apple-spi-keyboard]
         ports: { thunderbolt-3: 2, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, displayport-audio]

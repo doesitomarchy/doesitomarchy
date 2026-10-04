@@ -174,7 +174,7 @@ func AffectedConfigs(c *catalog.Catalog, ru *store.Rollup, capability, component
 				if !applies {
 					continue
 				}
-				cs := status.Config(ru.StatusInput(c, m, cfg, excl, applicable)).Caps[capability]
+				cs := status.Config(ru.StatusInput(c, m, cfg, excl, applicable, store.StableView)).Caps[capability]
 				a := Affected{ConfigID: cfg.ID, Name: m.Identifier + " · " + r.Name + " · " + cfg.Label,
 					URL:    baseURL + "/mac/" + url.PathEscape(catalog.FileSlug(m.Identifier)) + "#cfg-" + cfg.ID,
 					Failed: cs.Verdict == status.Failed || cs.Verdict == status.Partial}

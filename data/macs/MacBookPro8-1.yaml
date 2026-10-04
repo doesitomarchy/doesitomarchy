@@ -32,7 +32,7 @@ releases:
         display: { inches: 13.3, resolution: 1280x800, panel: "LED glossy" }
         components: [gpu/intel-hd-3000, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
         ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1, audio-in: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, displayport-audio]
   - id: "13-late-2011"
     name: "MacBook Pro (13-inch, Late 2011)"
     announced: 2011-10-24
@@ -51,4 +51,4 @@ releases:
         display: { inches: 13.3, resolution: 1280x800, panel: "LED glossy" }
         components: [gpu/intel-hd-3000, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
         ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-out: 1, audio-out-optical: 1, audio-in: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, displayport-audio]

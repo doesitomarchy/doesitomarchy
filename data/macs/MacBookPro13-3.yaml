@@ -35,5 +35,5 @@ releases:
         display: { inches: 15.4, resolution: 2880x1800, panel: "Retina LED IPS, P3 wide color" }
         components: [gpu/intel-hd-530, gpu/amd-radeon-pro-555-560, wifi/broadcom-bcm43602, bluetooth/broadcom-bcm43602-uart, audio/cirrus-cs8409, camera/apple-t1-facetime-hd, thunderbolt/intel-alpine-ridge, storage/samsung-nvme-apple, input/apple-spi-keyboard, bridge/apple-t1]
         ports: { thunderbolt-3: 4, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, gpu-switching]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, usb-c-charging, touch-bar, touch-id, gpu-switching, displayport-audio]
         notes: "Radeon Pro 460 was a build-to-order upgrade; it is the same Polaris 11 chip as the 450 and 455."

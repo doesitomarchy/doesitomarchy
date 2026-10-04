@@ -1,6 +1,7 @@
 package results
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"strings"
@@ -122,5 +123,87 @@ func TestOmacDiagRefusals(t *testing.T) {
 	conv, err := FromOmacDiag([]byte(withVersion), c, mp, ImportOptions{})
 	if err != nil || conv.File.Omarchy.Version != "4.0.5" {
 		t.Errorf("os_version from the report: %v %+v", err, conv)
+	}
+}
+
+// The rules Carl's real runs prompted (PLAN §28.3–28.5), on the fixture.
+func TestOmacDiagRunRules(t *testing.T) {
+	c := loadCatalog(t)
+	mp, err := LoadMapping(data.FS, "omacdiag", c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	base, err := os.ReadFile("fixtures/omacdiag-mbp113.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// convert edits the fixture: backlight results replace its passed one;
+	// devices and results are added.
+	convert := func(backlight []map[string]any, devices, extra []map[string]any) (*File, []Flag) {
+		t.Helper()
+		var od map[string]any
+		if err := json.Unmarshal(base, &od); err != nil {
+			t.Fatal(err)
+		}
+		var res []any
+		for _, r := range od["results"].([]any) {
+			if !strings.HasPrefix(r.(map[string]any)["test_id"].(string), "keyboard_backlight:") {
+				res = append(res, r)
+			}
+		}
+		for _, r := range append(backlight, extra...) {
+			res = append(res, r)
+		}
+		od["results"] = res
+		inv := od["inventory"].(map[string]any)
+		for _, d := range devices {
+			inv["devices"] = append(inv["devices"].([]any), d)
+		}
+		raw, _ := json.Marshal(od)
+		conv, err := FromOmacDiag(raw, c, mp, ImportOptions{Omarchy: "4.0.4"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return conv.File, conv.Flags
+	}
+	bl := "keyboard_backlight:smc::kbd_backlight"
+	result := func(id, device, outcome, reason string) map[string]any {
+		return map[string]any{"test_id": id, "device_id": device, "outcome": outcome, "reason_code": reason, "summary": "x"}
+	}
+
+	// A pass, then a retake OmacDiag couldn't run: the pass counts (§28.4).
+	f, _ := convert([]map[string]any{result(bl+"/visual", bl, "passed", "operator_assessment"),
+		result(bl+"/visual/retake-1", bl, "blocked", "backlight_control_unavailable")}, nil, nil)
+	if it := f.Items["input.keyboard-backlight"]; it.Status != "supported" {
+		t.Errorf("pass then blocked retake: %+v", it)
+	}
+
+	// A "missing driver" reason on a backlight whose LED device is there:
+	// OmacDiag's check failed, not the driver (§28.3). Not tested, no flag.
+	f, flags := convert([]map[string]any{result(bl+"/visual", bl, "blocked", "backlight_control_unavailable")}, nil, nil)
+	if it := f.Items["input.keyboard-backlight"]; it.Status != "not_tested" || it.Reason != "uncertain" {
+		t.Errorf("blocked backlight with its device present: %+v", it)
+	}
+	for _, fl := range flags {
+		if fl.Kind == FlagDriverMissing && strings.Contains(fl.Detail, "keyboard-backlight") {
+			t.Errorf("driver_missing for a present backlight: %s", fl.Detail)
+		}
+	}
+
+	// An Ethernet adapter on the Thunderbolt port (§28.5): its passing link
+	// proves Thunderbolt works, and isn't built-in Ethernet.
+	tb := "/sys/devices/pci0000:00/0000:00:1c.4/0000:06:00.0"
+	devices := []map[string]any{
+		{"id": "thunderbolt:domain0", "kind": "thunderbolt", "name": "domain0", "recognition": "detected",
+			"attributes": map[string]string{"sysfs_target": tb + "/0000:07:00.0/0000:08:00.0/domain0"}},
+		{"id": "network:ens9", "kind": "network", "name": "ens9", "recognition": "detected",
+			"attributes": map[string]string{"wireless": "false", "carrier": "1", "sysfs_target": tb + "/0000:07:03.0/0000:0a:00.0/net/ens9"}},
+	}
+	f, _ = convert(nil, devices, []map[string]any{result("network:ens9/link", "network:ens9", "passed", "link_present")})
+	if it := f.Items["ports.thunderbolt"]; it.Status != "supported" || it.Method != "automatic" || !strings.Contains(it.Evidence, "network:ens9 is attached through Thunderbolt") {
+		t.Errorf("Thunderbolt-attached Ethernet: %+v", it)
+	}
+	if it, ok := f.Items["network.ethernet"]; ok && strings.Contains(it.Evidence, "ens9") {
+		t.Errorf("Thunderbolt adapter counted as built-in Ethernet: %+v", it)
 	}
 }

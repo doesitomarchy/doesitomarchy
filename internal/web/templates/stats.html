@@ -8,7 +8,7 @@
     <p><b>{{.Results}}</b> accepted {{plural .Results "report" "reports"}}{{with $.Site.Coverage.StaleVerified}} · {{.}} verified on an older Omarchy{{end}}.</p>
     <div class="report-cols">
     {{with .Recent}}<div class="col-recent"><h3 class="sub-h">Recent</h3>
-    <ul class="recent">{{range .}}<li><a href="/report/{{.Code}}">{{.Identifier}}</a> <span class="muted">{{utc .TestedAt}} · {{osver .Omarchy .Kernel}}</span></li>{{end}}</ul></div>{{end}}
+    <ul class="recent">{{range .}}<li><a href="/report/{{.Code}}">{{.Identifier}}</a> <span class="muted">{{utc .TestedAt}} · {{osver .Omarchy .Channel .Kernel}}</span></li>{{end}}</ul></div>{{end}}
     {{with .MostTested}}<div><h3 class="sub-h">Most-tested Macs</h3>
     {{range .}}<a class="hbar" href="{{.URL}}"><span>{{.Label}}</span><svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true"><rect width="{{barw .Count .Max}}" height="8"/></svg><span class="n">{{.Count}}</span></a>{{end}}</div>{{end}}
     {{with .MostFailed}}<div class="col-failing"><h3 class="sub-h">Failing on the most configurations</h3>

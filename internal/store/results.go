@@ -110,11 +110,12 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 	for attempt := 0; ; attempt++ {
 		res, err = tx.ExecContext(ctx, `INSERT INTO results (code, config_id, source_id, source_version, profile, workflow, schema,
 			format, tester_handle, contact_hash, tested_at, omarchy_version, omarchy_major, omarchy_minor, omarchy_patch,
-			omarchy_revision, omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at, consent_notice, candidates)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			omarchy_revision, omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at, consent_notice, candidates,
+			omarchy_channel, omarchy_commit, omarchy_built_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			newCode(), r.ConfigID, r.SourceID, r.SourceVersion, r.Profile, r.Workflow, r.Schema, format, r.TesterHandle, contact,
 			r.TestedAt, r.OmarchyRaw, r.Omarchy.Major, r.Omarchy.Minor, r.Omarchy.Patch, r.Revision, r.Image, r.Kernel, r.Notes,
-			r.Hardware, Pending, actor, at, r.ConsentNotice, jsonList(r.Candidates))
+			r.Hardware, Pending, actor, at, r.ConsentNotice, jsonList(r.Candidates), channelOr(r.Channel), r.Commit, r.BuiltAt)
 		if err == nil || attempt == 4 || !strings.Contains(err.Error(), "results.code") {
 			break // retry only on the (1 in 10^12) code collision
 		}
@@ -248,7 +249,9 @@ type ResultSummary struct {
 	ConfigID, Identifier, Slug            string
 	SourceID, SourceName, SourceVersion   string
 	Profile, Workflow                     string
-	TesterHandle, TestedAt, Omarchy       string
+	TesterHandle, TestedAt                string
+	Omarchy                               string // the canonical version (PLAN §28.1)
+	Channel                               string // stable | rc | beta | edge | dev
 	Kernel                                string
 	State, StateReason, StateBy, StateAt  string
 	SubmittedBy, SubmittedAt              string
@@ -263,7 +266,7 @@ type ResultFilter struct {
 }
 
 const summaryCols = `r.id, r.code, r.config_id, c.mac_identifier, m.slug, r.source_id, s.name, r.source_version, r.profile, r.workflow,
-	r.tester_handle, r.tested_at, r.omarchy_version, r.kernel, r.state, r.state_reason, r.state_by, r.state_at,
+	r.tester_handle, r.tested_at, r.omarchy_version, r.omarchy_channel, r.kernel, r.state, r.state_reason, r.state_by, r.state_at,
 	r.submitted_by, r.submitted_at,
 	(SELECT count(*) FROM result_items i WHERE i.result_id = r.id AND i.status = 'supported'),
 	(SELECT count(*) FROM result_items i WHERE i.result_id = r.id AND i.status = 'partial'),
@@ -276,9 +279,26 @@ const summaryCols = `r.id, r.code, r.config_id, c.mac_identifier, m.slug, r.sour
 func scanSummary(sc interface{ Scan(...any) error }) (ResultSummary, error) {
 	var x ResultSummary
 	err := sc.Scan(&x.ID, &x.Code, &x.ConfigID, &x.Identifier, &x.Slug, &x.SourceID, &x.SourceName, &x.SourceVersion, &x.Profile,
-		&x.Workflow, &x.TesterHandle, &x.TestedAt, &x.Omarchy, &x.Kernel, &x.State, &x.StateReason, &x.StateBy, &x.StateAt,
+		&x.Workflow, &x.TesterHandle, &x.TestedAt, &x.Omarchy, &x.Channel, &x.Kernel, &x.State, &x.StateReason, &x.StateBy, &x.StateAt,
 		&x.SubmittedBy, &x.SubmittedAt, &x.Supported, &x.Partial, &x.Failed, &x.NotTested, &x.OpenFlags)
+	x.Omarchy = CanonicalVersion(x.Omarchy)
 	return x, err
+}
+
+// CanonicalVersion is a stored version in its canonical form (PLAN §28.1);
+// results stored before 0009 kept the version as reported.
+func CanonicalVersion(stored string) string {
+	if v, err := status.ParseVersion(stored); err == nil {
+		return v.String()
+	}
+	return stored
+}
+
+func channelOr(ch string) string {
+	if ch == "" {
+		return status.Stable
+	}
+	return ch
 }
 
 // ListResults lists results, newest first.
@@ -429,6 +449,7 @@ type ResultEvent struct{ At, Actor, Action, Detail string }
 type ResultDetail struct {
 	ResultSummary
 	OmarchyRevision, OmarchyImage, Notes, Hardware string
+	OmarchyCommit, OmarchyBuiltAt                  string // the build tested (PLAN §28.2); "" until looked up
 	ConsentNotice                                  string
 	Candidates                                     []string // configs the hardware fitted equally
 	Items                                          []ResultItem
@@ -450,10 +471,11 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 	}
 	d := &ResultDetail{ResultSummary: sum}
 	var cands string
-	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.notes, r.hardware, r.consent_notice, r.candidates,
-		coalesce(p.size, 0), coalesce(p.visibility, 'private')
+	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.omarchy_commit, r.omarchy_built_at, r.notes,
+		r.hardware, r.consent_notice, r.candidates, coalesce(p.size, 0), coalesce(p.visibility, 'private')
 		FROM results r LEFT JOIN result_reports p ON p.result_id = r.id WHERE r.id = ?`, id).Scan(
-		&d.OmarchyRevision, &d.OmarchyImage, &d.Notes, &d.Hardware, &d.ConsentNotice, &cands, &d.ReportSize, &d.ReportVisibility); err != nil {
+		&d.OmarchyRevision, &d.OmarchyImage, &d.OmarchyCommit, &d.OmarchyBuiltAt, &d.Notes, &d.Hardware, &d.ConsentNotice, &cands,
+		&d.ReportSize, &d.ReportVisibility); err != nil {
 		return nil, err
 	}
 	json.Unmarshal([]byte(cands), &d.Candidates)
@@ -628,14 +650,17 @@ func (s *Store) SetUnsupported(ctx context.Context, capability, configID, compon
 
 // Rollup is everything the status engine needs from the results tables.
 type Rollup struct {
-	Items        map[string][]status.Item     // config → accepted, applicable, tested items
-	Results      map[string]int               // config → accepted results
-	Latest       map[string]string            // config → newest accepted test date
-	Accepted     map[string][]ResultSummary   // config → accepted (and retracted) results, newest first
-	Unsupported  map[string]map[string]string // config → capability → reason
-	Fixes        []Fix                        // fix issues, newest first
-	CurrentMajor int
-	Version      int64 // the data version this was read at
+	Items   map[string][]status.Item // config → accepted, applicable, tested items, from every channel
+	Results map[string]int           // config → accepted results
+	Latest  map[string]string        // config → newest accepted test date
+	// The same, counting stable results only: the verdict's view (PLAN §28.2).
+	StableResults map[string]int
+	StableLatest  map[string]string
+	Accepted      map[string][]ResultSummary   // config → accepted (and retracted) results, newest first
+	Unsupported   map[string]map[string]string // config → capability → reason
+	Fixes         []Fix                        // fix issues, newest first
+	CurrentMajor  int
+	Version       int64 // the data version this was read at
 }
 
 var verdictOf = map[string]status.Verdict{"supported": status.Supported, "partial": status.Partial, "failed": status.Failed}
@@ -648,6 +673,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	}
 	defer tx.Rollback()
 	r := &Rollup{Items: map[string][]status.Item{}, Results: map[string]int{}, Latest: map[string]string{},
+		StableResults: map[string]int{}, StableLatest: map[string]string{},
 		Accepted: map[string][]ResultSummary{}, Unsupported: map[string]map[string]string{}}
 	var major, version string
 	if err := tx.QueryRowContext(ctx, "SELECT value FROM settings WHERE key = 'current_omarchy_major'").Scan(&major); err != nil {
@@ -660,7 +686,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	r.Version, _ = strconv.ParseInt(version, 10, 64)
 
 	rows, err := tx.QueryContext(ctx, `SELECT r.id, r.config_id, i.capability_id, i.connector, i.status, i.method, i.evidence,
-		r.omarchy_major, r.omarchy_minor, r.omarchy_patch, r.tested_at
+		r.omarchy_version, r.omarchy_major, r.omarchy_minor, r.omarchy_patch, r.omarchy_channel, r.omarchy_built_at, r.tested_at
 		FROM result_items i JOIN results r ON r.id = i.result_id
 		WHERE r.state = 'accepted' AND i.applicable = 1 AND i.status <> 'not_tested'`)
 	if err != nil {
@@ -668,11 +694,17 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	}
 	for rows.Next() {
 		var it status.Item
-		var cfg, st string
+		var cfg, st, raw string
 		if err := rows.Scan(&it.ResultID, &cfg, &it.Capability, &it.Connector, &st, &it.Method, &it.Evidence,
-			&it.Omarchy.Major, &it.Omarchy.Minor, &it.Omarchy.Patch, &it.TestedAt); err != nil {
+			&raw, &it.Omarchy.Major, &it.Omarchy.Minor, &it.Omarchy.Patch, &it.Channel, &it.BuiltAt, &it.TestedAt); err != nil {
 			rows.Close()
 			return nil, err
+		}
+		if v, err := status.ParseVersion(raw); err == nil {
+			it.Omarchy = v
+		}
+		if it.BuiltAt == "" {
+			it.BuiltAt = it.TestedAt // the build can't be newer than the test (PLAN §28.2)
 		}
 		it.Verdict = verdictOf[st]
 		r.Items[cfg] = append(r.Items[cfg], it)
@@ -694,6 +726,12 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 			r.Results[x.ConfigID]++
 			if x.TestedAt > r.Latest[x.ConfigID] {
 				r.Latest[x.ConfigID] = x.TestedAt
+			}
+			if x.Channel == status.Stable {
+				r.StableResults[x.ConfigID]++
+				if x.TestedAt > r.StableLatest[x.ConfigID] {
+					r.StableLatest[x.ConfigID] = x.TestedAt
+				}
 			}
 		}
 	}
