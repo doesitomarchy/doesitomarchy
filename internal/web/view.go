@@ -149,21 +149,24 @@ type configView struct {
 	Portmap      template.HTML     // the release's port map drawing, coloured by status (PLAN §27)
 	PortmapKey   string            // its key, for /portmap/<key>.svg
 	PortSt       map[string]string // each connector's status on the drawing
-	Conns        []connInfo        // the same, flat, for the API
-	Features     []string
-	Categories   []categoryView
-	Status       status.ConfigStatus   // stable results: the verdict (PLAN §28.2)
-	Newest       status.ConfigStatus   // every channel: the newer-build lines
-	NewerOnly    bool                  // tested only on newer builds (rc, beta, edge, dev)
-	Verified     bool                  // every applicable capability passed, no conflicts
-	Results      []store.ResultSummary // accepted and retracted results, newest first
-	Latest       *store.ResultSummary  // the newest accepted result
-	OutOfScope   string
-	Notes        string
-	Uncertain    []uncertainView
-	Limitations  []string // research: hardware limits known before testing (PLAN §30)
-	NoGLES3      bool     // no GPU reaches OpenGL ES 3.0 (PLAN §30)
-	Mac          *macView
+	// PortWhy explains, under the drawing, each connector that isn't green:
+	// its criteria's results on it, in layout order.
+	PortWhy     []portWhy
+	Conns       []connInfo // the same, flat, for the API
+	Features    []string
+	Categories  []categoryView
+	Status      status.ConfigStatus   // stable results: the verdict (PLAN §28.2)
+	Newest      status.ConfigStatus   // every channel: the newer-build lines
+	NewerOnly   bool                  // tested only on newer builds (rc, beta, edge, dev)
+	Verified    bool                  // every applicable capability passed, no conflicts
+	Results     []store.ResultSummary // accepted and retracted results, newest first
+	Latest      *store.ResultSummary  // the newest accepted result
+	OutOfScope  string
+	Notes       string
+	Uncertain   []uncertainView
+	Limitations []string // research: hardware limits known before testing (PLAN §30)
+	NoGLES3     bool     // no GPU reaches OpenGL ES 3.0 (PLAN §30)
+	Mac         *macView
 }
 
 type compView struct {
@@ -224,6 +227,7 @@ type capView struct {
 	// Ports: per-connector criteria (PLAN §25), each connector's status and
 	// how many port groups are covered.
 	Ports        []capPort
+	PortGroups   []capPortGroup // the same ports by port group, for the row
 	GroupsPassed int
 	GroupsTotal  int
 }
@@ -235,6 +239,29 @@ type newerView struct {
 	Omarchy, Channel string
 	Result           int64
 	Code             string // its report
+}
+
+// capPortGroup is one port group of a per-connector criterion, with the
+// group's verdict worked out as the status engine does (PLAN §25.1a): a pass
+// or a cover makes it Supported, else partial before failed.
+type capPortGroup struct {
+	Verdict status.Verdict
+	Ports   []capPort
+}
+
+func newCapPortGroup(ports []capPort) capPortGroup {
+	g := capPortGroup{Verdict: status.Untested, Ports: ports}
+	for _, p := range ports {
+		switch {
+		case p.Verdict == status.Supported || p.CoveredBy != "":
+			g.Verdict = status.Supported
+		case p.Verdict == status.Partial && g.Verdict != status.Supported:
+			g.Verdict = status.Partial
+		case p.Verdict == status.Failed && g.Verdict == status.Untested:
+			g.Verdict = status.Failed
+		}
+	}
+	return g
 }
 
 type capPort struct {
@@ -271,6 +298,12 @@ func dateOnly(ts string) string {
 type layoutSide struct {
 	Side  string // "Left side", "Back"
 	Conns []layoutConn
+}
+
+// portWhy is one line of the breakdown under a drawing.
+type portWhy struct {
+	ID, Num, St, Word string
+	Results           []string // "External display output failed"
 }
 
 type layoutConn struct {
@@ -657,6 +690,7 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 	cv.NewerOnly = cv.Status.Results == 0 && cv.Newest.Results > 0
 	cv.Verified = cv.Status.Verified()
 	byCat := map[string]*categoryView{}
+	groups := c.CriterionGroups(m, cfg)
 	for _, cp := range applicable {
 		cat := byCat[cp.Category()]
 		if cat == nil {
@@ -695,6 +729,17 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 				}
 				x.Ports = append(x.Ports, capPort{id, c.ConnectorName(conn[id]), ps.Verdict, ps.CoveredBy, ps.Suspect})
 			}
+			for _, g := range groups[cp.ID] {
+				var pg []capPort
+				for _, id := range g.Connectors {
+					for _, p := range x.Ports {
+						if p.ID == id {
+							pg = append(pg, p)
+						}
+					}
+				}
+				x.PortGroups = append(x.PortGroups, newCapPortGroup(pg))
+			}
 		}
 		if ru != nil && (x.Verdict == status.Failed || x.Verdict == status.Partial) {
 			if f, st, ok := fixes.Best(ru.Fixes, cp.ID, cfg.ID, cfg.Components, now); ok {
@@ -714,14 +759,22 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		}
 	}
 	if pm := c.Portmaps[cfg.Portmap]; pm != nil {
-		cv.PortmapKey, cv.PortSt = pm.Key, connStatuses(cv)
+		var results map[string][]string
+		cv.PortSt, results = connStatuses(cv)
+		cv.PortmapKey = pm.Key
 		cv.Portmap = portmapHTML(pm, cv.ID, cv.PortSt)
 		for i := range cv.Layout {
 			for j := range cv.Layout[i].Conns {
 				lc := &cv.Layout[i].Conns[j]
 				_, lc.Num, _ = strings.Cut(lc.ID, "-")
 				lc.St = cv.PortSt[lc.ID]
-				lc.StLabel = pmLabels[lc.St]
+				if lc.St == "" {
+					continue
+				}
+				lc.StLabel = pmLabels[lc.St] + ": " + strings.Join(results[lc.ID], "; ")
+				if lc.St == pmPartial || lc.St == pmFailed || lc.St == pmSuspect {
+					cv.PortWhy = append(cv.PortWhy, portWhy{lc.ID, lc.Num, lc.St, pmWords[lc.St], results[lc.ID]})
+				}
 			}
 		}
 	}

@@ -56,6 +56,11 @@ type Capability struct {
 	// FixBy is the component kind (optionally "kind:role") whose driver
 	// usually decides this criterion, for fix tracking (PLAN §26).
 	FixBy string `yaml:"fix_by" json:"fix_by,omitempty"`
+	// OneGroup: a per-connector criterion judged on all its connectors as one
+	// port group, whatever controller each is on, because it doesn't depend
+	// on that controller's driver (USB-C charging is negotiated by each
+	// port's power-delivery chip and the SMC; PLAN §25.1a).
+	OneGroup bool `yaml:"one_group" json:"one_group,omitempty"`
 	// Retired criteria no longer apply to any configuration. They stay in the
 	// catalog because results may reference them; IDs are never deleted.
 	Retired bool `yaml:"retired" json:"retired,omitempty"`

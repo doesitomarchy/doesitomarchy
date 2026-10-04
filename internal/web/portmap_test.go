@@ -24,11 +24,14 @@ func TestConnStatuses(t *testing.T) {
 			capPort{ID: "right-3", Verdict: status.Untested}),
 		cp(capPort{ID: "left-1", Verdict: status.Supported}, capPort{ID: "left-2", Verdict: status.Untested, CoveredBy: "left-1"},
 			capPort{ID: "left-3", Verdict: status.Untested, CoveredBy: "left-1"}, capPort{ID: "left-4", Verdict: status.Untested},
-			capPort{ID: "right-1", Verdict: status.Supported}, capPort{ID: "back-1", Verdict: status.Partial}),
+			capPort{ID: "right-1", Verdict: status.Untested}, capPort{ID: "back-1", Verdict: status.Partial}),
+		// right-4 passed one criterion and failed another: partly works.
+		{Name: "USB data", Ports: []capPort{{ID: "right-4", Verdict: status.Supported}}},
+		{Name: "External display output", Ports: []capPort{{ID: "right-4", Verdict: status.Failed}}},
 	}}}}
 	want := map[string]string{"left-1": pmSupported, "left-2": pmCovered, "left-3": pmCovered, "left-4": pmPartly,
-		"right-1": pmFailed, "right-2": pmSuspect, "back-1": pmPartial}
-	got := connStatuses(cv)
+		"right-1": pmFailed, "right-2": pmSuspect, "back-1": pmPartial, "right-4": pmPartial}
+	got, results := connStatuses(cv)
 	for id, w := range want {
 		if got[id] != w {
 			t.Errorf("%s: %q, want %q", id, got[id], w)
@@ -36,6 +39,9 @@ func TestConnStatuses(t *testing.T) {
 	}
 	if _, ok := got["right-3"]; ok {
 		t.Error("an untested connector gets no status")
+	}
+	if r := strings.Join(results["right-4"], "; "); r != "USB data passed; External display output failed" {
+		t.Errorf("right-4 results: %q", r)
 	}
 }
 

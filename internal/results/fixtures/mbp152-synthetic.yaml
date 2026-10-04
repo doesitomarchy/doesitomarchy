@@ -1,6 +1,7 @@
 # SYNTHETIC result for tests and the release smoke test (PLAN.md §15, §21.8).
 # It is not a real test. It exercises every item status, every method, skip
-# reasons, evidence, an extra, and personal data the scrubber must remove
+# reasons, evidence, per-port items on both Thunderbolt 3 controllers (PLAN
+# §25.1a), an extra, and personal data the scrubber must remove
 # (the serial number, MAC address, hostname and home-directory path below).
 schema: doesitomarchy/report/v1
 config: macbookpro15-2-13-2018-4tb3-a
@@ -27,7 +28,8 @@ items:
   boot.install:               { status: supported, method: observed, note: "after disabling Secure Boot" }
   boot.power-cycle:           { status: supported, method: observed }
   graphics.integrated:        { status: supported, method: automatic }
-  graphics.external-display:  { status: partial, method: fixture, evidence: "DisplayPort alt mode works on the left ports only; right ports: no signal" }
+  graphics.external-display@left-1:  { status: supported, method: fixture }
+  graphics.external-display@right-1: { status: failed, method: fixture, evidence: "DisplayPort alt mode: no signal on the right ports (the left ports work)" }
   display.native-resolution:  { status: supported, method: automatic }
   display.brightness:         { status: supported, method: observed }
   input.keyboard:             { status: supported, method: observed }
@@ -47,8 +49,9 @@ items:
   camera.builtin:             { status: supported, method: automatic }
   network.wifi:               { status: supported, method: automatic, note: "brcmfmac with firmware copied from macOS" }
   network.bluetooth:          { status: supported, method: automatic }
-  ports.usb-c:                { status: supported, method: fixture }
-  ports.usb-c-charging:       { status: supported, method: observed }
+  ports.usb-c@left-1:         { status: supported, method: fixture }
+  ports.usb-c@right-1:        { status: supported, method: fixture }
+  ports.usb-c-charging@left-2: { status: supported, method: observed }
   ports.thunderbolt:          { status: not_tested, reason: no-equipment, note: "no Thunderbolt device" }
   thermal.sensors:            { status: supported, method: automatic }
   thermal.fans:               { status: partial, method: observed, evidence: "fans stay at a fixed speed without t2fanrd" }

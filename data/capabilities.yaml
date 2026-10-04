@@ -20,6 +20,11 @@
 # criterion ("audio", "wifi", or "gpu:integrated" for a GPU role). A fix issue
 # for a failure then covers every configuration with that component (PLAN.md
 # §26). Without it, fixes are opened per configuration.
+#
+# `one_group: true` judges a per-connector criterion on all its connectors as
+# one port group, ignoring the layout's controller groups: one passing port
+# covers them all (PLAN.md §25.1a). The evidence for USB-C charging is in
+# omarchaeology's findings/usb-c-charging.md.
 
 categories:
   - { id: boot,     name: Boot,       icon: power,     blocking: true }
@@ -189,6 +194,7 @@ capabilities:
     when: { any: ["port:usb-c", "port:thunderbolt-3"] }
   - id: ports.usb-c-charging
     name: Charging over USB-C
+    one_group: true
     when: { all: ["feature:usb-c-charging"] }
   - id: ports.thunderbolt
     name: Thunderbolt devices (storage, docks, hotplug)

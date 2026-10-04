@@ -4,7 +4,7 @@
 {{define "machine"}}<svg class="machine" aria-hidden="true"><use href="{{asset "icons.svg"}}#m-{{.}}"></use></svg>{{end}}
 
 {{/* Colour key for port map drawings (PLAN §27); the port list carries the same statuses as text. */}}
-{{define "pmkey"}}<span class="pmkey" aria-hidden="true"><span><span class="sw" data-st="supported"></span>passed</span> <span><span class="sw" data-st="covered"></span>covered by its controller</span> <span><span class="sw" data-st="partly"></span>partly tested</span> <span><span class="sw" data-st="partial"></span>partly works</span> <span><span class="sw" data-st="failed"></span>failed</span> <span><span class="sw" data-st="suspect"></span>possible hardware fault</span> <span><span class="sw"></span>untested</span></span>{{end}}
+{{define "pmkey"}}<span class="pmkey" aria-hidden="true"><span><span class="sw" data-st="supported"></span>passed</span> <span><span class="sw" data-st="covered"></span>covered by port group</span> <span><span class="sw" data-st="partly"></span>partly tested</span> <span><span class="sw" data-st="partial"></span>partly works</span> <span><span class="sw" data-st="failed"></span>failed</span> <span><span class="sw" data-st="suspect"></span>possible hardware fault</span> <span><span class="sw"></span>untested</span></span>{{end}}
 {{define "vicon"}}<svg class="i v v-{{.}}" aria-hidden="true"><use href="{{asset "icons.svg"}}#v-{{.}}"></use></svg>{{end}}
 
 {{define "verdict"}}<span class="verdict {{.}}">{{template "vicon" .}}{{.Label}}</span>{{end}}

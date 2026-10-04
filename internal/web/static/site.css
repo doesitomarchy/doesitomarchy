@@ -588,18 +588,39 @@ table.shares td:nth-child(2) { white-space: nowrap; }
 code.evidence { white-space: pre-line; }
 
 /* Per-connector ports (7c, PLAN §25). */
-.capports { display: block; font-size: 12px; margin: 0.15rem 0 0 1.6rem; }
-.capport { white-space: nowrap; margin-left: 0.5rem; font-family: var(--mono); }
+/* The ports sit at the right, clear of the status; each port group (one
+   controller) is boxed, and groups stack when a row runs out of room. The "N of M port groups" count stays by the name. */
+.capgroups { font-size: 12px; }
+.caps li .capports { flex: 1 1 0; min-width: min-content; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.35rem; margin-right: 2.5rem; font-size: 12px; }
+/* On rows with ports, the inline method and the status get fixed-width,
+   right-aligned slots, so the port groups line up whatever the method
+   ("automatic", "fixture") and status ("Supported", "Partly works") say. On
+   a card that shows inline methods, a row without one keeps its slot. */
+.caps li:has(.capports) .capmeta.inline { min-width: 4rem; text-align: right; }
+.caps li:has(.capports) .st { min-width: 6rem; text-align: right; }
+.caps:has(.capmeta.inline) li:has(.capports):not(:has(.capmeta.inline)) .capports { margin-right: calc(2.5rem + 4rem + 0.5rem); }
+.capgroup { display: inline-flex; gap: 0.6rem; border: 1px solid var(--line-strong); border-radius: 2px; padding: 1px 0.2rem; }
+/* The box takes the group's result colour, like the verdict icons. */
+.capgroup.g-supported { border-color: var(--ok); }
+.capgroup.g-partial { border-color: var(--warn); }
+.capgroup.g-failed { border-color: var(--bad); }
+.capport { white-space: nowrap; font-family: var(--mono); border: 1px solid transparent; padding: 0 0.2rem; }
 .capport svg.v { margin-right: 0.15rem; }
-ul.layout { list-style: none; padding: 0; margin: 0 0 0.3rem; display: grid; gap: 0.2rem; }
+/* Side labels in one column, so each side's ports start at the same place;
+   ports are spaced apart, without separators. */
+ul.layout { list-style: none; padding: 0; margin: 0 0 0.3rem; display: grid; grid-template-columns: max-content 1fr; gap: 0.2rem 0.6rem; }
+ul.layout li { display: grid; grid-template-columns: subgrid; grid-column: 1 / -1; align-items: baseline; }
 ul.layout .side { color: var(--muted); }
+ul.layout .conns { display: flex; flex-wrap: wrap; gap: 0.2rem 1.2rem; }
 ul.layout code { font-size: 11px; color: var(--muted); }
 ul.layout .conn { white-space: nowrap; }
 code.connref { font-size: 11px; color: var(--muted); }
-/* Covered by a group-mate: the check shape in muted ink, never the pass green. */
-.capport.covered { color: var(--muted); }
-.capport.covered svg.v { color: var(--muted); }
-.capport.suspect .tag { font-size: 10px; }
+/* Ports match the drawing's key (.pmkey): covered by a group-mate is the
+   pass green, dashed; a possible hardware fault is amber, dashed. */
+.capport.covered { color: var(--muted); border: 1px dashed var(--ok); }
+.capport.covered svg.v { color: var(--ok); }
+.capport.suspect svg.v { color: var(--warn); }
+.capport.suspect .tag { font-size: 10px; border: 1px dashed var(--warn); }
 
 /* ── Port map drawings (PLAN §27) ──────────────────────────────────────────
    Inline SVGs from data/portmaps, drawn in the text colour. The site CSP forbids
@@ -650,6 +671,12 @@ ul.pmlist .conn.is-hot, ul.pmlist .conn:focus-visible { background: color-mix(in
 .pmnum[data-st="partial"], .pmnum[data-st="suspect"] { color: var(--warn); }
 .pmnum[data-st="failed"] { color: var(--bad); }
 .pmnum[data-st]:not([data-st="partly"]) { background: color-mix(in srgb, currentColor 16%, transparent); }
+/* Under the side lines: each port that isn't green, with its criteria's results.
+   Spaced from them as the colour key is (.pmfig's bottom margin). */
+ul.pmwhy { list-style: none; padding: 0; margin: 0.7rem 0 0.5rem; display: grid; gap: 0.2rem; font-size: 12px; color: var(--muted); }
+ul.pmwhy code { font-size: 11px; margin-right: 0.3rem; }
+ul.pmwhy .pmword[data-st="partial"], ul.pmwhy .pmword[data-st="suspect"] { color: var(--warn); }
+ul.pmwhy .pmword[data-st="failed"] { color: var(--bad); }
 .pmkey { display: inline-flex; flex-wrap: wrap; gap: 0.15rem 0.8rem; align-items: center; }
 .pmkey > span { white-space: nowrap; display: inline-flex; align-items: center; gap: 0.3rem; }
 .pmkey .sw { display: inline-block; width: 0.85em; height: 0.85em; border-radius: 2px; border: 1px solid var(--muted); }
