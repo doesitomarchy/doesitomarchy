@@ -167,6 +167,7 @@ svg.bar.ok rect { fill: var(--ok); }
 .card-head .right { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
 .blocker-line, .limit-line { margin: 0; padding: 0.35rem 0.8rem; border-bottom: 1px solid var(--line); color: var(--bad); font-size: 13px; }
 .limit-line { color: inherit; } .warn-i { color: var(--warn); }
+.tag.gles2 { border-color: var(--warn); } .tag.gles2 .i { margin-right: 0.2rem; }
 .caps details { border-bottom: 1px solid var(--line); }
 .caps summary { cursor: pointer; padding: 0.35rem 0.8rem; display: flex; gap: 0.5rem; align-items: center; list-style: none; position: relative; }
 .caps summary > :not(svg.catprog) { position: relative; }
@@ -305,6 +306,7 @@ h2.gh { font-size: 17px; }
 .rowlinks tbody tr:hover td:first-child a { text-decoration: underline; }
 .browse td.vs { display: table-cell; }
 .browse td.vs > * { margin: 0 0.25rem 0.2rem 0; }
+.browse .glescol { width: 1%; padding-left: 0.15rem; white-space: nowrap; }
 .comps td.macs { font-size: 12px; max-width: 26rem; }
 
 /* ── stats ──────────────────────────────────────────────────────────── */

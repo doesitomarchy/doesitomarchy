@@ -111,6 +111,7 @@ type macView struct {
 	Verdicts      []status.Verdict // distinct, in rank order
 	OutOfScope    string           // reason, when every config is out of coverage scope
 	AllVerified   bool             // every config passed every applicable test: earns the Omarchy badge
+	NoGLES3       bool             // no config has a GPU that reaches OpenGL ES 3.0 (PLAN §30)
 	Tested        int              // configs with at least one result
 	Matrix        *matrixView
 }
@@ -160,6 +161,7 @@ type configView struct {
 	Notes        string
 	Uncertain    []uncertainView
 	Limitations  []string // research: hardware limits known before testing (PLAN §30)
+	NoGLES3      bool     // no GPU reaches OpenGL ES 3.0 (PLAN §30)
 	Mac          *macView
 }
 
@@ -556,8 +558,10 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 		}
 	}
 	mv.AllVerified = len(mv.Configs) > 0
+	mv.NoGLES3 = len(mv.Configs) > 0
 	for _, cv := range mv.Configs {
 		mv.AllVerified = mv.AllVerified && cv.Verified
+		mv.NoGLES3 = mv.NoGLES3 && cv.NoGLES3
 	}
 	diffLabels(c, mv, raw)
 	mv.Matrix = buildMatrix(c, mv.Configs, false)
@@ -567,7 +571,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup, now time.Time) *configView {
 	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, BoardIDs: r.BoardIDs, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
 		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl,
-		Limitations: c.Limitations(cfg)}
+		Limitations: c.Limitations(cfg), NoGLES3: c.BelowGLESFloor(cfg)}
 	for _, p := range cfg.CPU.Standard {
 		cv.CPU = append(cv.CPU, processor(p))
 	}

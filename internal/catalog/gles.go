@@ -11,6 +11,21 @@ var GLESLevels = map[string]bool{"2.0": true, "3.0": true, "3.1": true, "3.2": t
 // HyprlandGLES is the lowest OpenGL ES version Hyprland 0.50 and later runs on.
 const HyprlandGLES = "3.0"
 
+// BelowGLESFloor reports whether none of a configuration's GPUs reaches
+// Hyprland's OpenGL ES floor, so stock Omarchy's desktop can't start on it.
+func (c *Catalog) BelowGLESFloor(cfg *Config) bool {
+	gpus := 0
+	for _, ref := range cfg.Components {
+		if comp := c.Components[ref]; comp != nil && comp.Kind == "gpu" {
+			gpus++
+			if comp.GLES >= HyprlandGLES {
+				return false
+			}
+		}
+	}
+	return gpus > 0
+}
+
 // Limitations returns research notes on what a configuration's hardware
 // rules out before anyone tests it: for now, GPUs below Hyprland's OpenGL ES
 // floor. They inform; they never change a verdict.

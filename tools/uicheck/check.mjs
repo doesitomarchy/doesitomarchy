@@ -19,13 +19,13 @@ const JOBS = Math.max(1, Number(process.env.JOBS) || 4);
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/mac/MacPro5-1", "/mac/Macmini1-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
-  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2", "/mac/MacBook3-1",
+  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2", "/mac/MacBook3-1", "/macs?q=gles%3A2.0", "/search?q=gles%3A2.0",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
   "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
   "/api", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
-const contrastPages = ["/", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/mac/MacBook3-1"];
+const contrastPages = ["/", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
 
 const failures = [];
 const fail = (where, msg) => failures.push(`${where}: ${msg}`);
@@ -132,7 +132,7 @@ for (const theme of themes) {
           return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
         });
       });
-      if (path === "/mac/MacBook3-1" && icons.length === 0) fail(`${path} [${theme}]`, "no warning icon found");
+      if ((path === "/mac/MacBook3-1" || path.startsWith("/macs?q=gles")) && icons.length === 0) fail(`${path} [${theme}]`, "no warning icon found");
       for (const ratio of icons) if (ratio < 3) fail(`${path} [${theme}]`, `warning icon contrast ${ratio.toFixed(2)}:1, needs 3:1`);
       await page.close();
     });

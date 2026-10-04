@@ -43,6 +43,18 @@ func TestGLESFloor(t *testing.T) {
 		t.Error("/components: no GLES levels")
 	}
 
+	// The GLES2 tag in the status column: the Macs list and search results.
+	tag := `<span class="tag gles2" title="Its GPU reaches OpenGL ES 2.0 only.`
+	for _, path := range []string{"/macs?q=gles:2.0", "/search?q=gles:2.0"} {
+		page := get(path)
+		if n := strings.Count(page, tag); n != 20 {
+			t.Errorf("%s: %d GLES2 tags, want 20 (22 Macs, less MacBookPro6,1 and 6,2)", path, n)
+		}
+	}
+	if page := get("/macs?q=MacBookPro6,2"); strings.Contains(page, tag) {
+		t.Error("MacBookPro6,2 can run Hyprland on its GeForce: no GLES2 tag")
+	}
+
 	var mac struct {
 		Configs []struct {
 			Limitations []string `json:"known_limitations"`
