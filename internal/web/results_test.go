@@ -110,7 +110,7 @@ func TestResultLifecycleOnTheSite(t *testing.T) {
 	cardHTML = cardHTML[:strings.Index(cardHTML, "</section>")]
 	for _, want := range []string{
 		`class="verdict partial"`, // the verdict
-		"27/30 tested",            // counts
+		"27/31 tested",            // counts
 		"Blocked by: Graphics → External display output",    // the blocker
 		"DisplayPort alt mode works on the left ports only", // evidence on the partial capability
 		"Why it failed",               // failed capabilities explain themselves

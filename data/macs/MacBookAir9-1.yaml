@@ -37,7 +37,7 @@ releases:
         display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, True Tone" }
         components: [gpu/intel-iris-plus-g4-ice-lake, wifi/broadcom-bcm4377b, bluetooth/broadcom-bcm4377, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-ice-lake, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mba-2020]
         ports: { thunderbolt-3: 2, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging, displayport-audio]
       - id: macbookair9-1-2020-b
         label: "Quad-core Core i5 1.1 GHz or Core i7 1.2 GHz \u00b7 Iris Plus G7"
         order_numbers: [MVH22LL/A, MVH42LL/A, MVH52LL/A]
@@ -50,4 +50,4 @@ releases:
         display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS, True Tone" }
         components: [gpu/intel-iris-plus-g7-ice-lake, wifi/broadcom-bcm4377b, bluetooth/broadcom-bcm4377, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-ice-lake, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mba-2020]
         ports: { thunderbolt-3: 2, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging, displayport-audio]

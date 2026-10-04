@@ -32,4 +32,4 @@ releases:
         display: { inches: 11.6, resolution: 1366x768, panel: "LED glossy" }
         components: [gpu/intel-hd-3000, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821f, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, thunderbolt/intel-eagle-ridge, storage/intel-6-series-sata, input/apple-mba-11-2011]
         ports: { usb-a-2: 2, thunderbolt-1: 1, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, displayport-audio]

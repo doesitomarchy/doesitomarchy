@@ -37,7 +37,7 @@ func TestReportsCLI(t *testing.T) {
 		t.Fatalf("import: %d\n%s", code, out)
 	}
 	rc := m[1]
-	for _, w := range []string{"Untested (0/30 tested)", "→ Partial (27/30 tested), blocked by Graphics → External display output", "reports accept " + rc} {
+	for _, w := range []string{"Untested (0/31 tested)", "→ Partial (27/31 tested), blocked by Graphics → External display output", "reports accept " + rc} {
 		if !strings.Contains(out, w) {
 			t.Errorf("import output lacks %q\n%s", w, out)
 		}

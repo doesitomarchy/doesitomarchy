@@ -34,7 +34,7 @@ releases:
         display: { inches: 11.6, resolution: 1366x768, panel: "LED glossy" }
         components: [gpu/intel-hd-6000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, thunderbolt/intel-falcon-ridge-2c, storage/apple-s1x-nvme, storage/apple-pcie-ssd-ahci, input/apple-mba-11-2013]
         ports: { usb-a-3: 2, thunderbolt-2: 1, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, displayport-audio]
         uncertain:
           - field: storage
             note: "Real machines show two SSD controllers (Apple S1X NVMe on most, Samsung AHCI on a few); Apple does not say which units got which."

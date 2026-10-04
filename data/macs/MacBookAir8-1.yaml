@@ -32,4 +32,4 @@ releases:
         display: { inches: 13.3, resolution: 2560x1600, panel: "Retina LED IPS" }
         components: [gpu/intel-uhd-617, wifi/broadcom-bcm4355, bluetooth/broadcom-bcm4355, audio/apple-t2-audio, camera/apple-t2-facetime-hd, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, bridge/apple-t2, input/apple-t2-mba-2018]
         ports: { thunderbolt-3: 2, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, force-touch, touch-id, usb-c-charging, displayport-audio]

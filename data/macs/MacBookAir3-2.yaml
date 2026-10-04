@@ -31,4 +31,4 @@ releases:
         display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
         components: [gpu/nvidia-geforce-320m, wifi/broadcom-bcm43224, bluetooth/apple-05ac-821b, audio/cirrus-cs4206, camera/apple-facetime-05ac-850a, card-reader/apple-usb-8403, storage/nvidia-mcp89-sata, input/apple-mba-13-2010]
         ports: { usb-a-2: 2, mini-displayport: 1, sd-card: 1, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, displayport-audio]

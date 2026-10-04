@@ -34,7 +34,7 @@ releases:
         display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
         components: [gpu/intel-hd-6000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-falcon-ridge-2c, storage/apple-pcie-ssd-ahci, input/apple-mba-13-2013]
         ports: { usb-a-3: 2, thunderbolt-2: 1, sd-card: 1, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, displayport-audio]
   - id: "2017"
     name: "MacBook Air (13-inch, 2017)"
     announced: 2017-06-05
@@ -54,4 +54,4 @@ releases:
         display: { inches: 13.3, resolution: 1440x900, panel: "LED glossy" }
         components: [gpu/intel-hd-6000, wifi/broadcom-bcm4360, bluetooth/apple-05ac-828f, audio/cirrus-cs4208, camera/broadcom-1570-facetime-hd, card-reader/apple-usb-8406, thunderbolt/intel-falcon-ridge-2c, storage/apple-pcie-ssd-ahci, input/apple-mba-13-2013]
         ports: { usb-a-3: 2, thunderbolt-2: 1, sd-card: 1, audio-out: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, displayport-audio]

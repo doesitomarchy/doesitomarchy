@@ -31,7 +31,7 @@ releases:
         display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
         components: [gpu/amd-radeon-hd-6770m, wifi/atheros-ar93xx, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-850b, ir/apple-05ac-8242, card-reader/apple-usb-8403]
         ports: { usb-a-2: 4, firewire-800: 1, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
       - id: imac12-2-27-mid-2011-b
         label: "Quad-core Core i5 3.1 GHz or Core i7 3.4 GHz \u00b7 Radeon HD 6970M"
         order_numbers: [MC814LL/A, MD063LL/A]
@@ -43,5 +43,5 @@ releases:
         display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
         components: [gpu/amd-radeon-hd-6970m, wifi/atheros-ar93xx, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, thunderbolt/intel-light-ridge, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-850b, ir/apple-05ac-8242, card-reader/apple-usb-8403]
         ports: { usb-a-2: 4, firewire-800: 1, thunderbolt-1: 2, sd-card: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
         notes: "1 GB standard; 2 GB build to order (same chip)."

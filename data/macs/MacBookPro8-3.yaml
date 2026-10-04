@@ -34,7 +34,7 @@ releases:
         display: { inches: 17, resolution: 1920x1200, panel: "LED glossy or matte" }
         components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6630m-6750m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011]
         ports: { usb-a-2: 3, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching, displayport-audio]
   - id: "17-late-2011"
     name: "MacBook Pro (17-inch, Late 2011)"
     announced: 2011-10-24
@@ -54,4 +54,4 @@ releases:
         display: { inches: 17, resolution: 1920x1200, panel: "LED glossy or matte" }
         components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6770m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011]
         ports: { usb-a-2: 3, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, expresscard-34: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching, displayport-audio]

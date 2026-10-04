@@ -3,6 +3,16 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-03"
+  title: Audio over DisplayPort and Thunderbolt
+  summary: "92 configurations gain the \"Audio over HDMI / DisplayPort\" criterion: Macs whose Mini DisplayPort, Thunderbolt or USB-C port carries sound to an HDMI or DisplayPort display. It had applied only to Macs with an HDMI port and eight 2010 models."
+  notes:
+    - "Mini DisplayPort, Thunderbolt and Thunderbolt 2 (MacBook Air Late 2010 to 2015, MacBook Pro 2011 to 2012, iMac 2011 to 2015, Mac Pro 2010 and 2012): Apple's \"Send audio and video to HDMI displays through Mini DisplayPort\" (support.apple.com/HT202079) lists them. Linux hardware probes agree."
+    - "The 2008 and 2009 models with Mini DisplayPort (MacBook, MacBook Air, MacBook Pro, Mac mini, iMac, Mac Pro) send video only, as Apple's article says; probes from them show no HDMI or DisplayPort audio. They keep the criterion off."
+    - "MacBook Air (13-inch, 2017) is the same hardware as the 2015 model, which Apple lists; 236 of 247 probes show HDMI and DisplayPort audio."
+    - "Thunderbolt 3 and USB-C (MacBook 2015 to 2017, MacBook Air 2018 to 2020, MacBook Pro 2016 to 2020, iMac 2017 to 2020, iMac Pro): Apple's \"Connect to HDMI from your Mac\" (support.apple.com/108928) connects HDMI through the USB-C Digital AV Multiport Adapter and picks the HDMI device for sound output. Probes from every model with probes show HDMI and DisplayPort audio."
+    - "Mac Pro (Mid 2010, Mid 2012): the Mini DisplayPorts are on the graphics card. The cards Apple fitted support audio; others may not."
+
+- date: "2026-10-03"
   title: Omarchy channels, and Thunderbolt 1
   summary: "Reports can come from any Omarchy channel: stable, rc, beta, edge or dev. Every version now reads the same everywhere, with its channel: Omarchy 4.0.4 (stable), 4.0.4rc2 (rc), 4.0.0.r6713.ga85e29a (edge). Verdicts count stable releases only; where a newer build on another channel has a different result, the criterion says so on its own line. The first Thunderbolt version is now called Thunderbolt 1, and searching for a port by name finds every Mac with it: \"thunderbolt 2\", \"tb2\", \"firewire 800\", \"mini displayport\"."
 

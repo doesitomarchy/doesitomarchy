@@ -37,7 +37,7 @@ releases:
         display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
         components: [gpu/amd-radeon-pro-vega-56, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, card-reader/apple-usb-8408, thunderbolt/intel-alpine-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p]
         ports: { usb-a-3: 4, thunderbolt-3: 4, sd-card: 1, ethernet-10gbe: 1, audio-out: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]
         notes: "MQ2Y2LL/A is the original 8-core model; MHLV3LL/A the 10-core model that replaced it in August 2020."
       - id: imacpro1-1-2017-vega64
         label: "Any Xeon W · Radeon Pro Vega 64 (build to order)"
@@ -50,7 +50,7 @@ releases:
         display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
         components: [gpu/amd-radeon-pro-vega-64, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, card-reader/apple-usb-8408, thunderbolt/intel-alpine-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p]
         ports: { usb-a-3: 4, thunderbolt-3: 4, sd-card: 1, ethernet-10gbe: 1, audio-out: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]
       - id: imacpro1-1-2017-vega64x
         label: "Any Xeon W · Radeon Pro Vega 64X (build to order)"
         bto_only: true
@@ -62,4 +62,4 @@ releases:
         display: { inches: 27, resolution: 5120x2880, panel: "Retina 5K LED IPS" }
         components: [gpu/amd-radeon-pro-vega-64x, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, card-reader/apple-usb-8408, thunderbolt/intel-alpine-ridge, storage/apple-ans2-nvme, bridge/apple-t2, camera/apple-t2-facetime-hd-1080p]
         ports: { usb-a-3: 4, thunderbolt-3: 4, sd-card: 1, ethernet-10gbe: 1, audio-out: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]

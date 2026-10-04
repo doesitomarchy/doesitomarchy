@@ -34,7 +34,7 @@ releases:
         components: [gpu/amd-radeon-r9-m380, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-100-series-sata, camera/apple-facetime-hd-05ac-8511]
         bto_components: [storage/apple-pcie-ssd-ahci, storage/apple-s1x-nvme]
         ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]
       - id: imac17-1-5k-late-2015-b
         label: "Quad-core Core i5 3.2 GHz \u00b7 Radeon R9 M390"
         order_numbers: [MK472LL/A]
@@ -47,7 +47,7 @@ releases:
         components: [gpu/amd-radeon-r9-m290-m390, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-100-series-sata, camera/apple-facetime-hd-05ac-8511]
         bto_components: [storage/apple-pcie-ssd-ahci, storage/apple-s1x-nvme]
         ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]
       - id: imac17-1-5k-late-2015-c
         label: "Quad-core Core i5 3.3 GHz or Core i7 4.0 GHz \u00b7 Radeon R9 M395 / M395X"
         order_numbers: [MK482LL/A]
@@ -61,5 +61,5 @@ releases:
         components: [gpu/amd-radeon-r9-m395, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8294, audio/cirrus-cs4206, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-falcon-ridge, storage/intel-100-series-sata, camera/apple-facetime-hd-05ac-8511]
         bto_components: [storage/apple-pcie-ssd-ahci, storage/apple-s1x-nvme]
         ports: { usb-a-3: 4, sd-card: 1, ethernet-gbe: 1, audio-out: 1, audio-out-optical: 1, thunderbolt-2: 2 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]
         notes: "The R9 M395X upgrade uses the same Tonga chip."

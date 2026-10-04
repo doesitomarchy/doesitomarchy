@@ -30,4 +30,4 @@ releases:
         components: [gpu/intel-iris-plus-640, wifi/broadcom-bcm43602, bluetooth/apple-05ac-8296, audio/cirrus-cs8409, ethernet/broadcom-bcm57766, card-reader/broadcom-bcm57765-sd, thunderbolt/intel-alpine-ridge, camera/apple-facetime-hd-05ac-8511, storage/intel-sunrise-point-lp-sata]
         bto_components: [storage/samsung-nvme-apple]
         ports: { usb-a-3: 4, thunderbolt-3: 2, sd-card: 1, ethernet-gbe: 1, audio-out: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, displayport-audio]

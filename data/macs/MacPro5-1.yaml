@@ -56,7 +56,7 @@ releases:
         storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
         components: [gpu/ati-radeon-hd-5770, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
         ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
-        features: [builtin-speaker, fan, optical-drive]
+        features: [builtin-speaker, fan, optical-drive, displayport-audio]
         notes: "MC915LL/A is Mac Pro Server (Mid 2010): same hardware with extra drives."
       - id: macpro5-1-mid-2010-hd5870
         label: "Xeon \u00b7 Radeon HD 5870 (build to order)"
@@ -68,7 +68,7 @@ releases:
         storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
         components: [gpu/ati-radeon-hd-5870, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
         ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
-        features: [builtin-speaker, fan, optical-drive]
+        features: [builtin-speaker, fan, optical-drive, displayport-audio]
   - id: mid-2012
     name: "Mac Pro (Mid 2012)"
     announced: 2012-06-11
@@ -87,7 +87,7 @@ releases:
         storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
         components: [gpu/ati-radeon-hd-5770, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
         ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
-        features: [builtin-speaker, fan, optical-drive]
+        features: [builtin-speaker, fan, optical-drive, displayport-audio]
         notes: "MD772LL/A is Mac Pro Server (Mid 2012): same hardware with extra drives."
       - id: macpro5-1-mid-2012-hd5870
         label: "Xeon \u00b7 Radeon HD 5870 (build to order)"
@@ -99,4 +99,4 @@ releases:
         storage: { interface: sata, standard: ["1 TB HDD"], bto: ["2 TB HDD", "512 GB SSD"] }
         components: [gpu/ati-radeon-hd-5870, wifi/broadcom-bcm4322, bluetooth/apple-05ac-8215, audio/realtek-alc889a, ethernet/intel-82574l, firewire/ti-xio2213, storage/intel-ich10-sata]
         ports: { usb-a-2: 5, firewire-800: 4, ethernet-gbe: 2, audio-in: 1, audio-in-optical: 1, audio-out: 2, audio-out-optical: 1, mini-displayport: 2, dvi: 1 }
-        features: [builtin-speaker, fan, optical-drive]
+        features: [builtin-speaker, fan, optical-drive, displayport-audio]

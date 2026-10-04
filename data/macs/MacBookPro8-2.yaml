@@ -35,7 +35,7 @@ releases:
         display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
         components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6490m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
         ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching, displayport-audio]
       - id: macbookpro8-2-15-early-2011-b
         label: "Core i7 2.2 or 2.3 GHz \u00b7 HD 3000 + Radeon HD 6750M"
         order_numbers: [MC723LL/A, MD035LL/A]
@@ -47,7 +47,7 @@ releases:
         display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
         components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6630m-6750m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
         ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching, displayport-audio]
   - id: "15-late-2011"
     name: "MacBook Pro (15-inch, Late 2011)"
     announced: 2011-10-24
@@ -66,7 +66,7 @@ releases:
         display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
         components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6630m-6750m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
         ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching, displayport-audio]
       - id: macbookpro8-2-15-late-2011-b
         label: "Core i7 2.4 GHz \u00b7 HD 3000 + Radeon HD 6770M"
         order_numbers: [MD322LL/A]
@@ -79,4 +79,4 @@ releases:
         display: { inches: 15.4, resolution: 1440x900, panel: "LED glossy or matte; 1680x1050 option" }
         components: [gpu/intel-hd-3000, gpu/amd-radeon-hd-6770m, wifi/broadcom-bcm4331, bluetooth/apple-05ac-821a, audio/cirrus-cs4206, ethernet/broadcom-bcm57765, firewire/lsi-fw643, storage/intel-6-series-sata, camera/apple-facetime-hd-05ac-8509, thunderbolt/intel-light-ridge, ir/apple-05ac-8242, input/apple-mbp-2011, card-reader/broadcom-bcm57765-sd]
         ports: { usb-a-2: 2, firewire-800: 1, thunderbolt-1: 1, ethernet-gbe: 1, sd-card: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching]
+        features: [battery, lid, builtin-display, builtin-keyboard, trackpad, builtin-speaker, builtin-mic, fan, keyboard-backlight, ambient-light-sensor, ir-receiver, optical-drive, gpu-switching, displayport-audio]
