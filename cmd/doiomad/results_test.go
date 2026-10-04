@@ -167,7 +167,7 @@ func TestSharesCLI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	st.AddShare(context.Background(), store.Share{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", PCI: []string{"1002:6760", "ffff:0001"}, Modified: "no"})
+	st.AddShare(context.Background(), store.Share{Product: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80", PCI: []string{"1002:6760", "ffff:0001", "8086:1c22"}, Modified: "no"})
 	st.AddShare(context.Background(), store.Share{Product: "MacBookPro18,1"})
 	st.Close()
 	for _, s := range []struct {
@@ -175,7 +175,7 @@ func TestSharesCLI(t *testing.T) {
 		code int
 		want string
 	}{
-		{[]string{"shares", "list"}, 0, "pci=1002:6760,ffff:0001*  modified=no"},
+		{[]string{"shares", "list"}, 0, "pci=1002:6760,ffff:0001*  chipset=1  modified=no"}, // 8086:1c22, the 6 Series SMBus, is plumbing
 		{[]string{"shares", "list"}, 0, "MacBookPro18,1*: 1 shares, 1 new"},
 		{[]string{"shares", "review", "MacBookPro18,1"}, 0, "MacBookPro18,1: 1 marked reviewed"},
 		{[]string{"shares", "list", "-all"}, 0, "reviewed"},
