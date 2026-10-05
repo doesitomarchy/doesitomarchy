@@ -89,6 +89,25 @@ func TestIdentify(t *testing.T) {
 			t.Errorf("%s: %d, want %q", tc.path, code, tc.want)
 		}
 	}
+	// An identifier sold under several names is titled by the release identified.
+	for path, want := range map[string]string{
+		"/identify?board=Mac-F2268CC8&pci=1002:9488":    "</a> iMac (21.5-inch, Late 2009)</h2>",
+		"/identify?product=iMac10,1&pci=1002:9488":      "</a> iMac (27-inch, Late 2009)</h2>", // ties across both sizes
+		"/identify?product=MacBookPro8,2&pci=1002:6741": "</a> MacBook Pro (15-inch, Late 2011)</h2>",
+	} {
+		if _, body := get(path); !strings.Contains(body, want) {
+			t.Errorf("%s: heading isn't %q", path, want)
+		}
+	}
+	// No " · " separators in the result (owner's call, 2026-10-05).
+	for _, path := range []string{"/identify?board=Mac-F2268CC8&pci=1002:9488", "/identify?product=MacBookPro8,2&pci=1002:6741", "/identify?pci=1002:6760"} {
+		_, body := get(path)
+		_, res, _ := strings.Cut(body, `class="panel identify-result"`)
+		res, _, _ = strings.Cut(res, `id="share"`)
+		if strings.Contains(res, "·") {
+			t.Errorf("%s: a dot in the result: %s", path, res)
+		}
+	}
 	// Only the tied configurations, not those the pasted GPU rules out.
 	if _, body := get("/identify?product=MacBookPro8,2&pci=1002:6741"); strings.Contains(body, "#cfg-macbookpro8-2-15-early-2011-a") {
 		t.Errorf("a ruled-out configuration is offered")

@@ -5,6 +5,12 @@
 # site pages (even API-related ones, like /api/register) don't belong here.
 
 - date: "2026-10-05"
+  title: MCP answers name the release
+  summary: "A Mac sold under several names, such as the iMac10,1 (21.5-inch and 27-inch), is now named after the release an MCP answer is about: `identify_mac`, and `get_mac` or `what_needs_testing` with a `config`. `get_mac` for the whole Mac adds an \"Also sold as\" line."
+  notes:
+    - "`search_macs` no longer flags a valid value that matches no Mac yet, such as `status:supported`, as a mistake."
+
+- date: "2026-10-05"
   title: An MCP server for AI assistants
   summary: "AI assistants can now look Macs up themselves through the MCP server at `/mcp`, with four read-only tools: `search_macs`, `get_mac`, `identify_mac` and `what_needs_testing`. No key needed. The index lists it as `mcp`."
   notes:

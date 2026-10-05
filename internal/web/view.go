@@ -120,6 +120,23 @@ type macView struct {
 	Matrix        *matrixView
 }
 
+// sharedName returns name(cv) when every config gives the same one, else "".
+// An identifier sold under several names (iMac10,1: 21.5-inch and 27-inch) is
+// titled by its newest release; this names it by the configs an answer is about.
+func sharedName(cvs []*configView, name func(*configView) string) string {
+	out := ""
+	for _, cv := range cvs {
+		switch {
+		case cv == nil:
+		case out == "":
+			out = name(cv)
+		case name(cv) != out:
+			return ""
+		}
+	}
+	return out
+}
+
 type releaseView struct {
 	ID, Name, Announced, Discontinued string
 	ModelNumbers, EMC                 []string
@@ -134,6 +151,7 @@ type configView struct {
 	Diff         string // what sets this config apart from its siblings ("HD 6490M", "17-inch")
 	Label        string
 	ReleaseName  string
+	ReleaseList  string   // the same in the plain form lists use (Release.ListName)
 	BoardIDs     []string // board IDs tied to the config's release (PLAN.md §29)
 	OrderNumbers []string
 	BTOOnly      bool
@@ -613,7 +631,7 @@ func buildMac(c *catalog.Catalog, m *catalog.Mac, stateOf stateFunc, ru *store.R
 }
 
 func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *catalog.Config, excl string, stateOf stateFunc, ru *store.Rollup, now time.Time) *configView {
-	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, BoardIDs: r.BoardIDs, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
+	cv := &configView{ID: cfg.ID, Label: cfg.Label, ReleaseName: r.Name, ReleaseList: r.ListName(), BoardIDs: r.BoardIDs, OrderNumbers: cfg.OrderNumbers, BTOOnly: cfg.BTOOnly,
 		Codename: c.Vocab.CPUCodenames[cfg.CPU.Codename].Name, Notes: cfg.Notes, OutOfScope: excl,
 		Limitations: c.Limitations(cfg), NoGLES3: c.BelowGLESFloor(cfg)}
 	for _, p := range cfg.CPU.Standard {

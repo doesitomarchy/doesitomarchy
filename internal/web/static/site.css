@@ -58,7 +58,7 @@ svg.i { width: 1em; height: 1em; vertical-align: -0.125em; flex: none; }
 .top .tools { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
 .btn, select.btn {
   font: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--line);
-  border-radius: 2px; padding: 0.2rem 0.55rem; display: inline-flex; gap: 0.4rem; align-items: center; cursor: pointer;
+  border-radius: 2px; padding: 0.2rem 0.55rem; display: inline-flex; gap: 0.4rem; align-items: center; cursor: pointer; text-decoration: none;
 }
 .btn:hover { border-color: var(--line-strong); text-decoration: none; }
 
@@ -337,7 +337,14 @@ a.hbar:hover span:first-child { text-decoration: underline; }
 .paper code, .paper kbd { font-family: var(--mono); font-size: 13px; }
 .wide-p { font: 15px/1.6 var(--sans); }
 /* A prose page's opening paragraph, full width above its columns. */
-p.lede { font: 16px/1.65 var(--mono); margin: 0 0 0.75rem; }
+p.lede { font: 16px/1.65 var(--mono); margin: 0 0 0.75rem; color: var(--muted); }
+/* The methodology's TLDR: the privacy page's box, its points in up to three columns. */
+.method-tldr { margin: 1.25rem 0 0.5rem; }
+.method-tldr h2 { margin: 0 0 0.9rem; }
+.method-tldr ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1rem 2.25rem; font: 14px/1.55 var(--sans); }
+.method-tldr li a { display: block; margin-bottom: 0.2rem; font: 600 14px/1.4 var(--mono); color: var(--heading); text-decoration: none; }
+.method-tldr li a:hover { text-decoration: underline; }
+@media (max-width: 40rem) { .method-tldr { padding: 1.1rem 1rem; } }
 /* Definition tables (verdicts, coverage) inside the methodology's prose. */
 table.defs { margin: 0.25rem 0 1rem; font: 14px/1.5 var(--sans); }
 table.defs th[scope="row"] { white-space: nowrap; color: var(--heading); font: 500 13px/1.5 var(--mono); width: 1%; }
@@ -493,10 +500,11 @@ ul.settle { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.25rem; }
 ul.admin-flags { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.35rem; font-size: 13px; }
 .ok-notice { border-left-color: var(--link); }
 /* /identify (PF-1). */
-.identify .lead { font: 15px/1.6 var(--sans); color: var(--muted); max-width: 70ch; }
+.identify .lead { font: 16px/1.65 var(--mono); color: var(--muted); max-width: 69ch; } /* p.lede's type; 69ch of mono is the old 70ch of Inter (662px) */
 .identify-result { margin: 1.25rem 0; display: grid; gap: 0.4rem; }
 .identify-result h2 { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0; }
 .identify-result p { margin: 0; }
+.identify-result p > a.slotted { vertical-align: middle; } /* the bordered box, centred on the line; a lone result reserves no badge slot */
 .identify-cands { list-style: none; padding: 0; margin: 0.3rem 0; display: grid; gap: 0.3rem; font-size: 13px; }
 .identify-used { font-size: 12px; overflow-wrap: anywhere; }
 .identify-steps h2 { margin-top: 1.5rem; }
@@ -590,13 +598,13 @@ table.explain-table tr[hidden] { display: none; }
 .privacy h1, .privacy h2, .privacy h3 { font-family: var(--mono); }
 .privacy h3 { font-size: 1.05rem; margin: 1.25rem 0 0.6rem; color: var(--heading); }
 .privacy h1 { font-size: 2rem; }
-.privacy .privacy-intro { font: 1.3rem/1.5 var(--mono); color: var(--heading); margin: 0 0 1.75rem; text-wrap: balance; }
+.privacy .privacy-intro { font: 1.3rem/1.5 var(--mono); color: var(--muted); margin: 0 0 1.75rem; text-wrap: pretty; }
 .privacy section { margin-top: 2rem; }
 .privacy section.tldr { margin: 0 0 2rem; }
 .privacy h2 { font-size: 1.25rem; margin-bottom: 0.6rem; }
 .privacy .tldr h2 { font-size: 1.4rem; }
 .privacy ul.plain { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
-.privacy ul.plain strong { font-size: 1.08em; color: var(--heading); }
+.privacy ul.plain strong { font-size: 1.08em; color: var(--accent); color: color-mix(in srgb, var(--accent) 80%, var(--text)); } /* a slightly softer accent */
 .privacy p { margin: 0 0 0.75rem; }
 .privacy code { font: 0.85em var(--mono); }
 /* The consent notice on /api: the exact text tools must show. */

@@ -36,7 +36,7 @@ func TestGLESFloor(t *testing.T) {
 	if page := get("/mac/MacBookPro8-2"); strings.Contains(page, "limit-line") {
 		t.Error("/mac/MacBookPro8-2: a note on GPUs that meet the floor")
 	}
-	if page := get("/methodology"); !strings.Contains(page, "<h2>Known limitations</h2>") || !strings.Contains(page, "OpenGL ES 3.0 or later, not with the llvmpipe software renderer") {
+	if page := get("/methodology"); !strings.Contains(page, `<h2 id="limitations">Known limitations</h2>`) || !strings.Contains(page, "OpenGL ES 3.0 or later, not with the llvmpipe software renderer") {
 		t.Error("/methodology: no known-limitations section or criterion description")
 	}
 	if page := get("/components"); !strings.Contains(page, `<span class="muted">· GLES 2.0</span>`) {

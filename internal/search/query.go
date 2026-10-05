@@ -3,9 +3,12 @@ package search
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/doesitomarchy/doesitomarchy/internal/status"
 )
 
 // clauseKind says how a clause is evaluated against a document.
@@ -78,6 +81,15 @@ var fields = map[string]fieldSpec{
 	"scope":  {kKey, "scope", "in or out"},
 	"tested": {kKey, "tested", "yes or no"},
 	"order":  {kNumberID, "order", ""}, "a": {kNumberID, "a", ""}, "emc": {kNumberID, "emc", ""},
+}
+
+// closed lists the values a field always accepts, even when no Mac has one yet:
+// these depend on results, so a valid value may match nothing.
+var closed = map[string][]string{
+	"status": {string(status.Untested), string(status.Supported), string(status.Partial),
+		string(status.Failed), string(status.Unsupported), string(status.NotCompatible)},
+	"tested": {"yes", "no"},
+	"scope":  {"in", "out"},
 }
 
 // FieldNames lists the canonical field names, for suggestions and help.
@@ -491,7 +503,7 @@ func (ix *Index) keyAlt(spec fieldSpec, v string) (alt, string) {
 		}
 	}
 	known := ix.keys[spec.key]
-	if known[v] {
+	if known[v] || slices.Contains(closed[spec.key], v) {
 		return alt{key: v}, ""
 	}
 	if spec.key == "port" || spec.key == "feature" {

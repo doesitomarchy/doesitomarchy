@@ -199,11 +199,16 @@ func (s *Server) mcpGetMac(in mcpMacIn) (string, error) {
 		return "", err
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "# %s\n%s. %d-bit EFI", macName(m), m.Years, m.EFI)
+	fmt.Fprintf(&b, "# %s\n%s. %d-bit EFI", macNameFor(m, cvs), m.Years, m.EFI)
 	if m.Chip != "" {
 		b.WriteString(", " + m.Chip)
 	}
 	fmt.Fprintf(&b, ". %s\n", macURL(m))
+	if in.Config == "" {
+		if also := alsoSoldAs(m); len(also) > 0 {
+			fmt.Fprintf(&b, "Also sold as: %s.\n", strings.Join(also, "; "))
+		}
+	}
 	if m.HardBlocker != "" {
 		fmt.Fprintf(&b, "\nIt can never run Omarchy: %s\n", m.HardBlocker)
 	}
@@ -285,16 +290,16 @@ func (s *Server) mcpIdentify(in mcpIdentifyIn) (string, error) {
 		b.WriteString(" If it is an Intel Mac, please open an issue with this output: https://github.com/doesitomarchy/doesitomarchy/issues")
 		return b.String(), nil
 	}
-	m := s.data().view.bySlug[strings.ToLower(strings.ReplaceAll(res.Identifier, ",", "-"))]
-	if m != nil {
-		fmt.Fprintf(&b, "This is a %s (identified by %s).\n", macName(m), strings.ReplaceAll(res.By, "_", " "))
-	}
 	top := res.Candidates[0].Score
 	var best []*configView
 	for _, c := range res.Candidates {
 		if c.Score == top {
 			best = append(best, s.data().view.configs[c.Config])
 		}
+	}
+	m := s.data().view.bySlug[strings.ToLower(strings.ReplaceAll(res.Identifier, ",", "-"))]
+	if m != nil {
+		fmt.Fprintf(&b, "Identified by %s: %s.\n", strings.ReplaceAll(res.By, "_", " "), macNameFor(m, best))
 	}
 	if res.Exact && len(best) == 1 && best[0] != nil {
 		cv := best[0]
@@ -329,7 +334,7 @@ func (s *Server) mcpNeedsTesting(in mcpMacIn) (string, error) {
 		return "", err
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "# What needs testing: %s\n", macName(m))
+	fmt.Fprintf(&b, "# What needs testing: %s\n", macNameFor(m, cvs))
 	if m.HardBlocker != "" {
 		fmt.Fprintf(&b, "Nothing: it can never run Omarchy (%s).\n", m.HardBlocker)
 		return b.String(), nil
@@ -372,6 +377,28 @@ func (s *Server) mcpNeedsTesting(in mcpMacIn) (string, error) {
 
 // macName is how the site names a Mac in prose: "Name [Identifier]".
 func macName(m *macView) string { return m.ListTitle + " [" + m.Identifier + "]" }
+
+// macNameFor is macName by the release of the configurations an answer is
+// about, when they share one (see sharedName).
+func macNameFor(m *macView, cvs []*configView) string {
+	if name := sharedName(cvs, func(cv *configView) string { return cv.ReleaseList }); name != "" {
+		return name + " [" + m.Identifier + "]"
+	}
+	return macName(m)
+}
+
+// alsoSoldAs lists the Mac's other release names, besides its title.
+func alsoSoldAs(m *macView) []string {
+	var out []string
+	seen := map[string]bool{m.ListTitle: true}
+	for _, cv := range m.Configs {
+		if !seen[cv.ReleaseList] {
+			seen[cv.ReleaseList] = true
+			out = append(out, cv.ReleaseList)
+		}
+	}
+	return out
+}
 
 func macURL(m *macView) string { return BaseURL + "/mac/" + url.PathEscape(m.Slug) }
 
