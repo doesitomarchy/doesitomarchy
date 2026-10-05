@@ -30,7 +30,7 @@ AI assistants can connect to the MCP server at {{.Base}}/mcp (Streamable HTTP; M
 {{end}}
 ## Submitting reports (test tools only)
 
-- A test tool needs a source key: open an issue at https://github.com/doesitomarchy/doesitomarchy/issues with the tool's name, homepage and what it tests.
+- A test tool needs a source key: register it at {{.Base}}/api/register (name, source code link, contact email, what it tests). A maintainer reviews the request; the key is shown once on the applicant's private link.
 - POST /api/v1/reports with `Authorization: Bearer doi_…` and one report (JSON or YAML) in the doesitomarchy/report/v1 format. Up to {{.PerHour}} reports per source per hour.
 - New reports are pending until a maintainer reviews them; GET /api/v1/reports/{code} tells where one stands.
 - Before submitting, the tool must show the tester this notice and let them stop, then send the text shown in `consent_notice`: "{{.Notice}}"

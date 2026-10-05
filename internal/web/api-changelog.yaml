@@ -1,7 +1,8 @@
 # Public API changelog, newest first. Shown at the end of /api.
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes;
 # `backticks` mark code.
-# Add an entry with every release that changes the API or the report format.
+# Add an entry with every release that changes the API or the report format;
+# site pages (even API-related ones, like /api/register) don't belong here.
 
 - date: "2026-10-05"
   title: An MCP server for AI assistants

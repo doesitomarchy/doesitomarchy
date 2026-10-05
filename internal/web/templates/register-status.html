@@ -1,0 +1,71 @@
+{{define "content"}}{{with .Data}}
+<div class="register">
+<p id="copy-status" class="sr-only" aria-live="polite"></p>
+{{if .Spam}}
+<h1>Request received</h1>
+<p>Thanks. A maintainer will review it.</p>
+{{else}}
+<h1>{{if .ShownKey}}Your test source API key{{else if .Request}}{{.Request.Name}} API key request{{else}}A new API key for {{.SourceID}}{{end}}</h1>
+<p class="reg-status"><span class="reg-status-label">Status</span> <span class="state-tag lg st-{{.StatusClass}}">{{.Status}}</span></p>
+<ol class="steps st-{{.StatusClass}}" aria-label="Progress">{{range .Steps}}
+  <li class="{{.State}}"><span class="sr-only">{{if eq .State "done"}}Done: {{else if eq .State "current"}}Now: {{else if eq .State "error"}}Stopped: {{else}}Not yet: {{end}}</span>{{.Label}}</li>{{end}}
+</ol>
+{{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
+
+{{if .ShownKey}}
+{{template "once" (dict "ID" "source-key" "Label" "API key" "Text" .ShownKey "Head" "Copy your API key" "Warn" "This key is only shown once."
+  "Body" "Copy it now and keep it in your tool's build or server secrets, never in a public repository. A lost key is replaced, not recovered.")}}
+<ul>
+  <li>Your source ID is <code>{{.SourceID}}</code>. Send the key as <code>Authorization: Bearer …</code> with each report: see <a href="/api#submit">submitting a report</a>.</li>
+  <li>Lost it, or think it leaked? <a href="https://github.com/doesitomarchy/doesitomarchy/issues" rel="noopener">Open an issue</a> (never post the key), and a maintainer will email a new key link to your contact address. The old key stops working at once.</li>
+</ul>
+{{else}}
+{{if .New}}{{template "once" (dict "ID" "status-link" "Label" "private link" "Text" .Link "Head" "Copy your private link" "Warn" "This link is only shown once."
+  "Body" "Copy your private link now and keep it safe. It's the only way to see the decision and collect your key, and we can't send it again.")}}{{end}}
+{{with .Request}}
+  {{if eq .State "pending"}}<p class="register-intro">A maintainer will review your request and get back to you through your private link: come back to it to see the decision.</p>
+  {{else if eq .State "declined"}}<p class="register-intro">A maintainer declined it on {{utc .DecidedAt}}:</p>
+    <blockquote class="notice-text"><p>{{.Reason}}</p></blockquote>
+    <p>You're welcome to <a href="/api/register">send a new request</a>.</p>
+  {{end}}
+{{end}}
+{{with .Key}}
+  {{if .UsedAt}}<p class="register-intro">{{if eq .UsedAt "superseded"}}A newer key link replaced this one.{{else}}The key for <code>{{$.Data.SourceID}}</code> was shown on {{utc .UsedAt}}.{{end}}</p>
+    <p>Lost the key? <a href="https://github.com/doesitomarchy/doesitomarchy/issues" rel="noopener">Open an issue</a> (never post a key) and a maintainer will email a new key link to your contact address.</p>
+  {{else if $.Data.Expired}}<p class="register-intro">This link expired on {{utc .ExpiresAt}} without the key being collected.</p>
+    <p><a href="https://github.com/doesitomarchy/doesitomarchy/issues" rel="noopener">Open an issue</a> and a maintainer will email a new key link to your contact address.</p>
+  {{else}}<p class="register-intro">Your source ID is <code>{{$.Data.SourceID}}</code>, and your key is ready. Collect it by {{utc .ExpiresAt}}.</p>
+    <div class="once">
+      <h2 class="once-head">Collect your API key</h2>
+      <form method="post" action="/api/register/{{$.Data.Token}}/key"><button class="btn-cta" type="submit">Show my key</button></form>
+      <p class="once-warn">The key is only shown once, on the next page.</p>
+      <p>Have somewhere safe ready to paste it before you continue.</p>
+    </div>
+  {{end}}
+{{end}}
+{{with .Request}}
+<h2>Requested tool details</h2>
+<table class="defs register-sent"><tbody>
+  <tr><th scope="row">Tool</th><td>{{.Name}}</td></tr>
+  <tr><th scope="row">Source ID</th><td><code>{{.SourceID}}</code></td></tr>
+  <tr><th scope="row">Source code</th><td><a href="{{.RepoURL}}" rel="noopener noreferrer">{{.RepoURL}}</a></td></tr>
+  {{with .Homepage}}<tr><th scope="row">Homepage</th><td><a href="{{.}}" rel="noopener noreferrer">{{.}}</a></td></tr>{{end}}
+  <tr><th scope="row">Sent</th><td>{{utc .CreatedAt}}</td></tr>
+</tbody></table>
+{{end}}
+{{end}}
+{{end}}
+</div>
+{{end}}{{end}}
+
+{{/* once: something shown a single time (the private link, the key): the
+   call to action, the copy field, the warning, then the explanation. */}}
+{{define "once"}}<div class="once">
+  <h2 class="once-head">{{.Head}}</h2>
+  <div class="snippet">
+    <div class="snippet-code" tabindex="0" role="region" aria-label="{{.Label}}"><pre><code id="{{.ID}}">{{.Text}}</code></pre></div>
+    <button type="button" class="snippet-copy" data-copy="{{.ID}}" aria-label="Copy the {{.Label}}" title="Copy" data-js>{{template "icon" "copy"}}<span class="copied" aria-hidden="true">Copied!</span></button>
+  </div>
+  <p class="once-warn">{{.Warn}}</p>
+  <p>{{.Body}}</p>
+</div>{{end}}

@@ -1,6 +1,6 @@
 {{define "content"}}{{with .Data}}
 <div class="admin">
-<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
+{{template "adminbar" .Who}}
 <h1>Review queue</h1>
 <p class="muted">Pending diagnostic reports count for nothing until accepted. All times are UTC.</p>
 
@@ -18,15 +18,21 @@
 
 <h2 id="import">Import a report</h2>
 {{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
-<form method="post" action="/admin/import" enctype="multipart/form-data" class="import-form">
+<form method="post" action="/admin/import" enctype="multipart/form-data" class="cf-form">
   <input type="hidden" name="csrf" value="{{.CSRF}}">
-  <label>Report file <input type="file" name="report" required></label>
-  <label>Format <select name="format"><option value="">DoesItOmarchy report (YAML or JSON)</option><option value="omacdiag">OmacDiag JSON report</option></select></label>
-  <label>Omarchy version <span class="muted">(OmacDiag reports don't record it: /etc/os-release's VERSION_ID, any channel)</span> <input type="text" name="omarchy" placeholder="4.0.4, 4.0.4rc2 or 4.0.0.r6713.ga85e29a" pattern="[vV]?[0-9][0-9A-Za-z.+-]*" maxlength="60"></label>
-  <label>Channel <select name="channel"><option value="">From the version</option><option value="dev">dev (Omarchy run from a git checkout)</option></select></label>
-  <label>Dev commit <span class="muted">(dev only: <code>omarchy-version</code> prints "dev (&lt;hash&gt;)")</span> <input type="text" name="revision" pattern="[0-9a-fA-F]{7,40}" maxlength="40"></label>
-  <label>Tester handle <span class="muted">(optional)</span> <input type="text" name="tester" maxlength="39"></label>
-  <button class="btn primary" type="submit">Import as pending</button>
+  <div class="cf-field"><label class="cf-label" for="imp-file">Report file</label><input class="cf-input" id="imp-file" type="file" name="report" required></div>
+  <div class="cf-field"><label class="cf-label" for="imp-format">Format</label>
+    <select class="cf-input" id="imp-format" name="format"><option value="">DoesItOmarchy report (YAML or JSON)</option><option value="omacdiag">OmacDiag JSON report</option></select></div>
+  <div class="cf-field"><label class="cf-label" for="imp-omarchy">Omarchy version (optional)</label>
+    <input class="cf-input" id="imp-omarchy" type="text" name="omarchy" placeholder="4.0.4, 4.0.4rc2 or 4.0.0.r6713.ga85e29a" pattern="[vV]?[0-9][0-9A-Za-z.+-]*" maxlength="60" aria-describedby="imp-omarchy-help">
+    <p class="cf-helper" id="imp-omarchy-help">OmacDiag reports don't record it: /etc/os-release's VERSION_ID, any channel.</p></div>
+  <div class="cf-field"><label class="cf-label" for="imp-channel">Channel</label>
+    <select class="cf-input" id="imp-channel" name="channel"><option value="">From the version</option><option value="dev">dev (Omarchy run from a git checkout)</option></select></div>
+  <div class="cf-field"><label class="cf-label" for="imp-rev">Dev commit (optional)</label>
+    <input class="cf-input" id="imp-rev" type="text" name="revision" pattern="[0-9a-fA-F]{7,40}" maxlength="40" aria-describedby="imp-rev-help">
+    <p class="cf-helper" id="imp-rev-help">Dev only: <code>omarchy-version</code> prints "dev (&lt;hash&gt;)".</p></div>
+  <div class="cf-field"><label class="cf-label" for="imp-tester">Tester handle (optional)</label><input class="cf-input" id="imp-tester" type="text" name="tester" maxlength="39"></div>
+  <div class="cf-actions"><button class="cf-btn primary" type="submit">Import as pending</button></div>
 </form>
 
 <h2>Recent decisions</h2>

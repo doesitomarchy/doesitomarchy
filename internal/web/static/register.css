@@ -1,0 +1,57 @@
+/* /api/register and its private links (PLAN §30d): one readable column. */
+.register { max-width: 44rem; font: 16px/1.6 var(--sans); }
+.register h1, .register h2 { font-family: var(--mono); }
+.register h2 { margin-top: 2rem; }
+/* The form page: the heading, then the form on the left and what a source
+   is on the right. Narrower, they stack, the explanation first. */
+.register-page { max-width: none; }
+.register-cols { display: grid; gap: 1.5rem 3rem; grid-template-columns: minmax(0, 1fr); grid-template-areas: "about" "main"; margin-top: 1rem; }
+.register-about { grid-area: about; }
+.register-main { grid-area: main; }
+.register-cols h2:first-child, .register-about > :first-child { margin-top: 0; }
+@media (min-width: 900px) {
+  .register-cols { grid-template-columns: minmax(0, 42rem) minmax(0, 1fr); grid-template-areas: "main about"; align-items: start; }
+  .register-about { position: sticky; top: 1rem; border-left: 1px solid var(--line); padding-left: 2.5rem; }
+}
+.register-intro { font: 1.15rem/1.5 var(--mono); color: var(--heading); text-wrap: pretty; }
+.register code { font-family: var(--mono); font-size: 14px; }
+.register li { margin-bottom: 0.35rem; }
+.register li a, .register td a, .register .hint a, .register-rules a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.register-form { display: grid; gap: 1rem; margin-top: 1rem; }
+.register-form > label:not(.register-rules) { display: grid; gap: 0.3rem; font: 500 14px/1.4 var(--mono); color: var(--heading); }
+.register-form input:not([type="checkbox"]), .register-form textarea { font: 15px/1.5 var(--sans); color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); padding: 0.45rem 0.6rem; width: 100%; }
+.register-form textarea { resize: vertical; }
+.register-form input:focus, .register-form textarea:focus { border-color: var(--accent); outline: none; }
+.register-form textarea::placeholder { color: var(--muted); }
+.register-rules .rules-title { color: var(--heading); font-size: 1.15em; }
+.register-form .hint { font: 13px/1.5 var(--sans); color: var(--muted); }
+.register-form .btn-cta { justify-self: start; cursor: pointer; }
+.register-rules { display: flex; gap: 0.6rem; align-items: flex-start; font: 14px/1.5 var(--sans); }
+.register-rules input { width: 1.1rem; height: 1.1rem; flex: none; margin-top: 0.15rem; accent-color: var(--accent); }
+/* The honeypot: out of sight and out of the tab order. */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+/* Status: a large state tag (the report states' colours), then progress
+   steps after Carbon's progress indicator: a bar over each step. */
+.reg-status { display: flex; align-items: center; gap: 0.75rem; margin: 0.25rem 0 1.25rem; }
+.reg-status-label { font: 500 12px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.state-tag.lg { font-size: 16px; padding: 0.3rem 0.85rem; border-width: 2px; }
+.steps { list-style: none; display: flex; padding: 0; margin: 0 0 1.75rem; gap: 0.25rem; }
+.steps li { flex: 1; min-width: 0; margin: 0; padding-top: 0.55rem; border-top: 3px solid var(--line-strong); font: 14px/1.35 var(--sans); color: var(--muted); }
+.steps li::before { content: ""; display: inline-block; width: 0.7rem; height: 0.7rem; margin-right: 0.45rem; vertical-align: -0.05rem; border: 2px solid currentColor; border-radius: 50%; }
+/* Done steps are neutral; the current one takes the status colour. */
+.steps li.done { border-top-color: var(--text); color: var(--text); }
+.steps li.done::before { background: var(--text); border-color: var(--text); }
+.steps li.current { font-weight: 600; }
+.steps li.current::before { background: radial-gradient(circle, currentColor 40%, transparent 45%); }
+.steps.st-pending li.current { border-top-color: var(--warn); color: var(--warn); }
+.steps.st-accepted li.current { border-top-color: var(--link); color: var(--link); }
+.steps.st-rejected li.current, .steps li.error { border-top-color: var(--bad); color: var(--bad); }
+/* What's shown once (the private link, the key): a call to action, the
+   copy field, then a warning that it's shown only once. */
+.once { border: 2px solid var(--accent); padding: 1.1rem 1.25rem; margin: 0 0 1.5rem; }
+.once p { margin: 0 0 0.6rem; }
+.register .once-head { font: 700 1.25rem/1.3 var(--mono); color: var(--accent); margin: 0 0 0.75rem; }
+.once .snippet { margin: 0 0 0.9rem; }
+.once form { margin: 0 0 0.9rem; }
+.once-warn { font: 700 1.05rem/1.4 var(--mono); color: var(--heading); }
+.once > p:last-child { margin-bottom: 0; }

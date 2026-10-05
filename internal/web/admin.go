@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -29,6 +30,8 @@ func (s *Server) adminRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/report/{code}/{action}", s.admin(s.adminAction))
 	mux.HandleFunc("POST /admin/flag/{id}/resolve", s.admin(s.adminResolve))
 	mux.HandleFunc("GET /admin/sources", s.admin(s.adminSources))
+	mux.HandleFunc("POST /admin/sources/request/{id}/{action}", s.admin(s.adminRequestDecide))
+	mux.HandleFunc("POST /admin/sources/{id}/{action}", s.admin(s.adminSourceAction))
 	mux.HandleFunc("GET /admin/shares", s.admin(s.adminShares))
 	s.adminFixRoutes(mux)
 	mux.HandleFunc("POST /admin/import", limitBody(results.MaxSize+64<<10, s.admin(s.adminImport)))
@@ -264,23 +267,113 @@ func (s *Server) afterAction(w http.ResponseWriter, r *http.Request, code, actio
 }
 
 type adminSourcesData struct {
-	Who         string
+	Who, CSRF   string
+	Done, Err   string
+	Requests    []store.SourceRequest
+	Declined    []store.SourceRequest // newest first
 	Sources     []store.Source
 	Maintainers []store.Maintainer
+	// NewLink is a key link just issued, shown once for a maintainer to
+	// email to the source's contact address (PLAN §30d).
+	NewLink, NewLinkFor, NewLinkEmail string
 }
 
 func (s *Server) adminSources(w http.ResponseWriter, r *http.Request, who string) {
+	q := r.URL.Query()
+	s.renderAdminSources(w, r, who, adminSourcesData{Done: q.Get("done"), Err: q.Get("err")})
+}
+
+func (s *Server) renderAdminSources(w http.ResponseWriter, r *http.Request, who string, d adminSourcesData) {
 	ctx := r.Context()
-	d := adminSourcesData{Who: who}
+	d.Who, d.CSRF = who, s.csrf(ctx, who)
 	var err error
-	if d.Sources, err = s.store.Sources(ctx); err == nil {
-		d.Maintainers, err = s.store.Maintainers(ctx)
+	if d.Requests, err = s.store.SourceRequests(ctx, store.RequestPending); err == nil {
+		d.Declined, err = s.store.SourceRequests(ctx, store.RequestDeclined)
+		slices.Reverse(d.Declined)
+	}
+	if err == nil {
+		if d.Sources, err = s.store.Sources(ctx); err == nil {
+			d.Maintainers, err = s.store.Maintainers(ctx)
+		}
 	}
 	if err != nil {
 		s.fail(w, r, err)
 		return
 	}
 	s.render(w, r, http.StatusOK, "admin-sources", page{Title: "Sources", Data: d})
+}
+
+// adminSourcesDone returns to /admin/sources with a message.
+func adminSourcesDone(w http.ResponseWriter, r *http.Request, key, msg string) {
+	http.Redirect(w, r, "/admin/sources?"+url.Values{key: {msg}}.Encode(), http.StatusSeeOther)
+}
+
+func (s *Server) adminRequestDecide(w http.ResponseWriter, r *http.Request, who string) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	ctx := r.Context()
+	switch r.PathValue("action") {
+	case "approve":
+		edit := store.SourceRequest{SourceID: r.FormValue("id"), Name: r.FormValue("name"), RepoURL: r.FormValue("repo"), Homepage: r.FormValue("homepage")}
+		err = s.store.ApproveRequest(ctx, id, edit, who)
+		if err == nil {
+			s.log.Info("source approved", "source", store.NormalizeSourceID(edit.SourceID), "by", who)
+			adminSourcesDone(w, r, "done", "approved "+store.NormalizeSourceID(edit.SourceID)+"; the applicant collects the key from their link")
+			return
+		}
+	case "decline":
+		err = s.store.DeclineRequest(ctx, id, r.FormValue("reason"), who)
+		if err == nil {
+			s.log.Info("source request declined", "request", id, "by", who)
+			adminSourcesDone(w, r, "done", "declined; the applicant sees the reason")
+			return
+		}
+	default:
+		http.NotFound(w, r)
+		return
+	}
+	var input store.InputError
+	if errors.As(err, &input) || errors.Is(err, store.ErrNotFound) {
+		adminSourcesDone(w, r, "err", err.Error())
+		return
+	}
+	s.fail(w, r, err)
+}
+
+func (s *Server) adminSourceAction(w http.ResponseWriter, r *http.Request, who string) {
+	ctx := r.Context()
+	id := store.NormalizeSourceID(r.PathValue("id"))
+	switch r.PathValue("action") {
+	case "revoke":
+		if err := s.store.RevokeSource(ctx, id); err != nil {
+			adminSourcesDone(w, r, "err", err.Error())
+			return
+		}
+		s.log.Info("source revoked", "source", id, "by", who)
+		adminSourcesDone(w, r, "done", "revoked "+id+"; its reports stay")
+	case "keylink":
+		token, err := s.store.NewKeyLink(ctx, id, who)
+		if err != nil {
+			adminSourcesDone(w, r, "err", err.Error())
+			return
+		}
+		s.log.Info("source key link issued", "source", id, "by", who)
+		d := adminSourcesData{NewLink: BaseURL + "/api/register/" + token, NewLinkFor: id}
+		if srcs, err := s.store.Sources(ctx); err == nil {
+			for _, x := range srcs {
+				if x.ID == id {
+					d.NewLinkEmail = x.ContactEmail
+				}
+			}
+		}
+		// Shown on this response only, never in a URL.
+		s.renderAdminSources(w, r, who, d)
+	default:
+		http.NotFound(w, r)
+	}
 }
 
 // limitBody caps a request body before anything reads it (the admin

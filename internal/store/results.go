@@ -600,11 +600,15 @@ func (s *Store) ResolveFlag(ctx context.Context, id int64, note, actor string) (
 }
 
 // Source is an app registered to submit results.
-type Source struct{ ID, Name, Homepage, Trust, CreatedAt, RevokedAt string }
+type Source struct {
+	ID, Name, Homepage, Trust, CreatedAt, RevokedAt string
+	RepoURL, ContactEmail                           string // from registration (PLAN §30d)
+	HasKey                                          bool
+}
 
 // Sources lists registered sources.
 func (s *Store) Sources(ctx context.Context) ([]Source, error) {
-	rows, err := s.db.QueryContext(ctx, "SELECT id, name, homepage, trust, created_at, revoked_at FROM sources ORDER BY id")
+	rows, err := s.db.QueryContext(ctx, "SELECT id, name, homepage, trust, created_at, revoked_at, repo_url, contact_email, key_hash <> '' FROM sources ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
@@ -612,7 +616,7 @@ func (s *Store) Sources(ctx context.Context) ([]Source, error) {
 	var out []Source
 	for rows.Next() {
 		var x Source
-		if err := rows.Scan(&x.ID, &x.Name, &x.Homepage, &x.Trust, &x.CreatedAt, &x.RevokedAt); err != nil {
+		if err := rows.Scan(&x.ID, &x.Name, &x.Homepage, &x.Trust, &x.CreatedAt, &x.RevokedAt, &x.RepoURL, &x.ContactEmail, &x.HasKey); err != nil {
 			return nil, err
 		}
 		out = append(out, x)

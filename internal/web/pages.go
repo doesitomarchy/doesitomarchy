@@ -689,14 +689,14 @@ func article(s string) string {
 
 func (s *Server) robots(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, "User-agent: *\nAllow: /\nDisallow: /search/suggest\nDisallow: /admin\n\nSitemap: %s/sitemap.xml\n", BaseURL)
+	fmt.Fprintf(w, "User-agent: *\nAllow: /\nDisallow: /search/suggest\nDisallow: /admin\nDisallow: /api/register/\n\nSitemap: %s/sitemap.xml\n", BaseURL)
 }
 
 func (s *Server) sitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n" + `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n")
-	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution", "/changelog", "/identify", "/api", "/privacy"} {
+	for _, p := range []string{"/", "/macs", "/criteria", "/stats", "/methodology", "/contribute", "/releases", "/configs", "/components", "/attribution", "/changelog", "/identify", "/api", "/api/register", "/privacy"} {
 		fmt.Fprintf(&b, "  <url><loc>%s%s</loc></url>\n", BaseURL, p)
 	}
 	d := s.data()

@@ -83,3 +83,7 @@ html.js .code-lang { display: none; }
   .ad { grid-template-columns: minmax(0, 1fr); }
   .ad-code { position: static; margin-top: 0.5rem; }
 }
+/* A two-line call to action: the action, then what it gets you, smaller. */
+.ad-cta { margin: 0 0 1rem; }
+.btn-cta.btn-two { flex-direction: column; align-items: flex-start; gap: 0.15rem; line-height: 1.25; }
+.btn-cta.btn-two .btn-sub { font-size: 12px; font-weight: 400; opacity: 0.9; }

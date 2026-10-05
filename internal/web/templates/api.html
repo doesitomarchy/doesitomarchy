@@ -165,10 +165,11 @@
 <section class="ad" id="sources" aria-labelledby="sources-h">
   <div class="ad-text">
     <h2 id="sources-h">Becoming a source</h2>
-    <p>A source is a test tool that submits reports. To get a source key, <a href="https://github.com/doesitomarchy/doesitomarchy/issues" rel="noopener">open an issue</a> with your tool's name, homepage and what it tests. A maintainer registers it and sends you the key privately.</p>
+    <p>A source is a test tool that submits reports. To get a source key, <a href="/api/register">register your tool</a>: its name, a link to its source code, a contact email and what it tests. A maintainer reviews the request, and you collect the key once from a private link.</p>
+    <div class="ad-cta"><a class="btn-cta btn-two" href="/api/register"><span>Register report source</span><span class="btn-sub">Request source API key</span></a></div>
     <ul>
       <li>Keys look like <code>doi_</code> followed by 32 characters. We keep only a hash, so a lost key is replaced, not recovered.</li>
-      <li>Keep the key in your tool's build or server, not in a public repository. If it leaks, ask for a new one; the old one stops working at once.</li>
+      <li>Keep the key in your tool's build or server, not in a public repository. If it leaks, ask for a new key link; the old key stops working at once.</li>
       <li>Each source may submit up to {{.PerHour}} reports an hour.</li>
     </ul>
     <p>Every report goes through review, as the diagram shows.</p>

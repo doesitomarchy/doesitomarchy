@@ -22,10 +22,10 @@ const pages = [
   "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2", "/mac/MacBook3-1", "/macs?q=gles%3A2.0", "/search?q=gles%3A2.0",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
   "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
-  "/api", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
+  "/api", "/api/register", "REGISTER_STATUS", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
-const contrastPages = ["/", "/api", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
+const contrastPages = ["/", "/api", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/admin/sources", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
 
 const failures = [];
 const fail = (where, msg) => failures.push(`${where}: ${msg}`);
@@ -79,8 +79,18 @@ const report = await first.$eval('a[href^="/report/"]', (a) => a.getAttribute("h
 if (!report) fail("/stats", "no link to a diagnostic report (is the server running with -demo?)");
 await first.goto(BASE + "/", { waitUntil: "networkidle0" });
 const themes = await first.$$eval("#theme option", (os) => os.map((o) => o.value).filter((v) => v !== "system"));
+// A source request's private status page (PLAN §30d) is reachable only by
+// asking: submit the form once. It also puts a request on /admin/sources.
+const regStatus = await first.evaluate(async () => {
+  const body = new URLSearchParams({ name: "UI check", id: "ui-check-" + (Date.now() % 1e6), repo: "https://github.com/example/ui-check",
+    email: "ui@example.com", description: "Checks the pages.", rules: "yes" });
+  const r = await fetch("/api/register", { method: "POST", body });
+  return r.ok ? new URL(r.url).pathname + new URL(r.url).search : null;
+});
+if (!regStatus) fail("/api/register", "submitting the form failed");
 await first.close();
 for (let i = 0; i < pages.length; i++) {
+  if (pages[i] === "REGISTER_STATUS") pages[i] = regStatus || "/api/register";
   if (pages[i] === "REPORT") pages[i] = report || "/stats";
   if (pages[i] === "ADMIN_REPORT") pages[i] = report ? "/admin" + report : "/admin";
 }

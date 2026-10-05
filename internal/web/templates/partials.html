@@ -172,3 +172,5 @@
 {{else if eq .State "fixed"}}{{if .Retest}}A fix landed{{with .FixLink}} in <a href="{{.}}" rel="noopener">this change</a>{{end}} on {{.ClosedAt}} (<a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>). <a href="/contribute">Please re-test →</a>{{else}}A fix landed on {{.ClosedAt}} (<a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>), but a later report still fails.{{end}}
 {{else}}Nobody is working on this yet{{if eq .State "stale"}} (the last claim went quiet){{end}}. <a href="{{.URL}}" rel="noopener">Help fix it in issue #{{.Issue}} →</a>{{end}}</p>
 {{else}}{{if eq .Verdict "failed"}}<p><a href="/contribute">Help fix it →</a></p>{{end}}{{end}}{{end}}{{end}}
+
+{{define "adminbar"}}<p class="admin-bar">Maintainer <b>{{.}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources{{with pendingSources}} <span class="admin-count">({{.}})</span>{{end}}</a></p>{{end}}

@@ -1,0 +1,52 @@
+{{define "content"}}{{with .Data}}
+<div class="register register-page">
+<h1>Register a report source</h1>
+<div class="register-cols">
+<aside class="register-about" aria-label="About sources">
+<p class="register-intro">A source is a test tool that sends diagnostic reports to DoesItOmarchy. Ask for a source key here. A maintainer reviews every request by hand, and you collect the key from a private link.</p>
+<h2>What makes a useful source</h2>
+<ul>
+  <li>It runs on Omarchy, on a real Intel Mac, and checks the <a href="/criteria">criteria</a> it can: by itself where it can, by asking the tester where it can't.</li>
+  <li>It reads the Mac's hardware IDs (model identifier, board ID, CPU and PCI IDs), so each report finds its configuration.</li>
+  <li>It says what it saw: the evidence for anything that fails or only partly works.</li>
+  <li>It shows testers the <a href="/api#consent">consent notice</a> and lets them stop before anything is sent.</li>
+  <li>Its source code is public, so testers and maintainers can see what it checks.</li>
+</ul>
+<p>The technical details are on the API page: <a href="/api#sources">becoming a source</a>, <a href="/api#submit">submitting a report</a> and <a href="/api#format">the report format</a>.</p>
+</aside>
+
+<section class="register-main" aria-labelledby="request-h">
+<h2 id="request-h">Test tool API key request</h2>
+{{with .Err}}<p class="notice" role="alert">{{.}}.</p>{{end}}
+<form method="post" action="/api/register" class="register-form">
+  <label>Tool name
+    <input name="name" required maxlength="80" value="{{.Form.Name}}" autocomplete="off" aria-describedby="name-hint">
+    <span class="hint" id="name-hint">Your tool's public name. It's shown on every report it sends, as "via Mac Tester".</span>
+  </label>
+  <label>Source ID
+    <input name="id" required pattern="[a-zA-Z][a-zA-Z0-9\-]{1,31}" maxlength="32" value="{{.Form.SourceID}}" autocomplete="off" spellcheck="false" aria-describedby="id-hint">
+    <span class="hint" id="id-hint">A short, permanent identifier for your tool in the API and in report files, e.g. <code>mac-tester</code>: 2–32 lower-case letters, digits and hyphens, starting with a letter.<span data-js> Suggested from the tool name as you type; change it if you like.</span></span>
+  </label>
+  <label>Source code
+    <input name="repo" type="url" required maxlength="300" placeholder="https://github.com/…" value="{{.Form.RepoURL}}">
+  </label>
+  <label><span>Homepage <span class="muted">(optional)</span></span>
+    <input name="homepage" type="url" maxlength="300" placeholder="https://" value="{{.Form.Homepage}}">
+  </label>
+  <label>Contact email
+    <input name="email" type="email" required maxlength="254" value="{{.Form.Email}}" aria-describedby="email-hint">
+    <span class="hint" id="email-hint">Only maintainers see it, to reach you about your key or your reports. See <a href="/privacy#sources">privacy</a>.</span>
+  </label>
+  <label>What does it test?
+    <textarea name="description" required maxlength="1000" rows="4" aria-describedby="desc-hint" placeholder="e.g. Wi-Fi, Bluetooth, sleep and audio, checked automatically; the display and keyboard by asking the tester.">{{.Form.Description}}</textarea>
+    <span class="hint" id="desc-hint">Which of the <a href="/criteria">test criteria</a> your tool checks, and how: automatically, by asking the tester, or with test equipment such as a loopback plug. It doesn't need to cover them all; say what's planned, too. Up to 1,000 characters.</span>
+  </label>
+  <div class="hp" aria-hidden="true"><label>Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label></div>
+  <label class="register-rules"><input type="checkbox" name="rules" value="yes" required> <span><strong class="rules-title">Consent notice.</strong> Your tool must inform users via a <a href="/api#consent">consent notice</a> before it sends anything, and send only results from real test runs on real hardware.</span></label>
+  <button class="btn-cta" type="submit">Send request</button>
+  <p class="hint">Next you get a private link. <strong>It's shown only once</strong>, so have somewhere safe ready to keep it: it shows the maintainers' decision and, once approved, your key (also shown once). Each source may submit up to {{.PerHour}} reports an hour.</p>
+</form>
+</section>
+</div>
+</div>
+{{end}}{{end}}

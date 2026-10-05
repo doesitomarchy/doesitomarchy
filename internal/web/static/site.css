@@ -482,19 +482,6 @@ table.candidates tr.current { background: var(--panel); }
 table.candidates td, table.candidates th { vertical-align: top; }
 table.candidates code, table.probe code { font-size: 12px; }
 ul.settle { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.25rem; }
-/* Accept and Reject side by side; Reject asks for a reason, then confirmation. */
-.decide { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-start; }
-.reason-form { display: grid; gap: 0.5rem; flex: 1 1 22rem; max-width: 40rem; }
-.reason-form [data-reason-open] { justify-self: start; }
-.reason-fields { display: grid; gap: 0.4rem; }
-html.js .reason-form:not(.open) .reason-fields { display: none; }
-html.js .reason-form.open [data-reason-open] { display: none; }
-.reason-fields textarea { font: 13px/1.5 var(--mono); color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); padding: 0.4rem 0.5rem; width: 100%; resize: vertical; }
-.reason-fields textarea:focus { border-color: var(--accent); outline: none; }
-.reason-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.btn.danger { border-color: var(--bad); color: var(--bad); font-weight: 500; }
-.inline-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-.inline-form input, .inline-form select { font: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); padding: 0.25rem 0.5rem; min-width: 0; flex: 1 1 14rem; }
 .btn.primary { border-color: var(--accent); color: var(--accent); font-weight: 500; }
 .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 ul.admin-flags { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.35rem; font-size: 13px; }
@@ -621,11 +608,6 @@ table.shares code { font-size: 12px; white-space: nowrap; }
 table.shares td:nth-child(2) { white-space: nowrap; }
 .unk-tag { font: 11px var(--mono); color: var(--accent); border: 1px solid var(--accent); padding: 0 0.25rem; white-space: nowrap; }
 
-/* /admin: import a report file. */
-.import-form { display: grid; gap: 0.5rem; max-width: 36rem; font-size: 13px; }
-.import-form label { display: grid; gap: 0.2rem; }
-.import-form input[type="text"], .import-form select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); padding: 0.25rem 0.5rem; }
-.import-form .btn { justify-self: start; }
 code.evidence { white-space: pre-line; }
 
 /* Per-connector ports (7c, PLAN §25). */
@@ -753,6 +735,4 @@ ul.pmwhy .pmword[data-st="failed"] { color: var(--bad); }
 table.fixes td { vertical-align: top; font-size: 13px; }
 table.fixes td.num, table.fixes th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .fix-actions { display: grid; gap: 0.4rem; justify-items: start; }
-.fix-actions > form > .btn { white-space: nowrap; }
 table.fixes a.inline-link { text-decoration: underline; }
-.admin-flags .inline-form { display: inline-flex; margin-left: 0.5rem; }
