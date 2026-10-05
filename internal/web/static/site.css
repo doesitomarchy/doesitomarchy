@@ -337,7 +337,14 @@ a.hbar:hover span:first-child { text-decoration: underline; }
 .paper code, .paper kbd { font-family: var(--mono); font-size: 13px; }
 .wide-p { font: 15px/1.6 var(--sans); }
 /* A prose page's opening paragraph, full width above its columns. */
-p.lede { font: 16px/1.65 var(--mono); margin: 0 0 0.75rem; }
+p.lede { font: 16px/1.65 var(--mono); margin: 0 0 0.75rem; color: var(--muted); }
+/* The methodology's TLDR: the privacy page's box, its points in up to three columns. */
+.method-tldr { margin: 1.25rem 0 0.5rem; }
+.method-tldr h2 { margin: 0 0 0.9rem; }
+.method-tldr ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1rem 2.25rem; font: 14px/1.55 var(--sans); }
+.method-tldr li a { display: block; margin-bottom: 0.2rem; font: 600 14px/1.4 var(--mono); color: var(--heading); text-decoration: none; }
+.method-tldr li a:hover { text-decoration: underline; }
+@media (max-width: 40rem) { .method-tldr { padding: 1.1rem 1rem; } }
 /* Definition tables (verdicts, coverage) inside the methodology's prose. */
 table.defs { margin: 0.25rem 0 1rem; font: 14px/1.5 var(--sans); }
 table.defs th[scope="row"] { white-space: nowrap; color: var(--heading); font: 500 13px/1.5 var(--mono); width: 1%; }
@@ -591,13 +598,13 @@ table.explain-table tr[hidden] { display: none; }
 .privacy h1, .privacy h2, .privacy h3 { font-family: var(--mono); }
 .privacy h3 { font-size: 1.05rem; margin: 1.25rem 0 0.6rem; color: var(--heading); }
 .privacy h1 { font-size: 2rem; }
-.privacy .privacy-intro { font: 1.3rem/1.5 var(--mono); color: var(--heading); margin: 0 0 1.75rem; text-wrap: balance; }
+.privacy .privacy-intro { font: 1.3rem/1.5 var(--mono); color: var(--muted); margin: 0 0 1.75rem; text-wrap: pretty; }
 .privacy section { margin-top: 2rem; }
 .privacy section.tldr { margin: 0 0 2rem; }
 .privacy h2 { font-size: 1.25rem; margin-bottom: 0.6rem; }
 .privacy .tldr h2 { font-size: 1.4rem; }
 .privacy ul.plain { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
-.privacy ul.plain strong { font-size: 1.08em; color: var(--heading); }
+.privacy ul.plain strong { font-size: 1.08em; color: var(--accent); color: color-mix(in srgb, var(--accent) 80%, var(--text)); } /* a slightly softer accent */
 .privacy p { margin: 0 0 0.75rem; }
 .privacy code { font: 0.85em var(--mono); }
 /* The consent notice on /api: the exact text tools must show. */
