@@ -249,7 +249,7 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, err error) {
 type page struct {
 	Title       string
 	Description string
-	Nav         string // current section: "macs", "stats", "methodology", "contribute"
+	Nav         string // current section: "macs", "identify", "methodology", "contribute", "api"
 	Site        *site
 	Version     string
 	Canonical   string   // absolute URL for <link rel="canonical">; empty on error pages

@@ -203,7 +203,7 @@ func (s *Server) apiDocs(w http.ResponseWriter, r *http.Request) {
 	}
 	d.Res["submit"] = codeBlock{Title: "Response: 201 Created", Tabs: []codeTab{tab("submit-res", "json", submitReply)}}
 	d.Res["report"] = codeBlock{Title: "Response: 200 OK", Tabs: []codeTab{tab("report-res", "json", reportReply)}}
-	s.render(w, r, http.StatusOK, "api", page{Title: "Open API", Nav: "api", Styles: []string{"syntax.css", "api.css"}, Scripts: []string{"api.js"},
+	s.render(w, r, http.StatusOK, "api", page{Title: "API Reference", Nav: "api", Styles: []string{"syntax.css", "api.css"}, Scripts: []string{"api.js"},
 		Description: "Read DoesItOmarchy's catalog and test results as JSON, or submit diagnostic reports from a test tool. With an OpenAPI document and llms.txt for AI agents.",
 		Data:        d})
 }

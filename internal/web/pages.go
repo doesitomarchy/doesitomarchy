@@ -561,7 +561,7 @@ func (s *Server) criteria(w http.ResponseWriter, r *http.Request) {
 	for _, k := range orderedLines(byLine) {
 		d.Lines = append(d.Lines, lineMatrix{k, names[k], buildMatrix(s.cat, byLine[k], true)})
 	}
-	s.render(w, r, http.StatusOK, "criteria", page{Title: "Criteria matrix", Nav: "criteria", Data: d})
+	s.render(w, r, http.StatusOK, "criteria", page{Title: "Criteria matrix", Data: d})
 }
 
 func (s *Server) releases(w http.ResponseWriter, r *http.Request) {
