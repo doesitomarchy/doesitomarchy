@@ -6,7 +6,7 @@ CATALOG_DATE ?= $(shell TZ=UTC git log -1 --date=format-local:%Y-%m-%d --format=
 CATALOG_COMMIT ?= $(shell git log -1 --format=%H -- $(CATALOG_PATHS) 2>/dev/null)
 LDFLAGS := -s -w -X main.version=$(VERSION) -X main.catalogDate=$(CATALOG_DATE) -X main.catalogCommit=$(CATALOG_COMMIT)
 
-.PHONY: build test check validate clean uicheck
+.PHONY: build test quick check validate clean uicheck
 
 build:
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/doiomad ./cmd/doiomad
@@ -19,6 +19,13 @@ validate:
 	go run ./cmd/doiomad validate
 
 # Everything CI runs, in the same order.
+# quick: the check before a commit; check (race detector, catalog) and
+# uicheck run before a push, and CI runs both again.
+quick:
+	@test -z "$$(gofmt -l .)" || (echo "gofmt needed:"; gofmt -l .; exit 1)
+	go vet ./...
+	go test ./...
+
 check:
 	@test -z "$$(gofmt -l .)" || (echo "gofmt needed:"; gofmt -l .; exit 1)
 	go vet ./...
