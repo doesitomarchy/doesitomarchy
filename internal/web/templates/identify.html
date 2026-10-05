@@ -7,9 +7,9 @@
 {{if .Asked}}
 <section class="panel identify-result" aria-live="polite">
   {{if .Mac}}
-    <h2>{{template "machine" .Mac.Icon}}<a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a> · {{.Mac.Title}}</h2>
+    <h2>{{template "machine" .Mac.Icon}}<a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a> · {{.Title}}</h2>
     {{if .Best}}
-      <p>Your configuration: <a class="slotted" href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">{{template "slot" .Best.Verified}}<span class="cfgref big">{{.Best.Diff}}</span></a> {{.Best.Label}} <span class="muted">({{.Best.ReleaseName}})</span></p>
+      <p>Your configuration: <a class="slotted" href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">{{if .Best.Verified}}{{template "slot" true}}{{end}}<span class="cfgref big">{{.Best.Diff}}</span></a> {{.Best.Label}} <span class="muted">({{.Best.ReleaseName}})</span></p>
       <p>{{template "verdict" .Best.Status.Verdict}} <span class="muted">{{.Best.Status.Tested}}/{{.Best.Status.Applicable}} tested</span> · <a href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">See what works →</a></p>
     {{else}}
       <p>These configurations fit equally; what you pasted can't tell them apart. They usually differ in something a command can't see, such as the release year printed on the box or in About This Mac.</p>

@@ -497,6 +497,7 @@ ul.admin-flags { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.
 .identify-result { margin: 1.25rem 0; display: grid; gap: 0.4rem; }
 .identify-result h2 { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0; }
 .identify-result p { margin: 0; }
+.identify-result p > a.slotted { vertical-align: middle; } /* the bordered box, centred on the line; a lone result reserves no badge slot */
 .identify-cands { list-style: none; padding: 0; margin: 0.3rem 0; display: grid; gap: 0.3rem; font-size: 13px; }
 .identify-used { font-size: 12px; overflow-wrap: anywhere; }
 .identify-steps h2 { margin-top: 1.5rem; }
