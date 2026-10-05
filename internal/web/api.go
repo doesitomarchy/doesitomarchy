@@ -23,18 +23,62 @@ import (
 // (a variable so tests can lower it).
 var ReportsPerHour = 60
 
+// apiEndpoint is one route. This table drives the routes, the index, the
+// OpenAPI document and llms.txt, so they can't drift apart.
+type apiEndpoint struct {
+	Name    string // the index key and the docs' anchor
+	Method  string
+	Path    string
+	Summary string
+	Example string // a concrete path to try
+	Body    string // an example request body
+	Key     bool   // needs a source key
+	handle  func(*Server, http.ResponseWriter, *http.Request)
+	req     any // the request body type, for OpenAPI (nil: none, or the report schema)
+	res     any // the response type, for OpenAPI
+}
+
+var apiEndpoints []apiEndpoint
+
+// Set in init, since the index handler reads the table (a package-level
+// initializer would be a cycle).
+func init() {
+	apiEndpoints = []apiEndpoint{
+		{Name: "index", Method: "GET", Path: "/api/v1", Summary: "List the endpoints", handle: (*Server).apiIndex, res: apiIndexDoc{}},
+		{Name: "submit", Method: "POST", Path: "/api/v1/reports", Summary: "Submit a diagnostic report (needs a source key)", Key: true, handle: (*Server).apiSubmit, res: apiSubmitted{}},
+		{Name: "report", Method: "GET", Path: "/api/v1/reports/{code}", Example: "/api/v1/reports/3f9a1c07be", Summary: "Check where a submitted report stands", handle: (*Server).apiReport, res: apiReportStatus{}},
+		{Name: "schema", Method: "GET", Path: "/api/v1/schema", Summary: "The diagnostic report format, as JSON Schema", handle: (*Server).apiSchema},
+		{Name: "macs", Method: "GET", Path: "/api/v1/macs", Summary: "List every Intel Mac", handle: (*Server).apiMacs, res: apiMacList{}},
+		{Name: "mac", Method: "GET", Path: "/api/v1/macs/{identifier}", Example: "/api/v1/macs/MacBookPro8,2", Summary: "Get a Mac and all its configurations", handle: (*Server).apiMac, res: apiMacDetail{}},
+		{Name: "config", Method: "GET", Path: "/api/v1/configs/{id}", Example: "/api/v1/configs/macbookpro8-2-15-early-2011-a", Summary: "Get a configuration: hardware, ports, criteria status and reports", handle: (*Server).apiConfig, res: apiConfig{}},
+		{Name: "capabilities", Method: "GET", Path: "/api/v1/capabilities", Summary: "List the test criteria", handle: (*Server).apiCapabilities, res: apiCapabilityList{}},
+		{Name: "match", Method: "POST", Path: "/api/v1/match", Summary: "Identify a Mac and its configuration from hardware IDs", Body: `{"product_name": "MacBookPro8,2", "pci": ["1002:6760"]}`, handle: (*Server).apiMatch, req: match.Probe{}, res: apiMatchResult{}},
+		{Name: "openapi", Method: "GET", Path: "/api/v1/openapi.json", Summary: "This API as an OpenAPI 3.1 document", handle: (*Server).apiOpenAPI},
+	}
+}
+
+func apiEndpointNamed(name string) apiEndpoint {
+	for _, e := range apiEndpoints {
+		if e.Name == name {
+			return e
+		}
+	}
+	panic("no API endpoint " + name)
+}
+
 func (s *Server) apiRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /api/v1", s.apiIndex)
-	mux.HandleFunc("GET /api/v1/{$}", s.apiIndex)
-	mux.HandleFunc("GET /api/v1/capabilities", s.apiCapabilities)
-	mux.HandleFunc("GET /api/v1/macs", s.apiMacs)
-	mux.HandleFunc("GET /api/v1/macs/{identifier}", s.apiMac)
-	mux.HandleFunc("GET /api/v1/configs/{id}", s.apiConfig)
-	mux.HandleFunc("GET /api/v1/schema", s.apiSchema)
-	mux.HandleFunc("POST /api/v1/match", s.apiMatch)
-	mux.HandleFunc("POST /api/v1/reports", s.apiSubmit)
-	mux.HandleFunc("GET /api/v1/reports/{code}", s.apiReport)
+	for _, e := range apiEndpoints {
+		h := func(w http.ResponseWriter, r *http.Request) { e.handle(s, w, r) }
+		mux.HandleFunc(e.Method+" "+e.Path, h)
+		if e.Name == "index" {
+			mux.HandleFunc(e.Method+" "+e.Path+"/{$}", h)
+		}
+	}
 	mux.HandleFunc("/api/", apiNotFound)
+}
+
+func apiNotFound(w http.ResponseWriter, r *http.Request) {
+	apiFail(w, http.StatusNotFound, "no such endpoint; see "+BaseURL+"/api")
 }
 
 func writeJSON(w http.ResponseWriter, code int, v any) {
@@ -64,32 +108,40 @@ func apiFail(w http.ResponseWriter, code int, msg string, problems ...string) {
 	writeJSON(w, code, apiError{Error: msg, Problems: problems})
 }
 
+type apiIndexDoc struct {
+	Name      string            `json:"name"`
+	Docs      string            `json:"docs"`
+	Schema    string            `json:"schema" doc:"The report format version submissions use"`
+	Endpoints map[string]string `json:"endpoints" doc:"Each endpoint's path, with its method when that isn't GET"`
+	MCP       string            `json:"mcp" doc:"The MCP server, for AI assistants"`
+}
+
 func (s *Server) apiIndex(w http.ResponseWriter, r *http.Request) {
+	x := apiIndexDoc{Name: "DoesItOmarchy API", Docs: BaseURL + "/api", Schema: results.SchemaV1, Endpoints: map[string]string{}, MCP: BaseURL + "/mcp"}
+	for _, e := range apiEndpoints {
+		switch {
+		case e.Name == "index":
+		case e.Method == "GET":
+			x.Endpoints[e.Name] = e.Path
+		default:
+			x.Endpoints[e.Name] = e.Method + " " + e.Path
+		}
+	}
 	readable(w)
-	writeJSON(w, http.StatusOK, map[string]any{
-		"name":   "DoesItOmarchy API",
-		"docs":   BaseURL + "/api",
-		"schema": results.SchemaV1,
-		"endpoints": map[string]string{
-			"capabilities": "/api/v1/capabilities",
-			"macs":         "/api/v1/macs",
-			"mac":          "/api/v1/macs/{identifier}",
-			"config":       "/api/v1/configs/{id}",
-			"schema":       "/api/v1/schema",
-			"match":        "POST /api/v1/match",
-			"submit":       "POST /api/v1/reports",
-			"report":       "/api/v1/reports/{code}",
-		},
-	})
+	writeJSON(w, http.StatusOK, x)
 }
 
 type apiCapability struct {
-	ID          string `json:"id"`
+	ID          string `json:"id" doc:"The criterion ID reports use, e.g. network.wifi"`
 	Category    string `json:"category"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
-	Blocking    bool   `json:"blocking,omitempty"`
-	Retired     bool   `json:"retired,omitempty"`
+	Blocking    bool   `json:"blocking,omitempty" doc:"A failure in this category makes the whole configuration fail"`
+	Retired     bool   `json:"retired,omitempty" doc:"No longer tested; kept so old reports still resolve"`
+}
+
+type apiCapabilityList struct {
+	Capabilities []apiCapability `json:"capabilities"`
 }
 
 func (s *Server) apiCapabilities(w http.ResponseWriter, r *http.Request) {
@@ -102,17 +154,21 @@ func (s *Server) apiCapabilities(w http.ResponseWriter, r *http.Request) {
 		out = append(out, apiCapability{cp.ID, cp.Category(), cp.Name, cp.Description, blocking[cp.Category()], cp.Retired})
 	}
 	readable(w)
-	writeJSON(w, http.StatusOK, map[string]any{"capabilities": out})
+	writeJSON(w, http.StatusOK, apiCapabilityList{out})
 }
 
 type apiMacSummary struct {
-	Identifier string           `json:"identifier"`
+	Identifier string           `json:"identifier" doc:"The model identifier, e.g. MacBookPro8,2"`
 	Name       string           `json:"name"`
-	Line       string           `json:"line"`
+	Line       string           `json:"line" doc:"The product line, e.g. macbook-pro"`
 	Years      string           `json:"years"`
-	Verdicts   []status.Verdict `json:"verdicts"`
-	Configs    []string         `json:"configs"`
-	URL        string           `json:"url"`
+	Verdicts   []status.Verdict `json:"verdicts" doc:"The distinct verdicts of its configurations"`
+	Configs    []string         `json:"configs" doc:"Its configuration IDs"`
+	URL        string           `json:"url" doc:"Its page on the site"`
+}
+
+type apiMacList struct {
+	Macs []apiMacSummary `json:"macs"`
 }
 
 func macSummary(m *macView) apiMacSummary {
@@ -130,15 +186,15 @@ func (s *Server) apiMacs(w http.ResponseWriter, r *http.Request) {
 		out = append(out, macSummary(m))
 	}
 	readable(w)
-	writeJSON(w, http.StatusOK, map[string]any{"macs": out})
+	writeJSON(w, http.StatusOK, apiMacList{out})
 }
 
 type apiMacDetail struct {
 	apiMacSummary
-	EFI          int         `json:"efi"`
-	SecurityChip string      `json:"security_chip,omitempty"`
-	HardBlocker  string      `json:"hard_blocker,omitempty"`
-	BoardIDs     []string    `json:"board_ids"`
+	EFI          int         `json:"efi" doc:"The firmware's EFI width: 32 or 64"`
+	SecurityChip string      `json:"security_chip,omitempty" doc:"t1 or t2, when it has one"`
+	HardBlocker  string      `json:"hard_blocker,omitempty" doc:"Why no configuration can run Omarchy (e.g. a 32-bit CPU)"`
+	BoardIDs     []string    `json:"board_ids" doc:"Apple board IDs, e.g. Mac-94245A3940C91C80"`
 	ConfigDetail []apiConfig `json:"configurations"`
 }
 
@@ -146,31 +202,31 @@ type apiComponent struct {
 	ID   string   `json:"id"`
 	Kind string   `json:"kind"`
 	Name string   `json:"name"`
-	IDs  []string `json:"hardware_ids"`
+	IDs  []string `json:"hardware_ids" doc:"IDs a probe can match, e.g. pci:1002:6760"`
 	GLES string   `json:"gles,omitempty"` // gpu only: highest OpenGL ES version its Linux driver reaches (PLAN §30)
-	BTO  bool     `json:"build_to_order,omitempty"`
+	BTO  bool     `json:"build_to_order,omitempty" doc:"A build-to-order option"`
 }
 
 type apiCapStatus struct {
 	ID           string         `json:"id"`
 	Verdict      status.Verdict `json:"verdict"`
-	LatestReport string         `json:"latest_report,omitempty"`
+	LatestReport string         `json:"latest_report,omitempty" doc:"The code of the report that set this verdict"`
 	// The verdict counts stable releases only (PLAN §28.2).
 	Omarchy        string `json:"omarchy,omitempty"`         // canonical: 4.0.4, 4.0.0rc2, 4.0.0.r6713.ga85e29a
 	OmarchyChannel string `json:"omarchy_channel,omitempty"` // stable (rc, beta, edge, dev only in newest_build)
 	Kernel         string `json:"kernel,omitempty"`
 	TestedAt       string `json:"tested_at,omitempty"`
-	Method         string `json:"method,omitempty"`
-	Stale          bool   `json:"stale,omitempty"`
-	Conflict       bool   `json:"conflict,omitempty"`
+	Method         string `json:"method,omitempty" doc:"automatic, observed or fixture"`
+	Stale          bool   `json:"stale,omitempty" doc:"Tested on an Omarchy release older than the current major"`
+	Conflict       bool   `json:"conflict,omitempty" doc:"Accepted reports on the same Omarchy build disagree"`
 	Reason         string `json:"unsupported_reason,omitempty"`
 	// Per-connector criteria: each connector's status.
-	Ports []apiPortStatus `json:"ports,omitempty"`
+	Ports []apiPortStatus `json:"ports,omitempty" doc:"Per-connector results, for port criteria"`
 	// Fix is the fix issue for a failed criterion (PLAN §26).
-	Fix *apiFix `json:"fix,omitempty"`
+	Fix *apiFix `json:"fix,omitempty" doc:"The fix issue for a failed criterion"`
 	// NewestBuild is the result on the newest build of any channel, when it
 	// differs from the stable verdict.
-	NewestBuild *apiNewestBuild `json:"newest_build,omitempty"`
+	NewestBuild *apiNewestBuild `json:"newest_build,omitempty" doc:"The result on the newest pre-release or edge build, when it differs"`
 }
 
 type apiNewestBuild struct {
@@ -211,24 +267,24 @@ type apiConfig struct {
 	ID           string         `json:"id"`
 	Identifier   string         `json:"identifier"`
 	Label        string         `json:"label"`
-	Distinction  string         `json:"distinction"`
-	Release      string         `json:"release"`
+	Distinction  string         `json:"distinction" doc:"What sets it apart from the Mac's other configurations"`
+	Release      string         `json:"release" doc:"Apple's name for the release"`
 	BoardIDs     []string       `json:"board_ids,omitempty"`         // tied to the release by real machines (PLAN §29)
 	Limitations  []string       `json:"known_limitations,omitempty"` // research, before testing (PLAN §30)
-	OrderNumbers []string       `json:"order_numbers"`
+	OrderNumbers []string       `json:"order_numbers" doc:"Apple order numbers, e.g. MC721LL/A"`
 	Components   []apiComponent `json:"components"`
-	Ports        []string       `json:"ports"`
+	Ports        []string       `json:"ports" doc:"Ports and media that aren't tested per connector"`
 	Connectors   []connInfo     `json:"connectors"` // the port layout; empty until researched
 	LayoutSource []string       `json:"layout_sources,omitempty"`
 	PortmapURL   string         `json:"portmap_url,omitempty"` // the port map drawing (SVG), when there is one
-	Features     []string       `json:"features"`
-	OutOfScope   string         `json:"out_of_scope,omitempty"`
+	Features     []string       `json:"features" doc:"Other tested features, e.g. Battery"`
+	OutOfScope   string         `json:"out_of_scope,omitempty" doc:"Why it's left out of coverage counts"`
 	Verdict      status.Verdict `json:"verdict"`
-	Blocker      string         `json:"blocker,omitempty"`
-	Applicable   int            `json:"applicable"`
-	Tested       int            `json:"tested"`
-	Verified     bool           `json:"verified"`
-	Counts       status.Counts  `json:"counts"`
+	Blocker      string         `json:"blocker,omitempty" doc:"The criterion that decided a failed verdict"`
+	Applicable   int            `json:"applicable" doc:"How many criteria apply to it"`
+	Tested       int            `json:"tested" doc:"How many of those have a result"`
+	Verified     bool           `json:"verified" doc:"Every applicable criterion passed"`
+	Counts       status.Counts  `json:"counts" doc:"Criteria per verdict"`
 	Capabilities []apiCapStatus `json:"capabilities"`
 	Reports      []apiReportRef `json:"reports"`
 	URL          string         `json:"url"`
@@ -319,11 +375,11 @@ type apiMatchCandidate struct {
 // ranking.
 type apiMatchResult struct {
 	Identifier string              `json:"identifier"`
-	By         string              `json:"by"`
-	Exact      bool                `json:"exact"`
-	Config     *string             `json:"config"`
-	Best       []string            `json:"best"`
-	Candidates []apiMatchCandidate `json:"candidates"`
+	By         string              `json:"by" doc:"What identified the Mac: product_name, board_id or devices"`
+	Exact      bool                `json:"exact" doc:"Exactly one configuration fits"`
+	Config     *string             `json:"config" doc:"The single best configuration, or null when several fit equally"`
+	Best       []string            `json:"best" doc:"Every configuration tied at the top score; their order means nothing"`
+	Candidates []apiMatchCandidate `json:"candidates" doc:"Every configuration, best first"`
 }
 
 func (s *Server) matchJSON(p match.Probe) apiMatchResult {
@@ -428,16 +484,39 @@ func (s *Server) apiSubmit(w http.ResponseWriter, r *http.Request) {
 		apiFail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	flags := []map[string]string{}
+	x := apiSubmitted{Code: d.Code, State: d.State, Config: d.ConfigID, Candidates: d.Candidates, Flags: []apiFlag{},
+		StatusURL: BaseURL + "/api/v1/reports/" + d.Code}
 	for _, fl := range d.Flags {
-		flags = append(flags, map[string]string{"kind": fl.Kind, "detail": fl.Detail})
+		x.Flags = append(x.Flags, apiFlag{fl.Kind, fl.Detail})
 	}
-	s.log.Info("report submitted", "source", src.ID, "code", d.Code, "config", d.ConfigID, "flags", len(flags))
+	s.log.Info("report submitted", "source", src.ID, "code", d.Code, "config", d.ConfigID, "flags", len(x.Flags))
 	w.Header().Set("Location", "/api/v1/reports/"+d.Code)
-	writeJSON(w, http.StatusCreated, map[string]any{
-		"code": d.Code, "state": d.State, "config": d.ConfigID, "candidates": d.Candidates, "flags": flags,
-		"status_url": BaseURL + "/api/v1/reports/" + d.Code,
-	})
+	writeJSON(w, http.StatusCreated, x)
+}
+
+type apiSubmitted struct {
+	Code       string    `json:"code" doc:"The report's code; keep it to check its state"`
+	State      string    `json:"state" doc:"pending until a maintainer reviews it"`
+	Config     string    `json:"config" doc:"The configuration it was matched to (empty when several fit)"`
+	Candidates []string  `json:"candidates" doc:"The configurations that fit equally, when the hardware couldn't tell them apart"`
+	Flags      []apiFlag `json:"flags" doc:"Things a maintainer will check, e.g. duplicate or hardware_mismatch"`
+	StatusURL  string    `json:"status_url"`
+}
+
+type apiFlag struct {
+	Kind   string `json:"kind"`
+	Detail string `json:"detail"`
+}
+
+type apiReportStatus struct {
+	Code        string `json:"code"`
+	State       string `json:"state" doc:"pending, accepted, rejected or retracted"`
+	Config      string `json:"config"`
+	Identifier  string `json:"identifier"`
+	TestedAt    string `json:"tested_at"`
+	SubmittedAt string `json:"submitted_at"`
+	Reason      string `json:"reason,omitempty" doc:"Why it was rejected or retracted"`
+	URL         string `json:"url,omitempty" doc:"Its public page, once accepted"`
 }
 
 // apiReport tells a submitter where their report stands.
@@ -451,13 +530,13 @@ func (s *Server) apiReport(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		var d *store.ResultDetail
 		if d, err = s.store.Result(r.Context(), id); err == nil {
-			out := map[string]any{"code": d.Code, "state": d.State, "config": d.ConfigID, "identifier": d.Identifier,
-				"tested_at": d.TestedAt, "submitted_at": d.SubmittedAt}
+			out := apiReportStatus{Code: d.Code, State: d.State, Config: d.ConfigID, Identifier: d.Identifier,
+				TestedAt: d.TestedAt, SubmittedAt: d.SubmittedAt}
 			if d.State == store.Rejected || d.State == store.Retracted {
-				out["reason"] = d.StateReason
+				out.Reason = d.StateReason
 			}
 			if d.State == store.Accepted || d.State == store.Retracted {
-				out["url"] = BaseURL + "/report/" + d.Code
+				out.URL = BaseURL + "/report/" + d.Code
 			}
 			writeJSON(w, http.StatusOK, out)
 			return

@@ -197,6 +197,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /fixes", s.fixesPage)
 	mux.HandleFunc("GET /privacy", s.privacy)
 	mux.HandleFunc("GET /api", s.apiDocs)
+	mux.HandleFunc("GET /llms.txt", s.llmsTxt)
+	mux.Handle("/mcp", s.mcpHandler())
 	s.apiRoutes(mux)
 	s.adminRoutes(mux)
 	mux.HandleFunc("/", s.notFound)
@@ -212,13 +214,6 @@ func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	// The version lets a deploy confirm the new release is the one serving.
 	w.Write([]byte("ok " + s.version + "\n"))
-}
-
-func apiNotFound(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error":"not found","detail":"the API is not available yet"}` + "\n"))
 }
 
 func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
@@ -245,7 +240,9 @@ type page struct {
 	Nav         string // current section: "macs", "stats", "methodology", "contribute"
 	Site        *site
 	Version     string
-	Canonical   string // absolute URL for <link rel="canonical">; empty on error pages
+	Canonical   string   // absolute URL for <link rel="canonical">; empty on error pages
+	Styles      []string // extra stylesheets, for one page's own components
+	Scripts     []string // extra scripts
 	Data        any
 }
 

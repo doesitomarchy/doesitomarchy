@@ -314,13 +314,13 @@ type layoutConn struct {
 
 // connInfo is one connector as the API serves it (PLAN §25).
 type connInfo struct {
-	ID       string   `json:"id"`
+	ID       string   `json:"id" doc:"Side and position, left to right as you face that side, e.g. left-2"`
 	Side     string   `json:"side"`
-	Type     string   `json:"type"`
+	Type     string   `json:"type" doc:"e.g. usb-a-2, thunderbolt-1, magsafe"`
 	Also     []string `json:"also,omitempty"`
 	Name     string   `json:"name"`
 	Note     string   `json:"note,omitempty"`
-	Criteria []string `json:"criteria"` // what this connector is tested for; empty for power inlets
+	Criteria []string `json:"criteria" doc:"The criteria this connector is tested for"` // what this connector is tested for; empty for power inlets
 }
 
 var sideNames = map[string]string{"left": "Left side", "right": "Right side", "back": "Back", "front": "Front", "top": "Top"}

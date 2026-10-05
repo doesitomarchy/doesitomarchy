@@ -12,8 +12,9 @@ import (
 const pageBudget = 60 * 1024
 
 // pageBudgets are exceptions the owner approved. /criteria deliberately puts
-// every criterion and configuration on one page (PLAN §30).
-var pageBudgets = map[string]int{"/criteria": 64 * 1024}
+// every criterion and configuration on one page (PLAN §30); /api is the
+// whole API reference, with samples in three languages (owner, 2026-10-05).
+var pageBudgets = map[string]int{"/criteria": 64 * 1024, "/api": 64 * 1024}
 
 var assetRef = regexp.MustCompile(`(?:href|src)="(/static/[^"#]+\.(?:css|js|svg))[^"]*"`)
 
@@ -37,7 +38,7 @@ func gzSize(t *testing.T, base, path string) int {
 func TestPageWeight(t *testing.T) {
 	ts := newTestServer(t)
 	for _, path := range []string{"/", "/search?q=mbp+2011", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
-		"/mac/MacPro7-1", "/mac/MacPro5-1", "/mac/iMac18-3", "/criteria", "/stats", "/methodology", "/contribute", "/configs", "/components", "/releases", "/changelog", "/attribution"} {
+		"/mac/MacPro7-1", "/mac/MacPro5-1", "/mac/iMac18-3", "/criteria", "/stats", "/methodology", "/contribute", "/configs", "/components", "/releases", "/changelog", "/attribution", "/api"} {
 		res, err := ts.Client().Get(ts.URL + path)
 		if err != nil {
 			t.Fatal(err)

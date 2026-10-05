@@ -15,24 +15,24 @@ import (
 // Probe is what a machine reports. IDs may be given in any common form:
 // "10de:0647", "pci:10de:0647", "[10DE:0647]".
 type Probe struct {
-	ProductName string   `json:"product_name"`
-	BoardID     string   `json:"board_id"`
-	PCI         []string `json:"pci"`
-	USB         []string `json:"usb"`
+	ProductName string   `json:"product_name" doc:"The model identifier, e.g. MacBookPro8,2 (Linux: /sys/class/dmi/id/product_name)"`
+	BoardID     string   `json:"board_id" doc:"e.g. Mac-94245A3940C91C80 (Linux: /sys/class/dmi/id/board_name)"`
+	PCI         []string `json:"pci" doc:"PCI vendor:device IDs, e.g. 1002:6760 (lspci -nn)"`
+	USB         []string `json:"usb" doc:"USB vendor:product IDs (lsusb)"`
 	// CPU is the processor's name as the system reports it, e.g. "Intel(R)
 	// Core(TM) i7-2720QM CPU @ 2.20GHz" (/proc/cpuinfo, machdep.cpu.brand_string).
-	CPU string `json:"cpu,omitempty"`
+	CPU string `json:"cpu,omitempty" doc:"The processor's name, e.g. Intel(R) Core(TM) i7-2635QM CPU @ 2.00GHz"`
 }
 
 // Candidate is one configuration that fits the probe.
 type Candidate struct {
 	Config  string   `json:"config"`
-	Score   int      `json:"score"`
-	Matched []string `json:"matched"` // probe IDs this config's components have ("cpu:…" for the CPU, "board:…" for a board tied to its release)
+	Score   int      `json:"score" doc:"Higher fits better; only the order matters"`
+	Matched []string `json:"matched" doc:"Probe IDs its components have"` // probe IDs this config's components have ("cpu:…" for the CPU, "board:…" for a board tied to its release)
 	// NotReported lists this config's distinguishing parts (GPU, Wi-Fi, CPU)
 	// that the probe doesn't show, one entry per part; a part known by several
 	// IDs lists them with "/": "pci:8086:0116/pci:8086:0126".
-	NotReported []string `json:"not_reported"`
+	NotReported []string `json:"not_reported" doc:"Its distinguishing parts the probe doesn't show"`
 }
 
 // Result is the outcome of a match.

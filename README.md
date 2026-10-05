@@ -8,7 +8,7 @@ The source of truth for which **Intel Macs (2006–2020)** run [Omarchy](https:/
 
 - **Catalog** (`data/`): one YAML file per Mac model identifier (e.g. `MacBookPro5,1`). Each file lists that identifier's releases and hardware configurations. Changes come in as pull requests.
 - **Test results:** stored in the site database, not in git. Every capability starts ⚪ Untested; a status only changes when a maintainer accepts a test result. Each test run is a **diagnostic report** in the open DoesItOmarchy schema (`doesitomarchy/report/v1`); test tools submit them through the API (`POST /api/v1/reports`, with a source key), or maintainers import them, and maintainers review each one in `/admin` or the CLI.
-- **Open data:** the catalog and results are readable as JSON at `/api/v1` (documented at [/api](https://doesitomarchy.com/api)). [Identify my Mac](https://doesitomarchy.com/identify) identifies a Mac and its configuration from one command's output.
+- **Open data:** the catalog and results are readable as JSON at `/api/v1` (documented at [/api](https://doesitomarchy.com/api), described for tools and AI agents at `/api/v1/openapi.json` and `/llms.txt`). [Identify my Mac](https://doesitomarchy.com/identify) identifies a Mac and its configuration from one command's output.
 - **Site:** a single Go binary, `doiomad` (the server; the name `doioma` is reserved for the future test client), that serves server-rendered HTML with HTMX from SQLite. The catalog is built into the binary and loaded into SQLite on start, so a deploy ships code and data together.
 
 ## Development

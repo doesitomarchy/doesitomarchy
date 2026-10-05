@@ -25,7 +25,7 @@ const pages = [
   "/api", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
-const contrastPages = ["/", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
+const contrastPages = ["/", "/api", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
 
 const failures = [];
 const fail = (where, msg) => failures.push(`${where}: ${msg}`);

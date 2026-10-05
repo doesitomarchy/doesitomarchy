@@ -22,6 +22,16 @@ var Tokens = []string{
 // textTokens must reach MinText contrast on both --bg and --panel.
 var textTokens = []string{"text", "muted", "heading", "accent", "link", "ident", "release", "ok", "warn", "bad", "unk"}
 
+// SynTokens colour code samples (keys, strings, numbers, keywords,
+// functions). They come from the theme's own terminal palette, never its
+// green, which the site keeps for passed tests. They must reach MinText on
+// the code background too. Only pages with code load them (SyntaxCSS).
+var SynTokens = []string{"syn-key", "syn-str", "syn-num", "syn-kw", "syn-fn"}
+
+// codeBG is the code-sample background: the site CSS mixes 8% of --text
+// into --bg.
+func codeBG(c map[string]RGB) RGB { return Mix(c["bg"], c["text"], 0.08) }
+
 // MinText is the WCAG AA ratio for normal text.
 const MinText = 4.5
 
@@ -191,6 +201,9 @@ func finish(t *Theme) {
 	for _, k := range textTokens {
 		c[k] = ensure(c[k], t.Dark, MinText, c["bg"], c["panel"])
 	}
+	for _, k := range SynTokens {
+		c[k] = ensure(c[k], t.Dark, MinText, c["bg"], c["panel"], codeBG(c))
+	}
 	if Contrast(c["accent"], black) >= Contrast(c["accent"], white) {
 		c["accent-contrast"] = black
 	} else {
@@ -206,6 +219,13 @@ func (t *Theme) Problems() []string {
 		for _, bg := range []string{"bg", "panel"} {
 			if r := Contrast(t.Colors[k], t.Colors[bg]); r < MinText {
 				out = append(out, fmt.Sprintf("%s: --%s on --%s is %.2f:1", t.Key, k, bg, r))
+			}
+		}
+	}
+	for _, k := range SynTokens {
+		for bg, c := range map[string]RGB{"bg": t.Colors["bg"], "panel": t.Colors["panel"], "code": codeBG(t.Colors)} {
+			if r := Contrast(t.Colors[k], c); r < MinText {
+				out = append(out, fmt.Sprintf("%s: --%s on %s is %.2f:1", t.Key, k, bg, r))
 			}
 		}
 	}
@@ -227,12 +247,14 @@ func Defaults() (light, dark *Theme) {
 		"text": must("#121214"), "muted": must("#5d5d64"), "heading": must("#000000"),
 		"accent": must("#c6371c"), "link": must("#6a3fd1"), "ident": must("#a15c00"), "release": must("#1d6f82"),
 		"ok": must("#1a7f37"), "warn": must("#8a5a00"), "bad": must("#a3170b"), "unk": must("#5d5d64"),
+		"syn-key": must("#1f5fbf"), "syn-str": must("#a15c00"), "syn-num": must("#b4361b"), "syn-kw": must("#6a3fd1"), "syn-fn": must("#1d6f82"),
 	}}
 	dark = &Theme{Key: "dark", Name: "DoesItOmarchy dark", Dark: true, Source: "site default", Colors: map[string]RGB{
 		"bg": must("#000000"), "panel": must("#0c0c0e"), "line": must("#26262a"), "line-strong": must("#3b3b40"),
 		"text": must("#ececee"), "muted": must("#a0a0a8"), "heading": must("#ffffff"),
 		"accent": must("#ff5a36"), "link": must("#b594ff"), "ident": must("#f5b53f"), "release": must("#5fc3d6"),
 		"ok": must("#4ade80"), "warn": must("#ffb000"), "bad": must("#ff8a73"), "unk": must("#a0a0a8"),
+		"syn-key": must("#7cb4ff"), "syn-str": must("#f5b53f"), "syn-num": must("#ff8a73"), "syn-kw": must("#b594ff"), "syn-fn": must("#5fc3d6"),
 	}}
 	finish(light)
 	finish(dark)
@@ -244,7 +266,11 @@ var omarchyMap = map[string]string{
 	"bg": "background", "panel": "dark_background", "text": "foreground", "muted": "dark_foreground",
 	"heading": "bright_foreground", "accent": "accent", "link": "magenta", "ident": "yellow",
 	"release": "cyan", "ok": "green", "warn": "yellow", "bad": "red", "unk": "muted",
+	"syn-key": "blue", "syn-str": "yellow", "syn-num": "orange", "syn-kw": "magenta", "syn-fn": "cyan",
 }
+
+// omarchyFallback stands in for a colors.toml key some themes leave out.
+var omarchyFallback = map[string]string{"orange": "red"}
 
 // displayNames overrides the title-cased theme key.
 var displayNames = map[string]string{"rose-pine": "Rosé Pine", "retro-82": "Retro 82", "flexoki-light": "Flexoki Light"}
@@ -269,6 +295,9 @@ func FromOmarchy(key string, r io.Reader) (*Theme, error) {
 	}
 	t := &Theme{Key: key, Name: displayName(key), Dark: kv["mode"] != "light", Colors: map[string]RGB{}, Source: "Omarchy " + key}
 	for tok, src := range omarchyMap {
+		if kv[src] == "" && omarchyFallback[src] != "" {
+			src = omarchyFallback[src]
+		}
 		c, err := ParseHex(kv[src])
 		if err != nil {
 			return nil, fmt.Errorf("%s: %s (%s): %w", key, src, tok, err)
@@ -290,34 +319,44 @@ func displayName(key string) string {
 	return strings.Join(parts, " ")
 }
 
-func block(sel string, t *Theme) string {
+func block(sel string, t *Theme, tokens []string, scheme bool) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s {\n", sel)
-	for _, k := range Tokens {
+	for _, k := range tokens {
 		fmt.Fprintf(&b, "  --%s: %s;\n", k, t.Colors[k])
 	}
-	scheme := "light"
-	if t.Dark {
-		scheme = "dark"
+	if scheme {
+		s := "light"
+		if t.Dark {
+			s = "dark"
+		}
+		fmt.Fprintf(&b, "  color-scheme: %s;\n", s)
 	}
-	fmt.Fprintf(&b, "  color-scheme: %s;\n}\n", scheme)
+	b.WriteString("}\n")
 	return b.String()
 }
 
 // CSS renders the token stylesheet. With no data-theme attribute the page
 // follows the system setting between our light and dark pair.
-func CSS(light, dark *Theme, themes []*Theme) string {
+func CSS(light, dark *Theme, themes []*Theme) string { return css(light, dark, themes, Tokens, true) }
+
+// SyntaxCSS renders the code-sample colours, in the same shape.
+func SyntaxCSS(light, dark *Theme, themes []*Theme) string {
+	return css(light, dark, themes, SynTokens, false)
+}
+
+func css(light, dark *Theme, themes []*Theme, tokens []string, scheme bool) string {
 	var b strings.Builder
 	b.WriteString("/* Generated by tools/themegen from themes/omarchy (MIT, see themes/omarchy/LICENSE). Do not edit. */\n")
-	b.WriteString(block(`:root, :root[data-theme="light"]`, light))
+	b.WriteString(block(`:root, :root[data-theme="light"]`, light, tokens, scheme))
 	b.WriteString("@media (prefers-color-scheme: dark) {\n")
-	b.WriteString(strings.ReplaceAll(block(`:root:not([data-theme])`, dark), "\n  ", "\n    "))
+	b.WriteString(strings.ReplaceAll(block(`:root:not([data-theme])`, dark, tokens, scheme), "\n  ", "\n    "))
 	b.WriteString("}\n")
-	b.WriteString(block(`:root[data-theme="dark"]`, dark))
+	b.WriteString(block(`:root[data-theme="dark"]`, dark, tokens, scheme))
 	sorted := append([]*Theme{}, themes...)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].Key < sorted[j].Key })
 	for _, t := range sorted {
-		b.WriteString(block(fmt.Sprintf(`:root[data-theme="%s"]`, t.Key), t))
+		b.WriteString(block(fmt.Sprintf(`:root[data-theme="%s"]`, t.Key), t, tokens, scheme))
 	}
 	return b.String()
 }

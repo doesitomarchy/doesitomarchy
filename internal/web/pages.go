@@ -727,39 +727,3 @@ const ConsentNotice = "This sends your test results to DoesItOmarchy.com. Serial
 	"its results, your Mac's hardware details and your handle (if you give one) are public, and the full report, " +
 	"with that personal data removed, may be published later. Submitting means you agree. " +
 	"More at doesitomarchy.com/privacy."
-
-const apiExample = `{
-  "schema": "doesitomarchy/report/v1",
-  "identifier": "MacBookPro8,2",
-  "source": { "version": "1.2.0", "profile": "full" },
-  "tester": { "handle": "vintage-fan" },
-  "tested_at": "2026-10-01T18:30:00-04:00",
-  "omarchy": { "version": "4.0.4" },
-  "kernel": "6.16.2-arch1-1",
-  "hardware": {
-    "product_name": "MacBookPro8,2",
-    "board_id": "Mac-94245A3940C91C80",
-    "cpu": "Intel(R) Core(TM) i7-2635QM CPU @ 2.00GHz",
-    "pci": ["8086:0126", "1002:6760", "14e4:4331"]
-  },
-  "items": {
-    "boot.install":     { "status": "supported", "method": "observed" },
-    "network.wifi":     { "status": "partial", "method": "automatic",
-                          "evidence": "b43: firmware loaded; 5 GHz networks not listed" },
-    "power.sleep-wake": { "status": "failed", "method": "observed",
-                          "evidence": "resume hangs on a black screen" },
-    "audio.headphone":  { "status": "not_tested", "reason": "no-equipment" }
-  },
-  "consent_notice": "This sends your test results to DoesItOmarchy.com. …"
-}`
-
-type apiDocsData struct {
-	Base, Example, Notice string
-	PerHour               int
-}
-
-func (s *Server) apiDocs(w http.ResponseWriter, r *http.Request) {
-	s.render(w, r, http.StatusOK, "api", page{Title: "Open API", Nav: "api",
-		Description: "Read DoesItOmarchy's catalog and test results as JSON, or submit diagnostic reports from a test tool.",
-		Data:        apiDocsData{Base: BaseURL, Example: apiExample, Notice: ConsentNotice, PerHour: ReportsPerHour}})
-}

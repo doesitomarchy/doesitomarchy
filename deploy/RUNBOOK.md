@@ -220,6 +220,25 @@ Without `GITHUB_TOKEN` the site still shows fixes the webhook reports, but
 can't open or close issues or run the catch-up sync. Without
 `GITHUB_WEBHOOK_SECRET` the webhook answers 503 and only the sync updates fixes.
 
+## The MCP server (/mcp)
+
+AI assistants call `/mcp` from their providers' servers (claude.ai, ChatGPT) or
+from users' machines. It needs no setup, but:
+
+- Keep Bot Fight Mode off, or skip it for `/mcp`: it challenges data-centre
+  IPs, so connectors would quietly stop working.
+- `cloudflare.sh` keeps `/mcp` out of the cache (POSTs aren't cached anyway).
+- Usage: `sudo journalctl -u doiomad | grep "mcp tool"` shows one line per tool
+  call, with the tool's name only. The server allows 300 requests a minute
+  per IP and answers 429 above that.
+- Check it after a release with the SDK-free probe below (one request):
+
+```sh
+curl -s https://doesitomarchy.com/mcp -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" -H "MCP-Protocol-Version: 2025-06-18" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | grep -o '"name":"[a-z_]*"'
+```
+
 ## Public or private
 
 The site went public on 2026-10-01 (Phase 6). `cloudflare.sh` keeps it public
