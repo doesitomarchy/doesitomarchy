@@ -89,6 +89,17 @@ func TestParseErrorsAndShapes(t *testing.T) {
 			t.Errorf("%s: errors %v, want %q", q, r.Errors, want)
 		}
 	}
+	// Valid values of result-driven fields are never errors, even when no Mac has them yet.
+	for f, vs := range closed {
+		for _, v := range vs {
+			if r := ix.Search(f + ":" + v); len(r.Errors) > 0 {
+				t.Errorf("%s:%s: errors %v", f, v, r.Errors)
+			}
+		}
+	}
+	if r := ix.Search("status:great"); !strings.Contains(strings.Join(r.Errors, ";"), "status: expected") {
+		t.Errorf("status:great: errors %v", r.Errors)
+	}
 	// A bad clause doesn't stop the rest of the query.
 	if r := ix.Search("chip:t3 mbp 2011"); len(r.Results) != 3 || len(r.Errors) != 1 {
 		t.Errorf("partial query: %d results, errors %v", len(r.Results), r.Errors)

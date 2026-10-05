@@ -287,7 +287,7 @@ func (s *Server) mcpIdentify(in mcpIdentifyIn) (string, error) {
 	}
 	m := s.data().view.bySlug[strings.ToLower(strings.ReplaceAll(res.Identifier, ",", "-"))]
 	if m != nil {
-		fmt.Fprintf(&b, "This is a %s (identified by %s).\n", macName(m), strings.ReplaceAll(res.By, "_", " "))
+		fmt.Fprintf(&b, "Identified by %s: %s.\n", strings.ReplaceAll(res.By, "_", " "), macName(m))
 	}
 	top := res.Candidates[0].Score
 	var best []*configView
