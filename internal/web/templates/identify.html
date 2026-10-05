@@ -7,23 +7,24 @@
 {{if .Asked}}
 <section class="panel identify-result" aria-live="polite">
   {{if .Mac}}
-    <h2>{{template "machine" .Mac.Icon}}<a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a> · {{.Title}}</h2>
+    <h2>{{template "machine" .Mac.Icon}}<a class="ident" href="/mac/{{.Mac.Slug}}">{{.Mac.Identifier}}</a> {{.Title}}</h2>
     {{if .Best}}
-      <p>Your configuration: <a class="slotted" href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">{{if .Best.Verified}}{{template "slot" true}}{{end}}<span class="cfgref big">{{.Best.Diff}}</span></a> {{.Best.Label}} <span class="muted">({{.Best.ReleaseName}})</span></p>
-      <p>{{template "verdict" .Best.Status.Verdict}} <span class="muted">{{.Best.Status.Tested}}/{{.Best.Status.Applicable}} tested</span> · <a href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">See what works →</a></p>
+      <p>Your configuration: <a class="slotted" href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">{{if .Best.Verified}}{{template "slot" true}}{{end}}<span class="cfgref big">{{spaced .Best.Diff}}</span></a> {{spaced .Best.Label}} <span class="muted">({{.Best.ReleaseName}})</span></p>
+      <p>{{template "verdict" .Best.Status.Verdict}} <span class="muted">{{.Best.Status.Tested}}/{{.Best.Status.Applicable}} tested</span>&emsp;<a href="/mac/{{.Mac.Slug}}#cfg-{{.Best.ID}}">See what works →</a></p>
     {{else}}
       <p>These configurations fit equally; what you pasted can't tell them apart. They usually differ in something a command can't see, such as the release year printed on the box or in About This Mac.</p>
-      <ul class="identify-cands">{{range .Candidates}}<li><a class="slotted" href="/mac/{{$.Data.Mac.Slug}}#cfg-{{.Config.ID}}">{{template "slot" .Config.Verified}}<span class="cfgref">{{.Config.Diff}}</span></a> {{.Config.Label}} <span class="muted">({{.Config.ReleaseName}})</span></li>{{end}}</ul>
+      <ul class="identify-cands">{{range .Candidates}}<li><a class="slotted" href="/mac/{{$.Data.Mac.Slug}}#cfg-{{.Config.ID}}">{{template "slot" .Config.Verified}}<span class="cfgref">{{spaced .Config.Diff}}</span></a> {{spaced .Config.Label}} <span class="muted">({{.Config.ReleaseName}})</span></li>{{end}}</ul>
     {{end}}
   {{else if .Candidates}}
     <h2>Possible matches</h2>
     <p>No model identifier was found, so these are the configurations with the devices you pasted.</p>
-    <ul class="identify-cands">{{range .Candidates}}<li><a class="slotted" href="/mac/{{.Config.Mac.Slug}}#cfg-{{.Config.ID}}">{{template "slot" .Config.Verified}}<span class="ident">{{.Config.Mac.Identifier}}</span></a> <span class="cfgref">{{.Config.Diff}}</span> <span class="muted">{{.Config.ReleaseName}}</span></li>{{end}}</ul>
+    <ul class="identify-cands">{{range .Candidates}}<li><a class="slotted" href="/mac/{{.Config.Mac.Slug}}#cfg-{{.Config.ID}}">{{template "slot" .Config.Verified}}<span class="ident">{{.Config.Mac.Identifier}}</span></a> <span class="cfgref">{{spaced .Config.Diff}}</span> <span class="muted">{{.Config.ReleaseName}}</span></li>{{end}}</ul>
   {{else}}
     <h2>Not an Intel Mac we know</h2>
     <p>{{with .Probe.ProductName}}<code>{{.}}</code> isn't{{else}}That isn't{{end}} one of the Intel Macs Apple sold from 2006 to 2020. If it should be, <a href="/contribute">tell us</a>. You can also <a href="/macs">browse every Intel Mac</a>.</p>
   {{end}}
-  <p class="muted identify-used">Matched on: {{with .Probe.ProductName}}<code>{{.}}</code> {{end}}{{with .Probe.BoardID}}<code>{{.}}</code> {{end}}{{with .Probe.CPU}}<code>{{.}}</code> {{end}}{{range .Probe.PCI}}<code>{{.}}</code> {{end}}· <a href="/identify">Start again</a></p>
+  <p class="muted identify-used">Matched on: {{with .Probe.ProductName}}<code>{{.}}</code> {{end}}{{with .Probe.BoardID}}<code>{{.}}</code> {{end}}{{with .Probe.CPU}}<code>{{.}}</code> {{end}}{{range .Probe.PCI}}<code>{{.}}</code> {{end}}</p>
+  <p><a class="btn" href="/identify">Start again</a></p>
   <div class="share" id="share">
   {{if .Shared}}
     <p class="share-done" role="status">Thanks, shared. A maintainer will compare these IDs with the catalog.</p>

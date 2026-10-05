@@ -58,7 +58,7 @@ svg.i { width: 1em; height: 1em; vertical-align: -0.125em; flex: none; }
 .top .tools { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
 .btn, select.btn {
   font: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--line);
-  border-radius: 2px; padding: 0.2rem 0.55rem; display: inline-flex; gap: 0.4rem; align-items: center; cursor: pointer;
+  border-radius: 2px; padding: 0.2rem 0.55rem; display: inline-flex; gap: 0.4rem; align-items: center; cursor: pointer; text-decoration: none;
 }
 .btn:hover { border-color: var(--line-strong); text-decoration: none; }
 
@@ -493,7 +493,7 @@ ul.settle { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.25rem; }
 ul.admin-flags { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.35rem; font-size: 13px; }
 .ok-notice { border-left-color: var(--link); }
 /* /identify (PF-1). */
-.identify .lead { font: 15px/1.6 var(--sans); color: var(--muted); max-width: 70ch; }
+.identify .lead { font: 16px/1.65 var(--mono); color: var(--muted); max-width: 69ch; } /* p.lede's type; 69ch of mono is the old 70ch of Inter (662px) */
 .identify-result { margin: 1.25rem 0; display: grid; gap: 0.4rem; }
 .identify-result h2 { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0; }
 .identify-result p { margin: 0; }
