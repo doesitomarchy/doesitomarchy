@@ -14,3 +14,5 @@ cd tools/uicheck && npm ci && BASE=http://127.0.0.1:8080 CHROME=/usr/bin/chromiu
 ```
 
 Or `make uicheck`, which does both.
+
+Checks run in parallel, one browser tab per CPU (`JOBS=4` to change it). While working on a page, `make uicheck PAGES=/identify` checks only the pages whose path starts with one of the comma-separated prefixes: seconds instead of minutes. Run the whole set before a push.

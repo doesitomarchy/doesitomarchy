@@ -5,16 +5,21 @@
 //   - layout: no horizontal page scroll; matrix header links clickable
 //
 // Usage: BASE=http://127.0.0.1:8080 CHROME=/usr/bin/chromium node check.mjs
-// Checks run in parallel, each in a fresh tab (JOBS, default 4).
+// Checks run in parallel, each in a fresh tab (JOBS, default: one per CPU).
+// PAGES=/identify,/mac/ checks only the pages whose path starts with one of
+// those prefixes, for a quick look while working on them.
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { availableParallelism } from "node:os";
 import puppeteer from "puppeteer-core";
 
 const require = createRequire(import.meta.url);
 const axeSource = readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
 const BASE = process.env.BASE || "http://127.0.0.1:8080";
 const CHROME = process.env.CHROME || "/usr/bin/chromium";
-const JOBS = Math.max(1, Number(process.env.JOBS) || 4);
+const JOBS = Math.max(1, Number(process.env.JOBS) || availableParallelism());
+const ONLY = (process.env.PAGES || "").split(",").map((s) => s.trim()).filter(Boolean);
+const wanted = (path) => ONLY.length === 0 || ONLY.some((p) => path.startsWith(p));
 
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
@@ -94,6 +99,12 @@ for (let i = 0; i < pages.length; i++) {
   if (pages[i] === "REPORT") pages[i] = report || "/stats";
   if (pages[i] === "ADMIN_REPORT") pages[i] = report ? "/admin" + report : "/admin";
 }
+for (const list of [pages, contrastPages]) list.splice(0, list.length, ...list.filter(wanted));
+if (pages.length + contrastPages.length === 0) {
+  console.error(`uicheck: no page matches PAGES=${process.env.PAGES}`);
+  await browser.close();
+  process.exit(1);
+}
 
 const tasks = [];
 // 1. Accessibility + layout at phone and desktop widths.
@@ -159,4 +170,4 @@ if (failures.length) {
   console.error(`uicheck: ${failures.length} problem(s) in ${checks} page checks\n` + failures.map((f) => "  " + f).join("\n"));
   process.exit(1);
 }
-console.log(`uicheck: ${checks} page checks passed in ${secs}s with ${JOBS} tabs (${pages.length} pages × ${widths.length} widths, ${themes.length} themes × ${contrastPages.length} pages)`);
+console.log(`uicheck: ${checks} page checks passed in ${secs}s with ${JOBS} tabs (${pages.length} pages × ${widths.length} widths, ${themes.length} themes × ${contrastPages.length} pages)${ONLY.length ? ` · only PAGES=${ONLY.join(",")}` : ""}`);
