@@ -1,8 +1,8 @@
 {{define "content"}}
 <h1>Methodology</h1>
+<p class="lede">DoesItOmarchy tracks whether <a href="https://omarchy.org" rel="noopener">Omarchy</a> works on every Intel Mac Apple sold from 2006 to 2020. Each Mac is identified by its <strong>model identifier</strong> (for example <a class="ident" href="/mac/MacBookPro8-2">MacBookPro8,2</a>, shown in System Information), and every official hardware configuration is listed as a complete computer. This methodology sets the rules for turning test results into a status, so a verdict means the same on every Mac, whoever tested it and with whichever tool, and anyone can check how it was reached.</p>
 <div class="paper">
 <section>
-<p>DoesItOmarchy tracks whether <a href="https://omarchy.org" rel="noopener">Omarchy</a> works on every Intel Mac Apple sold from 2006 to 2020. Each Mac is identified by its <strong>model identifier</strong> (for example <code>MacBookPro8,2</code>, shown in System Information). Every official hardware configuration of each identifier is listed as a complete computer.</p>
 <h2>Only tests count</h2>
 <p>Every capability starts as <strong>Untested</strong>. A status only changes when someone runs Omarchy on that configuration and reports the result. Research notes on model pages come from spec sheets and Linux hardware probes. They are labelled <em>unverified</em> and never change a status.</p>
 <h2>Known limitations</h2>
@@ -36,6 +36,39 @@
   </tbody>
 </table>
 </section>
+</div>
+
+<h2 id="ports">Ports and port groups</h2>
+<p class="wide-p">Some criteria are tested on each port, such as USB data or external display. Testers don't need to try every port: ports on the same controller and driver behave alike on Linux, so they form a <strong>port group</strong>. Usually that's all the ports of one type. A few Macs split them, such as the <a href="/mac/MacBookPro13-3">MacBook Pro (15-inch, 2016) [MacBookPro13,3]</a>, whose left and right Thunderbolt 3 pairs sit on two controllers. USB-C charging is the exception: charging is handled below the operating system, so all of a Mac's USB-C ports are one group for it.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Port statuses (scrolls sideways)">
+<table class="portkey">
+  <caption>Port statuses</caption>
+  <thead><tr><th scope="col">Status</th><th scope="col">Port map</th><th scope="col">On a card</th><th scope="col">Meaning</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Passed</th><td><span class="sw" data-st="supported"></span></td><td><span class="capport">{{template "vicon" "supported"}}left-1</span></td><td>It passed every criterion tested on it.</td></tr>
+    <tr><th scope="row">Covered by port group</th><td><span class="sw" data-st="covered"></span></td><td><span class="capport covered">{{template "vicon" "supported"}}left-2</span></td><td>Not tested itself, but a port in its group passed, so it counts as passed.</td></tr>
+    <tr><th scope="row">Partly tested</th><td><span class="sw" data-st="partly"></span></td><td><span class="muted">Port map only</span></td><td>Some criteria passed or are covered, none failed, and others are still untested.</td></tr>
+    <tr><th scope="row">Partly works</th><td><span class="sw" data-st="partial"></span></td><td><span class="capport">{{template "vicon" "partial"}}left-1</span></td><td>It passed some criteria and failed others, or a result says it only partly works.</td></tr>
+    <tr><th scope="row">Failed</th><td><span class="sw" data-st="failed"></span></td><td><span class="capport">{{template "vicon" "failed"}}left-1</span></td><td>It failed, and no port in its group passed.</td></tr>
+    <tr><th scope="row">Possible hardware fault</th><td><span class="sw" data-st="suspect"></span></td><td><span class="capport suspect">{{template "vicon" "failed"}}left-2 <span class="tag">possible hardware fault</span></span></td><td>It failed while a port in its group passed. That points to a damaged port, not to Omarchy: the group still counts as passed, and the report is flagged for review.</td></tr>
+    <tr><th scope="row">Untested</th><td><span class="sw"></span></td><td><span class="capport">{{template "vicon" "untested"}}left-1</span></td><td>No result yet.</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="wide-p muted portkey-note">The port map colours each port by every criterion tested on it. A card shows one criterion per row, with its ports boxed by port group; each box takes its group's colour.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Port group rules (scrolls sideways)">
+<table class="portkey">
+  <caption>From port groups to a criterion's verdict</caption>
+  <thead><tr><th scope="col">Port groups</th><th scope="col">Criterion</th><th scope="col">Rule</th></tr></thead>
+  <tbody>
+    <tr><td><span class="capports"><span class="capgroup g-supported"><span class="capport">{{template "vicon" "supported"}}left-1</span><span class="capport covered">{{template "vicon" "supported"}}left-2</span></span><span class="capgroup g-supported"><span class="capport covered">{{template "vicon" "supported"}}right-1</span><span class="capport">{{template "vicon" "supported"}}right-2</span></span></span></td><td>{{template "verdict" (v "supported")}}</td><td>One passing port covers its whole group. A pass in <strong>every</strong> group is what counts toward the Omarchy mark, not a pass on every port.</td></tr>
+    <tr><td><span class="capports"><span class="capgroup g-supported"><span class="capport">{{template "vicon" "supported"}}left-1</span><span class="capport covered">{{template "vicon" "supported"}}left-2</span></span><span class="capgroup"><span class="capport">{{template "vicon" "untested"}}right-1</span><span class="capport">{{template "vicon" "untested"}}right-2</span></span></span></td><td>{{template "verdict" (v "supported")}}<br><span class="muted">1 of 2 port groups</span></td><td>Untested groups don't count against a verdict, but the card shows how many groups have passed.</td></tr>
+    <tr><td><span class="capports"><span class="capgroup g-supported"><span class="capport">{{template "vicon" "supported"}}left-1</span><span class="capport covered">{{template "vicon" "supported"}}left-2</span></span><span class="capgroup g-failed"><span class="capport">{{template "vicon" "failed"}}right-1</span><span class="capport">{{template "vicon" "untested"}}right-2</span></span></span></td><td>{{template "verdict" (v "partial")}}</td><td>Some groups passed and others failed or only partly work. The card shows the result from a group that didn't pass, so you can see why.</td></tr>
+    <tr><td><span class="capports"><span class="capgroup g-failed"><span class="capport">{{template "vicon" "failed"}}left-1</span><span class="capport">{{template "vicon" "untested"}}left-2</span></span><span class="capgroup g-failed"><span class="capport">{{template "vicon" "failed"}}right-1</span><span class="capport">{{template "vicon" "untested"}}right-2</span></span></span></td><td>{{template "verdict" (v "failed")}}</td><td>Every tested group failed.</td></tr>
+    <tr><td><span class="capports"><span class="capgroup g-supported"><span class="capport">{{template "vicon" "supported"}}left-1</span><span class="capport suspect">{{template "vicon" "failed"}}left-2 <span class="tag">possible hardware fault</span></span></span></span></td><td>{{template "verdict" (v "supported")}}</td><td>A port that fails while its group-mate passes is a possible hardware fault. The group stays passed.</td></tr>
+    <tr><td><span class="muted">A result that names no port</span></td><td><span class="muted">—</span></td><td>Counts for the criterion only when the Mac has a single group for it, as most do. Tools that don't track ports report this way.</td></tr>
+  </tbody>
+</table>
 </div>
 
 <h2 id="criteria">Test criteria</h2>
