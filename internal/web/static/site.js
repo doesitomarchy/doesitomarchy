@@ -296,7 +296,8 @@
     copyText(code.textContent).then(function () {
       b.classList.add("done");
       if (status) status.textContent = "Copied to the clipboard.";
-      setTimeout(function () { b.classList.remove("done"); }, 2000);
+      clearTimeout(b.doneTimer);
+      b.doneTimer = setTimeout(function () { b.classList.remove("done"); }, 3000);
     }, function () {
       selectText(code); // the visitor can still press Ctrl+C
       if (status) status.textContent = "Couldn't copy automatically; the command is selected, press Ctrl+C.";
@@ -368,8 +369,7 @@
     };
     sw.addEventListener("click", function () { setClip(sw.getAttribute("aria-checked") !== "true"); });
 
-    identifyForm.addEventListener("submit", function (e) {
-      var text = document.getElementById("paste").value;
+    var idsFrom = function (text) {
       var q = new URLSearchParams();
       var id = text.match(/\b(MacBook(?:Air|Pro)?|iMac(?:Pro)?|Macmini|MacPro|Xserve)\d{1,2},\d{1,2}\b/);
       if (id) q.set("product", id[0]);
@@ -389,8 +389,33 @@
         if (v) vendor = v[1]; else if (d && vendor) { add(vendor, d[1]); vendor = ""; }
       });
       if (pci.length) q.set("pci", pci.join(","));
+      return q;
+    };
+    var identify = function (q) { window.location = "/identify?" + (q.toString() || "none=1"); };
+    identifyForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      window.location = "/identify?" + (q.toString() || "none=1");
+      identify(idsFrom(document.getElementById("paste").value));
+    });
+
+    // Paste anywhere: Ctrl+V / Cmd+V outside a form field fills the paste box
+    // and identifies at once, if it looks like the command's output. Pastes
+    // into fields, and anything else, are left alone.
+    var isMac = /Mac OS X|Macintosh/.test(navigator.userAgent);
+    document.querySelectorAll("[data-paste-key]").forEach(function (k) { if (isMac) k.textContent = "\u2318V"; });
+    document.addEventListener("paste", function (e) {
+      var t = e.target;
+      if (t && t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
+      var text = e.clipboardData ? e.clipboardData.getData("text/plain") : "";
+      var q = idsFrom(text);
+      var status = document.getElementById("copy-status");
+      if (!q.has("product") && !q.has("board") && !q.has("pci")) {
+        if (text && status) status.textContent = "That paste doesn't look like the command's output.";
+        return;
+      }
+      e.preventDefault();
+      document.getElementById("paste").value = text;
+      if (status) status.textContent = "Pasted. Identifying your Mac.";
+      identify(q);
     });
   }
   // Port map drawings (PLAN §27): hovering or focusing a port, its callout or its

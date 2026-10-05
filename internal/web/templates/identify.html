@@ -42,7 +42,7 @@
       {{with .Mac}}<label class="share-q">Which release does About This Mac show? <span class="muted">(optional)</span>
         <select name="release"><option value="">Not sure</option>{{range .Releases}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select>
       </label>{{end}}
-      <button class="btn" type="submit">Share</button>
+      <button class="btn-cta" type="submit">Share</button>
       <p class="muted share-small">We keep only the IDs listed above, your answers and today's date. Nothing links a share to you, so it can't be withdrawn later. A maintainer reviews shares by hand; they never change the catalog by themselves. See <a href="/privacy#sharing">privacy</a>.</p>
     </form>
   {{end}}
@@ -60,7 +60,7 @@
     </div>
     <button type="button" class="switch" role="switch" aria-checked="true" id="clip-switch" data-js>
       <span class="track" aria-hidden="true"><span class="thumb"></span></span>
-      <span>Also copy the output to the clipboard</span>
+      <span>Copy output to the clipboard</span>
     </button>
   </div>
   {{range .Commands}}
@@ -87,12 +87,13 @@
   <p class="sr-only" aria-live="polite" id="copy-status"></p>
 
   <h2 id="paste-step" data-clip-text="2. Paste what it printed (it's already on your clipboard)" data-plain-text="2. Paste what it prints">2. Paste what it printed (it's already on your clipboard)</h2>
+  <p class="muted paste-hint" data-js>Or press <kbd data-paste-key>Ctrl+V</kbd> anywhere on this page.</p>
   <form method="post" action="/identify" id="identify-form">
     <label for="paste" class="sr-only">Command output</label>
     <textarea id="paste" name="paste" rows="8" spellcheck="false" autocomplete="off" placeholder="MacBookPro11,3&#10;Mac-2BD1B31983FE1663&#10;model name : Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz&#10;pci 0x10de:0x0fe9&#10;…"></textarea>
     <button class="btn primary" type="submit">Identify my Mac</button>
   </form>
-  <p class="muted identify-privacy">Your paste is read in your browser. Only the model identifier, board ID, CPU name and device IDs are sent, and nothing is stored. Without JavaScript the server reads the paste and discards it at once. See <a href="/privacy">privacy</a>.</p>
+  <p class="muted identify-privacy">Your paste is read in your browser. Only the model identifier, board ID, CPU name and device IDs are sent, and nothing is stored unless you opt in to share them to help improve this site. Without JavaScript the server reads the paste and discards it at once. See <a href="/privacy">privacy</a>.</p>
 </section>
 </article>
 {{end}}{{end}}
