@@ -46,26 +46,40 @@
   <div class="cols">
     <section class="c-site" aria-labelledby="f-site">
       <h2 id="f-site">Site</h2>
-      <ul>
-        <li><a href="/macs">Browse all Intel Macs</a></li>
-        <li><a href="/criteria">Criteria matrix</a></li>
-        <li><a href="/stats">Statistics</a></li>
-        <li><a href="/fixes">Fixes</a></li>
-        <li><a href="/methodology">Methodology</a></li>
-        <li><a href="/contribute">Contribute</a></li>
-        <li><a href="/changelog">Catalog changelog</a></li>
-        <li><a href="/identify">Identify my Mac</a></li>
-        <li><a href="/api">API</a></li>
-        <li><a href="/attribution">Attribution</a></li>
-        <li><a href="/privacy">Privacy</a></li>
-        <li><a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">Source on GitHub</a></li>
-      </ul>
+      <div class="site-groups">
+        <div><h3 id="f-explore">Explore</h3>
+          <ul aria-labelledby="f-explore">
+            <li><a href="/macs">Browse Intel Macs</a></li>
+            <li><a href="/identify">Identify my Mac</a></li>
+            <li><a href="/criteria">Criteria matrix</a></li>
+            <li><a href="/stats">Statistics</a></li>
+          </ul></div>
+        <div><h3 id="f-help">Take part</h3>
+          <ul aria-labelledby="f-help">
+            <li><a href="/contribute">Contribute</a></li>
+            <li><a href="/fixes">Fixes</a></li>
+          </ul></div>
+        <div><h3 id="f-about">About</h3>
+          <ul aria-labelledby="f-about">
+            <li><a href="/methodology">Methodology</a></li>
+            <li><a href="/changelog">Catalog changelog</a></li>
+            <li><a href="/attribution">Attribution</a></li>
+            <li><a href="/privacy">Privacy</a></li>
+          </ul></div>
+        <div><h3 id="f-dev">Developers</h3>
+          <ul aria-labelledby="f-dev">
+            <li><a href="/api">API</a></li>
+            <li><a href="/api/register">Register report source</a></li>
+            <li><a href="https://github.com/doesitomarchy/doesitomarchy" rel="noopener">Source on GitHub</a></li>
+          </ul></div>
+      </div>
     </section>
     <section class="c-cat" aria-labelledby="f-cat">
       <h2 id="f-cat">Catalog</h2>
       <dl>
         <dt>{{.Site.Macs}}</dt><dd><a href="/macs">model identifiers</a></dd>
         <dt>{{.Site.Configs}}</dt><dd><a href="/configs">hardware configurations</a></dd>
+        <dt>{{.Site.OrderNumbers}}</dt><dd>Apple standard configurations (order numbers)</dd>
         <dt>{{.Site.Coverage.Eligible}}</dt><dd><a href="/configs?scope=in">counted in coverage</a></dd>
         <dt>{{.Site.Releases}}</dt><dd><a href="/releases">releases</a></dd>
         <dt>{{.Site.Components}}</dt><dd><a href="/components">components with hardware IDs</a></dd>

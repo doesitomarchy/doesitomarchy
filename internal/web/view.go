@@ -63,19 +63,22 @@ type Options struct {
 }
 
 type site struct {
-	Coverage    status.Coverage
-	Macs        int
-	Releases    int
-	Configs     int
-	Components  int
-	Criteria    int
-	Exclusions  []exclusion
-	Themes      []themeChoice
-	Lines       []lineStat
-	CatalogHash string
-	CatalogDate string
-	CatalogURL  string // GitHub tree of data/ at the catalog's commit
-	Demo        bool
+	Coverage   status.Coverage
+	Macs       int
+	Releases   int
+	Configs    int
+	Components int
+	Criteria   int
+	// OrderNumbers counts Apple's standard configurations (distinct order
+	// numbers); build-to-order-only configurations have none.
+	OrderNumbers int
+	Exclusions   []exclusion
+	Themes       []themeChoice
+	Lines        []lineStat
+	CatalogHash  string
+	CatalogDate  string
+	CatalogURL   string // GitHub tree of data/ at the catalog's commit
+	Demo         bool
 }
 
 type exclusion struct {
@@ -419,6 +422,13 @@ func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup, now time.Time)
 		ref = "main"
 	}
 	s.CatalogURL = RepoURL + "/tree/" + ref + "/data"
+	orders := map[string]bool{}
+	for _, cv := range v.configs {
+		for _, o := range cv.OrderNumbers {
+			orders[o] = true
+		}
+	}
+	s.OrderNumbers = len(orders)
 	counts := map[string]int{}
 	for _, mv := range v.macs {
 		for _, cv := range mv.Configs {
