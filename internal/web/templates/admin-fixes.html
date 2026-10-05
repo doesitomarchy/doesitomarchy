@@ -1,12 +1,12 @@
 {{define "content"}}{{with .Data}}
 <div class="admin">
-<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
+{{template "adminbar" .Who}}
 {{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
 {{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
 <h1>Fixes</h1>
 <p class="muted">Fix issues live in <a href="https://github.com/{{.Repo}}" rel="noopener">{{.Repo}}</a>; this page follows them through GitHub's webhook and a 6-hourly sync.
   {{if not .CanOpen}}<b>GITHUB_TOKEN isn't set on this server, so issues can't be opened or closed from here.</b>{{end}}</p>
-{{if .CanOpen}}<form method="post" action="/admin/fixes/sync" class="inline-form"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn" type="submit">Sync with GitHub now</button></form>{{end}}
+{{if .CanOpen}}<form method="post" action="/admin/fixes/sync"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="cf-btn tertiary" type="submit">Sync with GitHub now</button></form>{{end}}
 
 <h2>Failing, with no fix yet <span class="muted">{{len .Failures}}</span></h2>
 {{if .Failures}}<div class="table-wrap" tabindex="0" role="region" aria-label="Failures without a fix"><table class="browse fixes">
@@ -18,13 +18,17 @@
     <td><div class="fix-actions">
       {{if $.Data.CanOpen}}<form method="post" action="/admin/fixes/open"><input type="hidden" name="csrf" value="{{$.Data.CSRF}}">
         <input type="hidden" name="capability" value="{{.Capability}}"><input type="hidden" name="component" value="{{.Component}}"><input type="hidden" name="config" value="{{.Config}}">
-        <button class="btn primary" type="submit">Open a fix issue</button></form>{{end}}
-      {{if not .Unsupported}}<form method="post" action="/admin/unsupported" class="reason-form" data-reason-form><input type="hidden" name="csrf" value="{{$.Data.CSRF}}">
+        <button class="cf-btn sm primary" type="submit">Open a fix issue</button></form>{{end}}
+      {{if not .Unsupported}}<form method="post" action="/admin/unsupported" class="cf-form" data-reason-form><input type="hidden" name="csrf" value="{{$.Data.CSRF}}">
         <input type="hidden" name="capability" value="{{.Capability}}"><input type="hidden" name="component" value="{{.Component}}"><input type="hidden" name="config" value="{{.Config}}">
-        <button class="btn" type="button" data-reason-open aria-expanded="false" data-js>Unsupported…</button>
-        <div class="reason-fields"><label for="r-{{.Capability}}-{{.Component}}{{.Config}}">Why (shown on the site)</label>
-          <textarea id="r-{{.Capability}}-{{.Component}}{{.Config}}" name="reason" rows="2" required></textarea>
-          <div class="reason-actions"><button class="btn danger" type="submit">Mark Unsupported</button><button class="btn" type="button" data-reason-cancel data-js>Cancel</button></div></div>
+        <div class="cf-field reason-fields"><label class="cf-label" for="r-{{.Capability}}-{{.Component}}{{.Config}}">Why it's Unsupported</label>
+          <textarea class="cf-input" id="r-{{.Capability}}-{{.Component}}{{.Config}}" name="reason" rows="2" required></textarea>
+          <p class="cf-helper">Shown on the site.</p></div>
+        <div class="cf-actions">
+          <button class="cf-btn sm danger-tertiary" type="button" data-reason-open aria-expanded="false" aria-controls="r-{{.Capability}}-{{.Component}}{{.Config}}" data-js>Unsupported…</button>
+          <button class="cf-btn sm danger" type="submit" data-reason-confirm>Mark Unsupported</button>
+          <button class="cf-btn sm ghost" type="button" data-reason-cancel data-js>Cancel</button>
+        </div>
       </form>{{end}}
     </div></td>
   </tr>{{end}}</tbody>
@@ -42,6 +46,6 @@
 
 <h2>Unsupported <span class="muted">{{len .Unsupported}}</span></h2>
 {{if .Unsupported}}<ul class="admin-flags">{{range .Unsupported}}<li><b>{{.Criterion}}</b> on {{.Scope}} · {{.U.Reason}} · by {{.U.SetBy}} {{utc .U.SetAt}}
-  <form method="post" action="/admin/unsupported/{{.U.ID}}/clear" class="inline-form"><input type="hidden" name="csrf" value="{{$.Data.CSRF}}"><button class="btn" type="submit">Lift</button></form></li>{{end}}</ul>{{else}}<p>None.</p>{{end}}
+  <form method="post" action="/admin/unsupported/{{.U.ID}}/clear" class="cf-row-form"><input type="hidden" name="csrf" value="{{$.Data.CSRF}}"><button class="cf-btn sm tertiary" type="submit">Lift</button></form></li>{{end}}</ul>{{else}}<p>None.</p>{{end}}
 </div>
 {{end}}{{end}}

@@ -1,12 +1,61 @@
-{{define "content"}}{{with .Data}}
+{{define "content"}}{{with .Data}}{{$d := .}}
 <div class="admin">
-<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
+{{template "adminbar" .Who}}
 <h1>Sources and maintainers</h1>
-<p class="muted">Keys are issued and revoked on the server: <code>doiomad sources add|rotate|revoke|trust</code>, <code>doiomad maintainers add|remove</code>.</p>
+{{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
+{{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
+{{if .NewLink}}<section class="panel admin-section keylink">
+  <h2>New key link for {{.NewLinkFor}}</h2>
+  <p>The old key has stopped working. Email this link to {{with .NewLinkEmail}}<b>{{.}}</b>{{else}}the source{{end}}: it shows the new key once and expires in 7 days. It isn't shown again.</p>
+  <p><code class="keylink-url">{{.NewLink}}</code></p>
+</section>{{end}}
+
+<h2>Requests</h2>
+{{range .Requests}}<section class="panel admin-section source-request">
+  <p class="muted">Request {{.ID}} · sent {{utc .CreatedAt}} · contact <b>{{.Email}}</b></p>
+  <p class="request-desc">{{.Description}}</p>
+  <form method="post" action="/admin/sources/request/{{.ID}}/approve" class="cf-form" data-reason-form>
+    <input type="hidden" name="csrf" value="{{$d.CSRF}}">
+    <div class="cf-field"><label class="cf-label" for="r{{.ID}}-id">Source ID</label><input class="cf-input" id="r{{.ID}}-id" name="id" value="{{.SourceID}}" required></div>
+    <div class="cf-field"><label class="cf-label" for="r{{.ID}}-name">Name</label><input class="cf-input" id="r{{.ID}}-name" name="name" value="{{.Name}}" required></div>
+    <div class="cf-field"><label class="cf-label" for="r{{.ID}}-repo">Source code</label><input class="cf-input" id="r{{.ID}}-repo" name="repo" value="{{.RepoURL}}" required>
+      <p class="cf-helper"><a href="{{.RepoURL}}" rel="noopener noreferrer">Open the code</a> before approving.</p></div>
+    <div class="cf-field"><label class="cf-label" for="r{{.ID}}-home">Homepage (optional)</label><input class="cf-input" id="r{{.ID}}-home" name="homepage" value="{{.Homepage}}">
+      {{with .Homepage}}<p class="cf-helper"><a href="{{.}}" rel="noopener noreferrer">Open the homepage</a></p>{{end}}</div>
+    <div class="cf-field reason-fields"><label class="cf-label" for="r{{.ID}}-reason">Reason for declining</label>
+      <textarea class="cf-input" id="r{{.ID}}-reason" name="reason" rows="2" required></textarea>
+      <p class="cf-helper">The applicant sees it on their private link.</p></div>
+    <div class="cf-actions">
+      <button class="cf-btn primary" type="submit" formnovalidate data-primary>Approve</button>
+      <button class="cf-btn danger-tertiary" type="button" data-reason-open data-js aria-expanded="false" aria-controls="r{{.ID}}-reason">Decline…</button>
+      <button class="cf-btn danger" type="submit" formaction="/admin/sources/request/{{.ID}}/decline" data-reason-confirm>Confirm: decline</button>
+      <button class="cf-btn ghost" type="button" data-reason-cancel data-js>Cancel</button>
+    </div>
+  </form>
+</section>{{else}}<p class="muted">No requests waiting. Tools ask at <a href="/api/register">/api/register</a>.</p>{{end}}
+{{with .Declined}}<details class="declined">
+  <summary><h2>Declined requests <span class="muted">({{len .}})</span></h2></summary>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Declined requests"><table class="browse">
+    <thead><tr><th scope="col">Request</th><th scope="col">Tool</th><th scope="col">Source ID</th><th scope="col">Code</th><th scope="col">Contact</th><th scope="col">Declined</th><th scope="col">Reason</th></tr></thead>
+    <tbody>{{range .}}<tr><td>{{.ID}}<br><span class="muted">sent {{utc .CreatedAt}}</span></td><td>{{.Name}}</td><td><code>{{.SourceID}}</code></td>
+      <td><a href="{{.RepoURL}}" rel="noopener noreferrer">code</a></td><td>{{with .Email}}{{.}}{{else}}<span class="muted">deleted after 30 days</span>{{end}}</td>
+      <td>{{utc .DecidedAt}}<br><span class="muted">by {{.DecidedBy}}</span></td><td class="reason">{{.Reason}}</td></tr>{{end}}</tbody>
+  </table></div>
+</details>{{end}}
+
 <h2>Sources</h2>
+<p class="muted">The CLI still works: <code>doiomad sources add|rotate|revoke|trust</code>, <code>doiomad maintainers add|remove</code>. A new key link stops the old key at once.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="Sources"><table class="browse">
-  <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Trust</th><th scope="col">Registered</th><th scope="col">Revoked</th></tr></thead>
-  <tbody>{{range .Sources}}<tr><td><code>{{.ID}}</code></td><td>{{if .Homepage}}<a href="{{.Homepage}}" rel="noopener">{{.Name}}</a>{{else}}{{.Name}}{{end}}</td><td>{{.Trust}}</td><td>{{utc .CreatedAt}}</td><td>{{with .RevokedAt}}{{utc .}}{{else}}—{{end}}</td></tr>{{end}}</tbody>
+  <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Code</th><th scope="col">Contact</th><th scope="col">Key</th><th scope="col">Registered</th><th scope="col">Revoked</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+  <tbody>{{range .Sources}}<tr><td><code>{{.ID}}</code></td><td>{{if .Homepage}}<a href="{{.Homepage}}" rel="noopener">{{.Name}}</a>{{else}}{{.Name}}{{end}}</td>
+    <td>{{with .RepoURL}}<a href="{{.}}" rel="noopener noreferrer">code</a>{{else}}—{{end}}</td><td>{{with .ContactEmail}}{{.}}{{else}}—{{end}}</td>
+    <td>{{if .HasKey}}yes{{else}}—{{end}}</td><td>{{utc .CreatedAt}}</td><td>{{with .RevokedAt}}{{utc .}}{{else}}—{{end}}</td>
+    <td>{{if ne .ID "manual"}}<div class="row-actions">
+      <details class="confirm"><summary class="cf-btn sm tertiary">New key link…</summary>
+        <form method="post" action="/admin/sources/{{.ID}}/keylink"><input type="hidden" name="csrf" value="{{$d.CSRF}}"><button class="cf-btn sm danger" type="submit">Confirm: stop the key, make a link</button></form></details>
+      {{if not .RevokedAt}}<details class="confirm"><summary class="cf-btn sm danger-tertiary">Revoke…</summary>
+        <form method="post" action="/admin/sources/{{.ID}}/revoke"><input type="hidden" name="csrf" value="{{$d.CSRF}}"><button class="cf-btn sm danger" type="submit">Confirm: revoke</button></form></details>{{end}}
+    </div>{{end}}</td></tr>{{end}}</tbody>
 </table></div>
 <h2>Maintainers</h2>
 <ul class="admin-flags">{{range .Maintainers}}<li><b>{{.Handle}}</b> · {{.Email}} · since {{utc .AddedAt}}</li>{{else}}<li>None yet: <code>doiomad maintainers add HANDLE EMAIL</code>.</li>{{end}}</ul>

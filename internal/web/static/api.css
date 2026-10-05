@@ -1,0 +1,89 @@
+/* /api only: Stripe-style docs, with each section's code beside it (PLAN §22.7).
+   Code colours come from syntax.css (generated). */
+/* --cm: muted text on a code panel. --muted only promises 4.5:1 on the page,
+   so it moves a little toward --text. */
+.apidoc { --cb: var(--panel); --cb: color-mix(in srgb, var(--text) 8%, var(--bg)); --cm: var(--text); --cm: color-mix(in srgb, var(--muted) 60%, var(--text)); display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 0 2.5rem; align-items: start; }
+.apidoc-nav { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; font-size: 13px; padding: 0.25rem 0; scrollbar-width: thin; }
+.apidoc-nav ul { list-style: none; margin: 0 0 1rem; padding: 0; }
+.apidoc-nav a { display: block; color: var(--muted); padding: 0.2rem 0 0.2rem 0.75rem; border-left: 2px solid var(--line); }
+.apidoc-nav a:hover { color: var(--heading); text-decoration: none; }
+.apidoc-nav a[aria-current="true"] { color: var(--heading); border-left-color: var(--accent); }
+.apidoc-nav .group { margin: 0 0 0.35rem; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+/* Each section: its explanation, and its code beside it, kept in view. */
+.ad { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 2.5rem; align-items: start; padding: 2rem 0; border-top: 1px solid var(--line); scroll-margin-top: 0.5rem; }
+.ad:first-of-type { border-top: 0; padding-top: 0; }
+.ad-text { font: 15px/1.6 var(--sans); min-width: 0; }
+.ad-text h1, .ad-text h2 { font-family: var(--mono); }
+.ad-text h2 { font-size: 1.15rem; }
+.ad-text h3 { font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 1.25rem 0 0.2rem; }
+.ad-text code { font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }
+.ad-text ul { padding-left: 1.2rem; }
+.ad-text li { margin-bottom: 0.35rem; }
+.ad-text li a, .ad-text td a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.ad-text .lead { font-size: 17px; color: var(--heading); }
+.ad-text table.defs td { font-size: 14px; }
+/* A section with no code (the changelog) reads across both columns. */
+.ad-wide .ad-text { grid-column: 1 / -1; max-width: 80ch; }
+.ad-text .changelog { margin-top: 1rem; }
+.ad-text .changelog h3 { font: 700 1rem/1.25 var(--mono); letter-spacing: normal; text-transform: none; text-wrap: pretty; color: var(--heading); margin: 0 0 0.5rem; }
+.ad-code { position: sticky; top: 1rem; min-width: 0; display: grid; gap: 1rem; }
+.endpoint { font: 500 14px/1.5 var(--mono); margin: -0.15rem 0 0.9rem; color: var(--heading); overflow-wrap: anywhere; }
+.endpoint .m, .code-title .m { color: var(--syn-kw); font-weight: 700; margin-right: 0.15rem; }
+/* Code panels: Carbon-style, no outline; the background a step off the page. */
+.code { --snip: 2.5rem; --snip-bg: var(--cb); --snip-btn: var(--line); --snip-btn: color-mix(in srgb, var(--text) 16%, var(--bg)); --snip-hover: var(--line-strong); --snip-hover: color-mix(in srgb, var(--text) 24%, var(--bg)); background: var(--cb); min-width: 0; }
+.code-head { display: flex; align-items: center; min-height: var(--snip); padding-left: 0.9rem; border-bottom: 1px solid var(--bg); font: 12px/1.4 var(--mono); color: var(--cm); }
+.code-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0.3rem 0.6rem 0.3rem 0; }
+.langs { display: flex; align-self: stretch; }
+.langs button { background: none; border: 0; color: var(--cm); font: 12px var(--mono); padding: 0 0.55rem; cursor: pointer; }
+.langs button:hover { color: var(--heading); }
+.langs button[aria-pressed="true"] { color: var(--heading); box-shadow: inset 0 -2px var(--accent); }
+.langs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.code .snippet-copy { align-self: stretch; }
+.code .snippet-copy svg.i { width: 16px; height: 16px; }
+.code pre { margin: 0; padding: 0.8rem 0.9rem; overflow: auto; max-height: 30rem; font: 13px/1.6 var(--mono); color: var(--text); tab-size: 2; }
+.code pre:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.code-body[data-lang="text"] pre { white-space: pre-wrap; }
+.code-body[data-lang="json"] pre { color: var(--cm); } /* its punctuation; every other token has a colour */
+html.js .code-body:not(.on) { display: none; }
+.code-lang { margin: 0; padding: 0.5rem 0.9rem 0; font: 11px var(--mono); color: var(--cm); }
+html.js .code-lang { display: none; }
+.t-key { color: var(--syn-key); } .t-str { color: var(--syn-str); } .t-num { color: var(--syn-num); }
+.t-kw { color: var(--syn-kw); } .t-fn { color: var(--syn-fn); } .t-com, .t-p { color: var(--cm); }
+/* Flow diagrams: inline SVG, so they take the theme's colours. */
+.diagram { margin: 1.25rem 0; max-width: 28rem; }
+.diagram-code { margin: 0; max-width: none; }
+.diagram svg { display: block; width: 100%; height: auto; overflow: visible; }
+.dg-box { fill: var(--cb); stroke: var(--line-strong); stroke-width: 1; }
+.dg-end { stroke: var(--accent); }
+.dg-line { fill: none; stroke: var(--muted); stroke-width: 1.25; }
+.dg-head { fill: var(--muted); }
+.dg-call { font: 500 13px var(--mono); fill: var(--heading); }
+.dg-m { fill: var(--syn-kw); font-weight: 700; }
+.dg-text { font: 600 13px var(--sans); fill: var(--heading); }
+.dg-sub { font: 12px var(--sans); fill: var(--cm); }
+.dg-sub .dg-m { font-family: var(--mono); font-weight: 500; }
+.dg-lane, .dg-label { font: 12px var(--mono); fill: var(--muted); }
+.dg-num { font: 700 13px var(--mono); fill: var(--accent); }
+/* Narrower: the index becomes a sticky bar of jump links on top. */
+@media (max-width: 1100px) {
+  .apidoc { grid-template-columns: minmax(0, 1fr); }
+  .apidoc-nav { position: sticky; top: 0; z-index: 5; max-height: none; display: flex; overflow-x: auto; scrollbar-width: none; background: var(--bg); border-bottom: 1px solid var(--line); margin: 0 calc(-1 * var(--gutter)); padding: 0 var(--gutter); }
+  .apidoc-nav::-webkit-scrollbar { display: none; }
+  .apidoc-nav > div { display: contents; }
+  .apidoc-nav ul { display: flex; margin: 0; }
+  .apidoc-nav .group { display: none; }
+  .apidoc-nav a { white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; padding: 0.55rem 0.6rem; }
+  .apidoc-nav a[aria-current="true"] { border-bottom-color: var(--accent); }
+  .ad { scroll-margin-top: 3rem; }
+  .ad:first-of-type { padding-top: 1.5rem; }
+  .ad-code { top: 3.5rem; }
+}
+/* Phones: code follows its explanation. */
+@media (max-width: 760px) {
+  .ad { grid-template-columns: minmax(0, 1fr); }
+  .ad-code { position: static; margin-top: 0.5rem; }
+}
+/* A two-line call to action: the action, then what it gets you, smaller. */
+.ad-cta { margin: 0 0 1rem; }
+.btn-cta.btn-two { flex-direction: column; align-items: flex-start; gap: 0.15rem; line-height: 1.25; }
+.btn-cta.btn-two .btn-sub { font-size: 12px; font-weight: 400; opacity: 0.9; }

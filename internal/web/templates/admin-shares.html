@@ -1,6 +1,6 @@
 {{define "content"}}{{with .Data}}
 <div class="admin">
-<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
+{{template "adminbar" .Who}}
 {{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
 <h1>Shared IDs</h1>
 <p class="muted">Hardware IDs visitors chose to share from Identify my Mac, read against today's catalog. IDs marked <span class="unk-tag">new</span> aren't in the catalog; "look up" names one on pci-ids.ucw.cz. Chipset IDs the catalog leaves out on purpose are folded away. Shares never change the catalog; turn good ones into a catalog PR. Dates are UTC.
@@ -24,9 +24,9 @@
       <td>{{with .Best}}<a href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}">{{.Diff}}</a> <span class="muted">{{.ReleaseName}}</span>{{else}}{{with .Tied}}<span class="muted">tied:</span> {{range $i, $c := .}}{{if $i}}, {{end}}<a href="/mac/{{$c.Mac.Slug}}#cfg-{{$c.ID}}">{{$c.Mac.Identifier}} {{$c.Diff}}</a>{{end}}{{else}}<span class="muted">nothing</span>{{end}}{{end}}</td>
     </tr>{{end}}</tbody>
   </table></div>
-  {{if .Unseen}}<form method="post" action="/admin/shares/review" class="inline-form">
+  {{if .Unseen}}<form method="post" action="/admin/shares/review" class="cf-row-form">
     <input type="hidden" name="csrf" value="{{$.Data.CSRF}}"><input type="hidden" name="product" value="{{.Product}}">
-    <button class="btn" type="submit">Mark reviewed</button>
+    <button class="cf-btn tertiary" type="submit">Mark reviewed</button>
   </form>{{end}}
 </section>
 {{else}}

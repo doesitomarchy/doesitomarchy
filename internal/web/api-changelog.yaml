@@ -1,0 +1,50 @@
+# Public API changelog, newest first. Shown at the end of /api.
+# Each entry: date (YYYY-MM-DD), title, summary, and optional notes;
+# `backticks` mark code.
+# Add an entry with every release that changes the API or the report format;
+# site pages (even API-related ones, like /api/register) don't belong here.
+
+- date: "2026-10-05"
+  title: An MCP server for AI assistants
+  summary: "AI assistants can now look Macs up themselves through the MCP server at `/mcp`, with four read-only tools: `search_macs`, `get_mac`, `identify_mac` and `what_needs_testing`. No key needed. The index lists it as `mcp`."
+  notes:
+    - "Streamable HTTP without sessions, speaking MCP 2026-07-28 and the earlier versions back to 2025-03-26. Each IP address may make 300 requests a minute."
+
+- date: "2026-10-05"
+  title: Descriptions for tools and AI agents
+  summary: "The API is now described in full as an OpenAPI 3.1 document at `/api/v1/openapi.json`, and in plain Markdown for language models at `/llms.txt`. The index lists the new document as `openapi`."
+  notes:
+    - "Unknown `/api` paths now answer 404 in the usual error format, `{\"error\": \"…\"}`."
+
+- date: "2026-10-04"
+  title: OpenGL ES levels and known limitations
+  summary: "GPU components gain `gles`, the highest OpenGL ES version their Linux driver reaches. Configurations gain `known_limitations`, notes from research that come before any test."
+
+- date: "2026-10-03"
+  title: Board IDs per release
+  summary: "Configurations gain `board_ids`, the board IDs tied to their release by real machines. Identify a Mac uses them: a matching board shows in a candidate's `matched` as `board:…`."
+
+- date: "2026-10-03"
+  title: Omarchy channels
+  summary: "Results can come from any Omarchy channel: stable, rc, beta, edge or dev, and each one says its `omarchy_channel`. Stable releases decide verdicts; where a newer build disagrees, a criterion shows it in `newest_build`."
+  notes:
+    - "Report format: a dev install sends `\"channel\": \"dev\"` and the checkout's commit as `revision`."
+
+- date: "2026-10-03"
+  title: Fix tracking
+  summary: "A failed criterion can carry `fix`: its GitHub issue, its state (open, claimed, stale, proposed or fixed), who is on it, and `retest` once a fix lands after the latest result."
+
+- date: "2026-10-03"
+  title: Port map drawings
+  summary: "Configurations gain `portmap_url`, their port layout drawn as an SVG, when there is one."
+
+- date: "2026-10-02"
+  title: Ports per connector
+  summary: "Configurations gain `connectors`, their port layout, with the criteria each connector is tested for. Port criteria have a result per connector, in `ports`."
+  notes:
+    - "Report format: port criteria can be reported per connector, as `ports.usb-a@left-2`."
+    - "A connector's result can be `covered_by` a group-mate that passed, or flagged `possible_hardware_fault`."
+
+- date: "2026-10-02"
+  title: The API opens
+  summary: "Version 1: read the catalog and test results, identify a Mac from its hardware, and submit diagnostic reports with a source key, in the `doesitomarchy/report/v1` format."

@@ -15,6 +15,7 @@
 <h2>Visiting the site</h2>
 <ul class="plain">
   <li><strong>What our server records:</strong> each request's method, page, response code and how long it took. Not your IP address, your browser, where you came from, or what you searched for.</li>
+  <li><strong>AI assistants (MCP):</strong> when an assistant uses our <a href="/api#mcp">MCP server</a>, we record which tool it called, not what it asked. To stop floods, the server counts requests per IP address for a minute, in memory only.</li>
   <li><strong>What stays on your device:</strong> your colour theme, saved in your browser and never sent to us.</li>
   <li><strong>Nothing from elsewhere:</strong> fonts, icons and scripts all come from this site. No Google, social networks or ad companies.</li>
 </ul>
@@ -40,6 +41,16 @@
   <li><strong>What we remove first:</strong> serial numbers, network and IP addresses, computer and user names, and e-mail addresses.</li>
   <li><strong>What becomes public:</strong> once accepted, the results, the hardware and your public name, if you gave one. The full report stays with maintainers for now, but may be published later so anyone can check our work.</li>
   <li><strong>Changing your mind:</strong> reports aren't deleted, so the history stays honest. We can withdraw one so it no longer counts, and take your name off it.</li>
+</ul>
+</section>
+
+<section id="sources">
+<h2>Registering a test tool</h2>
+<ul class="plain">
+  <li><strong>What we keep:</strong> the tool's name, its source ID and links, what it tests, a contact email and the date. Only a hash of its key and of its private link, never the key itself.</li>
+  <li><strong>Who sees it:</strong> maintainers. Once approved, the tool's name appears on the reports it sends; the contact email is never public.</li>
+  <li><strong>How long:</strong> while the source is registered. If a request is declined, its contact email is deleted after 30 days.</li>
+  <li><strong>Limits:</strong> to stop floods, our server counts requests per IP address for a day, in memory only.</li>
 </ul>
 </section>
 

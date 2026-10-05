@@ -168,7 +168,7 @@ items: { boot.install: { status: supported, method: observed } }
 	// Enough to decide: the probe read against the catalog, how the
 	// candidates differ, and what to ask the tester.
 	for _, want := range []string{`state-tag st-pending`, "Which configuration?", "They differ in: <b>release, CPU", "AMD Radeon HD 6630M / 6750M (Whistler)",
-		"machdep.cpu.brand_string", `data-reason-form`, "Reason (required)"} {
+		"machdep.cpu.brand_string", `data-reason-form`, "Reason for rejecting", `formaction="/admin/report/`} {
 		if !strings.Contains(page, want) {
 			t.Errorf("report page lacks %q", want)
 		}

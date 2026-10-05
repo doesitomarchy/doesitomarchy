@@ -63,19 +63,22 @@ type Options struct {
 }
 
 type site struct {
-	Coverage    status.Coverage
-	Macs        int
-	Releases    int
-	Configs     int
-	Components  int
-	Criteria    int
-	Exclusions  []exclusion
-	Themes      []themeChoice
-	Lines       []lineStat
-	CatalogHash string
-	CatalogDate string
-	CatalogURL  string // GitHub tree of data/ at the catalog's commit
-	Demo        bool
+	Coverage   status.Coverage
+	Macs       int
+	Releases   int
+	Configs    int
+	Components int
+	Criteria   int
+	// OrderNumbers counts Apple's standard configurations (distinct order
+	// numbers); build-to-order-only configurations have none.
+	OrderNumbers int
+	Exclusions   []exclusion
+	Themes       []themeChoice
+	Lines        []lineStat
+	CatalogHash  string
+	CatalogDate  string
+	CatalogURL   string // GitHub tree of data/ at the catalog's commit
+	Demo         bool
 }
 
 type exclusion struct {
@@ -314,13 +317,13 @@ type layoutConn struct {
 
 // connInfo is one connector as the API serves it (PLAN §25).
 type connInfo struct {
-	ID       string   `json:"id"`
+	ID       string   `json:"id" doc:"Side and position, left to right as you face that side, e.g. left-2"`
 	Side     string   `json:"side"`
-	Type     string   `json:"type"`
+	Type     string   `json:"type" doc:"e.g. usb-a-2, thunderbolt-1, magsafe"`
 	Also     []string `json:"also,omitempty"`
 	Name     string   `json:"name"`
 	Note     string   `json:"note,omitempty"`
-	Criteria []string `json:"criteria"` // what this connector is tested for; empty for power inlets
+	Criteria []string `json:"criteria" doc:"The criteria this connector is tested for"` // what this connector is tested for; empty for power inlets
 }
 
 var sideNames = map[string]string{"left": "Left side", "right": "Right side", "back": "Back", "front": "Front", "top": "Top"}
@@ -419,6 +422,13 @@ func buildView(c *catalog.Catalog, opt Options, ru *store.Rollup, now time.Time)
 		ref = "main"
 	}
 	s.CatalogURL = RepoURL + "/tree/" + ref + "/data"
+	orders := map[string]bool{}
+	for _, cv := range v.configs {
+		for _, o := range cv.OrderNumbers {
+			orders[o] = true
+		}
+	}
+	s.OrderNumbers = len(orders)
 	counts := map[string]int{}
 	for _, mv := range v.macs {
 		for _, cv := range mv.Configs {

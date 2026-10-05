@@ -85,14 +85,15 @@ rules http_request_dynamic_redirect "$(jq -nc --arg z "$ZONE_NAME" '[{
 
 step "cache rules"
 # HTML is cacheable for the s-maxage the origin sends (300 s); /healthz, the
-# API, /admin, GitHub's webhook (/hooks/) and HTMX requests are never cached.
+# API, the MCP server (/mcp), /admin, GitHub's webhook (/hooks/) and HTMX
+# requests are never cached.
 # HTMX fragments share their URL with the full page and Cloudflare ignores
 # Vary, so a cached full page would be swapped into the page as a "fragment"
 # (and vice versa).
 # Static files cache by their own headers.
-nocache='http.request.uri.path eq "/healthz" or starts_with(http.request.uri.path, "/api/") or starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/hooks/") or any(http.request.headers["hx-request"][*] eq "true")'
+nocache='http.request.uri.path eq "/healthz" or starts_with(http.request.uri.path, "/api/") or http.request.uri.path eq "/mcp" or starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/hooks/") or any(http.request.headers["hx-request"][*] eq "true")'
 rules http_request_cache_settings "$(jq -nc --arg z "$ZONE_NAME" --arg nc "$nocache" '[
-	{description: "no cache: health, API, admin, webhooks, HTMX fragments", action: "set_cache_settings", action_parameters: {cache: false},
+	{description: "no cache: health, API, MCP, admin, webhooks, HTMX fragments", action: "set_cache_settings", action_parameters: {cache: false},
 	 expression: ("http.host eq \"" + $z + "\" and (" + $nc + ")")},
 	{description: "cache pages per origin headers", action: "set_cache_settings",
 	 action_parameters: {cache: true, edge_ttl: {mode: "respect_origin"}, browser_ttl: {mode: "respect_origin"}},

@@ -1,6 +1,6 @@
 {{define "content"}}{{with .Data}}{{$r := .R}}{{$d := .}}{{$rv := .Review}}
 <div class="admin">
-<p class="admin-bar">Maintainer <b>{{.Who}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources</a></p>
+{{template "adminbar" .Who}}
 {{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
 {{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
 
@@ -41,11 +41,11 @@
       <td>{{.Config.ReleaseName}}</td><td>{{.CPU}}</td><td>{{.GPU}}</td><td>{{.WiFi}}</td>
       <td>{{range .Matched}}<code>{{.}}</code> {{else}}<span class="muted">—</span>{{end}}</td><td>{{range .NotReported}}<code>{{.}}</code> {{else}}<span class="muted">—</span>{{end}}</td></tr>{{end}}</tbody>
   </table></div>
-  {{if eq $r.State "pending"}}<form method="post" action="/admin/report/{{$r.Code}}/config" class="inline-form">
+  {{if eq $r.State "pending"}}<form method="post" action="/admin/report/{{$r.Code}}/config" class="cf-inline">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
-    <label for="config">Configuration</label>
-    <select id="config" name="config">{{range .Candidates}}<option value="{{.ID}}"{{if eq .ID $r.ConfigID}} selected{{end}}>{{.Label}}</option>{{end}}</select>
-    <button class="btn" type="submit">Set configuration</button>
+    <div class="cf-field"><label class="cf-label" for="config">Configuration</label>
+      <select class="cf-input" id="config" name="config">{{range .Candidates}}<option value="{{.ID}}"{{if eq .ID $r.ConfigID}} selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+    <div class="cf-actions"><button class="cf-btn tertiary" type="submit">Set configuration</button></div>
   </form>{{end}}
 </section>{{end}}
 
@@ -53,25 +53,36 @@
   <h2>Decide</h2>
   {{if eq $r.State "pending"}}
     {{if .Ambiguous}}<p class="notice" role="note">Pick a configuration above before accepting.</p>{{end}}
-    <div class="decide">
-      <form method="post" action="/admin/report/{{$r.Code}}/accept">
-        <input type="hidden" name="csrf" value="{{.CSRF}}">
-        <button class="btn primary" type="submit"{{if .Ambiguous}} disabled{{end}}>Accept</button>
-      </form>
-      {{template "reason-form" (dict "Code" $r.Code "CSRF" .CSRF "Action" "reject" "Verb" "Reject" "Placeholder" "Why it's turned down (shown on the site)")}}
-    </div>
+    <form method="post" action="/admin/report/{{$r.Code}}/accept" class="cf-form" data-reason-form>
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      {{template "reason-field" (dict "ID" "reject-reason" "Label" "Reason for rejecting")}}
+      <div class="cf-actions">
+        <button class="cf-btn primary" type="submit" formnovalidate data-primary{{if .Ambiguous}} disabled{{end}}>Accept</button>
+        <button class="cf-btn danger-tertiary" type="button" data-reason-open data-js aria-expanded="false" aria-controls="reject-reason">Reject…</button>
+        <button class="cf-btn danger" type="submit" formaction="/admin/report/{{$r.Code}}/reject" data-reason-confirm>Confirm: reject</button>
+        <button class="cf-btn ghost" type="button" data-reason-cancel data-js>Cancel</button>
+      </div>
+    </form>
   {{else if eq $r.State "accepted"}}
-    <div class="decide">{{template "reason-form" (dict "Code" $r.Code "CSRF" .CSRF "Action" "retract" "Verb" "Retract" "Placeholder" "Why it should stop counting (shown on the site)")}}</div>
+    <form method="post" action="/admin/report/{{$r.Code}}/retract" class="cf-form" data-reason-form>
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      {{template "reason-field" (dict "ID" "retract-reason" "Label" "Reason for retracting")}}
+      <div class="cf-actions">
+        <button class="cf-btn danger-tertiary" type="button" data-reason-open data-js aria-expanded="false" aria-controls="retract-reason">Retract…</button>
+        <button class="cf-btn danger" type="submit" data-reason-confirm>Confirm: retract</button>
+        <button class="cf-btn ghost" type="button" data-reason-cancel data-js>Cancel</button>
+      </div>
+    </form>
   {{else}}<p class="muted">No further moves: {{$r.State}} reports stay on record.</p>{{end}}
 </section>
 
 {{with $r.Flags}}<section class="panel admin-section"><h2>Flags</h2>
   <ul class="admin-flags">{{range .}}<li><b>{{.Kind}}</b>: {{.Detail}}
     {{if .ResolvedAt}}<span class="muted"> · resolved by {{.ResolvedBy}} {{utc .ResolvedAt}}: {{.Resolution}}</span>
-    {{else}}<form method="post" action="/admin/flag/{{.ID}}/resolve" class="inline-form">
+    {{else}}<form method="post" action="/admin/flag/{{.ID}}/resolve" class="cf-inline">
       <input type="hidden" name="csrf" value="{{$d.CSRF}}"><input type="hidden" name="report" value="{{$r.Code}}">
-      <label for="note-{{.ID}}">Note</label><input id="note-{{.ID}}" name="note" required placeholder="how it was dealt with">
-      <button class="btn" type="submit">Resolve</button></form>{{end}}</li>{{end}}</ul>
+      <div class="cf-field"><label class="cf-label" for="note-{{.ID}}">How it was dealt with</label><input class="cf-input" id="note-{{.ID}}" name="note" required></div>
+      <div class="cf-actions"><button class="cf-btn tertiary" type="submit">Resolve</button></div></form>{{end}}</li>{{end}}</ul>
 </section>{{end}}
 
 {{with $r.Notes}}<div class="result-notes"><p>{{.}}</p></div>{{end}}
@@ -88,12 +99,6 @@
 </div>
 {{end}}{{end}}
 
-{{define "reason-form"}}<form method="post" action="/admin/report/{{.Code}}/{{.Action}}" class="reason-form" data-reason-form>
-  <input type="hidden" name="csrf" value="{{.CSRF}}">
-  <button type="button" class="btn" data-reason-open data-js aria-expanded="false" aria-controls="{{.Action}}-fields">{{.Verb}}…</button>
-  <div class="reason-fields" id="{{.Action}}-fields">
-    <label for="{{.Action}}-reason">Reason (required)</label>
-    <textarea id="{{.Action}}-reason" name="reason" rows="2" required placeholder="{{.Placeholder}}"></textarea>
-    <div class="reason-actions"><button class="btn danger" type="submit">Confirm: {{.Verb}}</button> <button type="button" class="btn" data-reason-cancel data-js>Cancel</button></div>
-  </div>
-</form>{{end}}
+{{define "reason-field"}}<div class="cf-field reason-fields"><label class="cf-label" for="{{.ID}}">{{.Label}}</label>
+  <textarea class="cf-input" id="{{.ID}}" name="reason" rows="2" required></textarea>
+  <p class="cf-helper">Shown on the site, with the report.</p></div>{{end}}

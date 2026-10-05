@@ -38,7 +38,7 @@ func TestContrast(t *testing.T) {
 		for _, p := range th.Problems() {
 			t.Error(p)
 		}
-		for _, k := range Tokens {
+		for _, k := range append(Tokens, SynTokens...) {
 			if _, ok := th.Colors[k]; !ok {
 				t.Errorf("%s: missing --%s", th.Key, k)
 			}
@@ -56,6 +56,13 @@ func TestGeneratedCSSUpToDate(t *testing.T) {
 	}
 	if string(got) != want {
 		t.Fatal("internal/web/static/themes.css is stale: run `go generate ./internal/web`")
+	}
+	got, err = os.ReadFile("../web/static/syntax.css")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != SyntaxCSS(light, dark, loadAll(t)) {
+		t.Fatal("internal/web/static/syntax.css is stale: run `go generate ./internal/web`")
 	}
 }
 

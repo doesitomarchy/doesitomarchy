@@ -73,7 +73,7 @@ func TestRoutes(t *testing.T) {
 		{"GET", "/mac/Nope9,9", 404, "", "404", "text/html"},
 		{"GET", "/nothing/here", 404, "", "404", "text/html"},
 		{"GET", "/api/v1/macs", 200, "", `"identifier": "MacBookPro5,1"`, "application/json"},
-		{"GET", "/api/v1/nothing", 404, "", `"error":"not found"`, "application/json"},
+		{"GET", "/api/v1/nothing", 404, "", `"error": "no such endpoint`, "application/json"},
 		{"POST", "/api/v1/reports", 401, "", `"error"`, "application/json"},
 		{"POST", "/mac/MacBookPro5-1", 404, "", "", ""},
 		{"GET", "/static/site.css", 200, "", "--accent", "text/css"},

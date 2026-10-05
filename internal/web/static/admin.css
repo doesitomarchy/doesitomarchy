@@ -1,0 +1,85 @@
+/* /admin only. Forms follow IBM Carbon's form and text-input guidelines:
+   labels above fields at 12px, fields 40px tall on their own background
+   with a 1px bottom border and no outline, a 2px focus border, helper text
+   4px below; 24px between fields in contained forms and 48px before the
+   buttons; the primary button first, on the left. Colours are the site's
+   theme tokens, so every theme works. */
+
+.admin { --field: var(--panel); --field: color-mix(in srgb, var(--text) 7%, var(--bg)); --cm: var(--text); --cm: color-mix(in srgb, var(--muted) 70%, var(--text)); }
+.admin-count { color: var(--accent); font-weight: 600; }
+
+/* ── fields ─────────────────────────────────────────────────────────── */
+.cf-form { display: grid; gap: 1.5rem; max-width: 40rem; }
+.cf-field { display: grid; gap: 0.5rem; min-width: 0; align-content: start; }
+.cf-label { font: 400 12px/1.34 var(--sans); letter-spacing: 0.32px; color: var(--cm); }
+.cf-label a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.cf-helper { margin: -0.25rem 0 0; font: 400 12px/1.34 var(--sans); letter-spacing: 0.32px; color: var(--cm); }
+.cf-input { box-sizing: border-box; width: 100%; min-height: 2.5rem; padding: 0 1rem; font: 400 14px/1.29 var(--sans); letter-spacing: 0.16px; color: var(--text);
+  background: var(--field); border: 0; border-bottom: 1px solid var(--line-strong); border-radius: 0; }
+textarea.cf-input { padding: 0.6875rem 1rem; min-height: 4rem; resize: vertical; }
+input[type="file"].cf-input { padding: 0.3rem 1rem 0.3rem 0.3rem; }
+input[type="file"].cf-input::file-selector-button { font: inherit; margin-right: 1rem; padding: 0.35rem 1rem; color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 0; cursor: pointer; }
+.cf-input::placeholder { color: var(--muted); }
+.cf-input:focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cf-input:user-invalid { outline: 2px solid var(--bad); outline-offset: -2px; }
+
+/* ── buttons ────────────────────────────────────────────────────────── */
+/* Carbon buttons: square, text at the left with room on the right. */
+.cf-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; }
+.cf-btn { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 3rem 0 1rem; font: 400 14px/1.29 var(--sans); letter-spacing: 0.16px;
+  border: 1px solid transparent; border-radius: 0; cursor: pointer; text-align: left; white-space: nowrap; text-decoration: none; }
+.cf-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cf-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.cf-btn.primary { background: var(--accent); color: var(--accent-contrast); }
+.cf-btn.secondary { background: var(--heading); color: var(--bg); }
+.cf-btn.tertiary { background: transparent; color: var(--accent); border-color: var(--accent); }
+.cf-btn.ghost { background: transparent; color: var(--text); padding-right: 1rem; }
+.cf-btn.danger { background: var(--bad); color: var(--bg); }
+.cf-btn.danger-tertiary { background: transparent; color: var(--bad); border-color: var(--bad); }
+.cf-btn:not([disabled]):hover { filter: brightness(1.1); }
+.cf-btn.tertiary:not([disabled]):hover { background: var(--accent); color: var(--accent-contrast); filter: none; }
+.cf-btn.danger-tertiary:not([disabled]):hover { background: var(--bad); color: var(--bg); filter: none; }
+.cf-btn.ghost:hover { background: var(--field); filter: none; }
+/* Small (32px), for buttons in tables and lists. */
+.cf-btn.sm { min-height: 2rem; padding: 0 1rem; }
+
+/* One field and its button on a line (pick a configuration, resolve a flag). */
+.cf-inline { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; max-width: 48rem; }
+.cf-inline .cf-field { flex: 1 1 16rem; }
+.cf-inline .cf-actions { margin-top: 0; }
+
+/* A decision that needs a reason (decline, reject, retract, Unsupported):
+   the reason box and its confirm button appear only after asking. */
+html.js [data-reason-form]:not(.open) .reason-fields,
+html.js [data-reason-form]:not(.open) [data-reason-confirm],
+html.js [data-reason-form]:not(.open) [data-reason-cancel],
+html.js [data-reason-form].open [data-reason-open],
+html.js [data-reason-form].open [data-primary] { display: none; }
+/* When the hidden reason is the form's only field, the buttons sit at the top. */
+html.js [data-reason-form]:not(.open) > .reason-fields:first-of-type + .cf-actions { margin-top: 0; }
+
+/* ── admin sections ─────────────────────────────────────────────────── */
+/* Sections are grids: keep their column to the page width on phones. */
+.admin-section { grid-template-columns: minmax(0, 1fr); }
+/* A lone button under a list item or table. */
+.cf-row-form { margin-top: 0.75rem; }
+.admin-flags .cf-row-form { margin-top: 0.4rem; }
+.admin-flags .cf-inline { margin-top: 0.5rem; }
+.fix-actions .cf-form { gap: 0.75rem; max-width: 22rem; }
+.fix-actions .cf-actions { margin-top: 0; gap: 0.5rem; }
+.source-request .request-desc { white-space: pre-line; font-size: 14px; max-width: 70ch; }
+.source-request .cf-form { grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr)); max-width: 52rem; }
+.source-request .cf-form > .reason-fields, .source-request .cf-form > .cf-actions { grid-column: 1 / -1; }
+.keylink { border-color: var(--accent); }
+details.declined { margin-top: 1.5rem; }
+details.declined > summary { cursor: pointer; }
+details.declined > summary h2 { display: inline; margin: 0; }
+details.declined td.reason { min-width: 16rem; white-space: pre-line; }
+details.declined td code { white-space: nowrap; }
+.keylink-url { overflow-wrap: anywhere; font-size: 13px; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-start; }
+/* Two steps for a destructive table action: the button, then Confirm below it. */
+details.confirm { display: inline-block; }
+details.confirm > summary { list-style: none; }
+details.confirm > summary::-webkit-details-marker { display: none; }
+details.confirm form { margin-top: 0.5rem; }

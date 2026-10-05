@@ -55,6 +55,8 @@ type Server struct {
 	access  *accessVerifier
 	// shareLimit is PF-3's per-IP limit, held in memory only.
 	shareLimit *rateLimiter
+	// registerLimit caps source requests per IP a day, in memory only (PLAN §30d).
+	registerLimit *rateLimiter
 	// gh and syncer reach the fix repo (PLAN §26); gh is nil without a token.
 	gh     *fixes.Client
 	syncer *fixes.Syncer
@@ -104,7 +106,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 	}
 	s := &Server{store: st, cat: c, opt: opt, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{},
 		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD),
-		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour)}
+		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour), registerLimit: newRateLimiter(RequestsPerDayPerIP, 24*time.Hour)}
 	if opt.GitHubToken != "" {
 		s.gh = fixes.NewClient(opt.FixRepo, opt.GitHubToken)
 		s.syncer = &fixes.Syncer{Client: s.gh, Store: st, Log: log}
@@ -145,6 +147,12 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"utc":         formatUTC,
 		"itemLabel":   itemLabel,
 		"reasonLabel": reasonLabel,
+		// pendingSources counts source requests awaiting a maintainer, for
+		// the admin bar (PLAN §30d).
+		"pendingSources": func() int {
+			n, _ := s.store.PendingRequests(context.Background())
+			return n
+		},
 		"srcLabel": func(u string) string {
 			if strings.Contains(u, "cdsassets.apple.com") {
 				return "Apple manual"
@@ -153,7 +161,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		},
 	}
 	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "admin-fixes", "fixes", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
-		"criteria", "releases", "configs", "components", "attribution", "changelog"} {
+		"criteria", "releases", "configs", "components", "attribution", "changelog", "register", "register-status"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
 			return nil, fmt.Errorf("template %s: %w", p, err)
@@ -197,6 +205,12 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /fixes", s.fixesPage)
 	mux.HandleFunc("GET /privacy", s.privacy)
 	mux.HandleFunc("GET /api", s.apiDocs)
+	mux.HandleFunc("GET /llms.txt", s.llmsTxt)
+	mux.HandleFunc("GET /api/register", s.registerForm)
+	mux.HandleFunc("POST /api/register", s.registerSubmit)
+	mux.HandleFunc("GET /api/register/{token}", s.registerStatusPage)
+	mux.HandleFunc("POST /api/register/{token}/key", s.registerReveal)
+	mux.Handle("/mcp", s.mcpHandler())
 	s.apiRoutes(mux)
 	s.adminRoutes(mux)
 	mux.HandleFunc("/", s.notFound)
@@ -212,13 +226,6 @@ func (s *Server) healthz(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	// The version lets a deploy confirm the new release is the one serving.
 	w.Write([]byte("ok " + s.version + "\n"))
-}
-
-func apiNotFound(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store")
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error":"not found","detail":"the API is not available yet"}` + "\n"))
 }
 
 func (s *Server) notFound(w http.ResponseWriter, r *http.Request) {
@@ -242,19 +249,27 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, err error) {
 type page struct {
 	Title       string
 	Description string
-	Nav         string // current section: "macs", "stats", "methodology", "contribute"
+	Nav         string // current section: "macs", "identify", "methodology", "contribute", "api"
 	Site        *site
 	Version     string
-	Canonical   string // absolute URL for <link rel="canonical">; empty on error pages
+	Canonical   string   // absolute URL for <link rel="canonical">; empty on error pages
+	Styles      []string // extra stylesheets, for one page's own components
+	Scripts     []string // extra scripts
 	Data        any
 }
+
+// noCanonical marks a page with no canonical URL (a private link).
+const noCanonical = "none"
 
 // render executes into a buffer first so a template error never sends half a page.
 func (s *Server) render(w http.ResponseWriter, r *http.Request, code int, name string, p page) {
 	p.Site, p.Version = &s.data().view.site, s.version
+	if strings.HasPrefix(name, "admin") {
+		p.Styles = append(p.Styles, "admin.css") // /admin's forms (Carbon-style) and tables
+	}
 	// Canonical: the path without its query (filters and views are the same
 	// page), unless the handler chose one. Error pages have none.
-	if code != http.StatusOK {
+	if code != http.StatusOK || p.Canonical == noCanonical {
 		p.Canonical = ""
 	} else if p.Canonical == "" {
 		p.Canonical = BaseURL + r.URL.EscapedPath()

@@ -1,0 +1,48 @@
+# DoesItOmarchy
+
+> DoesItOmarchy.com is a community database of how well Omarchy (Arch Linux with Hyprland) runs on every Intel Mac from 2006 to 2020, judged per hardware configuration from reviewed test reports. Its open API serves the catalog and the results as JSON.
+
+Facts to get right when building on the API:
+
+- Base URL: {{.Base}}/api/v1. Reads need no key, return JSON, allow any origin (CORS) and may be cached for 60 seconds.
+- A Mac is a model identifier such as MacBookPro8,2. In paths the comma can stay, or use a hyphen: MacBookPro8-2.
+- A Mac has one or more configurations (a release plus the parts that set it apart, such as the GPU). Verdicts belong to configurations.
+- Verdicts: supported (every tested criterion works), partial (something other than Boot failed or only partly works), failed (a Boot criterion failed), untested (no report yet; not a failure), unsupported (a Boot criterion was given up on), not-compatible (can never run Omarchy, e.g. a 32-bit CPU).
+- Criteria IDs (e.g. network.wifi) come from GET /api/v1/capabilities.
+- Be gentle: the catalog changes rarely. Fetch /api/v1/macs once and cache it rather than requesting every Mac in a loop.
+- Errors are JSON: {"error": "…", "problems": ["…"]}.
+- Data is CC BY-SA 4.0: credit DoesItOmarchy and share alike.
+
+## Docs
+
+- [API reference]({{.Base}}/api): the human-readable docs, with samples in curl, JavaScript and Python
+- [OpenAPI 3.1]({{.Base}}/api/v1/openapi.json): every endpoint, parameter and response field
+- [Report schema]({{.Base}}/api/v1/schema): the diagnostic report format, as JSON Schema
+- [API changelog]({{.Base}}/api#changelog): changes to the API and the report format, newest first
+
+## MCP server
+
+AI assistants can connect to the MCP server at {{.Base}}/mcp (Streamable HTTP; MCP 2026-07-28 and earlier versions back to 2025-03-26; no key; read-only). Tools: search_macs, get_mac, identify_mac, what_needs_testing. Answers are short text with links. Claude Code: `claude mcp add --transport http doesitomarchy {{.Base}}/mcp`.
+
+## Endpoints
+
+{{range .Endpoints}}- `{{.Method}} {{.Path}}`: {{.Summary}}.{{with .Example}} Example: `{{.}}`.{{end}}{{with .Body}} Body: `{{.}}`.{{end}}
+{{end}}
+## Submitting reports (test tools only)
+
+- A test tool needs a source key: register it at {{.Base}}/api/register (name, source code link, contact email, what it tests). A maintainer reviews the request; the key is shown once on the applicant's private link.
+- POST /api/v1/reports with `Authorization: Bearer doi_…` and one report (JSON or YAML) in the doesitomarchy/report/v1 format. Up to {{.PerHour}} reports per source per hour.
+- New reports are pending until a maintainer reviews them; GET /api/v1/reports/{code} tells where one stands.
+- Before submitting, the tool must show the tester this notice and let them stop, then send the text shown in `consent_notice`: "{{.Notice}}"
+- Only send results from real test runs on real hardware.
+
+## Identify a Mac from its hardware
+
+POST /api/v1/match takes {"product_name", "board_id", "cpu", "pci": [...], "usb": [...]} (any of them). On Linux, product_name is /sys/class/dmi/id/product_name and pci comes from `lspci -nn`. The reply's `config` is the best configuration, or null when several fit equally; `best` lists every configuration tied at the top; `candidates` ranks them all. From a browser, send the body without a Content-Type header, so no CORS preflight is needed.
+
+## Optional
+
+- [Methodology]({{.Base}}/methodology): how verdicts, criteria and ports are decided
+- [Criteria]({{.Base}}/criteria): every test criterion
+- [Identify my Mac]({{.Base}}/identify): the same matching, as a page
+- [Source code](https://github.com/doesitomarchy/doesitomarchy): MIT

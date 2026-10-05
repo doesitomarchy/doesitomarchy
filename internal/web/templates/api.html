@@ -1,85 +1,393 @@
 {{define "content"}}{{with .Data}}
-<h1>Open API</h1>
-<p class="lead">Everything on this site is open data. Read the catalog and the test results as JSON, or, if you write a test tool, send diagnostic reports straight in.</p>
-<div class="paper">
-<section>
-<h2>Reading</h2>
-<p>No key needed. Every read endpoint returns JSON, allows any origin (CORS), and may be cached for a minute. Catalog data is CC BY-SA 4.0: credit DoesItOmarchy and share alike.</p>
-<ul>
-  <li><code>GET /api/v1</code>: an index of the endpoints.</li>
-  <li><code>GET /api/v1/macs</code>: every Intel Mac, with its verdict range and configuration IDs.</li>
-  <li><code>GET /api/v1/macs/{identifier}</code>: one Mac (e.g. <code>MacBookPro11,3</code>) and all its configurations.</li>
-  <li><code>GET /api/v1/configs/{id}</code>: one configuration: components with hardware IDs, its port layout (<code>connectors</code>, with the criteria each connector is tested for, and <code>portmap_url</code>, the port map drawing as an SVG, when there is one), the criteria that apply, the current status of each, and its latest reports.</li>
-  <li><code>GET /api/v1/capabilities</code>: the test criteria, including retired ones.</li>
-  <li><code>GET /api/v1/schema</code>: the diagnostic report format, as JSON Schema.</li>
-  <li><code>GET /api/v1/reports/{code}</code>: where a report stands: <code>pending</code>, <code>accepted</code>, <code>rejected</code> (with the reason) or <code>retracted</code>.</li>
-  <li><code>POST /api/v1/match</code>: send a hardware probe (<code>product_name</code>, <code>board_id</code>, <code>cpu</code>, <code>pci</code>, <code>usb</code>), get the Mac and, in <code>config</code>, its configuration, or <code>null</code> when several fit equally. <code>best</code> lists every configuration tied at the top (one when it's exact; their order within a tie means nothing). <code>candidates</code> ranks them all, with the IDs each matched and the parts not reported. It's the same matching as <a href="/identify">Identify my Mac</a>.</li>
-</ul>
-<pre tabindex="0"><code>curl -s {{.Base}}/api/v1/macs/MacBookPro11,3
-curl -s -X POST {{.Base}}/api/v1/match \
-  -d '{"product_name":"MacBookPro8,2","pci":["1002:6760"]}'</code></pre>
+<div class="apidoc">
+<nav class="apidoc-nav" aria-label="On this page">
+  <div><ul>
+    <li><a href="#intro">Introduction</a></li>
+    <li><a href="#ai">Building with AI</a></li>
+    <li><a href="#mcp">MCP server</a></li>
+    <li><a href="#quickstart">Quickstart</a></li>
+    <li><a href="#errors">Errors</a></li>
+  </ul></div>
+  <div><p class="group">Submitting</p>
+  <ul>
+    <li><a href="#sources">Becoming a source</a></li>
+    <li><a href="#submit">Submit a report</a></li>
+    <li><a href="#format">The report format</a></li>
+    <li><a href="#consent">The consent notice</a></li>
+    <li><a href="#report">Check a report</a></li>
+  </ul></div>
+  <div><p class="group">Reading</p>
+  <ul>
+    <li><a href="#macs">List Macs</a></li>
+    <li><a href="#mac">Get a Mac</a></li>
+    <li><a href="#config">Get a configuration</a></li>
+    <li><a href="#capabilities">List criteria</a></li>
+    <li><a href="#match">Identify a Mac</a></li>
+  </ul></div>
+  <div><p class="group">Changes</p>
+  <ul>
+    <li><a href="#versioning">Versions and rules</a></li>
+    <li><a href="#changelog">API changelog</a></li>
+  </ul></div>
+</nav>
+
+<div class="apidoc-body">
+<p id="copy-status" class="sr-only" aria-live="polite"></p>
+
+<section class="ad" id="intro" aria-labelledby="intro-h">
+  <div class="ad-text">
+    <h1 id="intro-h">API Reference</h1>
+    <p class="lead">Test tools send their diagnostic reports straight in, and everything on DoesItOmarchy is open data: read the catalog and the test results as JSON.</p>
+    <table class="defs">
+      <tbody>
+        <tr><th scope="row">Base URL</th><td><code>{{.Base}}/api/v1</code></td></tr>
+        <tr><th scope="row">Format</th><td>JSON. Every endpoint is listed at <code>GET /api/v1</code>.</td></tr>
+        <tr><th scope="row">Keys</th><td>None to read. Submitting reports needs a <a href="#sources">source key</a>.</td></tr>
+        <tr><th scope="row">CORS</th><td>Any website may read.</td></tr>
+        <tr><th scope="row">Caching</th><td>Reads may be cached for a minute.</td></tr>
+        <tr><th scope="row">Licence</th><td>Catalog data is CC BY-SA 4.0: credit DoesItOmarchy and share alike.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "index"}}{{template "apicode" index .Res "index"}}</div>
 </section>
 
-<section>
-<h2>Becoming a source</h2>
-<p>A source is a test tool that submits reports. Each one has an ID and a key. To get one, <a href="https://github.com/doesitomarchy/doesitomarchy/issues" rel="noopener">open an issue</a> with your tool's name, homepage and what it tests. A maintainer registers it and sends you the key privately.</p>
-<ul>
-  <li>Keys look like <code>doi_</code> followed by 32 characters. We keep only a hash, so a lost key is replaced, not recovered.</li>
-  <li>Keep the key in your tool's build or server, not in a public repository. If it leaks, ask for a new one; the old one stops working at once.</li>
-  <li>Each source may submit up to {{.PerHour}} reports an hour.</li>
-</ul>
+<section class="ad" id="ai" aria-labelledby="ai-h">
+  <div class="ad-text">
+    <h2 id="ai-h">Building with AI</h2>
+    <p>AI assistants and agents can build on this API too. Give them these, so they don't have to guess:</p>
+    <ul>
+      <li><a href="/llms.txt"><code>/llms.txt</code></a>: this API in plain Markdown, written for language models.</li>
+      <li><a href="/api/v1/openapi.json"><code>/api/v1/openapi.json</code></a>: an OpenAPI 3.1 document with every endpoint, parameter and field. Agents, code generators and OpenAPI-to-MCP tools can import it.</li>
+      <li><a href="#mcp"><code>/mcp</code></a>: an MCP server, so an assistant can look Macs up itself.</li>
+      <li><a href="/api/v1/schema"><code>/api/v1/schema</code></a>: the report format as JSON Schema, to check a report before sending it.</li>
+    </ul>
+    <p>Three things generated code often gets wrong:</p>
+    <ul>
+      <li>Verdicts belong to configurations, not to Macs. <code>untested</code> means no report yet, not a failure.</li>
+      <li>Identifiers contain a comma: <code>MacBookPro8,2</code>. A hyphen works too.</li>
+      <li>The catalog changes rarely. Fetch <code>/api/v1/macs</code> once and cache it, rather than requesting every Mac.</li>
+    </ul>
+    <p>Start your assistant with the prompt beside this, then describe what you want.</p>
+  </div>
+  <div class="ad-code">{{template "apicode" .Prompt}}</div>
 </section>
 
-<section>
-<h2>Submitting a report</h2>
-<p>Send one report per test run, as JSON or YAML, with your key:</p>
-<pre tabindex="0"><code>curl -s -X POST {{.Base}}/api/v1/reports \
-  -H "Authorization: Bearer $DOI_KEY" \
-  -H "Content-Type: application/json" \
-  --data-binary @report.json</code></pre>
-<p>You don't need to know the configuration ID. Send the model identifier and the hardware probe, and the server finds the configuration. Include the CPU name (<code>hardware.cpu</code>): it tells apart configurations that share every device. If the probe still fits several, the report is taken anyway, and a maintainer picks the right one.</p>
-<p>A new report is <code>pending</code> until a maintainer reviews it. The reply:</p>
-<pre tabindex="0"><code>201 Created
-{"code": "3f9a1c07be", "state": "pending",
- "config": "macbookpro8-2-15-early-2011-a", "candidates": [],
- "flags": [], "status_url": "{{.Base}}/api/v1/reports/3f9a1c07be"}</code></pre>
-<p>Errors come back as <code>{"error": "…", "problems": ["…"]}</code>:</p>
-<ul>
-  <li><strong>400</strong>: the report isn't valid. <code>problems</code> lists every issue, not just the first.</li>
-  <li><strong>401</strong>: no key or an unknown key. <strong>403</strong>: the key was revoked, or the report names a different source.</li>
-  <li><strong>413</strong>: over 1 MiB. <strong>415</strong>: a format we don't read.</li>
-  <li><strong>422</strong>: no configuration in the catalog fits this hardware.</li>
-  <li><strong>429</strong>: the hourly limit; wait for <code>Retry-After</code> seconds.</li>
-</ul>
+<section class="ad" id="mcp" aria-labelledby="mcp-h">
+  <div class="ad-text">
+    <h2 id="mcp-h">Connect an AI assistant (MCP)</h2>
+    <p class="endpoint"><span class="m">POST</span> <code>{{.Base}}/mcp</code></p>
+    <p>MCP (Model Context Protocol) is a standard way to give an AI assistant tools. Add this server to Claude, ChatGPT, VS Code or any MCP client, and your assistant looks up Macs and their test results itself, instead of guessing.</p>
+    <h3>Tools</h3>
+    <table class="defs">
+      <tbody>
+        <tr><th scope="row">search_macs</th><td>Find Macs by name, year, identifier or the <a href="/search">search</a> fields, with their verdicts.</td></tr>
+        <tr><th scope="row">get_mac</th><td>One Mac's configurations: the verdict, what fails or only partly works (with the evidence and any fix in progress), and known limitations.</td></tr>
+        <tr><th scope="row">identify_mac</th><td>The Mac and its exact configuration from a command's output or hardware IDs, like <a href="/identify">Identify my Mac</a>.</td></tr>
+        <tr><th scope="row">what_needs_testing</th><td>What's still untested or due a re-test on a Mac, and how to help.</td></tr>
+      </tbody>
+    </table>
+    <h3>Connect</h3>
+    <ul>
+      <li><strong>claude.ai and Claude Desktop:</strong> add a custom connector (Settings → Connectors) with the URL above.</li>
+      <li><strong>ChatGPT:</strong> turn on developer mode (Settings → Apps &amp; Connectors → Advanced), then create a connector with the URL above and no authentication.</li>
+      <li><strong>Claude Code, VS Code and Cursor:</strong> use the samples beside this.</li>
+    </ul>
+    <h3>Good to know</h3>
+    <ul>
+      <li>No key and no sign-in. It's read-only: it can't submit reports or change anything.</li>
+      <li>Answers are short text written for the assistant, with links to the site. For full data, use the endpoints below.</li>
+      <li>It speaks MCP 2026-07-28 and the earlier versions back to 2025-03-26, without sessions. Each IP address may make {{.MCPCallsPerMinute}} requests a minute.</li>
+      <li>We record which tool was called, not what was asked (<a href="/privacy">privacy</a>).</li>
+    </ul>
+  </div>
+  <div class="ad-code">{{range .MCP}}{{template "apicode" .}}{{end}}</div>
 </section>
 
-<section>
-<h2>The report format</h2>
-<p>Format <code>doesitomarchy/report/v1</code>, fully described by <a href="/api/v1/schema">the schema</a>. Items use the criteria IDs from <code>/api/v1/capabilities</code>; leave out anything you didn't test. Each result says how it was tested: <code>automatic</code> (the tool checked), <code>observed</code> (the tester looked) or <code>fixture</code> (with test equipment, such as a loopback plug).</p>
-<pre tabindex="0"><code>{{.Example}}</code></pre>
-<ul>
-  <li><code>tested_at</code> is when the test ran, with a time zone. The site shows every time in UTC.</li>
-  <li><code>omarchy.version</code> is <code>/etc/os-release</code>'s <code>VERSION_ID</code>, from any channel: a release (<code>4.0.4</code>), a pre-release (<code>4.0.4rc2</code>, <code>4.0.0beta3</code>) or an edge build (<code>4.0.0.r6713.ga85e29a</code>). For a dev install (Omarchy run from a git checkout), add <code>"channel": "dev"</code> and the checkout's commit as <code>revision</code>. Stable releases decide verdicts; results from the other channels show as the newest build where they differ (<code>newest_build</code> on a configuration's capabilities). Every version comes back with its <code>omarchy_channel</code>.</li>
-  <li>Port criteria can be reported per connector: <code>ports.usb-a@left-2</code>, using the connector IDs in the configuration's layout. Connectors are named by side and numbered left to right as you face that side. A criterion counts as fully verified only when every connector it applies to has passed.</li>
-  <li>Don't send serial numbers, network addresses, or user and computer names. They're removed anyway, but it's better never to send them.</li>
-  <li>Put the check's output in <code>evidence</code> when something fails or only partly works. It's what helps someone fix it.</li>
-</ul>
+<section class="ad" id="quickstart" aria-labelledby="quickstart-h">
+  <div class="ad-text">
+    <h2 id="quickstart-h">Quickstart</h2>
+    <p>There are two ways in. Both end at a configuration, where the verdicts are.</p>
+    <figure class="diagram">
+      <svg viewBox="0 0 400 290" role="img" aria-labelledby="dg-read-t">
+        <title id="dg-read-t">You know the Mac: GET /macs gives identifiers; GET /macs/{identifier} gives its configurations. You have the hardware: POST /match gives the configuration. Both lead to GET /configs/{id}: verdict, criteria, ports and reports.</title>
+        <defs><marker id="dg-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0 0L10 5L0 10z"/></marker></defs>
+        <text class="dg-lane" x="97" y="14" text-anchor="middle">You know the Mac</text>
+        <text class="dg-lane" x="303" y="14" text-anchor="middle">You have the hardware</text>
+        <rect class="dg-box" x="0.5" y="26.5" width="194" height="46"/>
+        <text class="dg-call" x="97" y="46" text-anchor="middle"><tspan class="dg-m">GET</tspan> /macs</text>
+        <text class="dg-sub" x="97" y="63" text-anchor="middle">every Mac</text>
+        <path class="dg-line" d="M97 73V114" marker-end="url(#dg-arrow)"/>
+        <text class="dg-label" x="104" y="98">identifier</text>
+        <rect class="dg-box" x="0.5" y="116.5" width="194" height="46"/>
+        <text class="dg-call" x="97" y="136" text-anchor="middle"><tspan class="dg-m">GET</tspan> /macs/{identifier}</text>
+        <text class="dg-sub" x="97" y="153" text-anchor="middle">all its configurations</text>
+        <rect class="dg-box" x="205.5" y="26.5" width="194" height="46"/>
+        <text class="dg-call" x="303" y="46" text-anchor="middle"><tspan class="dg-m">POST</tspan> /match</text>
+        <text class="dg-sub" x="303" y="63" text-anchor="middle">product name, board, PCI IDs</text>
+        <path class="dg-line" d="M97 163V218" marker-end="url(#dg-arrow)"/>
+        <text class="dg-label" x="104" y="195">config ID</text>
+        <path class="dg-line" d="M303 73V218" marker-end="url(#dg-arrow)"/>
+        <text class="dg-label" x="310" y="150">config ID</text>
+        <rect class="dg-box dg-end" x="0.5" y="220.5" width="399" height="56"/>
+        <text class="dg-call" x="200" y="243" text-anchor="middle"><tspan class="dg-m">GET</tspan> /configs/{id}</text>
+        <text class="dg-sub" x="200" y="262" text-anchor="middle">verdict · criteria · ports · reports</text>
+      </svg>
+    </figure>
+    <ul>
+      <li><strong>You know the Mac:</strong> <a href="#macs">list the Macs</a>, then <a href="#mac">get one</a> by its identifier. It comes with all its configurations.</li>
+      <li><strong>You have the hardware:</strong> send its IDs to <a href="#match">Identify a Mac</a> and get the configuration back.</li>
+    </ul>
+  </div>
+  <div class="ad-code">{{template "apicode" .Quickstart}}</div>
 </section>
 
-<section>
-<h2 id="consent">The notice testers must see</h2>
-<p>Before your tool submits, it must show the tester this notice (or a faithful translation) and let them stop. Submitting counts as agreeing. Send the text you showed in <code>consent_notice</code>.</p>
-<blockquote class="notice-text"><p>{{.Notice}}</p></blockquote>
-<p>What happens to the data is set out on the <a href="/privacy">privacy page</a>.</p>
+<section class="ad" id="errors" aria-labelledby="errors-h">
+  <div class="ad-text">
+    <h2 id="errors-h">Errors</h2>
+    <p>Errors come with an HTTP status and a JSON body. <code>error</code> says what went wrong. For reports, <code>problems</code> lists every problem, not just the first.</p>
+    <table class="defs codes">
+      <tbody>
+        <tr><th scope="row">400</th><td>The request or the report isn't valid.</td></tr>
+        <tr><th scope="row">401</th><td>No source key, or an unknown one.</td></tr>
+        <tr><th scope="row">403</th><td>The key was revoked, or the report names a different source.</td></tr>
+        <tr><th scope="row">404</th><td>No such Mac, configuration, report or endpoint.</td></tr>
+        <tr><th scope="row">413</th><td>The report is over 1 MiB.</td></tr>
+        <tr><th scope="row">415</th><td>A report format we don't read.</td></tr>
+        <tr><th scope="row">422</th><td>No configuration in the catalog fits the report's hardware.</td></tr>
+        <tr><th scope="row">429</th><td>Too many reports this hour. Wait <code>Retry-After</code> seconds.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ad-code">{{template "apicode" .Error}}</div>
 </section>
 
-<section>
-<h2>Ground rules</h2>
-<ul>
-  <li>Only send results from real test runs on real hardware.</li>
-  <li>Maintainers review every report and can reject or retract it, with a reason that's shown on the site.</li>
-  <li>The format may gain optional fields. A breaking change would get a new version (<code>/v2</code>), and v1 would keep working.</li>
-</ul>
+<section class="ad" id="sources" aria-labelledby="sources-h">
+  <div class="ad-text">
+    <h2 id="sources-h">Becoming a source</h2>
+    <p>A source is a test tool that submits reports. To get a source key, <a href="/api/register">register your tool</a>: its name, a link to its source code, a contact email and what it tests. A maintainer reviews the request, and you collect the key once from a private link.</p>
+    <div class="ad-cta"><a class="btn-cta btn-two" href="/api/register"><span>Register report source</span><span class="btn-sub">Request source API key</span></a></div>
+    <ul>
+      <li>Keys look like <code>doi_</code> followed by 32 characters. We keep only a hash, so a lost key is replaced, not recovered.</li>
+      <li>Keep the key in your tool's build or server, not in a public repository. If it leaks, ask for a new key link; the old key stops working at once.</li>
+      <li>Each source may submit up to {{.PerHour}} reports an hour.</li>
+    </ul>
+    <p>Every report goes through review, as the diagram shows.</p>
+  </div>
+  <div class="ad-code">
+    <figure class="diagram diagram-code">
+      <svg viewBox="0 0 400 352" role="img" aria-labelledby="dg-sub-t">
+        <title id="dg-sub-t">1. Your tool runs the tests. 2. It shows the tester the consent notice; they can stop. 3. POST /reports with your key; the reply is 201 with a code, state pending. 4. A maintainer reviews it; GET /reports/{code} shows its state. 5. Accepted: the results show on the site. Or rejected, with a reason.</title>
+        <defs><marker id="dg-arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="dg-head" d="M0 0L10 5L0 10z"/></marker></defs>
+        <rect class="dg-box" x="0.5" y="0.5" width="399" height="46"/>
+        <text class="dg-num" x="14" y="28">1</text>
+        <text class="dg-text" x="34" y="20">Your tool runs the tests</text>
+        <text class="dg-sub" x="34" y="37">on Omarchy, on a real Mac</text>
+        <path class="dg-line" d="M200 47V68" marker-end="url(#dg-arrow2)"/>
+        <rect class="dg-box" x="0.5" y="70.5" width="399" height="46"/>
+        <text class="dg-num" x="14" y="98">2</text>
+        <text class="dg-text" x="34" y="90">It shows the consent notice</text>
+        <text class="dg-sub" x="34" y="107">the tester can stop here</text>
+        <path class="dg-line" d="M200 117V138" marker-end="url(#dg-arrow2)"/>
+        <rect class="dg-box" x="0.5" y="140.5" width="399" height="46"/>
+        <text class="dg-num" x="14" y="168">3</text>
+        <text class="dg-call" x="34" y="160"><tspan class="dg-m">POST</tspan> /reports</text>
+        <text class="dg-sub" x="34" y="177">with your key → 201, a code, state pending</text>
+        <path class="dg-line" d="M200 187V208" marker-end="url(#dg-arrow2)"/>
+        <rect class="dg-box" x="0.5" y="210.5" width="399" height="46"/>
+        <text class="dg-num" x="14" y="238">4</text>
+        <text class="dg-text" x="34" y="230">A maintainer reviews it</text>
+        <text class="dg-sub" x="34" y="247"><tspan class="dg-m">GET</tspan> /reports/{code} shows its state</text>
+        <path class="dg-line" d="M100 257V290" marker-end="url(#dg-arrow2)"/>
+        <path class="dg-line" d="M300 257V290" marker-end="url(#dg-arrow2)"/>
+        <rect class="dg-box dg-end" x="0.5" y="292.5" width="194" height="58"/>
+        <text class="dg-text" x="14" y="315">accepted</text>
+        <text class="dg-sub" x="14" y="334">results show on the site</text>
+        <rect class="dg-box" x="205.5" y="292.5" width="194" height="58"/>
+        <text class="dg-text" x="219" y="315">rejected</text>
+        <text class="dg-sub" x="219" y="334">with the reason why</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<section class="ad" id="submit" aria-labelledby="submit-h">
+  <div class="ad-text">
+    <h2 id="submit-h">Submit a report</h2>
+    {{template "endpoint" index .Req "submit"}}
+    <p>Send one report per test run, as JSON or YAML, with your key in the <code>Authorization</code> header.</p>
+    <p>You don't need the configuration ID. Send the model identifier and the hardware probe, and the server finds the configuration. Include the CPU name (<code>hardware.cpu</code>): it tells apart configurations that share every device. If the probe still fits several, the report is taken anyway, and a maintainer picks the right one.</p>
+    <p>A new report is <code>pending</code> until a maintainer reviews it. Keep its <code>code</code> to <a href="#report">check on it</a>. <code>flags</code> lists anything a maintainer will look at, such as a possible duplicate.</p>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "submit"}}{{template "apicode" index .Res "submit"}}</div>
+</section>
+
+<section class="ad" id="format" aria-labelledby="format-h">
+  <div class="ad-text">
+    <h2 id="format-h">The report format</h2>
+    <p>Format <code>doesitomarchy/report/v1</code>, described in full by <a href="/api/v1/schema">the schema</a>. Items use the IDs from <a href="#capabilities">List criteria</a>; leave out anything you didn't test. Each result says how it was tested: <code>automatic</code> (the tool checked), <code>observed</code> (the tester looked) or <code>fixture</code> (with test equipment, such as a loopback plug).</p>
+    <ul>
+      <li><code>tested_at</code> is when the test ran, with a time zone. The site shows every time in UTC.</li>
+      <li><code>omarchy.version</code> is <code>/etc/os-release</code>'s <code>VERSION_ID</code>, from any channel: a release (<code>4.0.4</code>), a pre-release (<code>4.0.4rc2</code>) or an edge build (<code>4.0.0.r6713.ga85e29a</code>). For a dev install, add <code>"channel": "dev"</code> and the checkout's commit as <code>revision</code>. Stable releases decide verdicts; other channels show as <code>newest_build</code> where they differ.</li>
+      <li>Port criteria can be reported per connector, as <code>ports.usb-a@left-2</code>, using the IDs in the configuration's <code>connectors</code>. A criterion is fully verified only when every connector it applies to has passed.</li>
+      <li>Put the check's output in <code>evidence</code> when something fails or only partly works. It's what helps someone fix it.</li>
+      <li>Don't send serial numbers, network addresses, or user and computer names. They're removed anyway, but it's better never to send them.</li>
+    </ul>
+  </div>
+  <div class="ad-code">{{template "apicode" .Example}}{{template "apicode" index .Req "schema"}}</div>
+</section>
+
+<section class="ad" id="consent" aria-labelledby="consent-h">
+  <div class="ad-text">
+    <h2 id="consent-h">The consent notice</h2>
+    <p>Before your tool submits, it must show the tester this notice (or a faithful translation) and let them stop. Submitting counts as agreeing. Send the text you showed in <code>consent_notice</code>.</p>
+    <blockquote class="notice-text"><p>{{.Notice}}</p></blockquote>
+    <p>What happens to the data is set out on the <a href="/privacy">privacy page</a>.</p>
+  </div>
+  <div class="ad-code">{{template "apicode" .NoticeCode}}</div>
+</section>
+
+<section class="ad" id="report" aria-labelledby="report-h">
+  <div class="ad-text">
+    <h2 id="report-h">Check a report</h2>
+    {{template "endpoint" index .Req "report"}}
+    <p>Where a report stands: <code>pending</code>, <code>accepted</code> (with its public <code>url</code>), <code>rejected</code> (with the <code>reason</code>) or <code>retracted</code> (with both).</p>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "report"}}{{template "apicode" index .Res "report"}}</div>
+</section>
+
+<section class="ad" id="macs" aria-labelledby="macs-h">
+  <div class="ad-text">
+    <h2 id="macs-h">List Macs</h2>
+    {{template "endpoint" index .Req "macs"}}
+    <p>Every Intel Mac in the catalog, with its verdicts and its configuration IDs.</p>
+    <h3>Returns, for each Mac</h3>
+    <table class="defs">
+      <tbody>
+        <tr><th scope="row">identifier</th><td>The model identifier, e.g. <code>MacBookPro8,2</code>.</td></tr>
+        <tr><th scope="row">name</th><td>Apple's name for it.</td></tr>
+        <tr><th scope="row">line, years</th><td>Its product line and the years it was sold.</td></tr>
+        <tr><th scope="row">verdicts</th><td>The distinct verdicts of its configurations.</td></tr>
+        <tr><th scope="row">configs</th><td>Its configuration IDs.</td></tr>
+        <tr><th scope="row">url</th><td>Its page on this site.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "macs"}}{{template "apicode" index .Res "macs"}}</div>
+</section>
+
+<section class="ad" id="mac" aria-labelledby="mac-h">
+  <div class="ad-text">
+    <h2 id="mac-h">Get a Mac</h2>
+    {{template "endpoint" index .Req "mac"}}
+    <p>One Mac with all its configurations.</p>
+    <h3>Path parameter</h3>
+    <table class="defs">
+      <tbody>
+        <tr><th scope="row">identifier</th><td>In the path: a model identifier, e.g. <code>MacBookPro8,2</code>. <code>MacBookPro8-2</code> works too.</td></tr>
+      </tbody>
+    </table>
+    <h3>Returns</h3>
+    <p>Everything <a href="#macs">List Macs</a> does, plus <code>efi</code> (32 or 64), <code>security_chip</code>, <code>hard_blocker</code> (why it can never run Omarchy, if it can't), <code>board_ids</code>, and <code>configurations</code>, each one in full, as <a href="#config">Get a configuration</a> returns it.</p>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "mac"}}{{template "apicode" index .Res "mac"}}</div>
+</section>
+
+<section class="ad" id="config" aria-labelledby="config-h">
+  <div class="ad-text">
+    <h2 id="config-h">Get a configuration</h2>
+    {{template "endpoint" index .Req "config"}}
+    <p>A configuration is one release of a Mac with the parts that set it apart, such as its GPU. Its verdict comes from the <a href="/methodology">methodology</a>.</p>
+    <h3>Path parameter</h3>
+    <table class="defs">
+      <tbody>
+        <tr><th scope="row">id</th><td>In the path: a configuration ID, from a Mac's <code>configs</code>.</td></tr>
+      </tbody>
+    </table>
+    <h3>Returns</h3>
+    <table class="defs">
+      <tbody>
+        <tr><th scope="row">verdict</th><td>The verdict, with <code>counts</code> per verdict, how many criteria are <code>applicable</code> and how many are <code>tested</code>. <code>verified</code> means every applicable criterion passed.</td></tr>
+        <tr><th scope="row">capabilities</th><td>Each applicable criterion's current result: its <code>verdict</code>, the Omarchy version and kernel tested, the <code>method</code> and the <code>latest_report</code>. Port criteria add <code>ports</code>, one result per connector. A failed one may have a <code>fix</code>.</td></tr>
+        <tr><th scope="row">components</th><td>Its parts, with the <code>hardware_ids</code> that identify them (and <code>gles</code> for GPUs).</td></tr>
+        <tr><th scope="row">connectors</th><td>Its port layout, with the criteria each connector is tested for. <code>portmap_url</code> is the drawing (SVG).</td></tr>
+        <tr><th scope="row">reports</th><td>The reports behind its results.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "config"}}{{template "apicode" index .Res "config"}}</div>
+</section>
+
+<section class="ad" id="capabilities" aria-labelledby="capabilities-h">
+  <div class="ad-text">
+    <h2 id="capabilities-h">List criteria</h2>
+    {{template "endpoint" index .Req "capabilities"}}
+    <p>The test criteria, including retired ones. Configurations and reports refer to them by <code>id</code>, such as <code>network.wifi</code>. A <code>blocking</code> criterion (Boot) decides whether a configuration fails; the <a href="/criteria">criteria page</a> shows them all.</p>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "capabilities"}}{{template "apicode" index .Res "capabilities"}}</div>
+</section>
+
+<section class="ad" id="match" aria-labelledby="match-h">
+  <div class="ad-text">
+    <h2 id="match-h">Identify a Mac</h2>
+    {{template "endpoint" index .Req "match"}}
+    <p>Send what a Mac reports about its hardware, and get back the Mac and its configuration. It's the same matching as <a href="/identify">Identify my Mac</a>. Send any of these; more IDs give a surer match.</p>
+    <h3>Body</h3>
+    <table class="defs">
+      <tbody>
+        <tr><th scope="row">product_name</th><td>The model identifier. Linux: <code>/sys/class/dmi/id/product_name</code>. macOS: <code>sysctl -n hw.model</code>.</td></tr>
+        <tr><th scope="row">board_id</th><td>e.g. <code>Mac-94245A3940C91C80</code>. Linux: <code>/sys/class/dmi/id/board_name</code>.</td></tr>
+        <tr><th scope="row">cpu</th><td>The processor's name. It tells apart configurations that share every device.</td></tr>
+        <tr><th scope="row">pci, usb</th><td>Device IDs as <code>vendor:device</code>, e.g. <code>1002:6760</code>, from <code>lspci -nn</code> and <code>lsusb</code>.</td></tr>
+      </tbody>
+    </table>
+    <h3>Returns</h3>
+    <p><code>config</code> is the best configuration, or <code>null</code> when several fit equally. <code>best</code> lists every configuration tied at the top (just one when <code>exact</code>); their order means nothing. <code>candidates</code> ranks them all, with the IDs each <code>matched</code> and its parts <code>not_reported</code>.</p>
+    <p>From a browser, leave out the <code>Content-Type</code> header, as the JavaScript sample does: the request then needs no CORS preflight.</p>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "match"}}{{template "apicode" index .Res "match"}}</div>
+</section>
+
+<section class="ad" id="versioning" aria-labelledby="versioning-h">
+  <div class="ad-text">
+    <h2 id="versioning-h">Versions and rules</h2>
+    <ul>
+      <li>Only send results from real test runs on real hardware.</li>
+      <li>Maintainers review every report and can reject or retract it, with a reason that's shown on the site.</li>
+      <li>v1 may gain optional fields, so ignore fields you don't know. A breaking change would get a new version (<code>/v2</code>), and v1 would keep working.</li>
+      <li>Every change is in the <a href="#changelog">API changelog</a>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="ad ad-wide" id="changelog" aria-labelledby="changelog-h">
+  <div class="ad-text">
+    <h2 id="changelog-h">API changelog</h2>
+    <p>Changes to the API and the report format, newest first. Changes to the catalog itself are in the <a href="/changelog">catalog changelog</a>.</p>
+    <ol class="changelog">
+    {{- range .Changelog}}
+      <li>
+        <h3><time datetime="{{.Date}}">{{.Date}}</time> · {{.Title}}</h3>
+        <p class="summary">{{.Summary}}</p>
+        {{with .Notes}}<ul>{{range .}}<li>{{.}}</li>{{end}}</ul>{{end}}
+      </li>
+    {{- end}}
+    </ol>
+  </div>
 </section>
 </div>
+</div>
 {{end}}{{end}}
+
+{{define "endpoint"}}<p class="endpoint"><span class="m">{{.Method}}</span> <code>{{.Title}}</code></p>{{end}}
+
+{{define "apicode"}}<div class="code"{{if gt (len .Tabs) 1}} data-tabs{{end}}>
+  <div class="code-head">
+    <span class="code-title">{{with .Method}}<span class="m">{{.}}</span> {{end}}{{.Title}}</span>
+    {{if gt (len .Tabs) 1}}<span class="langs" role="group" aria-label="Language" data-js>{{range $i, $t := .Tabs}}<button type="button" data-lang="{{.Lang}}" aria-pressed="{{if eq $i 0}}true{{else}}false{{end}}">{{.Label}}</button>{{end}}</span>{{end}}
+    <button type="button" class="snippet-copy" data-copy="{{(index .Tabs 0).ID}}" aria-label="Copy {{.Title}}" title="Copy" data-js>{{template "icon" "copy"}}<span class="copied" aria-hidden="true">Copied!</span></button>
+  </div>
+  {{- range $i, $t := .Tabs}}
+  <div class="code-body{{if eq $i 0}} on{{end}}" data-lang="{{.Lang}}">{{if gt (len $.Tabs) 1}}<p class="code-lang">{{.Label}}</p>{{end}}<pre tabindex="0" aria-label="{{$.Title}}, {{.Label}}"><code id="{{.ID}}">{{.HTML}}</code></pre></div>
+  {{- end}}
+</div>{{end}}
