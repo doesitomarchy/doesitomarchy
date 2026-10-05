@@ -64,6 +64,12 @@ func TestMCPTools(t *testing.T) {
 		{"identify_mac", map[string]any{}, []string{"nothing to identify"}, true},
 		{"what_needs_testing", map[string]any{"identifier": "MacBookPro15,2"}, []string{"Untested (", "## How to help", "/contribute"}, false},
 		{"what_needs_testing", map[string]any{"identifier": "MacBook1,1"}, []string{"can never run Omarchy"}, false},
+		// An identifier sold under several names is named by the release the answer is about.
+		{"get_mac", map[string]any{"identifier": "iMac10,1"}, []string{"# iMac (27-inch, Late 2009) [iMac10,1]", "Also sold as: iMac (21.5-inch, Late 2009).\n"}, false},
+		{"get_mac", map[string]any{"identifier": "iMac10,1", "config": "imac10-1-21-late-2009-a"}, []string{"# iMac (21.5-inch, Late 2009) [iMac10,1]"}, false},
+		{"what_needs_testing", map[string]any{"identifier": "iMac10,1", "config": "imac10-1-21-late-2009-b"}, []string{"# What needs testing: iMac (21.5-inch, Late 2009) [iMac10,1]"}, false},
+		{"identify_mac", map[string]any{"board_id": "Mac-F2268CC8", "pci": []string{"1002:9488"}},
+			[]string{"Identified by board id: iMac (21.5-inch, Late 2009) [iMac10,1].", "Configuration: imac10-1-21-late-2009-b"}, false},
 	} {
 		text, isErr := toolText(t, cs, c.tool, c.args)
 		if isErr != c.isErr {
@@ -73,6 +79,12 @@ func TestMCPTools(t *testing.T) {
 			if !strings.Contains(text, w) {
 				t.Errorf("%s %v: missing %q in\n%s", c.tool, c.args, w, text)
 			}
+		}
+	}
+	// "Also sold as" only on the whole Mac, and only when it has other names.
+	for _, args := range []map[string]any{{"identifier": "iMac10,1", "config": "imac10-1-21-late-2009-a"}, {"identifier": "MacBookAir5,2"}} {
+		if text, _ := toolText(t, cs, "get_mac", args); strings.Contains(text, "Also sold as") {
+			t.Errorf("get_mac %v: unexpected \"Also sold as\" in\n%s", args, text)
 		}
 	}
 }

@@ -104,6 +104,7 @@ type identifyData struct {
 	NoneFound  bool // a paste with nothing recognisable in it
 	Probe      match.Probe
 	Mac        *macView
+	Title      string // the Mac's name, by the release identified when the candidates share one
 	Exact      bool
 	Best       *configView
 	Candidates []identifyCandidate
@@ -141,6 +142,19 @@ func (s *Server) identify(w http.ResponseWriter, r *http.Request) {
 		}
 		if res.Exact && len(d.Candidates) > 0 {
 			d.Best = d.Candidates[0].Config
+		}
+		if d.Mac != nil {
+			cvs := []*configView{d.Best}
+			if d.Best == nil {
+				cvs = nil
+				for _, c := range d.Candidates {
+					cvs = append(cvs, c.Config)
+				}
+			}
+			d.Title = d.Mac.Title
+			if name := sharedName(cvs, func(cv *configView) string { return cv.ReleaseName }); name != "" {
+				d.Title = name
+			}
 		}
 		d.Shared = q.Get("shared") != ""
 		d.ShareConsent = q.Get("share") == "consent"
