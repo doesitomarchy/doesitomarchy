@@ -336,11 +336,40 @@ a.hbar:hover span:first-child { text-decoration: underline; }
 .paper h2 { font-family: var(--mono); margin-top: 1.25rem; }
 .paper code, .paper kbd { font-family: var(--mono); font-size: 13px; }
 .wide-p { font: 15px/1.6 var(--sans); }
+/* A prose page's opening paragraph, full width above its columns. */
+p.lede { font: 16px/1.65 var(--mono); margin: 0 0 0.75rem; }
 /* Definition tables (verdicts, coverage) inside the methodology's prose. */
 table.defs { margin: 0.25rem 0 1rem; font: 14px/1.5 var(--sans); }
 table.defs th[scope="row"] { white-space: nowrap; color: var(--heading); font: 500 13px/1.5 var(--mono); width: 1%; }
 .mark-label { display: inline-flex; align-items: center; }
-h2#criteria { margin-top: 2rem; }
+h2#criteria, h2#ports { margin-top: 2rem; }
+/* Port statuses and port-group rules: the drawing's swatches and the card's
+   port chips, shown as they appear on Mac pages (PLAN §25.1a, §27). */
+table.portkey { font: 14px/1.5 var(--sans); }
+table.portkey caption { text-align: left; padding: 0.45rem 0.55rem 0.2rem; font: 500 13px/1.5 var(--mono); color: var(--heading); }
+table.portkey th[scope="row"] { white-space: nowrap; color: var(--heading); font: 500 13px/1.5 var(--mono); }
+table.portkey thead th, table.portkey td:not(:last-child) { white-space: nowrap; }
+table.portkey td:not(:last-child) { width: 1%; }
+table.portkey .sw { width: 1.5em; height: 1.1em; vertical-align: middle; }
+table.portkey .capports { display: inline-flex; flex-wrap: nowrap; gap: 0.35rem; font-size: 12px; }
+table.portkey .capport { font-size: 12px; }
+table.portkey .capport.suspect .tag { font-size: 10px; }
+p.portkey-note { font-size: 13px; margin: 0.5rem 0 1.25rem; }
+/* Narrow screens: each row stacks, its example on one line and the
+   explanation full width below, instead of a squeezed last column. */
+@media (max-width: 760px) {
+  table.portkey, table.portkey tbody { display: block; }
+  table.portkey caption { display: block; }
+  table.portkey thead { display: none; }
+  table.portkey tr { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; padding: 0.5rem 0.55rem; border-bottom: 1px solid var(--line); }
+  table.portkey tr > * { border: 0; padding: 0; width: auto !important; }
+  table.portkey tr > :last-child { flex-basis: 100%; }
+  table.portkey tbody th[scope="row"] { order: 1; }
+  table.portkey tbody td:has(> .sw) { order: 0; }
+  table.portkey tbody td:nth-child(3):not(:last-child) { order: 2; margin-left: auto; }
+  table.portkey tr > :last-child { order: 3; }
+  table.portkey .capports { flex-wrap: wrap; }
+}
 h2.sources-h { margin-top: 2.5rem; }
 p.sources { font: 11px/1.55 var(--sans); color: var(--muted); }
 .crit th.catcell { white-space: nowrap; color: var(--heading); background: var(--panel); font-weight: 500; }
@@ -598,7 +627,13 @@ code.evidence { white-space: pre-line; }
    a card that shows inline methods, a row without one keeps its slot. */
 .caps li:has(.capports) .capmeta.inline { min-width: 4rem; text-align: right; }
 .caps li:has(.capports) .st { min-width: 6rem; text-align: right; }
-.caps:has(.capmeta.inline) li:has(.capports):not(:has(.capmeta.inline)) .capports { margin-right: calc(2.5rem + 4rem + 0.5rem); }
+.caps:has(.capmeta.inline) li:has(.capports):not(:has(.capmeta.inline)):not(.portmeth) .capports { margin-right: calc(2.5rem + 4rem + 0.5rem); }
+/* The Ports section's "Port methodology" line: right-aligned with the port
+   groups above it, so it also clears the status slot (and the method slot,
+   on a card that shows inline methods). */
+.caps li.portmeth .capports { margin-right: calc(2.5rem + 0.5rem + 6rem); }
+.caps:has(.capmeta.inline) li.portmeth .capports { margin-right: calc(2.5rem + 0.5rem + 4rem + 0.5rem + 6rem); }
+.caps li.portmeth a { white-space: nowrap; }
 .capgroup { display: inline-flex; gap: 0.6rem; border: 1px solid var(--line-strong); border-radius: 2px; padding: 1px 0.2rem; }
 /* The box takes the group's result colour, like the verdict icons. */
 .capgroup.g-supported { border-color: var(--ok); }
@@ -627,6 +662,10 @@ code.connref { font-size: 11px; color: var(--muted); }
    inline styles, so the drawing styles live here. Ports and their callouts carry
    data-conn, and data-st when the connector has results. */
 .pmfig { margin: 0.2rem 0 0.7rem; }
+/* The drawing's download link sits at the top right of the Port layout row,
+   on the line of its label. */
+.specs > .pmrow { position: relative; }
+.pmdl { position: absolute; top: 0.15rem; right: 0; font-size: 12px; }
 .pmfig figcaption { font-size: 12px; color: var(--muted); margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; align-items: center; }
 .pmimg { display: block; max-width: 100%; height: auto; }
 svg.pm { display: block; max-width: 100%; height: auto; color: var(--text); }
@@ -679,13 +718,13 @@ ul.pmwhy .pmword[data-st="partial"], ul.pmwhy .pmword[data-st="suspect"] { color
 ul.pmwhy .pmword[data-st="failed"] { color: var(--bad); }
 .pmkey { display: inline-flex; flex-wrap: wrap; gap: 0.15rem 0.8rem; align-items: center; }
 .pmkey > span { white-space: nowrap; display: inline-flex; align-items: center; gap: 0.3rem; }
-.pmkey .sw { display: inline-block; width: 0.85em; height: 0.85em; border-radius: 2px; border: 1px solid var(--muted); }
-.pmkey .sw[data-st="supported"] { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 32%, transparent); }
-.pmkey .sw[data-st="covered"] { border: 1px dashed var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
-.pmkey .sw[data-st="partly"] { border: 1.5px solid var(--ok); }
-.pmkey .sw[data-st="partial"] { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 32%, transparent); }
-.pmkey .sw[data-st="failed"] { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 32%, transparent); }
-.pmkey .sw[data-st="suspect"] { border: 1px dashed var(--warn); background: color-mix(in srgb, var(--warn) 32%, transparent); }
+.sw { display: inline-block; width: 0.85em; height: 0.85em; border-radius: 2px; border: 1px solid var(--muted); }
+.sw[data-st="supported"] { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 32%, transparent); }
+.sw[data-st="covered"] { border: 1px dashed var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+.sw[data-st="partly"] { border: 1.5px solid var(--ok); }
+.sw[data-st="partial"] { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 32%, transparent); }
+.sw[data-st="failed"] { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 32%, transparent); }
+.sw[data-st="suspect"] { border: 1px dashed var(--warn); background: color-mix(in srgb, var(--warn) 32%, transparent); }
 /* Narrow screens: the drawing takes the row's full width, and port lines wrap. */
 @media (max-width: 760px) {
   .specs > .pmrow { grid-template-columns: 1fr; gap: 0.2rem; }
