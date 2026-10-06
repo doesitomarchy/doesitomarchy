@@ -97,6 +97,10 @@ var FieldNames = []string{"id", "line", "form", "year", "release", "size", "disp
 	"gpu", "gles", "wifi", "bt", "audio", "camera", "storage", "ethernet", "thunderbolt", "firewire", "reader", "input", "bridge",
 	"hw", "board", "chip", "efi", "port", "feature", "status", "scope", "tested", "order", "a", "emc"}
 
+// FieldHelp returns a field's accepted values in words ("early, mid or
+// late"), or "" for free-text fields, for the MCP cheat sheet (PLAN §30e).
+func FieldHelp(name string) string { return fields[name].short }
+
 // token is one lexed piece of the query.
 type token struct {
 	neg    bool

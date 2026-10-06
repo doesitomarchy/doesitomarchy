@@ -27,7 +27,7 @@ const pages = [
   "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2", "/mac/MacBook3-1", "/macs?q=gles%3A2.0", "/search?q=gles%3A2.0",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
   "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
-  "/api", "/api/register", "REGISTER_STATUS", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
+  "/api", "/api/mcp-cheatsheet", "/api/register", "REGISTER_STATUS", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
 ];
 const widths = [360, 1440];
 const contrastPages = ["/", "/api", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/admin/sources", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
@@ -39,7 +39,11 @@ const browser = await puppeteer.launch({ executablePath: CHROME, headless: true,
 
 // open loads a path in a fresh tab at a width and, optionally, a theme.
 async function open(path, width, theme) {
-  const page = await browser.newPage();
+  // A browser context of its own: tabs in one context share localStorage,
+  // so parallel theme checks overwrote each other's theme.
+  const ctx = await browser.createBrowserContext();
+  const page = await ctx.newPage();
+  page.close = () => ctx.close();
   await page.setViewport({ width, height: 900 });
   await page.evaluateOnNewDocument((t) => {
     try { if (t) localStorage.setItem("theme", t); else localStorage.removeItem("theme"); } catch (e) {}

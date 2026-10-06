@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP Cheat Sheet · DoesItOmarchy</title>
+<meta name="description" content="One printable page on DoesItOmarchy's MCP server: the four tools, search fields, identifying a Mac, what to ask and how to connect.">
+<link rel="canonical" href="{{.Canonical}}">
+<link rel="stylesheet" href="{{asset "cheatsheet.css"}}">
+<link rel="icon" href="{{asset "favicon.svg"}}" type="image/svg+xml">
+</head>
+<body>
+<nav class="cs-bar" aria-label="Cheat sheet"><a href="/api#mcp">← API Reference</a><a href="/api/mcp-cheatsheet.pdf">Download the PDF</a></nav>
+<main class="sheet">
+<header>
+  <h1>DoesItOmarchy <span>MCP</span></h1>
+  <p class="meta">
+    <span><b>POST</b> {{.Base}}/mcp</span>
+    <span>{{len .Tools}} read-only tools · no key · {{.CallsPerMinute}} requests a minute per IP</span>
+  </p>
+</header>
+
+<div class="cols">
+<div>
+<section aria-labelledby="cs-tools">
+  <h2 id="cs-tools">The tools <small>find → read → help</small></h2>
+  <dl class="tools">
+    {{range $t := .Tools}}<div><dt><span class="tool">{{.Name}}</span>{{if .AnyOf}} <span class="m">any of</span>{{end}}{{range .Args}} {{if and .Optional (not $t.AnyOf)}}<span class="m">opt.</span> {{end}}<code>{{.Name}}</code>{{end}}</dt><dd>{{.Does}}</dd></div>
+    {{end}}
+  </dl>
+</section>
+
+<section aria-labelledby="cs-fields">
+  <h2 id="cs-fields">search_macs query <small>plain words work too</small></h2>
+  <dl class="fields">
+    {{range .Fields}}<dt>{{with .Label}}{{.}}{{else}}{{range $i, $n := .Names}}{{if $i}} {{end}}{{$n}}:{{end}}{{end}}</dt><dd>{{if .Label}}{{range .Names}}<span class="fn">{{.}}:</span> {{end}}{{end}}{{.Values}}{{range .Examples}} <code>{{.}}</code>{{end}}{{with .Note}} <span class="m">({{.}})</span>{{end}}</dd>
+    {{end}}
+  </dl>
+</section>
+
+<section aria-labelledby="cs-identify">
+  <h2 id="cs-identify">Identify a Mac <small>paste the output as command_output</small></h2>
+  <h3>Linux, on the Mac</h3>
+  <pre>{{.Linux}}</pre>
+  <h3>macOS</h3>
+  <pre>{{.MacOS}}</pre>
+</section>
+</div>
+
+<div>
+<section aria-labelledby="cs-ask">
+  <h2 id="cs-ask">Ask your assistant <small>what it runs</small></h2>
+  {{range .Asks}}<h3>{{.Title}}</h3>
+  <ul class="asks">
+    {{range .Asks}}<li><q>{{.Ask}}</q><span class="m">{{.Runs}}</span></li>
+    {{end}}
+  </ul>
+  {{end}}
+</section>
+
+<section aria-labelledby="cs-connect">
+  <h2 id="cs-connect">Connect</h2>
+  <ul class="notes">
+    <li><b>claude.ai, Claude Desktop:</b> Settings → Connectors → add a custom connector with the URL above.</li>
+    <li><b>ChatGPT:</b> Settings → Apps &amp; Connectors → Advanced → developer mode; create a connector with the URL, no authentication.</li>
+    <li><b>VS Code, Cursor:</b> an <code>http</code> server with the URL (samples at /api#mcp).</li>
+    <li><b>Claude Code:</b></li>
+  </ul>
+  <pre>{{.ClaudeCode}}</pre>
+</section>
+
+<section aria-labelledby="cs-try">
+  <h2 id="cs-try">Try it <small>list the tools</small></h2>
+  <pre>{{.Curl}}</pre>
+  <p class="muted">To call one, send <code>"method":"tools/call"</code> with <code>"params":{"name":"search_macs","arguments":{"query":"gles:2.0"}}</code>.</p>
+</section>
+
+<section aria-labelledby="cs-read">
+  <h2 id="cs-read">Reading the answers</h2>
+  <ul class="notes">
+    <li>Verdicts belong to <b>configurations</b>, not Macs. <b>Untested</b> means no report yet, not that it fails.</li>
+    <li>Configuration IDs look like <code>{{.ExampleConfig}}</code>; a wrong one lists the valid ones.</li>
+    <li>A Mac sold under several names is named after the release asked about; <code>get_mac</code> for the whole Mac adds "Also sold as".</li>
+    <li>"Note: field: expected …" means the value is invalid, not merely unmatched.</li>
+    <li>Answers link to the pages on doesitomarchy.com and name Macs as "Name [Identifier]".</li>
+  </ul>
+</section>
+</div>
+</div>
+
+<footer>
+  <span>Up to date with the API as of {{.APIDate}}</span>
+  <span>doesitomarchy.com/api#mcp</span>
+</footer>
+</main>
+</body>
+</html>

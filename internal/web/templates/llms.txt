@@ -22,7 +22,7 @@ Facts to get right when building on the API:
 
 ## MCP server
 
-AI assistants can connect to the MCP server at {{.Base}}/mcp (Streamable HTTP; MCP 2026-07-28 and earlier versions back to 2025-03-26; no key; read-only). Tools: search_macs, get_mac, identify_mac, what_needs_testing. Answers are short text with links. Claude Code: `claude mcp add --transport http doesitomarchy {{.Base}}/mcp`.
+AI assistants can connect to the MCP server at {{.Base}}/mcp (Streamable HTTP; MCP 2026-07-28 and earlier versions back to 2025-03-26; no key; read-only). Tools: search_macs, get_mac, identify_mac, what_needs_testing. Answers are short text with links. Claude Code: `claude mcp add --transport http doesitomarchy {{.Base}}/mcp`. A one-page cheat sheet (tools, search fields, example questions): {{.Base}}/api/mcp-cheatsheet.pdf, or as HTML at {{.Base}}/api/mcp-cheatsheet.
 
 ## Endpoints
 
