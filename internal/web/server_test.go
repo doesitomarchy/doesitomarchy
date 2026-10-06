@@ -91,6 +91,8 @@ func TestRoutes(t *testing.T) {
 		{"GET", "/", 200, "", `href="/changelog" title="Catalog changelog"`, "text/html"},
 		{"GET", "/", 200, "", "https://github.com/doesitomarchy/doesitomarchy/tree/main/data", "text/html"},
 		{"GET", "/methodology", 200, "", `id="criteria"`, "text/html"},
+		{"GET", "/methodology", 200, "", `<h2 id="forecast">Forecasts</h2>`, "text/html"},
+		{"GET", "/", 200, "", `<a href="https://willitomarchy.com" rel="noopener">Forecast</a>`, "text/html"},
 		{"GET", "/mac/MacBookPro8-2", 200, "", "HD 6490M · Early 2011", "text/html"},
 		{"GET", "/mac/MacBookPro8-2?view=matrix", 200, "", `class="count-head"`, "text/html"},
 		{"GET", "/", 200, "", `Not officially affiliated with <a href="https://omarchy.org" rel="noopener">Omarchy</a> or the <a href="https://omarchy.org/foundation/" rel="noopener">Omacom Foundation</a>.`, "text/html"},
