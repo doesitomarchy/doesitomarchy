@@ -4,7 +4,7 @@
 <section class="cta tldr method-tldr" aria-labelledby="tldr">
 <h2 id="tldr">TLDR;</h2>
 <ul>
-  <li><a href="#tests">Only tests count</a>Every capability starts Untested. Only a test someone runs and reports changes a status; research notes never do.</li>
+  <li><a href="#tests">Only tests count</a>Every capability starts Untested. Only a test someone runs and reports changes a status; research notes and the monthly forecast never do.</li>
   <li><a href="#limitations">Known limitations</a>GPUs that reach only OpenGL ES 2.0 can't run Hyprland 0.50 or later. They carry a warning note, which never changes a status.</li>
   <li><a href="#configurations">Configurations</a>Each Mac is split by the parts Linux cares about (GPU, Wi-Fi, audio, ports…), and each configuration gets its own verdict.</li>
   <li><a href="#verdicts">Verdicts</a>A failed Boot criterion makes a configuration Failed; any other failure makes it Partial. The Omarchy mark means every criterion that applies has passed.</li>
@@ -19,6 +19,8 @@
 <section>
 <h2 id="tests">Only tests count</h2>
 <p>Every capability starts as <strong>Untested</strong>. A status only changes when someone runs Omarchy on that configuration and reports the result. Research notes on model pages come from spec sheets and Linux hardware probes. They are labelled <em>unverified</em> and never change a status.</p>
+<h2 id="forecast">Forecasts</h2>
+<p><a href="https://willitomarchy.com" rel="noopener">Will it Omarchy?</a> is a separate monthly research forecast. For each configuration counted in coverage, it estimates how likely stock Omarchy is to boot, to run without a significant issue, and to drive every part, from hardware facts, Omarchy's installer code, Linux logs from real Macs and community reports. A forecast is a prediction, not a result: it never changes a status here, and a tested report always outranks it. Use it to set expectations and to pick what to test next.</p>
 <h2 id="limitations">Known limitations</h2>
 <p>Some hardware rules a feature out before anyone tests it. Hyprland, Omarchy's desktop, has needed OpenGL ES 3.0 since version 0.50, so it can't run on a GPU whose Linux driver reaches only OpenGL ES 2.0. Configurations with such a GPU carry a <span class="warn-i">{{template "icon" "alert"}}</span> known-limitation note. Like research notes, it never changes a status. On those GPUs the GPU-acceleration criteria fail on stock Omarchy: a workaround that runs Hyprland in software (Mesa's llvmpipe) or a GLES 2.0 fork of Hyprland doesn't make them pass, and testers record it in the notes. Search <a href="/macs?q=gles:2.0"><code>gles:2.0</code></a> lists them.</p>
 <h2 id="configurations">Configurations</h2>
