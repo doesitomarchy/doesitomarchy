@@ -170,6 +170,12 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		}
 		s.pages[p] = t
 	}
+	// The MCP cheat sheet is a page of its own, without the site's layout (PLAN §30e).
+	t, err := template.New("mcp-cheatsheet.html").Funcs(funcs).ParseFS(templateFS, "templates/mcp-cheatsheet.html")
+	if err != nil {
+		return nil, fmt.Errorf("template mcp-cheatsheet: %w", err)
+	}
+	s.pages["mcp-cheatsheet"] = t
 	return s, nil
 }
 
@@ -208,6 +214,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /privacy", s.privacy)
 	mux.HandleFunc("GET /api", s.apiDocs)
 	mux.HandleFunc("GET /llms.txt", s.llmsTxt)
+	mux.HandleFunc("GET /api/mcp-cheatsheet", s.cheatsheet)
+	mux.HandleFunc("GET /api/mcp-cheatsheet.pdf", s.cheatsheetPDF)
 	mux.HandleFunc("GET /api/register", s.registerForm)
 	mux.HandleFunc("POST /api/register", s.registerSubmit)
 	mux.HandleFunc("GET /api/register/{token}", s.registerStatusPage)

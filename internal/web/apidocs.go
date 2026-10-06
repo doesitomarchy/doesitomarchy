@@ -113,6 +113,9 @@ Fetch /api/v1/macs once and cache it; don't request every Mac.
 
 What I want to build: `
 
+// mcpClaudeCodeAdd connects Claude Code (on /api and the cheat sheet).
+const mcpClaudeCodeAdd = "claude mcp add --transport http doesitomarchy " + BaseURL + "/mcp"
+
 const mcpCurl = `curl -X POST ` + BaseURL + `/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -195,7 +198,7 @@ func (s *Server) apiDocs(w http.ResponseWriter, r *http.Request) {
 	try, _ := s.mcpSearch(mcpSearchIn{Query: "macbook pro 2015", Limit: 3})
 	d.MCPCallsPerMinute = MCPCallsPerMinute
 	d.MCP = []codeBlock{
-		{Title: "Claude Code", Tabs: []codeTab{tab("mcp-claude", "sh", "claude mcp add --transport http doesitomarchy "+BaseURL+"/mcp")}},
+		{Title: "Claude Code", Tabs: []codeTab{tab("mcp-claude", "sh", mcpClaudeCodeAdd)}},
 		{Title: "VS Code: .vscode/mcp.json", Tabs: []codeTab{tab("mcp-vscode", "json", "{\n  \"servers\": {\n    \"doesitomarchy\": {\n      \"type\": \"http\",\n      \"url\": \""+BaseURL+"/mcp\"\n    }\n  }\n}")}},
 		{Title: "Cursor: ~/.cursor/mcp.json", Tabs: []codeTab{tab("mcp-cursor", "json", "{\n  \"mcpServers\": {\n    \"doesitomarchy\": {\n      \"url\": \""+BaseURL+"/mcp\"\n    }\n  }\n}")}},
 		{Method: "POST", Title: "/mcp: try a tool", Tabs: []codeTab{tab("mcp-curl", "sh", mcpCurl)}},

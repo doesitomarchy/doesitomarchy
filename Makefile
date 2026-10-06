@@ -6,7 +6,7 @@ CATALOG_DATE ?= $(shell TZ=UTC git log -1 --date=format-local:%Y-%m-%d --format=
 CATALOG_COMMIT ?= $(shell git log -1 --format=%H -- $(CATALOG_PATHS) 2>/dev/null)
 LDFLAGS := -s -w -X main.version=$(VERSION) -X main.catalogDate=$(CATALOG_DATE) -X main.catalogCommit=$(CATALOG_COMMIT)
 
-.PHONY: build test quick check validate clean uicheck
+.PHONY: build test quick check validate clean uicheck cheatsheet
 
 build:
 	CGO_ENABLED=0 go build -trimpath -ldflags "$(LDFLAGS)" -o bin/doiomad ./cmd/doiomad
@@ -41,3 +41,12 @@ uicheck: build
 	@./bin/doiomad serve -demo -admin-insecure -db "$${TMPDIR:-/tmp}/doiomad-uicheck.db" -addr 127.0.0.1:18999 & pid=$$!; \
 	trap "kill $$pid" EXIT; sleep 1; \
 	cd tools/uicheck && npm ci --no-audit --no-fund --silent && BASE=http://127.0.0.1:18999 CHROME=$${CHROME:-$$(command -v chromium || command -v google-chrome)} node check.mjs
+
+# The MCP cheat sheet's PDF (PLAN §30e; needs Node and Chrome/Chromium): prints
+# /api/mcp-cheatsheet on Letter and A4, fails if either runs over one page,
+# and writes the PDF and the hash of the page it printed. Run it whenever
+# TestCheatsheetPDF says the sheet is out of date, and commit both files.
+cheatsheet: build
+	@./bin/doiomad serve -demo -db "$${TMPDIR:-/tmp}/doiomad-cheatsheet.db" -addr 127.0.0.1:18998 2>/dev/null & pid=$$!; \
+	trap "kill $$pid" EXIT; sleep 1; \
+	cd tools/uicheck && npm ci --no-audit --no-fund --silent && BASE=http://127.0.0.1:18998 OUT=../../internal/web CHROME=$${CHROME:-$$(command -v chromium || command -v google-chrome)} node cheatsheet.mjs
