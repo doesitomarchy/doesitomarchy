@@ -449,7 +449,7 @@ func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 	}
 	if cv := d.Config; cv != nil && cv.PortmapKey != "" {
 		st := reportStatuses(rd.Items)
-		d.Portmap, d.PortItems = portmapHTML(s.cat.Portmaps[cv.PortmapKey], "r", st), len(st)
+		d.Portmap, d.PortItems = portmapHTML(s.cat.Portmaps[cv.PortmapKey], "r", st, cv.PortmapHidden), len(st)
 	}
 	title := fmt.Sprintf("Diagnostic Report %s · %s", rd.Code, rd.Identifier)
 	desc := fmt.Sprintf("Omarchy %s diagnostic report for %s, tested %s: %d passed, %d partly, %d failed.", rd.Omarchy, rd.Identifier,

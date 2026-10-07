@@ -2,6 +2,19 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-07"
+  title: Port maps redrawn, and 14 more Macs drawn
+  summary: "Every port map drawing is redrawn: ports sit evenly spaced and never touch, and each connector is drawn to its real shape and size, taken from manufacturer drawings and the standards (USB, HDMI, Mini DisplayPort, FireWire, DVI, Ethernet, IEC power inlets) or from photos for Apple's own connectors (MagSafe, Mini-DVI, Micro-DVI). The 14 releases that had no drawing now have one: the 2006 MacBook, the Early 2008 MacBook Air, the 2006-2007 MacBook Pros, the 2006-2007, 2013 and 2019 Mac Pros, and the three Xserves."
+  notes:
+    - "Outlines were redrawn too: the tapered MacBook Air and 12-inch MacBook from Apple's side photos, and every Mac mini from photos of real machines and Apple's drawings."
+    - "The Late 2006 17-inch MacBook Pro has no guide of its own: its drawing follows the Early 2006 and Mid 2007 17-inch guides, which show the same layout in the same enclosure."
+
+- date: "2026-10-07"
+  title: "Mac Pro (2019): two HDMI ports on the standard graphics"
+  summary: "The Radeon Pro 580X, W5500X and W6600X modules have two HDMI ports, not one. The W5700X, Vega II, W6800X and W6900X modules have one, and their port maps hide the second."
+  notes:
+    - "Apple's Mac Pro (2019) Technical Specifications: \"Two HDMI 2.0 ports on card\" (Radeon Pro 580X) and \"Two HDMI ports on card\" (W5500X, W6600X)."
+
 - date: "2026-10-04"
   title: Charging over USB-C, judged per Mac
   summary: "Any USB-C port can charge these Macs, and charging doesn't go through the Thunderbolt controllers that split the 2016-2020 MacBook Pros' ports into left and right pairs. So one port that charges now covers every USB-C port on the Mac, and a port that won't charge while another does is flagged as a possible hardware fault."

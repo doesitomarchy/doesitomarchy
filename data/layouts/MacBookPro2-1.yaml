@@ -1,0 +1,18 @@
+# Port layouts, from Apple's manuals, photos and specs (PF-4, 2026-10-07).
+identifier: MacBookPro2,1
+releases:
+  "17-late-2006":
+    sources: [https://cdsassets.apple.com/live/6GJYWVAV/user/ma257_macbookpro_15and17-inch_2_4_2_2ghz_userguide.pdf, https://cdsassets.apple.com/live/6GJYWVAV/user/ma155_macbookpro_17inch_userguide.pdf]
+    note: "No guide for this model was found: positions are taken from the Early 2006 and Mid 2007 17-inch guides (same enclosure and ports), which show the same layout."
+    connectors:
+      - { id: left-1, type: magsafe }
+      - { id: left-2, type: usb-a-2 }
+      - { id: left-3, type: usb-a-2 }
+      - { id: left-4, type: audio-in, also: [audio-in-optical] }
+      - { id: left-5, type: audio-out, also: [audio-out-optical] }
+      - { id: left-6, type: expresscard-34 }
+      - { id: right-1, type: usb-a-2 }
+      - { id: right-2, type: firewire-400 }
+      - { id: right-3, type: firewire-800 }
+      - { id: right-4, type: ethernet-gbe }
+      - { id: right-5, type: dvi }

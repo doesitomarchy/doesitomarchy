@@ -148,8 +148,9 @@ var reNonSlug = regexp.MustCompile(`[^a-z0-9]+`)
 
 // portmapHTML inlines a drawing's site flavour. Its element IDs (title,
 // clip paths, patterns) get a suffix so several drawings can share a page,
-// and each port and callout of a connector with a status gets data-st.
-func portmapHTML(pm *catalog.Portmap, suffix string, st map[string]string) template.HTML {
+// each port and callout of a connector with a status gets data-st, and those
+// of a connector the configuration lacks (hidden) get data-absent.
+func portmapHTML(pm *catalog.Portmap, suffix string, st map[string]string, hidden []string) template.HTML {
 	if pm == nil {
 		return ""
 	}
@@ -161,6 +162,9 @@ func portmapHTML(pm *catalog.Portmap, suffix string, st map[string]string) templ
 	s = strings.ReplaceAll(s, uid+"-", uid+"-"+suffix+"-")
 	for id, v := range st {
 		s = strings.ReplaceAll(s, `data-conn="`+id+`"`, `data-conn="`+id+`" data-st="`+v+`"`)
+	}
+	for _, id := range hidden {
+		s = strings.ReplaceAll(s, `data-conn="`+id+`"`, `data-conn="`+id+`" data-absent=""`)
 	}
 	return template.HTML(strings.TrimSpace(s)) // generated catalog data, validated at load
 }

@@ -146,30 +146,31 @@ type releaseView struct {
 }
 
 type configView struct {
-	ID           string
-	Letter       string
-	Diff         string // what sets this config apart from its siblings ("HD 6490M", "17-inch")
-	Label        string
-	ReleaseName  string
-	ReleaseList  string   // the same in the plain form lists use (Release.ListName)
-	BoardIDs     []string // board IDs tied to the config's release (PLAN.md §29)
-	OrderNumbers []string
-	BTOOnly      bool
-	CPU          []string
-	CPUBTO       []string
-	Codename     string
-	Memory       string
-	MemoryNote   string
-	Storage      string
-	Display      string
-	Components   []compView
-	Ports        []string
-	Layout       []layoutSide // the port layout by side, when researched
-	LayoutSrc    []string
-	LayoutNote   string
-	Portmap      template.HTML     // the release's port map drawing, coloured by status (PLAN §27)
-	PortmapKey   string            // its key, for /portmap/<key>.svg
-	PortSt       map[string]string // each connector's status on the drawing
+	ID            string
+	Letter        string
+	Diff          string // what sets this config apart from its siblings ("HD 6490M", "17-inch")
+	Label         string
+	ReleaseName   string
+	ReleaseList   string   // the same in the plain form lists use (Release.ListName)
+	BoardIDs      []string // board IDs tied to the config's release (PLAN.md §29)
+	OrderNumbers  []string
+	BTOOnly       bool
+	CPU           []string
+	CPUBTO        []string
+	Codename      string
+	Memory        string
+	MemoryNote    string
+	Storage       string
+	Display       string
+	Components    []compView
+	Ports         []string
+	Layout        []layoutSide // the port layout by side, when researched
+	LayoutSrc     []string
+	LayoutNote    string
+	Portmap       template.HTML     // the release's port map drawing, coloured by status (PLAN §27)
+	PortmapKey    string            // its key, for /portmap/<key>.svg
+	PortmapHidden []string          // the drawing's connectors this configuration lacks
+	PortSt        map[string]string // each connector's status on the drawing
 	// PortWhy explains, under the drawing, each connector that isn't green:
 	// its criteria's results on it, in layout order.
 	PortWhy     []portWhy
@@ -790,7 +791,8 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 		var results map[string][]string
 		cv.PortSt, results = connStatuses(cv)
 		cv.PortmapKey = pm.Key
-		cv.Portmap = portmapHTML(pm, cv.ID, cv.PortSt)
+		cv.PortmapHidden = cfg.PortmapHidden
+		cv.Portmap = portmapHTML(pm, cv.ID, cv.PortSt, cfg.PortmapHidden)
 		for i := range cv.Layout {
 			for j := range cv.Layout[i].Conns {
 				lc := &cv.Layout[i].Conns[j]
