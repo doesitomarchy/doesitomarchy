@@ -1,0 +1,16 @@
+# Port layouts, from Apple's manuals, photos and specs (PF-4, 2026-10-07).
+identifier: Xserve3,1
+releases:
+  "early-2009":
+    sources: [https://images.apple.com/jp/xserve/pdf/Xserve_User_Guide_J.pdf]
+    note: "The serial console port (DB-9) on the back isn't listed."
+    connectors:
+      - { id: front-1, type: usb-a-2 }
+      - { id: back-1, type: mini-displayport }
+      - { id: back-2, type: ethernet-gbe, note: "Ethernet port 2" }
+      - { id: back-3, type: ethernet-gbe, note: "Ethernet port 1" }
+      - { id: back-4, type: firewire-800 }
+      - { id: back-5, type: firewire-800 }
+      - { id: back-6, type: usb-a-2 }
+      - { id: back-7, type: usb-a-2 }
+      - { id: back-8, type: power }

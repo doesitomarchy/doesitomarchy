@@ -673,7 +673,8 @@ code.connref { font-size: 11px; color: var(--muted); }
 /* The drawing's download link sits at the top right of the Port layout row,
    on the line of its label. */
 .specs > .pmrow { position: relative; }
-.pmdl { position: absolute; top: 0.15rem; right: 0; font-size: 12px; }
+.pmdl { position: absolute; top: 0; right: 0; display: inline-flex; padding: 0.15rem; font-size: 16px; line-height: 1; }
+.pmdl:hover { text-decoration: none; color: var(--text); }
 .pmfig figcaption { font-size: 12px; color: var(--muted); margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; align-items: center; }
 .pmimg { display: block; max-width: 100%; height: auto; }
 svg.pm { display: block; max-width: 100%; height: auto; color: var(--text); }
@@ -685,8 +686,9 @@ svg.pm { display: block; max-width: 100%; height: auto; color: var(--text); }
 .pm .pm-k .pm-c, .pm .pm-c { fill: none; stroke: currentColor; stroke-width: .3; }
 .pm .pm-l { fill: none; stroke: currentColor; stroke-width: .25; stroke-dasharray: .5 .7; opacity: .7; }
 .pm .pm-x { fill: currentColor; font: 3.8px/1 var(--sans); }
-.pm .pm-n { fill: currentColor; font: 600 3.3px/1 var(--sans); text-anchor: middle; dominant-baseline: central; }
-.pm .pm-nb { fill: currentColor; font: 600 7.4px/1 var(--sans); text-anchor: middle; dominant-baseline: central; }
+.pm .pm-n { fill: currentColor; font: 600 3.3px/1 var(--sans); text-anchor: middle; }
+.pm .pm-nb { fill: currentColor; font: 600 7.4px/1 var(--sans); text-anchor: middle; }
+.pm [data-absent] { display: none; }
 .pm .pm-h { fill: currentColor; font: 600 3.4px/1 var(--sans); letter-spacing: .35px; text-transform: uppercase; }
 .pm .pm-e { fill: currentColor; font: 3px/1 var(--sans); opacity: .6; }
 .pm .pm-k { cursor: default; }

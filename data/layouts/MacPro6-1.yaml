@@ -1,0 +1,23 @@
+# Port layouts, from Apple's manuals, photos and specs (PF-4, 2026-10-07).
+identifier: MacPro6,1
+releases:
+  "late-2013":
+    sources: [https://cdsassets.apple.com/live/6GJYWVAV/user/ma1669_mac_pro_late-2013_gs_.pdf]
+    note: "The I/O panel on the back, numbered top to bottom, each row left to right."
+    connectors:
+      - { id: back-1, type: audio-out, also: [audio-out-optical], note: "line out" }
+      - { id: back-2, type: audio-out, note: "headphone jack" }
+      - { id: back-3, type: usb-a-3 }
+      - { id: back-4, type: usb-a-3 }
+      - { id: back-5, type: usb-a-3 }
+      - { id: back-6, type: usb-a-3 }
+      - { id: back-7, type: thunderbolt-2 }
+      - { id: back-8, type: thunderbolt-2 }
+      - { id: back-9, type: thunderbolt-2 }
+      - { id: back-10, type: thunderbolt-2 }
+      - { id: back-11, type: thunderbolt-2 }
+      - { id: back-12, type: thunderbolt-2 }
+      - { id: back-13, type: ethernet-gbe }
+      - { id: back-14, type: ethernet-gbe }
+      - { id: back-15, type: hdmi }
+      - { id: back-16, type: power }

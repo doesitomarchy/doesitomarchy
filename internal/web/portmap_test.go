@@ -109,6 +109,13 @@ func TestPortmapsOnTheSite(t *testing.T) {
 		}
 	}
 
+	// A configuration with fewer ports than its release's drawing hides the rest.
+	_, one := body(t, ts, "/portmap/MacPro7-1_2019/macpro7-1-2019-w5700x")
+	_, two := body(t, ts, "/portmap/MacPro7-1_2019/macpro7-1-2019-580x")
+	if !strings.Contains(one, `class="pm-port" data-conn="back-7" data-absent=""`) || strings.Contains(two, "data-absent") {
+		t.Error("the W5700X fragment should hide back-7 (its module's missing second HDMI); the 580X shows both")
+	}
+
 	// Element IDs stay unique when every configuration's drawing is open at once.
 	_, multi := body(t, ts, "/mac/MacBookPro8-2")
 	srcs := regexp.MustCompile(`data-pmsrc="([^"]+)"`).FindAllStringSubmatch(multi, -1)

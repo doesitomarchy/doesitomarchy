@@ -84,7 +84,7 @@ func (l *loader) validateLayouts() {
 					l.errf(p, "%s: source %q is not a URL", where, u)
 				}
 			}
-			l.checkConnectors(p, where, rl.Connectors)
+			l.checkConnectors(p, where, rl.Connectors, false)
 			r := &m.Releases[ri]
 			for cid := range rl.Configs {
 				found := false
@@ -94,7 +94,8 @@ func (l *loader) validateLayouts() {
 				if !found {
 					l.errf(p, "%s.configs: %q is not a configuration of this release", where, cid)
 				} else {
-					l.checkConnectors(p, where+".configs."+cid, rl.Configs[cid])
+					// a configuration's own list may skip numbers, keeping the release drawing's numbering
+					l.checkConnectors(p, where+".configs."+cid, rl.Configs[cid], len(rl.Connectors) > 0)
 				}
 			}
 			for ci := range r.Configs {
@@ -111,7 +112,8 @@ func (l *loader) validateLayouts() {
 					continue
 				}
 				cfg.Connectors, cfg.LayoutSources, cfg.LayoutNote = conns, rl.Sources, rl.Note
-				if key := l.matchPortmap(p, lf.Identifier, rid, cfg); key != "" {
+				_, own := rl.Configs[cfg.ID]
+				if key := l.matchPortmap(p, lf.Identifier, rid, cfg, own); key != "" {
 					drawn[key] = true
 				}
 			}
@@ -119,7 +121,7 @@ func (l *loader) validateLayouts() {
 	}
 }
 
-func (l *loader) checkConnectors(p, where string, conns []Connector) {
+func (l *loader) checkConnectors(p, where string, conns []Connector, gaps bool) {
 	v := &l.cat.Vocab
 	ids := map[string]bool{}
 	perSide := map[string][]int{}
@@ -152,6 +154,9 @@ func (l *loader) checkConnectors(p, where string, conns []Connector) {
 		}
 	}
 	for side, ns := range perSide {
+		if gaps {
+			break
+		}
 		sort.Ints(ns)
 		for i, n := range ns {
 			if n != i+1 {

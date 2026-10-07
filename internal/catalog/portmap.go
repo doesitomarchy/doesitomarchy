@@ -59,8 +59,10 @@ func (l *loader) loadPortmaps() {
 
 // matchPortmap attaches the release's drawing to a configuration whose layout
 // it shows: the drawing's ports must be exactly the configuration's
-// connectors. It returns the drawing's key when one exists, matched or not.
-func (l *loader) matchPortmap(file, identifier, release string, cfg *Config) string {
+// connectors, or, for a configuration with its own layout (own), a subset of
+// them; the drawing's other ports are then hidden for it. It returns the
+// drawing's key when one exists, matched or not.
+func (l *loader) matchPortmap(file, identifier, release string, cfg *Config, own bool) string {
 	key := PortmapKey(identifier, release)
 	pm := l.cat.Portmaps[key]
 	if pm == nil {
@@ -73,11 +75,30 @@ func (l *loader) matchPortmap(file, identifier, release string, cfg *Config) str
 	got := append([]string(nil), pm.Conns...)
 	sort.Strings(want)
 	sort.Strings(got)
+	var hidden []string
+	if own {
+		in := map[string]bool{}
+		for _, id := range got {
+			in[id] = true
+		}
+		subset := true
+		for _, id := range want {
+			subset = subset && in[id]
+			delete(in, id)
+		}
+		if subset {
+			for id := range in {
+				hidden = append(hidden, id)
+			}
+			sort.Strings(hidden)
+			got = want
+		}
+	}
 	if strings.Join(want, " ") != strings.Join(got, " ") {
 		l.errf(path.Join("portmaps", key+".svg"), "its ports (%s) don't match %s's layout in %s (%s)",
 			strings.Join(got, " "), cfg.ID, file, strings.Join(want, " "))
 		return key
 	}
-	cfg.Portmap = key
+	cfg.Portmap, cfg.PortmapHidden = key, hidden
 	return key
 }

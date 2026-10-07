@@ -1,0 +1,68 @@
+# Port layouts, from Apple's manuals, photos and specs (PF-4, 2026-10-07).
+identifier: MacPro7,1
+releases:
+  "2019":
+    sources: [https://support.apple.com/en-us/guide/mac-pro/apd6305dc263/2019/mac]
+    note: "Tower. Top: two Thunderbolt 3 ports. Back: the Apple I/O card (headphone, two Thunderbolt 3, two USB-A), the Radeon Pro 580X's two HDMI ports, power and two 10Gb Ethernet ports. The W5700X, Vega II, W6800X and W6900X modules have one HDMI port (and four Thunderbolt 3 ports of their own, not listed), so their lists leave out the second."
+    connectors:
+      - { id: top-1, type: thunderbolt-3 }
+      - { id: top-2, type: thunderbolt-3 }
+      - { id: back-1, type: audio-out, note: "headphone jack, on the I/O card" }
+      - { id: back-2, type: thunderbolt-3, note: "on the I/O card" }
+      - { id: back-3, type: thunderbolt-3, note: "on the I/O card" }
+      - { id: back-4, type: usb-a-3, note: "on the I/O card" }
+      - { id: back-5, type: usb-a-3, note: "on the I/O card" }
+      - { id: back-6, type: hdmi, note: "on the Radeon Pro 580X graphics module" }
+      - { id: back-7, type: hdmi, note: "on the Radeon Pro 580X graphics module" }
+      - { id: back-8, type: ethernet-10gbe }
+      - { id: back-9, type: power }
+      - { id: back-10, type: ethernet-10gbe }
+    configs:
+      macpro7-1-2019-w5700x:
+        - { id: top-1, type: thunderbolt-3 }
+        - { id: top-2, type: thunderbolt-3 }
+        - { id: back-1, type: audio-out, note: "headphone jack, on the I/O card" }
+        - { id: back-2, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-3, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-4, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-5, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-6, type: hdmi, note: "on the graphics module" }
+        - { id: back-8, type: ethernet-10gbe }
+        - { id: back-9, type: power }
+        - { id: back-10, type: ethernet-10gbe }
+      macpro7-1-2019-vega-ii:
+        - { id: top-1, type: thunderbolt-3 }
+        - { id: top-2, type: thunderbolt-3 }
+        - { id: back-1, type: audio-out, note: "headphone jack, on the I/O card" }
+        - { id: back-2, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-3, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-4, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-5, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-6, type: hdmi, note: "on the graphics module" }
+        - { id: back-8, type: ethernet-10gbe }
+        - { id: back-9, type: power }
+        - { id: back-10, type: ethernet-10gbe }
+      macpro7-1-2019-w6800x:
+        - { id: top-1, type: thunderbolt-3 }
+        - { id: top-2, type: thunderbolt-3 }
+        - { id: back-1, type: audio-out, note: "headphone jack, on the I/O card" }
+        - { id: back-2, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-3, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-4, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-5, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-6, type: hdmi, note: "on the graphics module" }
+        - { id: back-8, type: ethernet-10gbe }
+        - { id: back-9, type: power }
+        - { id: back-10, type: ethernet-10gbe }
+      macpro7-1-2019-w6900x:
+        - { id: top-1, type: thunderbolt-3 }
+        - { id: top-2, type: thunderbolt-3 }
+        - { id: back-1, type: audio-out, note: "headphone jack, on the I/O card" }
+        - { id: back-2, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-3, type: thunderbolt-3, note: "on the I/O card" }
+        - { id: back-4, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-5, type: usb-a-3, note: "on the I/O card" }
+        - { id: back-6, type: hdmi, note: "on the graphics module" }
+        - { id: back-8, type: ethernet-10gbe }
+        - { id: back-9, type: power }
+        - { id: back-10, type: ethernet-10gbe }

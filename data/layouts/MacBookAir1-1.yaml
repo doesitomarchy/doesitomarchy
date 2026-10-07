@@ -1,0 +1,11 @@
+# Port layouts, from Apple's manuals, photos and specs (PF-4, 2026-10-07).
+identifier: MacBookAir1,1
+releases:
+  "early-2008":
+    sources: [https://commons.wikimedia.org/wiki/File:Apple-MacBook-Air-Ports.jpg, https://cdsassets.apple.com/live/6GJYWVAV/user/ma658_macbook_air_late2008_userguide.pdf]
+    note: "The headphone, USB and Micro-DVI ports sit behind a fold-down hatch on the right."
+    connectors:
+      - { id: left-1, type: magsafe }
+      - { id: right-1, type: audio-out }
+      - { id: right-2, type: usb-a-2 }
+      - { id: right-3, type: micro-dvi }

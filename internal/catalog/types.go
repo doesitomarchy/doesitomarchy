@@ -197,6 +197,11 @@ type Config struct {
 	// Portmap is the key of the release's port map drawing (data/portmaps,
 	// PLAN §27) when one exists and matches this configuration's layout.
 	Portmap string `yaml:"-" json:"-"`
+	// PortmapHidden lists the drawing's connectors this configuration lacks:
+	// a configuration with its own layout may use the release's drawing when
+	// its connectors are a subset of the drawing's (MacPro7,1: graphics cards
+	// with one HDMI port), and the site hides the rest.
+	PortmapHidden []string `yaml:"-" json:"-"`
 }
 
 // Connector is one physical connector in a port layout (PLAN.md §25).

@@ -43,7 +43,7 @@ releases:
         memory: { type: DDR4-2933 ECC, standard_gb: [32], max_gb: 1536 }
         storage: { interface: nvme, standard: ["256 GB SSD"], bto: ["1 TB SSD", "2 TB SSD", "4 TB SSD", "8 TB SSD"] }
         components: [gpu/amd-radeon-pro-570-580, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, storage/intel-c620-sata, bridge/apple-t2]
-        ports: { usb-a-3: 2, thunderbolt-3: 4, hdmi: 1, ethernet-10gbe: 2, audio-out: 1 }
+        ports: { usb-a-3: 2, thunderbolt-3: 4, hdmi: 2, ethernet-10gbe: 2, audio-out: 1 }
         features: [builtin-speaker, fan]
         notes: "Applies to both the tower (A1991) and rack (A2304) versions."
       - id: macpro7-1-2019-w5500x
@@ -55,7 +55,7 @@ releases:
         memory: { type: DDR4-2933 ECC, standard_gb: [32], max_gb: 1536 }
         storage: { interface: nvme, standard: ["256 GB SSD"], bto: ["1 TB SSD", "2 TB SSD", "4 TB SSD", "8 TB SSD"] }
         components: [gpu/amd-radeon-pro-w5500x, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, storage/intel-c620-sata, bridge/apple-t2]
-        ports: { usb-a-3: 2, thunderbolt-3: 4, hdmi: 1, ethernet-10gbe: 2, audio-out: 1 }
+        ports: { usb-a-3: 2, thunderbolt-3: 4, hdmi: 2, ethernet-10gbe: 2, audio-out: 1 }
         features: [builtin-speaker, fan]
         notes: "Applies to both the tower (A1991) and rack (A2304) versions."
       - id: macpro7-1-2019-w5700x
@@ -91,7 +91,7 @@ releases:
         memory: { type: DDR4-2933 ECC, standard_gb: [32], max_gb: 1536 }
         storage: { interface: nvme, standard: ["256 GB SSD"], bto: ["1 TB SSD", "2 TB SSD", "4 TB SSD", "8 TB SSD"] }
         components: [gpu/amd-radeon-pro-w6600x, wifi/broadcom-bcm4364, bluetooth/broadcom-bcm4364, audio/apple-t2-audio, ethernet/aquantia-aqc107, thunderbolt/intel-titan-ridge, storage/apple-ans2-nvme, storage/intel-c620-sata, bridge/apple-t2]
-        ports: { usb-a-3: 2, thunderbolt-3: 4, hdmi: 1, ethernet-10gbe: 2, audio-out: 1 }
+        ports: { usb-a-3: 2, thunderbolt-3: 4, hdmi: 2, ethernet-10gbe: 2, audio-out: 1 }
         features: [builtin-speaker, fan]
         notes: "Applies to both the tower (A1991) and rack (A2304) versions."
       - id: macpro7-1-2019-w6800x
