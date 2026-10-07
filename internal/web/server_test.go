@@ -149,7 +149,7 @@ func TestSecurityHeaders(t *testing.T) {
 		if !strings.Contains(csp, "default-src 'self'") || !strings.Contains(csp, "frame-ancestors 'none'") {
 			t.Errorf("%s: CSP %q", path, csp)
 		}
-		for h, want := range map[string]string{"X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Strict-Transport-Security": "max-age=86400"} {
+		for h, want := range map[string]string{"X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Strict-Transport-Security": "max-age=31536000"} {
 			if got := res.Header.Get(h); got != want {
 				t.Errorf("%s: %s = %q", path, h, got)
 			}
