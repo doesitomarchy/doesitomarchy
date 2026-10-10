@@ -45,10 +45,23 @@ the checksum and the binary's version, copies the database, switches
 it switches back and the workflow fails. Then the workflow purges
 Cloudflare's cache. Nothing on main goes live until it's tagged.
 
-**Migrations must be additive** (new tables or columns, never drops or renames
-in the same release), so a rollback's older binary still runs against the newer
-schema. If a release ever needs a destructive migration, restore the
-pre-deploy copy from `backups/` when rolling back.
+**Rolling back.** `sudo doiomad-deploy rollback` switches back to the previous
+binary. An older binary won't start on a database that a newer release has
+migrated ("database schema version N is newer than this binary supports"), so
+after a release with a migration, roll the database back too. The deploy copies
+it before switching, to `/var/lib/doiomad/backups/pre-<version>.db`:
+
+```sh
+sudo systemctl stop doiomad litestream
+sudo -u doiomad cp /var/lib/doiomad/backups/pre-v0.14.0.db /var/lib/doiomad/doesitomarchy.db
+sudo rm -f /var/lib/doiomad/doesitomarchy.db-wal /var/lib/doiomad/doesitomarchy.db-shm
+sudo systemctl start litestream
+sudo doiomad-deploy rollback
+```
+
+Reports received since the deploy are lost that way, so a fixed new release is
+usually the better way back. Keep migrations additive where possible (new
+tables or columns), so that fix-forward stays easy.
 
 ## One-time account setup
 
