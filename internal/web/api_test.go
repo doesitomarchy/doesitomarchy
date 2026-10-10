@@ -12,6 +12,8 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/pkg/match"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 func apiCall(t *testing.T, client *http.Client, method, url, key string, body []byte) (int, map[string]any, http.Header) {
@@ -217,4 +219,82 @@ func mustID(t *testing.T, st *store.Store, code string) int64 {
 func toJSON(v any) string {
 	b, _ := json.Marshal(v)
 	return string(b)
+}
+
+// The catalog snapshot (with ETag) and OmaBoot? Live's per-Mac limit.
+func TestAPILive(t *testing.T) {
+	ts, st, _ := liveServer(t)
+	c := ts.Client()
+	res, err := c.Get(ts.URL + "/api/v1/snapshot")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	var snap report.CatalogSnapshot
+	if err := json.Unmarshal(b, &snap); err != nil || res.StatusCode != 200 {
+		t.Fatalf("snapshot: %d %v", res.StatusCode, err)
+	}
+	if etag := res.Header.Get("ETag"); etag != `"`+snap.Version+`"` || len(snap.Version) != 16 || len(snap.Capabilities) != 46 || len(snap.Fixes) < 2 {
+		t.Fatalf("snapshot: ETag %s, version %s, %d criteria, %d fixes", etag, snap.Version, len(snap.Capabilities), len(snap.Fixes))
+	}
+	if r := match.New(snap.Match).Match(match.Probe{ProductName: "MacBookPro8,2", PCI: []string{"1002:6760"}}); r.Best() != "macbookpro8-2-15-early-2011-a" {
+		t.Errorf("matching on the snapshot: %+v", r)
+	}
+	for _, inm := range []string{`"` + snap.Version + `"`, `W/"` + snap.Version + `", "other"`, "*"} {
+		req, _ := http.NewRequest("GET", ts.URL+"/api/v1/snapshot", nil)
+		req.Header.Set("If-None-Match", inm)
+		res, err := c.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode != http.StatusNotModified || res.Header.Get("ETag") == "" {
+			t.Errorf("If-None-Match %s: %d", inm, res.StatusCode)
+		}
+	}
+	if _, caps, _ := apiCall(t, c, "GET", ts.URL+"/api/v1/capabilities", "", nil); !strings.Contains(toJSON(caps), `"live":"t2"`) {
+		t.Error("capabilities lack the live flag")
+	}
+
+	key, err := st.AddSource(context.Background(), "boot-live", "OmaBoot? Live", "https://doesitboot.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	live := func(board string) []byte {
+		return []byte(`schema: doesitomarchy/report/v1
+identifier: MacBookAir5,2
+context: live
+hardware: { board_id: ` + board + `, pci: ["8086:0166", "14e4:4353"] }
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
+items:
+  boot.install: { status: not_tested, reason: live-limit }
+  display.brightness: { status: supported, method: challenge }
+`)
+	}
+	for i := 1; i <= ReportsPerDayPerMac; i++ {
+		if code, out, _ := apiCall(t, c, "POST", ts.URL+"/api/v1/reports", key, live("Mac-2E6FAB96566FE58C")); code != 201 {
+			t.Fatalf("live report %d: %d %v", i, code, out)
+		}
+	}
+	code, out, h := apiCall(t, c, "POST", ts.URL+"/api/v1/reports", key, live("Mac-2E6FAB96566FE58C"))
+	if code != 429 || !strings.Contains(toJSON(out), "this Mac has sent 5 reports") || h.Get("Retry-After") == "" {
+		t.Fatalf("per-Mac limit: %d %v %v", code, out, h)
+	}
+	// Another Mac (here, another board) isn't held back.
+	if code, out, _ := apiCall(t, c, "POST", ts.URL+"/api/v1/reports", key, live("Mac-66F35F19FE2A0D05")); code != 201 {
+		t.Fatalf("another Mac: %d %v", code, out)
+	}
+	// boot-live has its own hourly limit, below the usual one: 6 stored so far.
+	old := ReportsPerHourPublic
+	ReportsPerHourPublic = 6
+	defer func() { ReportsPerHourPublic = old }()
+	code, out, h = apiCall(t, c, "POST", ts.URL+"/api/v1/reports", key, live("Mac-0000000000000001"))
+	if code != 429 || !strings.Contains(toJSON(out), "submitted 6 reports in the last hour") || h.Get("Retry-After") == "" {
+		t.Fatalf("boot-live hourly limit: %d %v", code, out)
+	}
+	if ReportsPerHourPublic >= ReportsPerHour || old >= ReportsPerHour {
+		t.Error("the public key's hourly limit should be below the usual one")
+	}
 }

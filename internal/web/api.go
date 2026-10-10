@@ -14,14 +14,27 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 // The open API (PLAN.md §22.3). Reads are public JSON that any site may
 // fetch; submissions need a source key.
 
 // ReportsPerHour is how many reports one source may submit in an hour
-// (a variable so tests can lower it).
+// (a variable so tests can lower it). Each source counts on its own.
 var ReportsPerHour = 60
+
+// ReportsPerHourPublic is the hourly limit for a source whose key is public
+// (OmaBoot? Live), lower than the usual one.
+var ReportsPerHourPublic = 30
+
+// ReportsPerDayPerMac is how many reports one Mac may send a day through a
+// source whose key is public, because it ships inside a public image
+// (OmaBoot? Live). A Mac is its hardware fingerprint: no serial numbers.
+var ReportsPerDayPerMac = 5
+
+// publicKeySources are the sources limited per Mac.
+var publicKeySources = map[string]bool{"boot-live": true}
 
 // apiEndpoint is one route. This table drives the routes, the index, the
 // OpenAPI document and llms.txt, so they can't drift apart.
@@ -48,6 +61,7 @@ func init() {
 		{Name: "submit", Method: "POST", Path: "/api/v1/reports", Summary: "Submit a diagnostic report (needs a source key)", Key: true, handle: (*Server).apiSubmit, res: apiSubmitted{}},
 		{Name: "report", Method: "GET", Path: "/api/v1/reports/{code}", Example: "/api/v1/reports/3f9a1c07be", Summary: "Check where a submitted report stands", handle: (*Server).apiReport, res: apiReportStatus{}},
 		{Name: "schema", Method: "GET", Path: "/api/v1/schema", Summary: "The diagnostic report format, as JSON Schema", handle: (*Server).apiSchema},
+		{Name: "snapshot", Method: "GET", Path: "/api/v1/snapshot", Summary: "What a test tool needs from the catalog to build, check and match a report offline", handle: (*Server).apiSnapshot, res: report.CatalogSnapshot{}},
 		{Name: "macs", Method: "GET", Path: "/api/v1/macs", Summary: "List every Intel Mac", handle: (*Server).apiMacs, res: apiMacList{}},
 		{Name: "mac", Method: "GET", Path: "/api/v1/macs/{identifier}", Example: "/api/v1/macs/MacBookPro8,2", Summary: "Get a Mac and all its configurations", handle: (*Server).apiMac, res: apiMacDetail{}},
 		{Name: "config", Method: "GET", Path: "/api/v1/configs/{id}", Example: "/api/v1/configs/macbookpro8-2-15-early-2011-a", Summary: "Get a configuration: hardware, ports, criteria status and reports", handle: (*Server).apiConfig, res: apiConfig{}},
@@ -138,6 +152,7 @@ type apiCapability struct {
 	Description string `json:"description,omitempty"`
 	Blocking    bool   `json:"blocking,omitempty" doc:"A failure in this category makes the whole configuration fail"`
 	Retired     bool   `json:"retired,omitempty" doc:"No longer tested; kept so old reports still resolve"`
+	Live        string `json:"live" doc:"Whether a live boot can decide it: yes, no, or t2 (only on Macs with a T2 chip). Live reports send the rest as not_tested, reason live-limit"`
 }
 
 type apiCapabilityList struct {
@@ -151,7 +166,7 @@ func (s *Server) apiCapabilities(w http.ResponseWriter, r *http.Request) {
 	}
 	out := []apiCapability{}
 	for _, cp := range s.cat.Capabilities {
-		out = append(out, apiCapability{cp.ID, cp.Category(), cp.Name, cp.Description, blocking[cp.Category()], cp.Retired})
+		out = append(out, apiCapability{cp.ID, cp.Category(), cp.Name, cp.Description, blocking[cp.Category()], cp.Retired, cp.Live})
 	}
 	readable(w)
 	writeJSON(w, http.StatusOK, apiCapabilityList{out})
@@ -216,14 +231,12 @@ type apiCapStatus struct {
 	OmarchyChannel string `json:"omarchy_channel,omitempty"` // stable (rc, beta, edge, dev only in newest_build)
 	Kernel         string `json:"kernel,omitempty"`
 	TestedAt       string `json:"tested_at,omitempty"`
-	Method         string `json:"method,omitempty" doc:"automatic, observed or fixture"`
+	Method         string `json:"method,omitempty" doc:"automatic, observed, fixture or challenge"`
 	Stale          bool   `json:"stale,omitempty" doc:"Tested on an Omarchy release older than the current major"`
 	Conflict       bool   `json:"conflict,omitempty" doc:"Accepted reports on the same Omarchy build disagree"`
 	Reason         string `json:"unsupported_reason,omitempty"`
 	// Per-connector criteria: each connector's status.
 	Ports []apiPortStatus `json:"ports,omitempty" doc:"Per-connector results, for port criteria"`
-	// Fix is the fix issue for a failed criterion (PLAN §26).
-	Fix *apiFix `json:"fix,omitempty" doc:"The fix issue for a failed criterion"`
 	// NewestBuild is the result on the newest build of any channel, when it
 	// differs from the stable verdict.
 	NewestBuild *apiNewestBuild `json:"newest_build,omitempty" doc:"The result on the newest pre-release or edge build, when it differs"`
@@ -236,16 +249,6 @@ type apiNewestBuild struct {
 	Report         string         `json:"report"`
 }
 
-type apiFix struct {
-	Issue        int    `json:"issue"`
-	URL          string `json:"url"`
-	State        string `json:"state"` // open | claimed | stale | proposed | fixed
-	Assignee     string `json:"assignee,omitempty"`
-	LastActivity string `json:"last_activity,omitempty"`
-	FixLink      string `json:"fix_link,omitempty"`
-	Retest       bool   `json:"retest,omitempty"` // fixed after the latest result: re-test it
-}
-
 type apiPortStatus struct {
 	Connector string         `json:"connector"`
 	Verdict   status.Verdict `json:"verdict"`
@@ -254,13 +257,15 @@ type apiPortStatus struct {
 }
 
 type apiReportRef struct {
-	Code           string `json:"code"`
-	State          string `json:"state"`
-	TestedAt       string `json:"tested_at"`
-	Omarchy        string `json:"omarchy"`
-	OmarchyChannel string `json:"omarchy_channel"`
-	Kernel         string `json:"kernel,omitempty"`
-	URL            string `json:"url"`
+	Code           string   `json:"code"`
+	State          string   `json:"state"`
+	TestedAt       string   `json:"tested_at"`
+	Omarchy        string   `json:"omarchy"`
+	OmarchyChannel string   `json:"omarchy_channel"`
+	Kernel         string   `json:"kernel,omitempty"`
+	Context        string   `json:"context" doc:"Where the test ran: installed, or live (a live boot)"`
+	Fixes          []string `json:"fixes,omitempty" doc:"OmaBoot? fixes that took effect, by ID (see /api/v1/snapshot)"`
+	URL            string   `json:"url"`
 }
 
 type apiConfig struct {
@@ -317,9 +322,6 @@ func configJSON(cv *configView) apiConfig {
 			if n := cp.Newer; n != nil {
 				cs.NewestBuild = &apiNewestBuild{n.Verdict, n.Omarchy, n.Channel, BaseURL + "/report/" + n.Code}
 			}
-			if f := cp.Fix; f != nil {
-				cs.Fix = &apiFix{f.Issue, f.URL, string(f.State), f.Assignee, f.LastActivity, f.FixLink, f.Retest}
-			}
 			for _, p := range cp.Ports {
 				cs.Ports = append(cs.Ports, apiPortStatus{p.ID, p.Verdict, p.CoveredBy, p.Suspect})
 			}
@@ -327,7 +329,7 @@ func configJSON(cv *configView) apiConfig {
 		}
 	}
 	for _, rs := range cv.Results {
-		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Channel, rs.Kernel, BaseURL + "/report/" + rs.Code})
+		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Channel, rs.Kernel, rs.Context, rs.Fixes, BaseURL + "/report/" + rs.Code})
 	}
 	return x
 }
@@ -440,9 +442,13 @@ func (s *Server) apiSubmit(w http.ResponseWriter, r *http.Request) {
 		apiFail(w, http.StatusRequestEntityTooLarge, "reports are limited to 1 MiB")
 		return
 	}
-	if n, err := s.store.RecentSubmissions(ctx, src.ID, time.Now().Add(-time.Hour)); err == nil && n >= ReportsPerHour {
+	perHour := ReportsPerHour
+	if publicKeySources[src.ID] {
+		perHour = ReportsPerHourPublic
+	}
+	if n, err := s.store.RecentSubmissions(ctx, src.ID, time.Now().Add(-time.Hour)); err == nil && n >= perHour {
 		w.Header().Set("Retry-After", "600")
-		apiFail(w, http.StatusTooManyRequests, "this source has submitted "+strconv.Itoa(ReportsPerHour)+" reports in the last hour; try again later")
+		apiFail(w, http.StatusTooManyRequests, "this source has submitted "+strconv.Itoa(perHour)+" reports in the last hour; try again later")
 		return
 	}
 	f, err := results.Parse(raw)
@@ -470,6 +476,16 @@ func (s *Server) apiSubmit(w http.ResponseWriter, r *http.Request) {
 		}
 		apiFail(w, http.StatusBadRequest, "invalid report", err.Error())
 		return
+	}
+	if publicKeySources[src.ID] {
+		// The key is public, so the limit is per Mac, counting only reports that would be stored.
+		now := time.Now()
+		if key := src.ID + " " + results.HardwareFingerprint(f); !s.macLimit.allow(key, now) {
+			w.Header().Set("Retry-After", strconv.Itoa(int(s.macLimit.wait(key, now).Seconds())+1))
+			apiFail(w, http.StatusTooManyRequests, "this Mac has sent "+strconv.Itoa(ReportsPerDayPerMac)+" reports through "+src.ID+
+				" in the last 24 hours; try again after Retry-After seconds")
+			return
+		}
 	}
 	s.prepareResult(ctx, res)
 	id, err := s.store.InsertResult(ctx, res, raw, results.SchemaV1, "source:"+src.ID)

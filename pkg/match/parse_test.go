@@ -1,8 +1,13 @@
-package match
+package match_test
 
 import (
 	"reflect"
 	"testing"
+
+	"github.com/doesitomarchy/doesitomarchy/data"
+	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	server "github.com/doesitomarchy/doesitomarchy/internal/match"
+	"github.com/doesitomarchy/doesitomarchy/pkg/match"
 )
 
 // Real-shaped command output for each supported form.
@@ -48,38 +53,42 @@ Graphics/Displays:
 func TestParseProbe(t *testing.T) {
 	tests := []struct {
 		name, text string
-		want       Probe
+		want       match.Probe
 	}{
-		{"linux /sys", linuxSys, Probe{ProductName: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80",
+		{"linux /sys", linuxSys, match.Probe{ProductName: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80",
 			PCI: []string{"8086:0116", "8086:1c03", "1002:6760", "14e4:4331"}, CPU: "Intel(R) Core(TM) i7-2635QM CPU @ 2.00GHz"}},
-		{"linux lspci -nn", linuxLspci, Probe{ProductName: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80",
+		{"linux lspci -nn", linuxLspci, match.Probe{ProductName: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80",
 			PCI: []string{"8086:0126", "1002:6741", "14e4:4331"}}},
-		{"macOS", macOS, Probe{ProductName: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80",
+		{"macOS", macOS, match.Probe{ProductName: "MacBookPro8,2", BoardID: "Mac-94245A3940C91C80",
 			PCI: []string{"8086:0126", "1002:6760"}, CPU: "Intel(R) Core(TM) i7-2635QM CPU @ 2.00GHz"}},
 		{"Core 2 padding", "MacBookPro5,5\nmodel name\t: Intel(R) Core(TM)2 Duo CPU     P8700  @ 2.53GHz\n",
-			Probe{ProductName: "MacBookPro5,5", CPU: "Intel(R) Core(TM)2 Duo CPU P8700 @ 2.53GHz"}},
-		{"8-digit board ID", "iMac9,1\nMac-f2218fc8\n", Probe{ProductName: "iMac9,1", BoardID: "Mac-F2218FC8"}},
-		{"nothing useful", "hello world [0300]", Probe{}},
+			match.Probe{ProductName: "MacBookPro5,5", CPU: "Intel(R) Core(TM)2 Duo CPU P8700 @ 2.53GHz"}},
+		{"8-digit board ID", "iMac9,1\nMac-f2218fc8\n", match.Probe{ProductName: "iMac9,1", BoardID: "Mac-F2218FC8"}},
+		{"nothing useful", "hello world [0300]", match.Probe{}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ParseProbe(tt.text); !reflect.DeepEqual(got, tt.want) {
+			if got := match.ParseProbe(tt.text); !reflect.DeepEqual(got, tt.want) {
 				t.Fatalf("got %+v\nwant %+v", got, tt.want)
 			}
 		})
 	}
-	// End to end: each paste finds the right configuration.
-	m := matcher(t)
-	if r := m.Match(ParseProbe(linuxSys)); !r.Exact || r.Best() != "macbookpro8-2-15-early-2011-a" {
+	// End to end: each paste finds the right configuration in the catalog.
+	c, err := catalog.LoadFS(data.FS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := server.New(c)
+	if r := m.Match(match.ParseProbe(linuxSys)); !r.Exact || r.Best() != "macbookpro8-2-15-early-2011-a" {
 		t.Errorf("/sys paste: %+v", r)
 	}
-	if r := m.Match(ParseProbe(macOS)); !r.Exact || r.Best() != "macbookpro8-2-15-early-2011-a" {
+	if r := m.Match(match.ParseProbe(macOS)); !r.Exact || r.Best() != "macbookpro8-2-15-early-2011-a" {
 		t.Errorf("macOS paste: %+v", r)
 	}
-	if r := m.Match(ParseProbe("Mac-F2208EC8\n")); r.Identifier != "Macmini4,1" || r.By != "board_id" {
+	if r := m.Match(match.ParseProbe("Mac-F2208EC8\n")); r.Identifier != "Macmini4,1" || r.By != "board_id" {
 		t.Errorf("8-digit board ID alone: %+v", r)
 	}
-	if r := m.Match(ParseProbe(linuxLspci)); r.Exact {
+	if r := m.Match(match.ParseProbe(linuxLspci)); r.Exact {
 		t.Errorf("the HD 6750M is shared by two configs: %+v", r)
 	}
 }

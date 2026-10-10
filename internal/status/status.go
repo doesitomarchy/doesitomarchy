@@ -152,7 +152,7 @@ type Item struct {
 	Capability string
 	Connector  string  // the physical connector, for per-connector port items; "" otherwise
 	Verdict    Verdict // Supported, Partial or Failed
-	Method     string  // automatic | observed | fixture
+	Method     string  // automatic | observed | fixture | challenge (no method weighs more than another)
 	Omarchy    Version
 	Channel    string // stable | rc | beta | edge | dev
 	// BuiltAt is when the Omarchy code tested was committed (RFC 3339, UTC);

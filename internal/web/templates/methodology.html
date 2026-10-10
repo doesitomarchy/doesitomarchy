@@ -11,6 +11,8 @@
   <li><a href="#reports">Newest report wins</a>For each criterion, the report from the newest Omarchy version counts. Reports from an older major version are marked stale.</li>
   <li><a href="#coverage">Coverage</a>Counts configurations that passed everything and those with any report. Macs from before 2009 and the Xserve are left out of the figures, but can still be tested.</li>
   <li><a href="#ports">Port groups</a>Ports on the same controller behave alike, so one passing port covers its whole group.</li>
+  <li><a href="#live">Live boots</a>Results from a live boot count like an installed system's, for what a live boot can decide. They carry a Live boot tag.</li>
+  <li><a href="#fixes">OmaBoot? fixes</a>Some live boots run with a fix OmaBoot? adds. Their results count, and name the fix.</li>
   <li><a href="#criteria">Test criteria</a>Each configuration shows only the criteria that apply to its hardware, generalised from Boyd's Vintage Mac Compatibility Test Criteria.</li>
   <li><a href="#sources">Sources</a>Hardware facts come from Apple, EveryMac, OpenCore and linuxhw probes of real machines. Every model page lists its own.</li>
 </ul>
@@ -35,7 +37,7 @@
     <tr><th scope="row"><span class="mark-label">{{template "badge"}}Omarchy mark</span></th><td>Every applicable capability has passed. A model identifier earns it when every one of its configurations has.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "supported")}}</th><td>Every tested capability works, shown with how many were tested.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "partial")}}</th><td>Something other than Boot failed, was given up on, only partly works, or has conflicting reports.</td></tr>
-    <tr><th scope="row">{{template "verdict" (v "failed")}}</th><td>A Boot capability failed. A failure is something to fix, not a final answer: each one records why it failed and who is working on it.</td></tr>
+    <tr><th scope="row">{{template "verdict" (v "failed")}}</th><td>A Boot capability failed. A failure is something to fix, not a final answer: each one records why it failed.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "untested")}}</th><td>No diagnostic report yet.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "unsupported")}}</th><td>A Boot capability was given up on. Maintainers mark a capability Unsupported only as a last resort, after repeated attempts to fix a failure made no progress.</td></tr>
     <tr><th scope="row">{{template "verdict" (v "not-compatible")}}</th><td>The Mac can never run Omarchy by design. Today that means the 2006 Macs with a 32-bit-only Core Duo CPU, since Omarchy and Arch Linux support x86_64 only.</td></tr>
@@ -87,6 +89,25 @@
 </table>
 </div>
 
+<div class="paper">
+<section>
+<h2 id="live">Live boots</h2>
+<p><a href="https://doesitboot.com" rel="noopener">OmaBoot? Live</a> tests a Mac from a USB stick, without installing anything. A live boot runs the same kernel and drivers as an installed Omarchy, so its results count toward verdicts like an installed system's, and each one carries a <span class="tag">Live boot</span> tag.</p>
+<p>A few criteria only an installed system can decide:</p>
+<ul>{{range .Data.LiveNo}}<li>{{.}}</li>{{end}}{{range .Data.LiveT2}}<li>{{.}}, on Macs without a T2 chip</li>{{end}}</ul>
+<p>A live report sends these as not tested, with the reason <code>live-limit</code>, so nothing pretends to be a result. On some Macs it leaves out more, such as Wi-Fi on Broadcom BCM4331 and BCM4360 cards, whose driver only the installer adds. An <a href="#fixes">OmaBoot? fix</a> that took effect lifts the limit for the criteria it targets.</p>
+<h2 id="challenge">Challenges</h2>
+<p>Some checks need a person to confirm what the Mac shows or plays. Instead of asking whether it worked, the tool shows a random word on the screen or plays one through the speakers, and the tester picks it from four choices, two rounds in a row. Left and right speakers are told apart by counting beeps the same way. A phone or a capture card can answer too.</p>
+<p>A passed challenge is recorded with the method <code>challenge</code> and counts like a result the tester observed. A missed challenge gets one retry; missed again, the item is sent as not tested, with the reason <code>uncertain</code>.</p>
+</section>
+<section>
+<h2 id="fixes">OmaBoot? fixes</h2>
+<p>OmaBoot? carries a few fixes that stock Omarchy doesn't have yet, so a Mac that needs one can still be tested from a live boot. A report lists the fixes that took effect; its results count for the configuration as usual and say which fix they ran with, as in <em>with OmaBoot? radeon panel clock fix</em>.</p>
+<p>Lasting fixes happen upstream: the Linux kernel and its subsystem maintainers, <a href="https://t2linux.org" rel="noopener">t2linux</a> for Apple hardware, and Omarchy's own repositories.</p>
+<p class="cta-actions"><a class="btn-cta ghost" href="/fixes">Browse the OmaBoot? fixes</a></p>
+</section>
+</div>
+
 <h2 id="criteria">Test criteria</h2>
 <p class="muted">Each configuration shows only the criteria that apply to its hardware. They are generalised from Boyd's Vintage Mac Compatibility Test Criteria. The <a href="/criteria">criteria matrix</a> shows which configurations each one applies to.</p>
 <div class="table-wrap" tabindex="0" role="region" aria-label="Table (scrolls sideways)">
@@ -106,3 +127,4 @@
 <h2 class="sources-h" id="sources">Sources</h2>
 <p class="sources">Hardware facts come from Apple's identification and Tech Specs pages, EveryMac, the OpenCore model database, and real-machine Linux hardware probes from <a href="https://github.com/linuxhw" rel="noopener">linuxhw</a>. Chips and hardware IDs seen on real machines count as evidence. Where sources disagree, the model page's research notes say so. Every model page lists its sources. See <a href="/attribution">attribution</a> for credits.</p>
 {{end}}
+

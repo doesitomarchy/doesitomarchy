@@ -6,6 +6,8 @@
   <p class="sub slash"><span>tested <b>{{utc $r.TestedAt}}</b></span><span>submitted <b>{{utc $r.SubmittedAt}}</b></span></p>
   <p class="sub slash"><span>Omarchy <b>{{$r.Omarchy}}</b> ({{$r.Channel}}){{with $r.OmarchyBuiltAt}} · built <a href="https://github.com/basecamp/omarchy/commit/{{$r.OmarchyCommit}}" rel="noopener" title="When the Omarchy code tested was committed: the newest build's result counts">{{slice . 0 10}}</a>{{end}}</span>{{with $r.Kernel}}<span>kernel {{.}}</span>{{end}}
     <span>by {{if $r.TesterHandle}}<b>@{{$r.TesterHandle}}</b>{{else}}anonymous{{end}} via <b>{{$r.SourceName}}</b>{{with $r.SourceVersion}} {{.}}{{end}}{{with $r.Profile}} · {{.}} profile{{end}}</span></p>
+  {{if or $r.IsLive $r.Fixes}}<p class="sub slash">{{if $r.IsLive}}<span><span class="tag" title="Tested from a live boot, without installing Omarchy">Live boot</span>{{with $r.OmarchyImage}} from {{.}}{{end}} · <a href="/methodology#live">what a live boot can decide</a></span>{{end}}{{range $r.Fixes}}{{with bootfix .}}<span class="fixnote">with <a href="{{fixURL .ID}}">OmaBoot? {{.Name}}</a></span>{{end}}{{end}}</p>{{end}}
+  {{with $r.ReplacedParts}}<p class="sub">Replaced parts: {{range $i, $p := .}}{{if $i}}; {{end}}{{partKind $p.Kind}}{{with $p.Detail}} ({{.}}){{end}}{{end}}</p>{{end}}
   <p class="sub">{{template "verdict" (v "supported")}} <span class="muted">{{$r.Supported}}</span>
     {{template "verdict" (v "partial")}} <span class="muted">{{$r.Partial}}</span>
     {{template "verdict" (v "failed")}} <span class="muted">{{$r.Failed}}</span>
@@ -15,7 +17,7 @@
 {{with $r.Notes}}<div class="result-notes"><p>{{.}}</p></div>{{end}}
 {{with .Portmap}}<section class="report-ports">
   <h2>Ports</h2>
-  <figure class="pmfig" data-pmfig>{{.}}
+  <figure class="pmfig" data-pmfig{{if $.Data.PortmapWide}} tabindex="0" aria-label="Port map (scrolls sideways on narrow screens)"{{end}}>{{.}}
     <figcaption>{{if $.Data.PortItems}}{{template "pmkey"}}Coloured by this report's own results for each port.{{else}}This report has no results for individual ports.{{end}}</figcaption></figure>
 </section>{{end}}
 

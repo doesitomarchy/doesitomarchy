@@ -4,6 +4,18 @@
 # Add an entry with every release that changes the API or the report format;
 # site pages (even API-related ones, like /api/register) don't belong here.
 
+- date: "2026-10-09"
+  title: Live boots, challenges and the catalog snapshot
+  summary: "Reports can come from a live boot, such as OmaBoot? Live: they send `\"context\": \"live\"`, and each criterion's new `live` flag (`yes`, `no` or `t2`) says whether a live boot can decide it. The rest go as `not_tested` with the new reason `live-limit`; a live result for them is rejected. All new fields are optional, so existing reports and tools are unchanged."
+  notes:
+    - "Report format: a new method, `challenge` (the tool showed or played a random code and someone gave it back), which counts like `observed`. New optional fields: `context`, `fixes` (registered OmaBoot? fix IDs; unknown ones are rejected) and `replaced_parts`. The image tested goes in `omarchy.image`."
+    - "`GET /api/v1/snapshot` is what a test tool needs from the catalog offline: match data, the criteria with their `live` flags, and the fixes, with an `ETag` for `If-None-Match`."
+    - "Criteria gain `live`. A configuration's `reports` gain `context` and `fixes`."
+    - "A source whose key ships inside a public image may submit up to 30 reports an hour, and up to 5 a day from each Mac; over either, `429` with `Retry-After`."
+    - "Removed: a criterion's `fix` (its fix issue on GitHub). Fix tracking through GitHub issues is retired; no fix issue was ever opened. The OmaBoot? fixes are in the snapshot's `fixes`, and each one's `url` is its entry at `/fixes`."
+    - "MCP: `get_mac` and `what_needs_testing` no longer mention fix issues; `what_needs_testing` points to upstream and `/fixes` for fixing."
+    - "Go tools can use the public packages `pkg/report` (the format and its checks) and `pkg/match` (matching on the snapshot)."
+
 - date: "2026-10-05"
   title: MCP answers name the release
   summary: "A Mac sold under several names, such as the iMac10,1 (21.5-inch and 27-inch), is now named after the release an MCP answer is about: `identify_mac`, and `get_mac` or `what_needs_testing` with a `config`. `get_mac` for the whole Mac adds an \"Also sold as\" line."

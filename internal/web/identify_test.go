@@ -162,4 +162,14 @@ func TestAPIExample(t *testing.T) {
 	if r.ConfigID != "macbookpro8-2-15-early-2011-a" || len(r.Flags) != 0 {
 		t.Errorf("example resolves to %s with flags %v", r.ConfigID, r.Flags)
 	}
+	// And the live boot's.
+	if f, err = results.Parse([]byte(apiLiveExample)); err != nil {
+		t.Fatal(err)
+	}
+	if r, err = results.Validate(f, c, time.Date(2026, 10, 9, 0, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatal(err)
+	}
+	if r.ConfigID != "imac10-1-21-late-2009-b" || r.Context != "live" || len(r.Flags) != 0 {
+		t.Errorf("live example resolves to %s (%s) with flags %v", r.ConfigID, r.Context, r.Flags)
+	}
 }

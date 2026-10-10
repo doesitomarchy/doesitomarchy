@@ -343,10 +343,10 @@ func (c *Catalog) ConnectorName(cn Connector) string {
 	return cn.Type
 }
 
-// FixComponent returns the component of a configuration that a fix for this
-// criterion covers (PLAN §26): the configuration's component of the kind (and
-// role) the criterion's fix_by names, or "" when there is none or more than
-// one, so the fix covers just the configuration.
+// FixComponent returns the component of a configuration that decides this
+// criterion: the configuration's component of the kind (and role) the
+// criterion's fix_by names, or "" when there is none or more than one, so a
+// flag on it covers just the configuration.
 func (c *Catalog) FixComponent(cp Capability, cfg *Config) string {
 	if cp.FixBy == "" {
 		return ""

@@ -11,6 +11,11 @@
     <div><dt>Mac</dt><dd><a class="ident" href="/mac/{{$r.Slug}}">{{$r.Identifier}}</a></dd></div>
     <div><dt>Configuration</dt><dd>{{if .Ambiguous}}<span class="tag warn-tag">not decided</span> <span class="muted">fits {{len $r.Candidates}}; pick one below</span>{{else}}{{with .Config}}<span class="cfgref">{{.Diff}}</span> {{.Label}} <span class="muted">({{.ReleaseName}})</span>{{else}}<code>{{$r.ConfigID}}</code>{{end}}{{end}}</dd></div>
     <div><dt>Ran</dt><dd>{{osver $r.Omarchy $r.Channel $r.Kernel}}</dd></div>
+    <div><dt>Context</dt><dd>{{if $r.IsLive}}<span class="tag">Live boot</span> <span class="muted">criteria a live boot can't decide come as not tested</span>{{else}}Installed{{end}}</dd></div>
+    {{with $r.OmarchyImage}}<div><dt>Image</dt><dd><code>{{.}}</code></dd></div>{{end}}
+    {{with $r.Fixes}}<div><dt>OmaBoot? fixes</dt><dd>{{range $i, $id := .}}{{if $i}}, {{end}}{{with bootfix $id}}<a class="fixref" href="{{fixURL .ID}}">{{.Name}}</a> <span class="muted">({{join .Targets.Criteria ", "}})</span>{{else}}<code>{{$id}}</code>{{end}}{{end}}</dd></div>{{end}}
+    {{with $r.ReplacedParts}}<div><dt>Replaced parts</dt><dd>{{range $i, $p := .}}{{if $i}}<br>{{end}}{{partKind $p.Kind}}{{with $p.Detail}}: {{.}}{{end}}{{range $p.IDs}} · <code>{{.}}</code>{{end}}{{end}}<br><span class="muted">Results these parts decide may not hold for the stock configuration.</span></dd></div>{{end}}
+    {{with $d.Challenges}}<div><dt>Challenges</dt><dd>{{len .}} {{plural (len .) "item" "items"}} answered a challenge: {{range $i, $it := .}}{{if $i}}, {{end}}{{$it.CapabilityName}}{{end}} <span class="muted">(their evidence is in the table below)</span></dd></div>{{end}}
       <div><dt>Built</dt><dd>{{with $r.OmarchyBuiltAt}}{{utc .}} · <a href="https://github.com/basecamp/omarchy/commit/{{$r.OmarchyCommit}}" rel="noopener">{{slice $r.OmarchyCommit 0 7}}</a>{{else}}<span class="muted">not known yet: the test date stands in</span>{{end}}</dd></div>
     <div><dt>Results</dt><dd>{{template "tally" $r}} <span class="muted">· {{$r.NotTested}} not tested</span></dd></div>
     <div><dt>Tested</dt><dd>{{utc $r.TestedAt}}</dd></div>

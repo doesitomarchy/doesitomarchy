@@ -24,10 +24,11 @@ const wanted = (path) => ONLY.length === 0 || ONLY.some((p) => path.startsWith(p
 const pages = [
   "/", "/search?q=mbp+2011", "/search?q=gpu%3A6770m", "/macs", "/mac/MacBookPro8-2", "/mac/MacBookPro8-2?view=matrix",
   "/mac/MacBookPro1-1", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/mac/MacPro5-1", "/mac/Macmini1-1", "/mac/Xserve3-1", "/criteria", "/stats", "/methodology",
-  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2", "/mac/MacBook3-1", "/macs?q=gles%3A2.0", "/search?q=gles%3A2.0",
+  "/contribute", "/configs", "/components", "/changelog", "/attribution", "REPORT", "/mac/MacBookAir7-2", "/mac/MacBookAir5-2", "/mac/iMac10-1", "/mac/MacBook3-1", "/macs?q=gles%3A2.0", "/search?q=gles%3A2.0",
   "/identify", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/identify?product=MacBookPro8%2C2&pci=1002%3A6741", "/identify?none=1",
   "/identify?product=MacBookPro99%2C1", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760&shared=1", "/identify?product=MacBookPro8%2C2&share=consent",
-  "/api", "/api/mcp-cheatsheet", "/api/register", "REGISTER_STATUS", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/fixes", "ADMIN_REPORT",
+  "/api", "/api/mcp-cheatsheet", "/api/register", "REGISTER_STATUS", "/privacy", "/fixes", "/admin", "/admin/sources", "/admin/shares", "/admin/shares?all=1", "/admin/unsupported", "ADMIN_REPORT",
+  "LIVE_REPORT", "ADMIN_LIVE_REPORT",
 ];
 const widths = [360, 1440];
 const contrastPages = ["/", "/api", "/mac/MacBookPro15-1", "/mac/MacBookPro11-3", "/identify?product=MacBookPro8%2C2&pci=1002%3A6760", "/admin/shares", "/admin/sources", "/mac/MacBook3-1", "/macs?q=gles%3A2.0"];
@@ -97,11 +98,20 @@ const regStatus = await first.evaluate(async () => {
   return r.ok ? new URL(r.url).pathname + new URL(r.url).search : null;
 });
 if (!regStatus) fail("/api/register", "submitting the form failed");
+// The demo's live-boot reports: an accepted one on the iMac10,1, and a
+// pending one in the review queue (the row with a tag).
+await first.goto(BASE + "/mac/iMac10-1", { waitUntil: "networkidle0" });
+const liveReport = await first.$eval('.results-list a[href^="/report/"]', (a) => a.getAttribute("href")).catch(() => null);
+await first.goto(BASE + "/admin", { waitUntil: "networkidle0" });
+const adminLive = await first.$eval('table.queue tr:has(.tag) a[href^="/admin/report/"]', (a) => a.getAttribute("href")).catch(() => null);
+if (!liveReport || !adminLive) fail("/mac/iMac10-1", "no live-boot report (is the server running with -demo?)");
 await first.close();
 for (let i = 0; i < pages.length; i++) {
   if (pages[i] === "REGISTER_STATUS") pages[i] = regStatus || "/api/register";
   if (pages[i] === "REPORT") pages[i] = report || "/stats";
   if (pages[i] === "ADMIN_REPORT") pages[i] = report ? "/admin" + report : "/admin";
+  if (pages[i] === "LIVE_REPORT") pages[i] = liveReport || "/stats";
+  if (pages[i] === "ADMIN_LIVE_REPORT") pages[i] = adminLive || "/admin";
 }
 for (const list of [pages, contrastPages]) list.splice(0, list.length, ...list.filter(wanted));
 if (pages.length + contrastPages.length === 0) {

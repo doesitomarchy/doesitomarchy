@@ -20,8 +20,8 @@ const (
 // StatusInput is what the status engine needs to judge one configuration in
 // a view: its applicable criteria (with their port groups) and its accepted
 // results. excl is the release's coverage exclusion
-// (catalog.CoverageExclusion). The site, the CLI and fix tracking all build
-// their input here, so they agree.
+// (catalog.CoverageExclusion). The site and the CLI both build their
+// input here, so they agree.
 func (r *Rollup) StatusInput(c *catalog.Catalog, m *catalog.Mac, cfg *catalog.Config, excl string, applicable []catalog.Capability, view View) status.ConfigInput {
 	cats := make(map[string]catalog.Category, len(c.Categories))
 	for _, k := range c.Categories {

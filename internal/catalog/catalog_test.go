@@ -214,9 +214,10 @@ categories:
   - { id: boot, name: Boot, blocking: true }
   - { id: graphics, name: Graphics }
 capabilities:
-  - { id: boot.install, name: Install completes }
+  - { id: boot.install, name: Install completes, live: "no" }
   - id: graphics.external-display
     name: External display
+    live: "yes"
     when: { all: ["video-out"] }
 `,
 	"components/gpu.yaml": `
@@ -281,6 +282,18 @@ releases:
 exclude:
   - reason: Old
     when: { announced_before: "2000-01-01" }
+`,
+	"fixes.yaml": `
+- id: omaboot.test-fix
+  name: test fix
+  changes: Makes the HDMI port work.
+  targets:
+    hardware: The test Mac mini.
+    devices: [{ id: "pci:8086:0001", subsystem: "106b:0001" }]
+    configs: [macmini9-9-mid-2099-a]
+    criteria: [graphics.external-display]
+  upstream: [{ title: A patch, url: "https://example.com/patch" }]
+  since: dev abc1234
 `,
 }
 
@@ -383,6 +396,14 @@ func TestValidationRules(t *testing.T) {
 		{"plumbing bad id", "plumbing.yaml", "pci:8086:0002", "pci:8086:00G2", "must look like pci:vvvv:dddd"},
 		{"plumbing without name", "plumbing.yaml", `name: "Test Host Bridge"`, `name: ""`, "name is required"},
 		{"port test", "vocabulary.yaml", "tests: [graphics.external-display]", "tests: [graphics.hologram]", `unknown capability "graphics.hologram"`},
+		{"live flag", "capabilities.yaml", `live: "yes"`, `live: "maybe"`, `live must be yes, no or t2, not "maybe"`},
+		{"no live flag", "capabilities.yaml", `, live: "no"`, ``, `live must be yes, no or t2, not ""`},
+		{"fix id", "fixes.yaml", "id: omaboot.test-fix", "id: test-fix", "must look like omaboot.<slug>"},
+		{"fix criterion", "fixes.yaml", "criteria: [graphics.external-display]", "criteria: [graphics.hologram]", `unknown criterion "graphics.hologram"`},
+		{"fix config", "fixes.yaml", "configs: [macmini9-9-mid-2099-a]", "configs: [macmini9-9-mid-2099-z]", `unknown configuration "macmini9-9-mid-2099-z"`},
+		{"fix device", "fixes.yaml", `subsystem: "106b:0001"`, `subsystem: "106B-0001"`, "must look like pci:vvvv:dddd"},
+		{"fix upstream", "fixes.yaml", `upstream: [{ title: A patch, url: "https://example.com/patch" }]`, "upstream: []", "upstream must link"},
+		{"fix without changes", "fixes.yaml", "changes: Makes the HDMI port work.", "changes: \"\"", "name, changes, since and targets.hardware are required"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

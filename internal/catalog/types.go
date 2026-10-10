@@ -54,7 +54,8 @@ type Capability struct {
 	Description string     `yaml:"description" json:"description"`
 	When        *Condition `yaml:"when" json:"when"`
 	// FixBy is the component kind (optionally "kind:role") whose driver
-	// usually decides this criterion, for fix tracking (PLAN §26).
+	// usually decides this criterion, so a failure maps to one part across
+	// configurations (the Unsupported flag; the planned fix radar).
 	FixBy string `yaml:"fix_by" json:"fix_by,omitempty"`
 	// OneGroup: a per-connector criterion judged on all its connectors as one
 	// port group, whatever controller each is on, because it doesn't depend
@@ -64,7 +65,17 @@ type Capability struct {
 	// Retired criteria no longer apply to any configuration. They stay in the
 	// catalog because results may reference them; IDs are never deleted.
 	Retired bool `yaml:"retired" json:"retired,omitempty"`
+	// Live says whether a live boot (OmaBoot? Live) can decide the
+	// criterion: yes, no, or t2 (only on Macs with a T2 chip).
+	Live string `yaml:"live" json:"live"`
 }
+
+// Live flags (Capability.Live).
+const (
+	LiveYes = "yes"
+	LiveNo  = "no"
+	LiveT2  = "t2"
+)
 
 // Category returns the category part of the capability ID ("boot" for "boot.install").
 func (c Capability) Category() string {
@@ -283,6 +294,54 @@ type Catalog struct {
 	Layouts       []*LayoutFile       // data/layouts (optional, PLAN §25)
 	Portmaps      map[string]*Portmap // data/portmaps, by key (optional, PLAN §27)
 	Plumbing      map[string]Plumbing // data/plumbing.yaml, by "pci:vvvv:dddd" (optional, PLAN §29)
+	OmabootFixes  []OmabootFix        // data/fixes.yaml (optional)
+}
+
+// OmabootFix is one entry in data/fixes.yaml: a fix OmaBoot? applies in its
+// live system, so a live boot matches what an installed Omarchy gets, or
+// gets ahead of it. Reports list the ones that took effect; results show
+// them as "with OmaBoot? <name>", linked to /fixes#<id>.
+type OmabootFix struct {
+	ID      string     `yaml:"id" json:"id"`           // "omaboot.<slug>", permanent
+	Name    string     `yaml:"name" json:"name"`       // short, follows "with OmaBoot? "
+	Changes string     `yaml:"changes" json:"changes"` // what it changes, in a sentence or two
+	Targets FixTargets `yaml:"targets" json:"targets"`
+	// Upstream links the fix's source, or the project it's heading to.
+	Upstream     []FixLink `yaml:"upstream" json:"upstream"`
+	UpstreamNote string    `yaml:"upstream_note" json:"upstream_note,omitempty"` // e.g. "not upstream yet"
+	TestedOn     []string  `yaml:"tested_on" json:"tested_on,omitempty"`         // configurations it was tried on, on real hardware
+	Since        string    `yaml:"since" json:"since"`                           // the first OmaBoot? build carrying it: "2026.10", or "dev 1d36b14"
+}
+
+// FixTargets is the hardware a fix applies to and the criteria it can change.
+type FixTargets struct {
+	Hardware string      `yaml:"hardware" json:"hardware"` // in words, for people
+	Devices  []FixDevice `yaml:"devices" json:"devices,omitempty"`
+	Configs  []string    `yaml:"configs" json:"configs,omitempty"`
+	Criteria []string    `yaml:"criteria" json:"criteria"`
+}
+
+// FixDevice is a PCI or USB device a fix acts on, with its subsystem ID
+// when the fix checks that too.
+type FixDevice struct {
+	ID        string `yaml:"id" json:"id"`                         // "pci:1002:9488"
+	Subsystem string `yaml:"subsystem" json:"subsystem,omitempty"` // "106b:00b6"
+}
+
+// FixLink is a titled link.
+type FixLink struct {
+	Title string `yaml:"title" json:"title"`
+	URL   string `yaml:"url" json:"url"`
+}
+
+// OmabootFix returns the registered fix with an ID, or nil.
+func (c *Catalog) OmabootFix(id string) *OmabootFix {
+	for i := range c.OmabootFixes {
+		if c.OmabootFixes[i].ID == id {
+			return &c.OmabootFixes[i]
+		}
+	}
+	return nil
 }
 
 // PlumbingVendor is one vendor's entry in data/plumbing.yaml: PCI IDs of

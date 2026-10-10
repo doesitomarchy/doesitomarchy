@@ -85,8 +85,8 @@ rules http_request_dynamic_redirect "$(jq -nc --arg z "$ZONE_NAME" '[{
 
 step "cache rules"
 # HTML is cacheable for the s-maxage the origin sends (300 s); /healthz, the
-# API, the MCP server (/mcp), /admin, GitHub's webhook (/hooks/) and HTMX
-# requests are never cached.
+# API, the MCP server (/mcp), /admin, /hooks/ (GitHub's webhook until
+# v0.14.0; kept so the rule stays the same) and HTMX requests are never cached.
 # HTMX fragments share their URL with the full page and Cloudflare ignores
 # Vary, so a cached full page would be swapped into the page as a "fragment"
 # (and vice versa).

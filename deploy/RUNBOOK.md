@@ -15,7 +15,7 @@ browser ──► Cloudflare (cache, WAF, Access) ──► tunnel ──► clo
 | Firewall | `doiomad-ssh`: inbound TCP 22 only; nothing else reaches the droplet |
 | Live binary | `/opt/doiomad/current/doiomad` → `/opt/doiomad/releases/<version>/` (last 5 kept) |
 | Database | `/var/lib/doiomad/doesitomarchy.db`; pre-deploy copies in `/var/lib/doiomad/backups/` |
-| Secrets on the droplet | `/etc/doiomad/litestream.env` (R2), `/etc/doiomad/tunnel.env` (tunnel token), `/etc/doiomad/doiomad.env` (GitHub token and webhook secret, for fix tracking) |
+| Secrets on the droplet | `/etc/doiomad/litestream.env` (R2), `/etc/doiomad/tunnel.env` (tunnel token), `/etc/doiomad/doiomad.env` (cache-purge token and Access settings) |
 | Services | `doiomad`, `litestream`, `cloudflared` (systemd) |
 | Backups | R2 bucket `doesitomarchy-db`, continuous, 30 days |
 | Logins | your admin user (sudo); `deploy` (GitHub Actions, forced command only) |
@@ -177,48 +177,35 @@ doiomad sources trust omacdiag trusted
 
 Only a hash of the key is stored. Each source may submit 60 reports an hour.
 
-## Fix tracking
+## The white flag (Unsupported)
 
-Fix issues live in the public repo
-[doesitomarchy/wecanfixeverything](https://github.com/doesitomarchy/wecanfixeverything)
-(PLAN.md §26). Each is labelled `criterion:<id>` plus `component:<id>` or
-`config:<id>`; the site follows them through GitHub's webhook
-(`POST /hooks/github`) and a catch-up sync every 6 hours and at start-up.
+A maintainer can give up on a failing criterion, on one component (every
+configuration with it) or on one configuration, with a reason the site shows.
+It's in `/admin/unsupported`, or:
 
 ```sh
-doiomad fixes list                    # every tracked issue and its state
-doiomad fixes open audio.speakers -component audio/apple-t2-audio   # or -config ID
-doiomad fixes sync                    # pull every issue now
 doiomad unsupported set input.touch-id -component bridge/apple-t2 -reason "…"
 doiomad unsupported list [-all]       # -all: lifted flags too
 doiomad unsupported clear ID
 ```
 
-`fixes open` and `fixes sync` need `GITHUB_TOKEN` in the environment. The same
-actions are in `/admin/fixes`. Marking a criterion Unsupported closes its fix
-issue as not planned, with the reason as a comment.
+## Fix tracking (retired in v0.14.0)
 
-**Setup** (done once, 2026-10-03):
+Fix tracking through GitHub issues (PLAN.md §26: the fix repo, its token and
+webhook, `/hooks/github`, `doiomad fixes`, `/admin/fixes`) was retired in
+v0.14.0; no fix issue was ever opened. `/fixes` now lists the OmaBoot? fixes
+from `data/fixes.yaml`. Builds are looked up on GitHub without a token (public
+repo, lower rate limit).
 
-1. A fine-grained token limited to `doesitomarchy/wecanfixeverything`, with
-   Issues read/write and Metadata read. Save it in
-   `~/.config/doesitomarchy/deploy.env` as `GITHUB_TOKEN=…`.
-2. A webhook on the repo: payload URL `https://doesitomarchy.com/hooks/github`,
-   content type `application/json`, events *Issues* and *Issue comments*, with a
-   secret from `openssl rand -hex 32`, saved in `deploy.env` as
-   `GITHUB_WEBHOOK_SECRET=…`.
-3. `deploy/github.sh` copies both into `/etc/doiomad/doiomad.env` (keeping its
-   other settings) and restarts doiomad.
-4. Run `deploy/cloudflare.sh` so `/hooks/` is never cached.
-5. Once a release with fix tracking is live, open the webhook's *Recent
-   Deliveries* and redeliver the ping: it should answer `200 pong`. A `503`
-   means the secret isn't on the server; `401`, that the secrets differ; a
-   Cloudflare challenge page, that Bot Fight Mode is on (turn it off, or skip it
-   for `/hooks/`).
+**Release-ops checklist for v0.14.0:**
 
-Without `GITHUB_TOKEN` the site still shows fixes the webhook reports, but
-can't open or close issues or run the catch-up sync. Without
-`GITHUB_WEBHOOK_SECRET` the webhook answers 503 and only the sync updates fixes.
+1. On the droplet, remove `GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET` and
+   `FIX_REPO` from `/etc/doiomad/doiomad.env`, keeping the other settings:
+   `sudo sh -c 'f=/etc/doiomad/doiomad.env; grep -v -E "^(GITHUB_TOKEN|GITHUB_WEBHOOK_SECRET|FIX_REPO)=" $f > $f.tmp && mv $f.tmp $f' && sudo systemctl try-restart doiomad`
+2. Remove them from `~/.config/doesitomarchy/deploy.env` too.
+3. Revoke the fine-grained token on GitHub (Settings → Developer settings →
+   Fine-grained tokens).
+4. The webhook goes away with the `wecanfixeverything` repo when it's deleted.
 
 ## The MCP server (/mcp)
 
@@ -279,4 +266,3 @@ Do this once in Phase 5 and after any change to backups. Record the results belo
 - **R2 key:** create a new key, export the new values, run `deploy/provision.sh`, then revoke the old key.
 - **Tunnel token:** rotate the tunnel's token in Zero Trust, then run `deploy/cloudflare.sh`.
 - **Cache-purge token:** create a new one, then `gh secret set CF_CACHE_TOKEN`.
-- **GitHub token or webhook secret:** put the new value in `deploy.env` (and, for the secret, in the webhook's settings), run `deploy/github.sh`, then revoke the old token.

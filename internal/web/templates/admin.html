@@ -9,7 +9,7 @@
   <thead><tr><th scope="col">Report</th><th scope="col">Mac</th><th scope="col">Tested</th><th scope="col">Submitted</th><th scope="col">Omarchy</th><th scope="col">Kernel</th>
     <th scope="col" class="glyph">{{template "vicon" "supported"}}<span class="sr-only">Supported</span></th><th scope="col" class="glyph">{{template "vicon" "partial"}}<span class="sr-only">Partial</span></th><th scope="col" class="glyph">{{template "vicon" "failed"}}<span class="sr-only">Failed</span></th>
     <th scope="col" class="glyph">Flags</th><th scope="col">Source</th><th scope="col">Tester</th></tr></thead>
-  <tbody>{{range .Pending}}<tr><td><a href="/admin/report/{{.Code}}">{{.Code}}</a></td><td>{{.Identifier}}</td><td>{{utc .TestedAt}}</td><td>{{utc .SubmittedAt}}</td><td>{{.Omarchy}} ({{.Channel}})</td><td>{{with .Kernel}}{{.}}{{else}}<span class="muted">—</span>{{end}}</td>
+  <tbody>{{range .Pending}}<tr><td><a href="/admin/report/{{.Code}}">{{.Code}}</a>{{template "runtags" .}}</td><td>{{.Identifier}}</td><td>{{utc .TestedAt}}</td><td>{{utc .SubmittedAt}}</td><td>{{.Omarchy}} ({{.Channel}})</td><td>{{with .Kernel}}{{.}}{{else}}<span class="muted">—</span>{{end}}</td>
     <td class="glyph">{{.Supported}}</td><td class="glyph">{{.Partial}}</td><td class="glyph">{{.Failed}}</td><td class="glyph">{{if .OpenFlags}}<b>{{.OpenFlags}}</b>{{else}}0{{end}}</td><td>{{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}</td><td>{{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}}</td></tr>{{end}}</tbody>
 </table></div>{{else}}<p>Nothing waiting.</p>{{end}}
 
@@ -36,6 +36,6 @@
 </form>
 
 <h2>Recent decisions</h2>
-{{if .Recent}}<ul class="admin-flags">{{range .Recent}}<li><a href="/admin/report/{{.Code}}">{{.Code}}</a> {{template "state" .State}} {{.Identifier}} · {{osver .Omarchy .Channel .Kernel}}{{with .StateBy}} · by {{.}}{{end}}{{with .StateAt}} · {{utc .}}{{end}}{{with .StateReason}} · {{.}}{{end}}</li>{{end}}</ul>{{else}}<p>None yet.</p>{{end}}
+{{if .Recent}}<ul class="admin-flags">{{range .Recent}}<li><a href="/admin/report/{{.Code}}">{{.Code}}</a> {{template "state" .State}}{{template "runtags" .}} {{.Identifier}} · {{osver .Omarchy .Channel .Kernel}}{{with .StateBy}} · by {{.}}{{end}}{{with .StateAt}} · {{utc .}}{{end}}{{with .StateReason}} · {{.}}{{end}}</li>{{end}}</ul>{{else}}<p>None yet.</p>{{end}}
 </div>
 {{end}}{{end}}

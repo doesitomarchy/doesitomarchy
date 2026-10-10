@@ -42,7 +42,7 @@ func (s *Server) mcpHandler() http.Handler {
 			"status:supported, tested:yes, gles:2.0, board:Mac-94245A3940C91C80, a:A1286."},
 		mcpTool(s, "search_macs", s.mcpSearch))
 	mcp.AddTool(srv, &mcp.Tool{Name: "get_mac", Title: "Get a Mac", Annotations: readOnly,
-		Description: "One Mac's configurations and how Omarchy runs on each: the verdict, what failed or only partly works (with the reported evidence and any fix in progress), known limitations, and links. " +
+		Description: "One Mac's configurations and how Omarchy runs on each: the verdict, what failed or only partly works (with the reported evidence), known limitations, and links. " +
 			"Give the model identifier, e.g. MacBookPro8,2; optionally a configuration ID to see just that one."},
 		mcpTool(s, "get_mac", s.mcpGetMac))
 	mcp.AddTool(srv, &mcp.Tool{Name: "identify_mac", Title: "Identify a Mac from its hardware", Annotations: readOnly, InputSchema: portableSchema[mcpIdentifyIn](),
@@ -240,9 +240,6 @@ func (s *Server) mcpGetMac(in mcpMacIn) (string, error) {
 					if cp.Reason != "" {
 						fmt.Fprintf(&b, ". Why: %s", cp.Reason)
 					}
-					if f := cp.Fix; f != nil {
-						fmt.Fprintf(&b, ". Fix: %s (%s)", f.URL, f.State)
-					}
 					b.WriteString("\n")
 				}
 			}
@@ -346,8 +343,6 @@ func (s *Server) mcpNeedsTesting(in mcpMacIn) (string, error) {
 				switch {
 				case cp.Verdict == status.Untested:
 					untested = append(untested, fmt.Sprintf("%s (%s)", cp.Name, cp.ID))
-				case cp.Fix != nil && cp.Fix.Retest:
-					retest = append(retest, fmt.Sprintf("%s (%s): a fix landed, %s", cp.Name, cp.ID, cp.Fix.URL))
 				case cp.Stale:
 					retest = append(retest, fmt.Sprintf("%s (%s): last tested on an older Omarchy", cp.Name, cp.ID))
 				}
@@ -368,7 +363,7 @@ func (s *Server) mcpNeedsTesting(in mcpMacIn) (string, error) {
 ## How to help
 - Testing: run Omarchy on this Mac and check each criterion. Reports arrive through doioma, the DoesItOmarchy test tool, which is being built now: ` + BaseURL + `/contribute
 - Until then: check the Mac's page matches the hardware (` + macURL(m) + `). If it doesn't, open an issue with the output of lspci -nn and lsusb: https://github.com/doesitomarchy/doesitomarchy/issues
-- Fixing: failed criteria have fix issues at ` + BaseURL + `/fixes
+- Fixing: fixes happen upstream (the Linux kernel, t2linux, Omarchy's repositories); OmaBoot? carries a few for testing: ` + BaseURL + `/fixes
 - Building a test tool: ` + BaseURL + `/api#sources`)
 	return b.String(), nil
 }

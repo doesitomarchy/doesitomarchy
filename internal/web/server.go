@@ -21,7 +21,6 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/data"
 	"github.com/doesitomarchy/doesitomarchy/internal/builds"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
-	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
 	"github.com/doesitomarchy/doesitomarchy/internal/match"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
@@ -57,9 +56,12 @@ type Server struct {
 	shareLimit *rateLimiter
 	// registerLimit caps source requests per IP a day, in memory only (PLAN §30d).
 	registerLimit *rateLimiter
-	// gh and syncer reach the fix repo (PLAN §26); gh is nil without a token.
-	gh     *fixes.Client
-	syncer *fixes.Syncer
+	// macLimit caps reports per Mac a day from sources whose key is public
+	// (OmaBoot? Live), by hardware fingerprint, in memory only.
+	macLimit *rateLimiter
+	// snapJSON and snapETag are the catalog snapshot (GET /api/v1/snapshot).
+	snapJSON []byte
+	snapETag string
 	// cfgs maps config IDs to the catalog's configurations.
 	cfgs map[string]*catalog.Config
 	// builds looks up which Omarchy commit a result ran on; nil when off.
@@ -72,14 +74,12 @@ type Server struct {
 type snapshot struct {
 	view    *catalogView
 	index   *search.Index
-	version int64     // the store's data version it was built from
-	expires time.Time // when a fix's state changes by time alone (zero: never), so it's rebuilt
+	version int64 // the store's data version it was built from
 }
 
-// current reports whether the snapshot still matches the store's data
-// version at now.
-func (sn *snapshot) current(version int64, now time.Time) bool {
-	return sn != nil && sn.version == version && (sn.expires.IsZero() || now.Before(sn.expires))
+// current reports whether the snapshot still matches the store's data version.
+func (sn *snapshot) current(version int64) bool {
+	return sn != nil && sn.version == version
 }
 
 // catalogFS is where the catalog's data files are read from.
@@ -106,13 +106,12 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 	}
 	s := &Server{store: st, cat: c, opt: opt, assets: a, log: log, version: opt.Version, pages: map[string]*template.Template{},
 		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD),
-		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour), registerLimit: newRateLimiter(RequestsPerDayPerIP, 24*time.Hour)}
-	if opt.GitHubToken != "" {
-		s.gh = fixes.NewClient(opt.FixRepo, opt.GitHubToken)
-		s.syncer = &fixes.Syncer{Client: s.gh, Store: st, Log: log}
-	}
+		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour), registerLimit: newRateLimiter(RequestsPerDayPerIP, 24*time.Hour),
+		macLimit: newRateLimiter(ReportsPerDayPerMac, 24*time.Hour)}
+	snap, body := catalogSnapshot(c)
+	s.snapJSON, s.snapETag = body, `"`+snap.Version+`"`
 	if opt.BuildsAPI != "" {
-		s.builds = builds.New(st, opt.GitHubToken, log)
+		s.builds = builds.New(st, "", log) // public repo: no token needed, at GitHub's lower rate limit
 		s.builds.Base = opt.BuildsAPI
 	}
 	s.cfgs = map[string]*catalog.Config{}
@@ -149,6 +148,10 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"utc":         formatUTC,
 		"itemLabel":   itemLabel,
 		"reasonLabel": reasonLabel,
+		// bootfix looks up an OmaBoot? fix a result lists (data/fixes.yaml).
+		"bootfix":  c.OmabootFix,
+		"fixURL":   fixURL,
+		"partKind": partKind,
 		// pendingSources counts source requests awaiting a maintainer, for
 		// the admin bar (PLAN §30d).
 		"pendingSources": func() int {
@@ -162,7 +165,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 			return "Apple Support"
 		},
 	}
-	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "admin-fixes", "fixes", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
+	for _, p := range []string{"home", "mac", "report", "identify", "privacy", "api", "admin", "admin-report", "admin-sources", "admin-shares", "admin-unsupported", "fixes", "message", "macs", "search", "suggest", "stats", "methodology", "contribute", "notfound", "error",
 		"criteria", "releases", "configs", "components", "attribution", "changelog", "register", "register-status"} {
 		t, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html", "templates/"+p+".html", "templates/partials.html")
 		if err != nil {
@@ -209,7 +212,6 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /identify", s.identify)
 	mux.HandleFunc("POST /identify", s.identifyPost)
 	mux.HandleFunc("POST /identify/share", s.identifyShare)
-	mux.HandleFunc("POST /hooks/github", s.githubHook)
 	mux.HandleFunc("GET /fixes", s.fixesPage)
 	mux.HandleFunc("GET /privacy", s.privacy)
 	mux.HandleFunc("GET /api", s.apiDocs)
@@ -351,29 +353,27 @@ func joinLimit(xs []string, n int) string {
 }
 
 // Refresh rebuilds the views and search index from the store's accepted
-// results if they changed since the current snapshot, or a fix's state
-// changed with time, and swaps them in. It reports whether it rebuilt.
+// results if they changed since the current snapshot, and swaps them in.
+// It reports whether it rebuilt.
 func (s *Server) Refresh(ctx context.Context) (bool, error) {
 	ru, err := s.store.RollupData(ctx)
 	if err != nil {
 		return false, err
 	}
 	start := time.Now()
-	if s.snap.Load().current(ru.Version, start) {
+	if s.snap.Load().current(ru.Version) {
 		return false, nil
 	}
 	view := buildView(s.cat, s.opt, ru, start)
-	s.snap.Store(&snapshot{view: view, index: search.Build(s.cat, view.states), version: ru.Version,
-		expires: fixes.NextChange(ru.Fixes, start)})
+	s.snap.Store(&snapshot{view: view, index: search.Build(s.cat, view.states), version: ru.Version})
 	s.log.Info("results loaded", "data_version", ru.Version, "verified", view.site.Coverage.Verified,
 		"tested", view.site.Coverage.Tested, "ms", time.Since(start).Milliseconds())
 	return true, nil
 }
 
 // Watch polls the store's data version and rebuilds when it moves (an
-// accept, retract or Unsupported flag from the CLI or /admin) or the
-// snapshot expires (a claim went stale), then asks Cloudflare to drop its
-// cached pages. It returns when ctx is done.
+// accept, retract or Unsupported flag from the CLI or /admin), then asks
+// Cloudflare to drop its cached pages. It returns when ctx is done.
 func (s *Server) Watch(ctx context.Context, every time.Duration) {
 	t := time.NewTicker(every)
 	defer t.Stop()
@@ -390,7 +390,7 @@ func (s *Server) Watch(ctx context.Context, every time.Duration) {
 			}
 			continue
 		}
-		if s.snap.Load().current(v, time.Now()) {
+		if s.snap.Load().current(v) {
 			continue
 		}
 		changed, err := s.Refresh(ctx)
@@ -435,10 +435,31 @@ func reasonLabel(r string) string {
 		return "skipped: not in the test profile"
 	case "uncertain":
 		return "skipped: result uncertain"
+	case "live-limit":
+		return "skipped: a live boot can't decide it"
 	case "other":
 		return "skipped"
 	}
 	return ""
+}
+
+// partKind names a replaced part's kind (report.PartKinds) for people.
+func partKind(k string) string {
+	switch k {
+	case "wifi":
+		return "Wi-Fi card"
+	case "bluetooth":
+		return "Bluetooth card"
+	case "gpu":
+		return "GPU"
+	case "storage":
+		return "Drive"
+	case "display":
+		return "Display"
+	case "battery":
+		return "Battery"
+	}
+	return "Other part"
 }
 
 // formatUTC shows an RFC 3339 timestamp as "2026-09-30 18:05 UTC". Every time

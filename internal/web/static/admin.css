@@ -65,8 +65,8 @@ html.js [data-reason-form]:not(.open) > .reason-fields:first-of-type + .cf-actio
 .cf-row-form { margin-top: 0.75rem; }
 .admin-flags .cf-row-form { margin-top: 0.4rem; }
 .admin-flags .cf-inline { margin-top: 0.5rem; }
-.fix-actions .cf-form { gap: 0.75rem; max-width: 22rem; }
-.fix-actions .cf-actions { margin-top: 0; gap: 0.5rem; }
+table.fixes .cf-form { gap: 0.75rem; max-width: 22rem; }
+table.fixes .cf-actions { margin-top: 0; gap: 0.5rem; }
 .source-request .request-desc { white-space: pre-line; font-size: 14px; max-width: 70ch; }
 .source-request .cf-form { grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr)); max-width: 52rem; }
 .source-request .cf-form > .reason-fields, .source-request .cf-form > .cf-actions { grid-column: 1 / -1; }
@@ -83,3 +83,6 @@ details.confirm { display: inline-block; }
 details.confirm > summary { list-style: none; }
 details.confirm > summary::-webkit-details-marker { display: none; }
 details.confirm form { margin-top: 0.5rem; }
+
+/* An OmaBoot? fix in the review facts sits in running text: underline it. */
+.facts a.fixref { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }

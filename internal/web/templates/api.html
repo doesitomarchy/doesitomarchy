@@ -13,6 +13,8 @@
     <li><a href="#sources">Becoming a source</a></li>
     <li><a href="#submit">Submit a report</a></li>
     <li><a href="#format">The report format</a></li>
+    <li><a href="#live">Live boots</a></li>
+    <li><a href="#snapshot">Catalog snapshot</a></li>
     <li><a href="#consent">The consent notice</a></li>
     <li><a href="#report">Check a report</a></li>
   </ul></div>
@@ -83,7 +85,7 @@
     <table class="defs">
       <tbody>
         <tr><th scope="row">search_macs</th><td>Find Macs by name, year, identifier or the <a href="/search">search</a> fields, with their verdicts.</td></tr>
-        <tr><th scope="row">get_mac</th><td>One Mac's configurations: the verdict, what fails or only partly works (with the evidence and any fix in progress), and known limitations.</td></tr>
+        <tr><th scope="row">get_mac</th><td>One Mac's configurations: the verdict, what fails or only partly works (with the evidence), and known limitations.</td></tr>
         <tr><th scope="row">identify_mac</th><td>The Mac and its exact configuration from a command's output or hardware IDs, like <a href="/identify">Identify my Mac</a>.</td></tr>
         <tr><th scope="row">what_needs_testing</th><td>What's still untested or due a re-test on a Mac, and how to help.</td></tr>
       </tbody>
@@ -156,7 +158,7 @@
         <tr><th scope="row">413</th><td>The report is over 1 MiB.</td></tr>
         <tr><th scope="row">415</th><td>A report format we don't read.</td></tr>
         <tr><th scope="row">422</th><td>No configuration in the catalog fits the report's hardware.</td></tr>
-        <tr><th scope="row">429</th><td>Too many reports this hour. Wait <code>Retry-After</code> seconds.</td></tr>
+        <tr><th scope="row">429</th><td>Too many reports this hour, or from this Mac today (live boots). Wait <code>Retry-After</code> seconds.</td></tr>
       </tbody>
     </table>
   </div>
@@ -171,7 +173,7 @@
     <ul>
       <li>Keys look like <code>doi_</code> followed by 32 characters. We keep only a hash, so a lost key is replaced, not recovered.</li>
       <li>Keep the key in your tool's build or server, not in a public repository. If it leaks, ask for a new key link; the old key stops working at once.</li>
-      <li>Each source may submit up to {{.PerHour}} reports an hour.</li>
+      <li>Each source may submit up to {{.PerHour}} reports an hour. A source whose key ships inside a public image, such as OmaBoot? Live, may submit up to {{.PerHourPublic}} an hour, and up to {{.PerMac}} a day from each Mac.</li>
     </ul>
     <p>Every report goes through review, as the diagram shows.</p>
   </div>
@@ -226,16 +228,46 @@
 <section class="ad" id="format" aria-labelledby="format-h">
   <div class="ad-text">
     <h2 id="format-h">The report format</h2>
-    <p>Format <code>doesitomarchy/report/v1</code>, described in full by <a href="/api/v1/schema">the schema</a>. Items use the IDs from <a href="#capabilities">List criteria</a>; leave out anything you didn't test. Each result says how it was tested: <code>automatic</code> (the tool checked), <code>observed</code> (the tester looked) or <code>fixture</code> (with test equipment, such as a loopback plug).</p>
+    <p>Format <code>doesitomarchy/report/v1</code>, described in full by <a href="/api/v1/schema">the schema</a>. Items use the IDs from <a href="#capabilities">List criteria</a>; leave out anything you didn't test. Each result says how it was tested: <code>automatic</code> (the tool checked), <code>observed</code> (the tester looked), <code>fixture</code> (with test equipment, such as a loopback plug) or <code>challenge</code> (the tool showed or played a random code and the tester, a phone or a capture card gave it back; it counts like <code>observed</code>).</p>
     <ul>
       <li><code>tested_at</code> is when the test ran, with a time zone. The site shows every time in UTC.</li>
       <li><code>omarchy.version</code> is <code>/etc/os-release</code>'s <code>VERSION_ID</code>, from any channel: a release (<code>4.0.4</code>), a pre-release (<code>4.0.4rc2</code>) or an edge build (<code>4.0.0.r6713.ga85e29a</code>). For a dev install, add <code>"channel": "dev"</code> and the checkout's commit as <code>revision</code>. Stable releases decide verdicts; other channels show as <code>newest_build</code> where they differ.</li>
       <li>Port criteria can be reported per connector, as <code>ports.usb-a@left-2</code>, using the IDs in the configuration's <code>connectors</code>. A criterion is fully verified only when every connector it applies to has passed.</li>
       <li>Put the check's output in <code>evidence</code> when something fails or only partly works. It's what helps someone fix it.</li>
+      <li>An item you didn't test is <code>not_tested</code>, with a <code>reason</code>: <code>no-equipment</code>, <code>not-in-profile</code>, <code>uncertain</code>, <code>live-limit</code> (<a href="#live">live boots</a> only) or <code>other</code>.</li>
+      <li>From a live boot, send <code>"context": "live"</code>, and the image in <code>omarchy.image</code>. List any <a href="#snapshot">registered fixes</a> that took effect in <code>fixes</code>, and parts that aren't the Mac's own in <code>replaced_parts</code>.</li>
       <li>Don't send serial numbers, network addresses, or user and computer names. They're removed anyway, but it's better never to send them.</li>
     </ul>
   </div>
   <div class="ad-code">{{template "apicode" .Example}}{{template "apicode" index .Req "schema"}}</div>
+</section>
+
+<section class="ad" id="live" aria-labelledby="live-h">
+  <div class="ad-text">
+    <h2 id="live-h">Live boots</h2>
+    <p>A report from a live boot, such as <a href="https://doesitboot.com" rel="noopener">OmaBoot? Live</a>, says <code>"context": "live"</code>. Its results count like an installed system's, with a <em>Live boot</em> tag, for the criteria a live boot can decide.</p>
+    <ul>
+      <li>Each criterion's <code>live</code> flag (<a href="#capabilities">List criteria</a>, or the <a href="#snapshot">snapshot</a>) says whether a live boot can decide it: <code>yes</code>, <code>no</code>, or <code>t2</code> (only on Macs with a T2 chip).</li>
+      <li>Send the others as <code>not_tested</code> with the reason <code>live-limit</code>. A live report that gives them a result is rejected, and the error names each one.</li>
+      <li>A registered fix in <code>fixes</code> lifts the limit for the criteria it targets. An unknown fix ID is rejected.</li>
+      <li><code>live-limit</code> is for live reports only.</li>
+    </ul>
+    <p>How live results and challenges are judged is on the <a href="/methodology#live">methodology</a> page.</p>
+  </div>
+  <div class="ad-code">{{template "apicode" .LiveExample}}</div>
+</section>
+
+<section class="ad" id="snapshot" aria-labelledby="snapshot-h">
+  <div class="ad-text">
+    <h2 id="snapshot-h">Catalog snapshot</h2>
+    {{template "endpoint" index .Req "snapshot"}}
+    <p>What a test tool needs from the catalog to build, check and match a report offline, in one file: the data <a href="#match">Identify a Mac</a> matches on, the criteria with their <code>live</code> flags, and the registered OmaBoot? <code>fixes</code>. Go tools can match on it with the <code>pkg/match</code> package and check a report with <code>pkg/report</code>, the same code the server runs.</p>
+    <ul>
+      <li>Embed a copy when you build your tool, and fetch a newer one when it's online.</li>
+      <li><code>version</code> changes whenever the content does, and the <code>ETag</code> header carries it. Send it back in <code>If-None-Match</code>, and an unchanged snapshot answers <code>304 Not Modified</code> with no body.</li>
+    </ul>
+  </div>
+  <div class="ad-code">{{template "apicode" index .Req "snapshot"}}{{template "apicode" index .Res "snapshot"}}</div>
 </section>
 
 <section class="ad" id="consent" aria-labelledby="consent-h">
@@ -309,10 +341,10 @@
     <table class="defs">
       <tbody>
         <tr><th scope="row">verdict</th><td>The verdict, with <code>counts</code> per verdict, how many criteria are <code>applicable</code> and how many are <code>tested</code>. <code>verified</code> means every applicable criterion passed.</td></tr>
-        <tr><th scope="row">capabilities</th><td>Each applicable criterion's current result: its <code>verdict</code>, the Omarchy version and kernel tested, the <code>method</code> and the <code>latest_report</code>. Port criteria add <code>ports</code>, one result per connector. A failed one may have a <code>fix</code>.</td></tr>
+        <tr><th scope="row">capabilities</th><td>Each applicable criterion's current result: its <code>verdict</code>, the Omarchy version and kernel tested, the <code>method</code> and the <code>latest_report</code>. Port criteria add <code>ports</code>, one result per connector.</td></tr>
         <tr><th scope="row">components</th><td>Its parts, with the <code>hardware_ids</code> that identify them (and <code>gles</code> for GPUs).</td></tr>
         <tr><th scope="row">connectors</th><td>Its port layout, with the criteria each connector is tested for. <code>portmap_url</code> is the drawing (SVG).</td></tr>
-        <tr><th scope="row">reports</th><td>The reports behind its results.</td></tr>
+        <tr><th scope="row">reports</th><td>The reports behind its results. A report from a live boot has <code>context</code> <code>live</code>, and lists the OmaBoot? <code>fixes</code> it ran with.</td></tr>
       </tbody>
     </table>
   </div>
@@ -323,7 +355,7 @@
   <div class="ad-text">
     <h2 id="capabilities-h">List criteria</h2>
     {{template "endpoint" index .Req "capabilities"}}
-    <p>The test criteria, including retired ones. Configurations and reports refer to them by <code>id</code>, such as <code>network.wifi</code>. A <code>blocking</code> criterion (Boot) decides whether a configuration fails; the <a href="/criteria">criteria page</a> shows them all.</p>
+    <p>The test criteria, including retired ones. Configurations and reports refer to them by <code>id</code>, such as <code>network.wifi</code>. A <code>blocking</code> criterion (Boot) decides whether a configuration fails; the <a href="/criteria">criteria page</a> shows them all. <code>live</code> says whether a <a href="#live">live boot</a> can decide it.</p>
   </div>
   <div class="ad-code">{{template "apicode" index .Req "capabilities"}}{{template "apicode" index .Res "capabilities"}}</div>
 </section>

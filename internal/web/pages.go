@@ -398,6 +398,9 @@ type resultData struct {
 	// per-port items (PLAN §27); PortItems counts those items.
 	Portmap   template.HTML
 	PortItems int
+	// PortmapWide: the drawing scrolls sideways on a phone, so its figure
+	// takes keyboard focus.
+	PortmapWide bool
 }
 
 type resultGroup struct {
@@ -450,6 +453,7 @@ func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 	if cv := d.Config; cv != nil && cv.PortmapKey != "" {
 		st := reportStatuses(rd.Items)
 		d.Portmap, d.PortItems = portmapHTML(s.cat.Portmaps[cv.PortmapKey], "r", st, cv.PortmapHidden), len(st)
+		d.PortmapWide = strings.Contains(string(d.Portmap), `class="pm pm-wide"`)
 	}
 	title := fmt.Sprintf("Diagnostic Report %s · %s", rd.Code, rd.Identifier)
 	desc := fmt.Sprintf("Omarchy %s diagnostic report for %s, tested %s: %d passed, %d partly, %d failed.", rd.Omarchy, rd.Identifier,
@@ -463,6 +467,9 @@ type methodologyData struct {
 	Categories []catalog.Category
 	Caps       map[string][]catalog.Capability
 	Icons      map[string]string // category ID → sprite icon
+	// What a live boot can't decide: anywhere (LiveNo), and on Macs without
+	// a T2 chip (LiveT2).
+	LiveNo, LiveT2 []string
 }
 
 func (s *Server) methodology(w http.ResponseWriter, r *http.Request) {
@@ -471,8 +478,15 @@ func (s *Server) methodology(w http.ResponseWriter, r *http.Request) {
 		d.Icons[k.ID] = iconFor[k.Icon]
 	}
 	for _, c := range s.cat.Capabilities {
-		if !c.Retired {
-			d.Caps[c.Category()] = append(d.Caps[c.Category()], c)
+		if c.Retired {
+			continue
+		}
+		d.Caps[c.Category()] = append(d.Caps[c.Category()], c)
+		switch c.Live {
+		case catalog.LiveNo:
+			d.LiveNo = append(d.LiveNo, c.Name)
+		case catalog.LiveT2:
+			d.LiveT2 = append(d.LiveT2, c.Name)
 		}
 	}
 	s.render(w, r, http.StatusOK, "methodology", page{Title: "Methodology", Nav: "methodology", Data: d})

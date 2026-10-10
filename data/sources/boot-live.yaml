@@ -1,0 +1,10 @@
+# OmaBoot? Live (https://doesitboot.com): a bootable test suite that tests an
+# Intel Mac from a live boot, without installing anything, and submits its
+# report with its own source key. Native: it sends reports in our schema
+# (doesitomarchy/report/v1) as they are, with `context: live`, so it has no
+# mapping rules. Its key ships inside a public image, so the server limits
+# its reports per Mac (PLAN.md §22.1); like every source, they wait for review.
+id: boot-live
+name: OmaBoot? Live
+homepage: https://doesitboot.com
+format: doesitomarchy/report/v1
