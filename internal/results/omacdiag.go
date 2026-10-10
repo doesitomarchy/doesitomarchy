@@ -13,6 +13,7 @@ import (
 	"github.com/goccy/go-yaml"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 // The OmacDiag adapter (PLAN.md §22.10, §24): an OmacDiag JSON report becomes
@@ -50,7 +51,8 @@ type MapRule struct {
 const toUSB = "ports.usb"
 
 // LoadMapping reads data/sources/<id>.yaml and checks its targets against
-// the criteria.
+// the criteria. A source whose format is our schema (SchemaV1) is native:
+// its reports need no mapping, so it has no rules.
 func LoadMapping(fsys fs.FS, id string, c *catalog.Catalog) (*Mapping, error) {
 	b, err := fs.ReadFile(fsys, "sources/"+id+".yaml")
 	if err != nil {
@@ -63,6 +65,14 @@ func LoadMapping(fsys fs.FS, id string, c *catalog.Catalog) (*Mapping, error) {
 	known := map[string]bool{toUSB: true, "extra": true}
 	for _, cp := range c.Capabilities {
 		known[cp.ID] = true
+	}
+	// A native source sends our schema as is; any other maps its checks by rules.
+	if m.Format == SchemaV1 {
+		if len(m.Rules)+len(m.FailedReasons)+len(m.SkipReasons)+len(m.InstallWhenDis) > 0 {
+			return nil, fmt.Errorf("sources/%s.yaml: format %s is our own, so it takes no mapping rules", id, SchemaV1)
+		}
+	} else if len(m.Rules) == 0 {
+		return nil, fmt.Errorf("sources/%s.yaml: format %q needs mapping rules (or format %s)", id, m.Format, SchemaV1)
 	}
 	for i, r := range m.Rules {
 		if !known[r.To] {
@@ -343,7 +353,7 @@ func FromOmacDiag(raw []byte, c *catalog.Catalog, mp *Mapping, opt ImportOptions
 				}
 			}
 		}
-		it.Evidence = capText(strings.Join(ev, "\n"), maxEvidence)
+		it.Evidence = capText(strings.Join(ev, "\n"), report.MaxEvidence)
 		f.Items[to] = it
 	}
 
@@ -508,7 +518,7 @@ func odEvidence(r odResult) string {
 		}
 		s += "."
 	}
-	return capText(s, maxNote)
+	return capText(s, report.MaxNote)
 }
 
 func capText(s string, n int) string {

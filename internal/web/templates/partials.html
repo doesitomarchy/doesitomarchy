@@ -22,6 +22,8 @@
 
 {{/* gles2 marks a Mac whose GPUs reach OpenGL ES 2.0 only (PLAN §30). */}}
 {{define "gles2"}}<span class="tag gles2" title="Its GPU reaches OpenGL ES 2.0 only. Hyprland 0.50 and later needs 3.0, so stock Omarchy's desktop won't start."><span class="warn-i">{{template "icon" "alert"}}</span>GLES2</span>{{end}}
+{{/* runtags marks a report run from a live boot, and the OmaBoot? fixes it ran with (a store.ResultSummary or ResultDetail). */}}
+{{define "runtags"}}{{if .IsLive}} <span class="tag" title="Tested from a live boot, without installing Omarchy">Live boot</span>{{end}}{{range .Fixes}}{{with bootfix .}} <span class="fixnote">with <a href="{{fixURL .ID}}">OmaBoot? {{.Name}}</a></span>{{end}}{{end}}{{end}}
 {{define "scope"}}<span class="tag scope" title="Listed and testable, but not counted in the coverage figures">Out of coverage scope · {{.}}</span>{{end}}
 
 {{/* Two coverage rows: pass the site. data-* feed the Konami easter egg. */}}
@@ -58,7 +60,7 @@
         <div><h3 id="f-help">Take part</h3>
           <ul aria-labelledby="f-help">
             <li><a href="/contribute">Contribute</a></li>
-            <li><a href="/fixes">Fixes</a></li>
+            <li><a href="/fixes">OmaBoot? fixes</a></li>
           </ul></div>
         <div><h3 id="f-about">About</h3>
           <ul aria-labelledby="f-about">
@@ -92,7 +94,7 @@
     </section>
     <section class="c-cov" aria-label="Coverage">
       <div class="coverage compact">{{template "coverage-rows" .Site}}</div>
-      <p class="rally"><span class="tagline">#WeCanFixEverything!</span> <a class="help" href="/contribute">You can help!</a></p>
+      <p class="rally"><span class="tagline">#WeCanFixEverything!</span> <a class="help" href="/contribute#fix">You can help!</a> <a class="rally-fixes" href="/fixes">OmaBoot? fixes</a></p>
     </section>
   </div>
   <div class="legal">
@@ -180,12 +182,10 @@
 </div>
 {{end}}
 
-{{/* fixline: a failed or partial criterion's fix, from the fix repo (PLAN §26). Pass a capView. */}}
-{{define "fixline"}}{{if eq .Verdict "failed" "partial"}}{{with .Fix}}<p class="fixline"><span class="lbl">Fix</span>
-{{if eq .State "claimed"}}Being worked on by <b>@{{.Assignee}}</b> in <a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a> · last activity {{.LastActivity}}
-{{else if eq .State "proposed"}}A fix is proposed in <a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>. <a href="{{.URL}}" rel="noopener">Help test it →</a>
-{{else if eq .State "fixed"}}{{if .Retest}}A fix landed{{with .FixLink}} in <a href="{{.}}" rel="noopener">this change</a>{{end}} on {{.ClosedAt}} (<a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>). <a href="/contribute">Please re-test →</a>{{else}}A fix landed on {{.ClosedAt}} (<a href="{{.URL}}" rel="noopener">issue #{{.Issue}}</a>), but a later report still fails.{{end}}
-{{else}}Nobody is working on this yet{{if eq .State "stale"}} (the last claim went quiet){{end}}. <a href="{{.URL}}" rel="noopener">Help fix it in issue #{{.Issue}} →</a>{{end}}</p>
-{{else}}{{if eq .Verdict "failed"}}<p><a href="/contribute">Help fix it →</a></p>{{end}}{{end}}{{end}}{{end}}
+{{/* fixline: a failed criterion points to how fixes happen. Pass a capView. */}}
+{{define "fixline"}}{{if eq .Verdict "failed"}}<p><a href="/contribute#fix">Help fix it →</a></p>{{end}}{{end}}
 
-{{define "adminbar"}}<p class="admin-bar">Maintainer <b>{{.}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/fixes">Fixes</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources{{with pendingSources}} <span class="admin-count">({{.}})</span>{{end}}</a></p>{{end}}
+{{define "adminbar"}}<p class="admin-bar">Maintainer <b>{{.}}</b> · <a href="/admin">Review queue</a> · <a href="/admin/unsupported">Unsupported</a> · <a href="/admin/shares">Shared IDs</a> · <a href="/admin/sources">Sources{{with pendingSources}} <span class="admin-count">({{.}})</span>{{end}}</a></p>{{end}}
+
+{{/* cfglink links a configuration as "Release name [Identifier]", with what sets it apart when its Mac has several. Pass a configView (nil prints nothing). */}}
+{{define "cfglink"}}{{if .}}<a href="/mac/{{.Mac.Slug}}#cfg-{{.ID}}">{{.ReleaseName}} [{{.Mac.Identifier}}]</a>{{if gt (len .Mac.Configs) 1}} · {{.Diff}}{{end}}{{end}}{{end}}

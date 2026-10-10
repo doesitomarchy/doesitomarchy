@@ -2,6 +2,14 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-09"
+  title: Results from live boots, and OmaBoot? fixes
+  summary: "Results can now come from OmaBoot? Live, which tests a Mac from a USB stick without installing anything. They count like an installed system's for what a live boot can decide, and carry a Live boot tag. Each criterion now says whether a live boot can decide it: 37 can, 8 can't (installing, restarting the installed system, 32-bit EFI, the light sensor, the Touch Bar, Touch ID, fans, and the Touch Bar camera bridge), and the keyboard backlight only on Macs with a T2 chip."
+  notes:
+    - "A new list of OmaBoot? fixes at /fixes: changes OmaBoot? makes in its live system where a Mac needs one stock Omarchy doesn't have yet. The first two correct the 21.5-inch iMac10,1's panel clock in radeon, and an applesmc crash on Macs whose SMC has a keyboard-backlight key. Results that ran with one say so, and link to it."
+    - "Fix tracking through GitHub issues is retired; no fix issue was ever opened. Lasting fixes happen upstream, in the Linux kernel, t2linux and Omarchy's own repositories: the Contribute and Fixes pages say where."
+    - "Some checks are now challenges: the tester picks the word or count the Mac showed or played from four choices. A passed challenge counts like a result the tester observed."
+
 - date: "2026-10-07"
   title: Port maps redrawn, and 14 more Macs drawn
   summary: "Every port map drawing is redrawn: ports sit evenly spaced and never touch, and each connector is drawn to its real shape and size, taken from manufacturer drawings and the standards (USB, HDMI, Mini DisplayPort, FireWire, DVI, Ethernet, IEC power inlets) or from photos for Apple's own connectors (MagSafe, Mini-DVI, Micro-DVI). The 14 releases that had no drawing now have one: the 2006 MacBook, the Early 2008 MacBook Air, the 2006-2007 MacBook Pros, the 2006-2007, 2013 and 2019 Mac Pros, and the three Xserves."
@@ -63,7 +71,7 @@
 
 - date: "2026-10-03"
   title: Fix tracking
-  summary: "Each test criterion now names the part whose driver usually decides it (the audio codec for speakers, the Wi-Fi chip for Wi-Fi, the T2 bridge for Touch ID, and so on), so one fix issue in doesitomarchy/wecanfixeverything covers every Mac with that part. Failed criteria show who is working on a fix, and ask for a re-test once one lands."
+  summary: "Each test criterion now names the part whose driver usually decides it (the audio codec for speakers, the Wi-Fi chip for Wi-Fi, the T2 bridge for Touch ID, and so on), so one fix issue covers every Mac with that part. Failed criteria show who is working on a fix, and ask for a re-test once one lands."
 
 - date: "2026-10-03"
   title: Port map drawings

@@ -17,14 +17,22 @@
 # results reference it.
 #
 # `fix_by` names the kind of component whose driver usually decides the
-# criterion ("audio", "wifi", or "gpu:integrated" for a GPU role). A fix issue
-# for a failure then covers every configuration with that component (PLAN.md
-# §26). Without it, fixes are opened per configuration.
+# criterion ("audio", "wifi", or "gpu:integrated" for a GPU role), so a
+# failure can be traced to one part across every configuration with it: a
+# maintainer's Unsupported flag covers them all, and the planned fix radar
+# will use it. Without it, a failure stands for one configuration.
 #
 # `one_group: true` judges a per-connector criterion on all its connectors as
 # one port group, ignoring the layout's controller groups: one passing port
 # covers them all (PLAN.md §25.1a). The evidence for USB-C charging is in
 # omarchaeology's findings/usb-c-charging.md.
+#
+# `live` says whether a live boot (OmaBoot? Live) can decide the criterion as
+# an installed Omarchy would: yes, no, or t2 (only on Macs with a T2 chip).
+# A live report sends the others as not_tested with reason live-limit.
+# "no" includes what a live boot can't decide without a fix it doesn't carry
+# yet: the T2 Touch Bar setup, and applesmc on pre-T2 Macs (fans, the light
+# sensor and, on those Macs, the keyboard backlight).
 
 categories:
   - { id: boot,     name: Boot,       icon: power,     blocking: true }
@@ -44,188 +52,234 @@ capabilities:
   # ── Boot ────────────────────────────────────────────────────────────────
   - id: boot.installer-efi64
     name: Stock installer boots via 64-bit EFI
+    live: yes
     description: The unmodified Omarchy installer ISO boots natively from the Mac's startup manager.
     when: { all: ["efi:64"] }
   - id: boot.installer-efi32
     name: Installer boots via 32-bit EFI workaround
+    live: no
     description: The installer boots on 32-bit EFI firmware using a boot shim (e.g. rEFInd with a 32-bit GRUB). Record the method used in the notes.
     when: { all: ["efi:32"] }
   - id: boot.install
     name: Internal storage detected and installation completes
+    live: no
   - id: boot.power-cycle
     name: Installed system starts, restarts and shuts down cleanly
+    live: no
 
   # ── Graphics ────────────────────────────────────────────────────────────
   - id: graphics.integrated
     name: Integrated GPU acceleration
+    live: yes
     description: Hyprland renders on this GPU with hardware acceleration, at OpenGL ES 3.0 or later, not with the llvmpipe software renderer. Check the renderer with hyprctl systeminfo or eglinfo. A GPU that reaches only OpenGL ES 2.0 fails on stock Omarchy; record any workaround in the notes.
     fix_by: gpu:integrated
     when: { all: ["gpu:integrated"] }
   - id: graphics.discrete
     name: Discrete GPU acceleration
+    live: yes
     description: Hyprland renders on this GPU with hardware acceleration, at OpenGL ES 3.0 or later, not with the llvmpipe software renderer. Check the renderer with hyprctl systeminfo or eglinfo. A GPU that reaches only OpenGL ES 2.0 fails on stock Omarchy; record any workaround in the notes.
     fix_by: gpu:discrete
     when: { all: ["gpu:discrete"] }
   - id: graphics.switching
     name: Integrated/discrete display switching
+    live: yes
     when: { all: ["feature:gpu-switching"] }
   - id: graphics.power-down
     name: Inactive GPU powers down correctly
+    live: yes
     when: { all: ["feature:gpu-switching"] }
   - id: graphics.external-display
     name: External display output
+    live: yes
     description: Each built-in video output drives an external display. Note in the notes which ports were tested.
     when: { all: ["video-out"] }
 
   # ── Display ─────────────────────────────────────────────────────────────
   - id: display.native-resolution
     name: Internal display at native resolution
+    live: yes
     when: { all: ["feature:builtin-display"] }
   - id: display.brightness
     name: Display brightness control
+    live: yes
     when: { all: ["feature:builtin-display"] }
 
   # ── Input ───────────────────────────────────────────────────────────────
   - id: input.keyboard
     name: Built-in keyboard and function keys
+    live: yes
     fix_by: input
     when: { all: ["feature:builtin-keyboard"] }
   - id: input.trackpad
     name: Trackpad and multi-touch
+    live: yes
     fix_by: input
     when: { all: ["feature:trackpad"] }
   - id: input.keyboard-backlight
     name: Keyboard backlight
+    live: t2
     fix_by: input
     when: { all: ["feature:keyboard-backlight"] }
   - id: input.ambient-light-sensor
     name: Ambient light sensor
+    live: no
     when: { all: ["feature:ambient-light-sensor"] }
   - id: input.force-touch
     name: Force Touch click and pressure sensing
+    live: yes
     fix_by: input
     when: { all: ["feature:force-touch"] }
   - id: input.touch-bar
     name: Touch Bar
+    live: no
     fix_by: input
     when: { all: ["feature:touch-bar"] }
   - id: input.touch-id
     name: Touch ID
+    live: no
     fix_by: bridge
     when: { all: ["feature:touch-id"] }
   - id: input.ir-receiver
     name: IR receiver (Apple Remote)
+    live: yes
     fix_by: ir
     when: { all: ["feature:ir-receiver"] }
 
   # ── Power ───────────────────────────────────────────────────────────────
   - id: power.sleep-wake
     name: Sleep and wake
+    live: yes
   - id: power.battery-status
     name: Battery status and charge reporting
+    live: yes
     when: { all: ["feature:battery"] }
   - id: power.charging
     name: AC power and battery charging
+    live: yes
     when: { all: ["feature:battery"] }
   - id: power.lid
     name: Lid close sleep and lid open wake
+    live: yes
     when: { all: ["feature:lid"] }
 
   # ── Audio ───────────────────────────────────────────────────────────────
   - id: audio.speakers
     name: Built-in speakers
+    live: yes
     fix_by: audio
     when: { all: ["feature:builtin-speaker"] }
   - id: audio.microphone
     name: Built-in microphone
+    live: yes
     fix_by: audio
     when: { all: ["feature:builtin-mic"] }
   - id: audio.headphone
     name: Headphone / analog audio output
+    live: yes
     fix_by: audio
     when: { all: ["port:audio-out"] }
   - id: audio.headset-mic
     name: Headset microphone via headphone jack
+    live: yes
     fix_by: audio
     when: { all: ["feature:headset-mic"] }
   - id: audio.line-in
     name: Line-in / analog audio input
+    live: yes
     fix_by: audio
     when: { all: ["port:audio-in"] }
   - id: audio.optical-out
     name: Optical digital audio output
+    live: yes
     fix_by: audio
     when: { all: ["port:audio-out-optical"] }
   - id: audio.optical-in
     name: Optical digital audio input
+    live: yes
     fix_by: audio
     when: { all: ["port:audio-in-optical"] }
   - id: audio.display-out
     name: Audio over HDMI / DisplayPort
+    live: yes
     fix_by: audio
     when: { any: ["port:hdmi", "feature:displayport-audio"] }
 
   # ── Camera ──────────────────────────────────────────────────────────────
   - id: camera.builtin
     name: Built-in webcam
+    live: yes
     fix_by: camera
     when: { all: ["has:camera"] }
 
   # ── Networking ──────────────────────────────────────────────────────────
   - id: network.wifi
     name: Wi-Fi
+    live: yes
     fix_by: wifi
     when: { all: ["has:wifi"] }
   - id: network.bluetooth
     name: Bluetooth
+    live: yes
     fix_by: bluetooth
     when: { all: ["has:bluetooth"] }
   - id: network.ethernet
     name: Ethernet
+    live: yes
     fix_by: ethernet
     when: { any: ["port:ethernet-fast", "port:ethernet-gbe", "port:ethernet-10gbe"] }
 
   # ── Ports ───────────────────────────────────────────────────────────────
   - id: ports.usb-a
     name: USB-A ports
+    live: yes
     when: { any: ["port:usb-a-2", "port:usb-a-3"] }
   - id: ports.usb-c
     name: USB-C / Thunderbolt 3 ports (USB data)
+    live: yes
     when: { any: ["port:usb-c", "port:thunderbolt-3"] }
   - id: ports.usb-c-charging
     name: Charging over USB-C
+    live: yes
     one_group: true
     when: { all: ["feature:usb-c-charging"] }
   - id: ports.thunderbolt
     name: Thunderbolt devices (storage, docks, hotplug)
+    live: yes
     fix_by: thunderbolt
     when: { any: ["port:thunderbolt-1", "port:thunderbolt-2", "port:thunderbolt-3"] }
   - id: ports.firewire
     name: FireWire
+    live: yes
     fix_by: firewire
     when: { any: ["port:firewire-400", "port:firewire-800"] }
   - id: ports.sd-card
     name: SD card reader
+    live: yes
     fix_by: card-reader
     when: { all: ["port:sd-card"] }
   - id: ports.expresscard
     name: ExpressCard/34 slot
+    live: yes
     when: { all: ["port:expresscard-34"] }
 
   # ── Storage ─────────────────────────────────────────────────────────────
   - id: storage.optical
     name: Internal optical drive reads discs
+    live: yes
     when: { all: ["feature:optical-drive"] }
 
   # ── Thermal ─────────────────────────────────────────────────────────────
   - id: thermal.sensors
     name: Temperature sensors report under load
+    live: yes
   - id: thermal.fans
     name: Fans respond to load
+    live: no
     when: { all: ["feature:fan"] }
 
   # ── Bridge (T2) ─────────────────────────────────────────────────────────
   - id: bridge.touch-bar-camera
     name: Touch Bar and webcam operate concurrently
+    live: no
     fix_by: bridge
     when: { all: ["chip:t2", "feature:touch-bar"] }

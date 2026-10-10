@@ -7,19 +7,21 @@ import (
 	"io"
 	"text/tabwriter"
 
+	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
 
 const sourcesUsage = `doiomad sources — the test tools that submit reports (PLAN.md §22.1)
 
   sources list
-  sources add ID -name NAME [-homepage URL]   register a tool and print its key
+  sources add ID [-name NAME] [-homepage URL] register a tool and print its key
   sources rotate ID                           replace a tool's key (the old one stops working)
   sources revoke ID                           stop a tool submitting
   sources trust ID pending|trusted            how far its reports are trusted
 
 ID is 2–32 letters, digits and "-", starting with a letter; it's stored in
-lower case. A key is printed once and only
+lower case. A tool with a data file (data/sources/ID.yaml, e.g. boot-live)
+takes its name and homepage from it unless given. A key is printed once and only
 its hash is kept: send it to the tool's author privately. "manual" (reports
 imported with the CLI) never has a key.
 `
@@ -57,12 +59,21 @@ func cmdSources(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	ctx := context.Background()
-	st, _, _, err := openSynced(ctx, *db, *dataDir)
+	st, c, _, err := openSynced(ctx, *db, *dataDir)
 	if err != nil {
 		fmt.Fprintf(stderr, "sources: %v\n", err)
 		return 1
 	}
 	defer st.Close()
+	if sub == "add" && *name == "" {
+		// A tool described in the catalog's data (data/sources).
+		if mp, err := results.LoadMapping(catalogFS(*dataDir), pos[0], c); err == nil {
+			*name = mp.Name
+			if *homepage == "" {
+				*homepage = mp.Homepage
+			}
+		}
+	}
 	fail := func(err error) int {
 		fmt.Fprintf(stderr, "sources %s: %v\n", sub, err)
 		return 1
@@ -85,7 +96,7 @@ func cmdSources(args []string, stdout, stderr io.Writer) int {
 		tw.Flush()
 	case "add":
 		if *name == "" {
-			fmt.Fprintln(stderr, "sources add: give -name")
+			fmt.Fprintln(stderr, "sources add: give -name (no data/sources file names this tool)")
 			return 2
 		}
 		key, err := st.AddSource(ctx, pos[0], *name, *homepage)

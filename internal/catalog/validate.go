@@ -44,7 +44,71 @@ func (l *loader) validate() {
 	l.validateAliases()
 	l.validateChangelog()
 	l.validatePlumbing()
+	l.validateFixes()
 	l.validateLock()
+}
+
+var (
+	reFixID     = regexp.MustCompile(`^omaboot\.[a-z0-9]+(-[a-z0-9]+)*$`)
+	reSubsystem = regexp.MustCompile(`^[0-9a-f]{4}:[0-9a-f]{4}$`)
+)
+
+// validateFixes: data/fixes.yaml's OmaBoot? fixes name real configurations
+// and criteria, and say what they change and where they come from.
+func (l *loader) validateFixes() {
+	const path = "fixes.yaml"
+	c := l.cat
+	caps, configs := map[string]bool{}, map[string]bool{}
+	for _, cp := range c.Capabilities {
+		caps[cp.ID] = true
+	}
+	for _, m := range c.Macs {
+		for _, r := range m.Releases {
+			for _, cfg := range r.Configs {
+				configs[cfg.ID] = true
+			}
+		}
+	}
+	seen := map[string]bool{}
+	for i, f := range c.OmabootFixes {
+		where := fmt.Sprintf("fix %d (%s)", i+1, f.ID)
+		if !reFixID.MatchString(f.ID) {
+			l.errf(path, "%s: id must look like omaboot.<slug>", where)
+		}
+		if seen[f.ID] {
+			l.errf(path, "%s: defined twice", where)
+		}
+		seen[f.ID] = true
+		if f.Name == "" || f.Changes == "" || f.Since == "" || f.Targets.Hardware == "" {
+			l.errf(path, "%s: name, changes, since and targets.hardware are required", where)
+		}
+		if len(f.Targets.Criteria) == 0 {
+			l.errf(path, "%s: targets.criteria must name the criteria it can change", where)
+		}
+		for _, id := range f.Targets.Criteria {
+			if !caps[id] {
+				l.errf(path, "%s: unknown criterion %q", where, id)
+			}
+		}
+		for _, id := range append(append([]string{}, f.Targets.Configs...), f.TestedOn...) {
+			if !configs[id] {
+				l.errf(path, "%s: unknown configuration %q", where, id)
+			}
+		}
+		for _, d := range f.Targets.Devices {
+			if !reHWID.MatchString(d.ID) || (d.Subsystem != "" && !reSubsystem.MatchString(d.Subsystem)) {
+				l.errf(path, "%s: device %q (subsystem %q) must look like pci:vvvv:dddd (subsystem vvvv:dddd)", where, d.ID, d.Subsystem)
+			}
+		}
+		if len(f.Upstream) == 0 {
+			l.errf(path, "%s: upstream must link the fix's source, or the project it's heading to", where)
+		}
+		for _, u := range f.Upstream {
+			if u.Title == "" || !reURL.MatchString(u.URL) {
+				l.errf(path, "%s: upstream links need a title and a URL", where)
+			}
+		}
+	}
 }
 
 // validatePlumbing: well-formed PCI IDs, each with a name, and none that is
@@ -133,6 +197,11 @@ func (l *loader) validateCapabilities() {
 		}
 		if cap.Name == "" {
 			l.errf(path, "capability %q: name is required", cap.ID)
+		}
+		switch cap.Live {
+		case LiveYes, LiveNo, LiveT2:
+		default:
+			l.errf(path, "capability %q: live must be yes, no or t2, not %q", cap.ID, cap.Live)
 		}
 		if cap.FixBy != "" {
 			kind, role, _ := strings.Cut(cap.FixBy, ":")

@@ -33,7 +33,7 @@ func (s *Server) adminRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/sources/request/{id}/{action}", s.admin(s.adminRequestDecide))
 	mux.HandleFunc("POST /admin/sources/{id}/{action}", s.admin(s.adminSourceAction))
 	mux.HandleFunc("GET /admin/shares", s.admin(s.adminShares))
-	s.adminFixRoutes(mux)
+	s.adminUnsupportedRoutes(mux)
 	mux.HandleFunc("POST /admin/import", limitBody(results.MaxSize+64<<10, s.admin(s.adminImport)))
 	mux.HandleFunc("POST /admin/shares/review", s.admin(s.adminSharesReview))
 }
@@ -160,6 +160,9 @@ type adminReportData struct {
 	Candidates []adminCandidate
 	Ambiguous  bool
 	Review     review
+	// Challenges are the items a person (or a phone) answered with a code
+	// the tool showed or played.
+	Challenges []store.ResultItem
 	Done, Err  string
 }
 
@@ -201,6 +204,11 @@ func (s *Server) adminReport(w http.ResponseWriter, r *http.Request, who string)
 		d.Candidates = append(d.Candidates, adminCandidate{id, label})
 	}
 	d.Review = s.buildReview(rd, d.Ambiguous)
+	for _, it := range rd.Items {
+		if it.Method == "challenge" {
+			d.Challenges = append(d.Challenges, it)
+		}
+	}
 	s.render(w, r, http.StatusOK, "admin-report", page{Title: "Review " + rd.Code, Data: d})
 }
 

@@ -27,17 +27,35 @@
       }
     },
     "tested_at": { "type": "string", "format": "date-time", "description": "When the test ran, RFC 3339 with a time zone. Stored and shown in UTC." },
+    "context": { "enum": ["installed", "live"], "default": "installed", "description": "Where the test ran: on an installed Omarchy, or from a live boot such as OmaBoot? Live. A live report sends each criterion a live boot can't decide (GET /api/v1/snapshot, capabilities, live) as not_tested with reason live-limit." },
     "omarchy": {
       "type": "object", "additionalProperties": false, "required": ["version"],
       "properties": {
         "version": { "type": "string", "pattern": "^[vV]?\\d+(\\.\\d+){0,2}([-.]?([rR][cC]|[bB][eE][tT][aA])\\.?\\d+)?(\\.r\\d+\\.g[0-9a-fA-F]{7,40})?(-\\d+)?$", "examples": ["4.0.4", "4.0.4rc2", "4.0.0beta3", "4.0.0.r6713.ga85e29a"], "description": "/etc/os-release's VERSION_ID, from any channel: a release, a pre-release (rc, beta) or an edge build." },
         "channel": { "enum": ["stable", "rc", "beta", "edge", "dev"], "description": "Only needed for dev (Omarchy run from a git checkout), whose version reads like an edge build. The others follow from the version." },
         "revision": { "type": "string", "description": "A dev build's commit: omarchy-version prints \"dev (<hash>)\"." },
-        "image": { "type": "string" }
+        "image": { "type": "string", "examples": ["omaboot-live 2026.10"], "description": "The image the test ran from, for a live boot." }
       }
     },
     "kernel": { "type": "string" },
     "notes": { "type": "string", "maxLength": 10000 },
+    "fixes": {
+      "type": "array", "maxItems": 20, "uniqueItems": true,
+      "items": { "type": "string", "examples": ["omaboot.radeon-imac10-1-panel-clock"] },
+      "description": "Registered fixes (GET /api/v1/snapshot, fixes) that took effect on this Mac during the test. Unknown IDs are rejected."
+    },
+    "replaced_parts": {
+      "type": "array", "maxItems": 10,
+      "description": "Parts that aren't the Mac's original ones, such as a Wi-Fi card from another Mac or a third-party SSD.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["kind"],
+        "properties": {
+          "kind": { "enum": ["wifi", "bluetooth", "gpu", "storage", "display", "battery", "other"] },
+          "detail": { "type": "string", "maxLength": 200, "examples": ["Broadcom BCM94360CD from a 2013 iMac"] },
+          "ids": { "type": "array", "maxItems": 10, "items": { "type": "string", "maxLength": 200 }, "examples": [["14e4:43a0"]], "description": "What identifies it: PCI or USB IDs, a drive's model, a display's EDID panel ID." }
+        }
+      }
+    },
     "hardware": {
       "type": "object",
       "description": "The hardware probe. Standard keys (product_name, board_id, cpu, pci, usb) identify the configuration; other keys are kept. Personal data (serials, MAC/IP addresses, host and user names) is removed before storage; please don't send it.",
@@ -56,8 +74,8 @@
         "type": "object", "additionalProperties": false, "required": ["status"],
         "properties": {
           "status": { "enum": ["supported", "partial", "failed", "not_tested"] },
-          "method": { "enum": ["automatic", "observed", "fixture"], "description": "Required unless not_tested." },
-          "reason": { "enum": ["no-equipment", "not-in-profile", "uncertain", "other"], "description": "not_tested only." },
+          "method": { "enum": ["automatic", "observed", "fixture", "challenge"], "description": "Required unless not_tested. challenge: the tool showed or played a random code and a person, a phone or a capture card gave it back." },
+          "reason": { "enum": ["no-equipment", "not-in-profile", "uncertain", "live-limit", "other"], "description": "not_tested only. live-limit: a live boot can't decide this criterion (live reports only)." },
           "note": { "type": "string", "maxLength": 1000 },
           "evidence": { "type": "string", "maxLength": 4000, "description": "Why it failed or only partly works: the check's output." }
         }

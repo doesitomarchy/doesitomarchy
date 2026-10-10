@@ -81,7 +81,7 @@ var openAPIDoc = sync.OnceValue(func() map[string]any {
 
 // docAnchors are each endpoint's section on /api.
 var docAnchors = map[string]string{"index": "intro", "macs": "macs", "mac": "mac", "config": "config", "capabilities": "capabilities",
-	"match": "match", "submit": "submit", "report": "report", "schema": "format", "openapi": "ai"}
+	"match": "match", "submit": "submit", "report": "report", "schema": "format", "snapshot": "snapshot", "openapi": "ai"}
 
 var paramDocs = map[string]string{
 	"identifier": "A model identifier, e.g. MacBookPro8,2 (MacBookPro8-2 works too)",
@@ -198,7 +198,7 @@ var llmsTmpl = template.Must(template.New("llms").Parse(llmsSource))
 // (llmstxt.org).
 func (s *Server) llmsTxt(w http.ResponseWriter, r *http.Request) {
 	var b bytes.Buffer
-	if err := llmsTmpl.Execute(&b, map[string]any{"Base": BaseURL, "Endpoints": apiEndpoints, "Notice": ConsentNotice, "PerHour": ReportsPerHour}); err != nil {
+	if err := llmsTmpl.Execute(&b, map[string]any{"Base": BaseURL, "Endpoints": apiEndpoints, "Notice": ConsentNotice, "PerHour": ReportsPerHour, "PerMac": ReportsPerDayPerMac, "PerHourPublic": ReportsPerHourPublic}); err != nil {
 		s.fail(w, r, err)
 		return
 	}

@@ -7,6 +7,7 @@
 //	data/components/<kind>.yaml
 //	data/macs/<Identifier>.yaml   (comma replaced by "-", e.g. Macmini3-1.yaml)
 //	data/config-ids.lock      every config ID ever issued; IDs are permanent
+//	data/fixes.yaml           OmaBoot? fixes reports may list (optional)
 package catalog
 
 import (
@@ -197,6 +198,11 @@ func (l *loader) load() {
 				}
 			}
 		}
+	}
+
+	const fixesPath = "fixes.yaml" // optional: OmaBoot? fixes reports may list
+	if l.exists(fixesPath) {
+		l.decode(fixesPath, &c.OmabootFixes)
 	}
 
 	macFiles, err := l.yamlFiles("macs")

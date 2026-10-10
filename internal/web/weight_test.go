@@ -13,8 +13,9 @@ const pageBudget = 60 * 1024
 
 // pageBudgets are exceptions the owner approved. /criteria deliberately puts
 // every criterion and configuration on one page (PLAN §30); /api is the
-// whole API reference, with samples in three languages (owner, 2026-10-05).
-var pageBudgets = map[string]int{"/criteria": 64 * 1024, "/api": 64 * 1024}
+// whole API reference, with samples in three languages (owner, 2026-10-05),
+// and grew with live boots and the catalog snapshot (S1 step 3, 2026-10-09).
+var pageBudgets = map[string]int{"/criteria": 64 * 1024, "/api": 67 * 1024}
 
 var assetRef = regexp.MustCompile(`(?:href|src)="(/static/[^"#]+\.(?:css|js|svg))[^"]*"`)
 

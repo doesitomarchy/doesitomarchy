@@ -1,10 +1,11 @@
 package results
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -14,13 +15,14 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/match"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
-// Statuses, methods and skip reasons a result item may carry.
+// Statuses, methods and skip reasons a result item may carry (pkg/report).
 var (
-	Statuses = []string{"supported", "partial", "failed", "not_tested"}
-	Methods  = []string{"automatic", "observed", "fixture"}
-	Reasons  = []string{"no-equipment", "not-in-profile", "uncertain", "other"}
+	Statuses = report.Statuses
+	Methods  = report.Methods
+	Reasons  = report.Reasons
 )
 
 // Flag kinds raised for maintainers to review.
@@ -57,6 +59,7 @@ type Result struct {
 	TesterHandle  string
 	Contact       string // raw; the store hashes it and never keeps it
 	TestedAt      string // RFC 3339, UTC
+	Context       string // installed | live
 	Omarchy       status.Version
 	OmarchyRaw    string // the canonical form (Omarchy.String()), stored as omarchy_version
 	Channel       string // stable | rc | beta | edge | dev
@@ -68,6 +71,8 @@ type Result struct {
 	Notes         string
 	Hardware      string   // scrubbed JSON
 	Candidates    []string // when the hardware fits several configs: all of them (ConfigID is the first)
+	Fixes         []string // registered OmaBoot? fix IDs that took effect (data/fixes.yaml)
+	ReplacedParts []ReplacedPart
 	ConsentNotice string
 	Items         []Item
 	Extras        []FileExtra
@@ -92,46 +97,44 @@ type Flag struct{ Kind, Detail string }
 
 // Errors collects every problem in a submission, so a tool author sees them
 // all at once instead of one per attempt.
-type Errors []string
+type Errors = report.Errors
 
-func (e Errors) Error() string {
-	return "invalid result:\n  - " + strings.Join(e, "\n  - ")
-}
-
-var handleRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,38}$`)
-
-// Text limits, in bytes.
-const (
-	maxNotes    = 10000
-	maxEvidence = 4000
-	maxNote     = 1000
-	maxShort    = 200
-)
-
-// Validate checks a parsed submission against the catalog and returns the
-// canonical, scrubbed result. now bounds tested_at (no future dates).
+// Validate checks a parsed submission and returns the canonical, scrubbed
+// result. It runs report.Check (everything that needs no catalog) first,
+// then checks the report against the catalog: the configuration, the
+// criteria and connectors, the live limits and the fix IDs. now bounds
+// tested_at (no future dates).
 func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 	var errs Errors
+	if err := report.Check(f, now); err != nil {
+		if !errors.As(err, &errs) {
+			return nil, err
+		}
+	}
 	bad := func(format string, a ...any) { errs = append(errs, fmt.Sprintf(format, a...)) }
 
-	if f.Schema != SchemaV1 {
-		bad("schema: %q is not supported (want %q)", f.Schema, SchemaV1)
-	}
 	r := &Result{Schema: SchemaV1, SourceID: strings.ToLower(strings.TrimSpace(f.Source.ID))}
 	if r.SourceID == "" {
 		r.SourceID = "manual"
 	}
 	r.SourceVersion, r.Profile, r.Workflow = short(f.Source.Version), short(f.Source.Profile), short(f.Source.Workflow)
+	r.Context = report.ContextInstalled
+	live := f.IsLive()
+	if live {
+		r.Context = report.ContextLive
+	}
 
 	// The configuration: given by ID (an old ID listed in a config's aliases
 	// also resolves), or found from the identifier and hardware probe.
 	probe := probeOf(f)
 	configID := strings.TrimSpace(f.Config)
+	noMatch := false
 	if configID == "" && (probe.ProductName != "" || probe.BoardID != "") {
 		mr := matcherFor(c).Match(probe)
 		switch {
 		case len(mr.Candidates) == 0:
 			bad("config: no configuration matches this hardware (identifier %q, board %q); send a config ID", probe.ProductName, probe.BoardID)
+			noMatch = true
 		case mr.Exact:
 			configID = mr.Best()
 		default:
@@ -156,43 +159,26 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 		if f.Config != "" {
 			r.Flags = append(r.Flags, mismatches(c, m, cfg, probe)...)
 		}
-	case configID == "" && f.Config == "" && len(errs) == 0:
+	case configID == "" && f.Config == "" && !noMatch:
 		bad("config: required (a configuration ID such as macbookpro15-2-13-2018-4tb3-a, or an identifier and hardware probe)")
 	case f.Config != "":
 		bad("config: %q is not a known configuration ID", f.Config)
 	}
 
-	if h := strings.TrimSpace(f.Tester.Handle); h != "" {
-		if !handleRe.MatchString(h) {
-			bad("tester.handle: %q must be 1–39 letters, digits, '.', '_' or '-'", h)
-		}
+	// report.Check has checked these; here they only take their stored form.
+	if h := strings.TrimSpace(f.Tester.Handle); report.HandleRe.MatchString(h) {
 		r.TesterHandle = h
 	}
 	r.Contact = strings.TrimSpace(f.Tester.Contact)
-
-	// When the test ran: a full timestamp with a time zone, stored in UTC.
-	if d, err := time.Parse(time.RFC3339, strings.TrimSpace(f.TestedAt)); err != nil {
-		bad("tested_at: %q must be a timestamp with a time zone, e.g. 2026-09-30T14:05:00Z or 2026-09-30T10:05:00-04:00", f.TestedAt)
-	} else if d.After(now.Add(15 * time.Minute)) {
-		bad("tested_at: %s is in the future", f.TestedAt)
-	} else if d.UTC().Year() < 2025 {
-		bad("tested_at: %s is before Omarchy existed", f.TestedAt)
-	} else {
+	if d, err := time.Parse(time.RFC3339, strings.TrimSpace(f.TestedAt)); err == nil {
 		r.TestedAt = d.UTC().Format(time.RFC3339)
 	}
-
-	if v, err := status.ParseVersion(f.Omarchy.Version); err != nil {
-		bad("omarchy.version: %v", err)
-	} else if ch, err := status.ValidChannel(v, strings.ToLower(strings.TrimSpace(f.Omarchy.Channel))); err != nil {
-		bad("omarchy.%v", err)
-	} else {
-		r.Omarchy, r.OmarchyRaw, r.Channel = v, v.String(), ch
+	if v, err := status.ParseVersion(f.Omarchy.Version); err == nil {
+		if ch, err := status.ValidChannel(v, strings.ToLower(strings.TrimSpace(f.Omarchy.Channel))); err == nil {
+			r.Omarchy, r.OmarchyRaw, r.Channel = v, v.String(), ch
+		}
 	}
 	r.Revision, r.Image, r.Kernel = short(f.Omarchy.Revision), short(f.Omarchy.Image), short(f.Kernel)
-
-	if len(f.Notes) > maxNotes {
-		bad("notes: %d bytes; the limit is %d", len(f.Notes), maxNotes)
-	}
 	r.Notes = Scrub(strings.TrimSpace(f.Notes))
 
 	hw := map[string]any{}
@@ -202,8 +188,31 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 	b, _ := json.Marshal(hw)
 	r.Hardware = string(b)
 
-	if len(f.Items) == 0 && len(f.Extras) == 0 {
-		bad("items: nothing to record (no items and no extras)")
+	// Fixes must be registered (data/fixes.yaml); replaced parts are kept as
+	// sent, scrubbed. A fix that took effect lifts the live limit on the
+	// criteria it targets: that's what it's for (applesmc on pre-T2 Macs).
+	lifted := map[string]bool{}
+	for _, id := range f.Fixes {
+		id = strings.TrimSpace(id)
+		if id == "" || slices.Contains(r.Fixes, id) {
+			continue // report.Check has said so
+		}
+		fx := c.OmabootFix(id)
+		if fx == nil {
+			bad("fixes: %q is not a registered fix (see /api/v1/snapshot, fixes)", id)
+			continue
+		}
+		r.Fixes = append(r.Fixes, id)
+		for _, cp := range fx.Targets.Criteria {
+			lifted[cp] = true
+		}
+	}
+	for _, p := range f.ReplacedParts {
+		rp := ReplacedPart{Kind: strings.TrimSpace(p.Kind), Detail: short(p.Detail)}
+		for _, id := range p.IDs {
+			rp.IDs = append(rp.IDs, short(id))
+		}
+		r.ReplacedParts = append(r.ReplacedParts, rp)
 	}
 
 	// Items, in catalog order so results read like the criteria list.
@@ -272,30 +281,19 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 		}
 		it := Item{Capability: id, Connector: conn, Status: strings.TrimSpace(fi.Status), Method: strings.TrimSpace(fi.Method),
 			Reason: strings.TrimSpace(fi.Reason), Ord: order[id]}
-		switch {
-		case !oneOf(it.Status, Statuses):
-			bad("items.%s.status: %q must be one of %s", key, fi.Status, strings.Join(Statuses, ", "))
-		case it.Status == "not_tested":
-			if it.Method != "" && !oneOf(it.Method, Methods) {
-				bad("items.%s.method: %q must be one of %s", key, fi.Method, strings.Join(Methods, ", "))
-			}
-			if it.Reason != "" && !oneOf(it.Reason, Reasons) {
-				bad("items.%s.reason: %q must be one of %s", key, fi.Reason, strings.Join(Reasons, ", "))
-			}
+		if it.Status == "not_tested" {
 			it.Method = ""
-		default:
-			if !oneOf(it.Method, Methods) {
-				bad("items.%s.method: %q must be one of %s (required unless not_tested)", key, fi.Method, strings.Join(Methods, ", "))
-			}
-			if it.Reason != "" {
-				bad("items.%s.reason: only not_tested items take a reason", key)
-			}
 		}
-		if len(fi.Note) > maxNote {
-			bad("items.%s.note: %d bytes; the limit is %d", key, len(fi.Note), maxNote)
-		}
-		if len(fi.Evidence) > maxEvidence {
-			bad("items.%s.evidence: %d bytes; the limit is %d", key, len(fi.Evidence), maxEvidence)
+		// A live boot decides only what it can (LIVE-PLAN §7): the rest comes
+		// as not_tested, reason live-limit, so nothing pretends to be a result.
+		if live && it.Status != "not_tested" && oneOf(it.Status, Statuses) && !lifted[id] {
+			switch {
+			case cp.Live == catalog.LiveNo:
+				bad("items.%s: a live boot can't decide %s (%s); send it as not_tested with reason %s", key, id, cp.Name, report.ReasonLiveLimit)
+			case cp.Live == catalog.LiveT2 && m != nil && m.SecurityChip != "t2":
+				bad("items.%s: a live boot can decide %s (%s) only on a Mac with a T2 chip, and %s has none; send it as not_tested with reason %s",
+					key, id, cp.Name, m.Identifier, report.ReasonLiveLimit)
+			}
 		}
 		it.Note, it.Evidence = Scrub(strings.TrimSpace(fi.Note)), Scrub(strings.TrimSpace(fi.Evidence))
 		it.Applicable = applies[id]
@@ -313,24 +311,10 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 		r.Flags = append(r.Flags, portSuspects(c, m, cfg, r.Items)...)
 	}
 
-	seen := map[string]bool{}
-	for i, x := range f.Extras {
+	for _, x := range f.Extras {
 		x.ID, x.Label, x.Status = strings.TrimSpace(x.ID), short(x.Label), short(x.Status)
-		switch {
-		case x.ID == "":
-			bad("extras[%d].id: required", i)
-		case seen[x.ID]:
-			bad("extras[%d].id: %q appears twice", i, x.ID)
-		case len(x.Detail) > maxEvidence:
-			bad("extras[%d].detail: %d bytes; the limit is %d", i, len(x.Detail), maxEvidence)
-		}
-		seen[x.ID] = true
 		x.Detail = Scrub(strings.TrimSpace(x.Detail))
 		r.Extras = append(r.Extras, x)
-	}
-
-	if len(f.ConsentNotice) > maxNote {
-		bad("consent_notice: %d bytes; the limit is %d", len(f.ConsentNotice), maxNote)
 	}
 	r.ConsentNotice = strings.TrimSpace(f.ConsentNotice)
 
@@ -376,8 +360,8 @@ func oneOf(s string, set []string) bool {
 // short trims a one-line field, scrubs it and caps its length.
 func short(s string) string {
 	s = Scrub(strings.TrimSpace(s))
-	if len(s) > maxShort {
-		s = strings.ToValidUTF8(s[:maxShort], "") // never split a character
+	if len(s) > report.MaxShort {
+		s = strings.ToValidUTF8(s[:report.MaxShort], "") // never split a character
 	}
 	return s
 }
@@ -532,4 +516,16 @@ func portSuspects(c *catalog.Catalog, m *catalog.Mac, cfg *catalog.Config, items
 		}
 	}
 	return flags
+}
+
+// HardwareFingerprint identifies a Mac by its hardware, never by a serial
+// number: the SHA-256 of its product name, board ID and sorted PCI IDs, as
+// the report's probe gives them. It limits reports per Mac from sources
+// whose key is public (OmaBoot? Live).
+func HardwareFingerprint(f *File) string {
+	p := probeOf(f)
+	pci := match.NormalizeIDs(p.PCI, "pci")
+	sort.Strings(pci)
+	sum := sha256.Sum256([]byte(strings.ToLower(p.ProductName) + "\n" + strings.ToLower(p.BoardID) + "\n" + strings.Join(pci, ",")))
+	return hex.EncodeToString(sum[:])
 }

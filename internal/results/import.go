@@ -14,7 +14,7 @@ type Imported struct {
 	Result *Result
 	Raw    []byte
 	Format string
-	Source *Mapping // the native format's source, to register before storing; nil for our schema
+	Source *Mapping // the source to register before storing: a native format's, or a native source's (data/sources); else nil
 }
 
 // Import validates a report in our schema (format "" or SchemaV1) or a
@@ -31,7 +31,13 @@ func Import(raw []byte, format string, c *catalog.Catalog, fsys fs.FS, opt Impor
 		if err != nil {
 			return nil, err
 		}
-		return &Imported{r, raw, SchemaV1, nil}, nil
+		// A report saved by a native source (OmaBoot? Live's USB stick) imports
+		// even before that source has a key.
+		var src *Mapping
+		if mp, err := LoadMapping(fsys, r.SourceID, c); err == nil && mp.Format == SchemaV1 {
+			src = mp
+		}
+		return &Imported{r, raw, SchemaV1, src}, nil
 	case "omacdiag", FormatOmacDiag:
 		mp, err := LoadMapping(fsys, "omacdiag", c)
 		if err != nil {

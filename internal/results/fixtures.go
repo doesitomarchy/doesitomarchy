@@ -14,8 +14,3 @@ var SyntheticFixture []byte
 //
 //go:embed fixtures/omacdiag-mbp113.json
 var OmacDiagFixture []byte
-
-// SchemaV1JSON is the report schema as a JSON Schema document (GET /api/v1/schema).
-//
-//go:embed schema_v1.json
-var SchemaV1JSON []byte

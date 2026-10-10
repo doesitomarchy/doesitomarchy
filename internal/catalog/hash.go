@@ -9,11 +9,11 @@ import (
 )
 
 // HashFS fingerprints the catalog files the loader reads (vocabulary,
-// capabilities, lock, coverage, aliases, changelog, components, macs, port
-// layouts), so a sync can skip an unchanged catalog. Other files under data/
+// capabilities, lock, coverage, aliases, changelog, fixes, components, macs,
+// port layouts), so a sync can skip an unchanged catalog. Other files under data/
 // (README, LICENSE, embed.go, the test tools' sources/ mappings) don't affect it.
 func HashFS(fsys fs.FS) (string, error) {
-	names := []string{"vocabulary.yaml", "capabilities.yaml", LockFile, "coverage.yaml", "aliases.yaml", "changelog.yaml"}
+	names := []string{"vocabulary.yaml", "capabilities.yaml", LockFile, "coverage.yaml", "aliases.yaml", "changelog.yaml", "fixes.yaml"}
 	for _, pat := range []string{"components/*.yaml", "macs/*.yaml", "layouts/*.yaml"} {
 		m, err := fs.Glob(fsys, pat)
 		if err != nil {
@@ -25,7 +25,7 @@ func HashFS(fsys fs.FS) (string, error) {
 	h := sha256.New()
 	for _, n := range names {
 		b, err := fs.ReadFile(fsys, n)
-		if errors.Is(err, fs.ErrNotExist) && (n == "coverage.yaml" || n == "aliases.yaml" || n == "changelog.yaml") { // optional files
+		if errors.Is(err, fs.ErrNotExist) && (n == "coverage.yaml" || n == "aliases.yaml" || n == "changelog.yaml" || n == "fixes.yaml") { // optional files
 			continue
 		}
 		if err != nil {

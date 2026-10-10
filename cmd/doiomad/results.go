@@ -144,7 +144,7 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		r := imp.Result
 		// The Omarchy build it ran, and regressions against current results (PLAN §28.2).
 		if api := buildsAPI(false); api != "" {
-			rs := builds.New(st, os.Getenv("GITHUB_TOKEN"), nil)
+			rs := builds.New(st, "", nil)
 			rs.Base = api
 			bctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 			rs.Fill(bctx, r)

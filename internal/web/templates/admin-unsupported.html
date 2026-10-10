@@ -1,0 +1,34 @@
+{{define "content"}}{{with .Data}}
+<div class="admin">
+{{template "adminbar" .Who}}
+{{with .Done}}<p class="notice ok-notice" role="status">Done: {{.}}.</p>{{end}}
+{{with .Err}}<p class="notice" role="alert">{{.}}</p>{{end}}
+<h1>Unsupported</h1>
+<p class="muted">The white flag: a last resort, after repeated attempts to fix a failure made no progress. A flag covers a criterion on one component (every configuration with it) or on one configuration, and its reason shows on the site. A failed Boot criterion marked Unsupported makes the configuration Unsupported.</p>
+
+<h2>In force <span class="muted">{{len .Unsupported}}</span></h2>
+{{if .Unsupported}}<ul class="admin-flags">{{range .Unsupported}}<li><b>{{.Criterion}}</b> on {{.Scope}} · {{.U.Reason}} · by {{.U.SetBy}} {{utc .U.SetAt}}
+  <form method="post" action="/admin/unsupported/{{.U.ID}}/clear" class="cf-row-form"><input type="hidden" name="csrf" value="{{$.Data.CSRF}}"><button class="cf-btn sm tertiary" type="submit">Lift</button></form></li>{{end}}</ul>{{else}}<p>None.</p>{{end}}
+
+<h2>Failing <span class="muted">{{len .Failures}}</span></h2>
+{{if .Failures}}<div class="table-wrap" tabindex="0" role="region" aria-label="Failing criteria"><table class="browse fixes">
+  <thead><tr><th scope="col">Criterion</th><th scope="col">A flag would cover</th><th scope="col">Failing on</th><th scope="col">Act</th></tr></thead>
+  <tbody>{{range .Failures}}<tr>
+    <td>{{.Criterion}}{{if .Unsupported}} <span class="tag">unsupported</span>{{end}}</td>
+    <td>{{.Scope}}{{if .Component}} <span class="muted">(every Mac with it)</span>{{end}}</td>
+    <td>{{range $i, $c := .Configs}}{{if lt $i 4}}{{if $i}}, {{end}}<a href="/mac/{{$c.Mac.Slug}}#cfg-{{$c.ID}}">{{$c.Mac.Identifier}} {{$c.Diff}}</a>{{end}}{{end}}{{if gt (len .Configs) 4}} <span class="muted">and {{add (len .Configs) -4}} more</span>{{end}}</td>
+    <td>{{if not .Unsupported}}<form method="post" action="/admin/unsupported" class="cf-form" data-reason-form><input type="hidden" name="csrf" value="{{$.Data.CSRF}}">
+        <input type="hidden" name="capability" value="{{.Capability}}"><input type="hidden" name="component" value="{{.Component}}"><input type="hidden" name="config" value="{{.Config}}">
+        <div class="cf-field reason-fields"><label class="cf-label" for="r-{{.Capability}}-{{.Component}}{{.Config}}">Why it's Unsupported</label>
+          <textarea class="cf-input" id="r-{{.Capability}}-{{.Component}}{{.Config}}" name="reason" rows="2" required></textarea>
+          <p class="cf-helper">Shown on the site.</p></div>
+        <div class="cf-actions">
+          <button class="cf-btn sm danger-tertiary" type="button" data-reason-open aria-expanded="false" aria-controls="r-{{.Capability}}-{{.Component}}{{.Config}}" data-js>Unsupported…</button>
+          <button class="cf-btn sm danger" type="submit" data-reason-confirm>Mark Unsupported</button>
+          <button class="cf-btn sm ghost" type="button" data-reason-cancel data-js>Cancel</button>
+        </div>
+      </form>{{else}}<span class="muted">see above</span>{{end}}</td>
+  </tr>{{end}}</tbody>
+</table></div>{{else}}<p>Nothing is failing.</p>{{end}}
+</div>
+{{end}}{{end}}

@@ -363,3 +363,44 @@ func TestReportCodes(t *testing.T) {
 		}
 	}
 }
+
+// A live report keeps its context, fixes and replaced parts, and the item
+// method and reason that came with live boots (migration 0011).
+func TestLiveResult(t *testing.T) {
+	ctx := context.Background()
+	st, c := synced(t)
+	f, _ := results.Parse([]byte(`schema: doesitomarchy/report/v1
+config: macbookair5-2-mid-2012-a
+context: live
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
+fixes: [omaboot.applesmc-led-container-of]
+replaced_parts: [{ kind: storage, detail: third-party NVMe SSD, ids: ["OWC Aura Pro X2"] }]
+items:
+  display.brightness: { status: supported, method: challenge, evidence: picked pizza }
+  boot.install: { status: not_tested, reason: live-limit }
+`))
+	r, err := results.Validate(f, c, time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := st.InsertResult(ctx, r, nil, results.SchemaV1, "carl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := st.Result(ctx, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !d.IsLive() || len(d.Fixes) != 1 || d.Fixes[0] != "omaboot.applesmc-led-container-of" || len(d.ReplacedParts) != 1 ||
+		d.ReplacedParts[0].IDs[0] != "OWC Aura Pro X2" || d.OmarchyImage != "omaboot-live dev 0b8738f" {
+		t.Fatalf("live result: %+v", d)
+	}
+	methods := map[string]string{}
+	for _, it := range d.Items {
+		methods[it.Capability] = it.Method + it.Reason
+	}
+	if methods["display.brightness"] != "challenge" || methods["boot.install"] != "live-limit" {
+		t.Errorf("items: %v", methods)
+	}
+}

@@ -96,7 +96,9 @@ func TestRoutes(t *testing.T) {
 		{"GET", "/mac/MacBookPro8-2", 200, "", "HD 6490M · Early 2011", "text/html"},
 		{"GET", "/mac/MacBookPro8-2?view=matrix", 200, "", `class="count-head"`, "text/html"},
 		{"GET", "/", 200, "", `Not officially affiliated with <a href="https://omarchy.org" rel="noopener">Omarchy</a> or the <a href="https://omarchy.org/foundation/" rel="noopener">Omacom Foundation</a>.`, "text/html"},
-		{"GET", "/", 200, "", `#WeCanFixEverything!</span> <a class="help" href="/contribute">You can help!</a>`, "text/html"},
+		{"GET", "/", 200, "", `#WeCanFixEverything!</span> <a class="help" href="/contribute#fix">You can help!</a>`, "text/html"},
+		{"GET", "/fixes", 200, "", `<h2 id="omaboot.radeon-imac10-1-panel-clock">`, "text/html"},
+		{"POST", "/hooks/github", 404, "", "", ""}, // fix tracking retired (v0.14.0)
 		{"GET", "/sitemap.xml", 200, "", "/mac/MacBookPro16-4", "application/xml"},
 		{"GET", "/robots.txt", 200, "", "Sitemap:", "text/plain"},
 		{"GET", "/search?q=mbp+2011", 200, "", `href="/mac/MacBookPro8-2"`, "text/html"},

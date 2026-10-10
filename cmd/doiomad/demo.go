@@ -229,28 +229,46 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 		return err
 	}
 
-	// Fix issues (PLAN §26), one in each state. Made up, like the rest of the
-	// demo: the numbers don't exist in the fix repo.
-	day := func(d int) string { return now.UTC().AddDate(0, 0, -d).Format(time.RFC3339) }
-	issue := func(n int) string {
-		return fmt.Sprintf("https://github.com/doesitomarchy/wecanfixeverything/issues/%d", n)
+	// OmaBoot? Live reports: an accepted one on the 21.5-inch iMac10,1 that
+	// ran with the radeon fix, and a pending one on the MacBookAir5,2 with
+	// the applesmc fix and a replaced drive, for review. What a live boot
+	// can't decide comes as not tested, reason live-limit.
+	live, err := results.LoadMapping(data.FS, "boot-live", c)
+	if err != nil {
+		return err
 	}
-	for _, fx := range []store.Fix{
-		{Issue: 101, Capability: "audio.speakers", Component: "audio/apple-t2-audio", Title: "Built-in speakers on Apple T2 audio (demo)",
-			URL: issue(101), Open: true, Assignee: "t2-audio-dev", LastActivity: day(3), OpenedBy: "demo"},
-		{Issue: 102, Capability: "input.touch-id", Component: "bridge/apple-t2", Title: "Touch ID on Apple T2 (demo)",
-			URL: issue(102), Open: true, LastActivity: day(10), OpenedBy: "demo"},
-		{Issue: 103, Capability: "power.sleep-wake", Config: "macbookpro15-2-13-2018-4tb3-a", Title: "Sleep and wake on MacBook Pro (13-inch, 2018) (demo)",
-			URL: issue(103), Open: true, Assignee: "sleepy", Proposed: true, LastActivity: day(1), OpenedBy: "demo"},
-		{Issue: 104, Capability: "network.wifi", Component: "wifi/broadcom-bcm4360", Title: "Wi-Fi on Broadcom BCM4360 (demo)",
-			URL: issue(104), Open: false, StateReason: "completed", Assignee: "wl-fixer", LastActivity: "2026-09-30T12:00:00Z",
-			ClosedAt: "2026-09-30T12:00:00Z", FixLink: "https://github.com/basecamp/omarchy/pull/1", OpenedBy: "demo"},
-		{Issue: 105, Capability: "audio.microphone", Component: "audio/apple-t2-audio", Title: "Built-in microphone on Apple T2 audio (demo)",
-			URL: issue(105), Open: true, Assignee: "gone-quiet", LastActivity: day(90), OpenedBy: "demo"},
-	} {
-		if _, err := st.UpsertFix(ctx, fx); err != nil {
-			return err
+	if err := st.EnsureSource(ctx, live.ID, live.Name, live.Homepage); err != nil {
+		return err
+	}
+	liveFile := func(configID, on string, fixes []string, parts []results.ReplacedPart) *results.File {
+		f := &results.File{Schema: results.SchemaV1, Config: configID, Context: "live", TestedAt: on, Items: map[string]results.FileItem{},
+			Omarchy: results.FileOmarchy{Version: "4.0.4", Image: "omaboot-live dev 0b8738f"}, Kernel: "7.2.5-3-omarchy",
+			Source: results.FileSource{ID: live.ID, Version: "0.1.0", Profile: "quick"}, Fixes: fixes, ReplacedParts: parts}
+		lifted := map[string]bool{}
+		for _, id := range fixes {
+			for _, cp := range c.OmabootFix(id).Targets.Criteria {
+				lifted[cp] = true
+			}
 		}
+		m, cfg := findDemoConfig(c, configID)
+		for i, cp := range c.Applicable(m, cfg) {
+			switch {
+			case !lifted[cp.ID] && (cp.Live == catalog.LiveNo || cp.Live == catalog.LiveT2 && m.SecurityChip != "t2"):
+				f.Items[cp.ID] = results.FileItem{Status: "not_tested", Reason: "live-limit"}
+			case i%3 == 1:
+				f.Items[cp.ID] = results.FileItem{Status: "supported", Method: "challenge", Evidence: "The tester picked the word shown twice: pizza, then radio."}
+			default:
+				f.Items[cp.ID] = results.FileItem{Status: "supported", Method: "automatic"}
+			}
+		}
+		return f
+	}
+	if _, err := add(liveFile("imac10-1-21-late-2009-b", "2026-10-04T15:30:00Z", []string{"omaboot.radeon-imac10-1-panel-clock"}, nil), true); err != nil {
+		return err
+	}
+	if _, err := add(liveFile("macbookair5-2-mid-2012-a", "2026-10-05T15:30:00Z", []string{"omaboot.applesmc-led-container-of"},
+		[]results.ReplacedPart{{Kind: "storage", Detail: "Third-party NVMe SSD on an adapter", IDs: []string{"OWC Aura Pro X2"}}}), false); err != nil {
+		return err
 	}
 
 	// Shared IDs (PF-3) for /admin/shares: a known Mac with an aftermarket

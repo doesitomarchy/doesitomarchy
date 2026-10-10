@@ -9,9 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
-	"github.com/doesitomarchy/doesitomarchy/internal/fixes/fakegithub"
-
 	"github.com/doesitomarchy/doesitomarchy/internal/testdb"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -207,12 +204,9 @@ func TestImportOmacDiag(t *testing.T) {
 	}
 }
 
-func TestFixesCLI(t *testing.T) {
+func TestUnsupportedCLI(t *testing.T) {
 	db := testdb.Path(t)
-	gh := fakegithub.New(t, fixes.DefaultRepo)
 	t.Setenv("SUDO_USER", "carl")
-	t.Setenv("GITHUB_API_URL", gh.URL)
-	t.Setenv("GITHUB_TOKEN", fakegithub.Token)
 	run := func(args ...string) (int, string) {
 		t.Helper()
 		var out, errb bytes.Buffer
@@ -224,14 +218,7 @@ func TestFixesCLI(t *testing.T) {
 		code int
 		want string
 	}{
-		{[]string{"fixes", "list"}, 0, "no fix issues"},
-		{[]string{"fixes", "open", "audio.speakers", "-component", "audio/cirrus-cs4208"}, 0, "opened issue #1: Built-in speakers on Cirrus Logic CS4208"},
-		{[]string{"fixes", "open", "audio.speakers", "-component", "audio/cirrus-cs4208"}, 1, "issue #1 is already open for this"},
-		{[]string{"fixes", "open", "audio.kazoo", "-component", "audio/cirrus-cs4208"}, 1, "unknown criterion"},
-		{[]string{"fixes", "open", "audio.speakers"}, 1, "give -component ID or -config ID"},
-		{[]string{"fixes", "list"}, 0, "#1     open"},
-		{[]string{"fixes", "sync"}, 0, "fix issues updated"},
-		{[]string{"unsupported", "set", "audio.speakers", "-component", "audio/cirrus-cs4208", "-reason", "no amp driver"}, 0, "issue #1 closed as not planned"},
+		{[]string{"unsupported", "set", "audio.speakers", "-component", "audio/cirrus-cs4208", "-reason", "no amp driver"}, 0, "marked Unsupported"},
 		{[]string{"unsupported", "set", "audio.speakers", "-component", "audio/cirrus-cs4208"}, 1, "a reason is required"},
 		{[]string{"unsupported", "list"}, 0, "no amp driver"},
 		{[]string{"unsupported", "clear", "1"}, 0, "lifted"},
@@ -241,8 +228,5 @@ func TestFixesCLI(t *testing.T) {
 		if code != s.code || !strings.Contains(out, s.want) {
 			t.Errorf("%v: exit %d, want %d and %q\n%s", s.args, code, s.code, s.want, out)
 		}
-	}
-	if gh.Issues[1].State != "closed" || gh.Issues[1].StateReason != "not_planned" {
-		t.Errorf("issue 1: %+v", gh.Issues[1])
 	}
 }

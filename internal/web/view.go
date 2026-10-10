@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
-	"github.com/doesitomarchy/doesitomarchy/internal/fixes"
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -53,10 +52,6 @@ type Options struct {
 	// CatalogFS holds the catalog's data files, for source mappings
 	// (data/sources); nil means the catalog built into the binary.
 	CatalogFS fs.FS
-	// Fix tracking (PLAN §26): the fix repo, a token limited to it, and the
-	// webhook's shared secret. Without a token, fixes can't be opened from
-	// /admin; without the secret, /hooks/github refuses every delivery.
-	FixRepo, GitHubToken, WebhookSecret string
 	// BuildsAPI is the GitHub API root for looking up which Omarchy commit a
 	// result ran on (PLAN §28.2); "" turns lookups off (demo mode, tests).
 	BuildsAPI string
@@ -230,9 +225,8 @@ func (c categoryView) Pct() string { return fmt.Sprintf("%.2f", pctOf(c.Passed, 
 type capView struct {
 	ID, Name, Description string
 	Verdict               status.Verdict
-	Error                 string   // why it failed or only partly works, as reported (evidence)
-	Fix                   *fixView // the fix issue for a failed criterion, if any (PLAN §26)
-	Reason                string   // the maintainer's reason, when Unsupported
+	Error                 string // why it failed or only partly works, as reported (evidence)
+	Reason                string // the maintainer's reason, when Unsupported
 	// The latest report for this capability (Result 0 when untested).
 	Result                int64
 	Code                  string // its public code, for /report/{code}
@@ -291,29 +285,6 @@ type capPort struct {
 	Verdict   status.Verdict
 	CoveredBy string // untested, covered by a group-mate that passed
 	Suspect   bool   // failed while a group-mate passed: possibly a damaged port
-}
-
-// fixView is a fix issue as a criterion row shows it.
-type fixView struct {
-	Issue                  int
-	URL, Title             string
-	State                  fixes.State
-	Assignee               string
-	LastActivity, ClosedAt string // dates
-	FixLink                string
-	Retest                 bool // fixed after the criterion's latest result: please re-test
-}
-
-func newFixView(f store.Fix, st fixes.State) *fixView {
-	return &fixView{Issue: f.Issue, URL: f.URL, Title: f.Title, State: st, Assignee: f.Assignee,
-		LastActivity: dateOnly(f.LastActivity), ClosedAt: dateOnly(f.ClosedAt), FixLink: f.FixLink}
-}
-
-func dateOnly(ts string) string {
-	if len(ts) >= 10 {
-		return ts[:10]
-	}
-	return ts
 }
 
 // layoutSide is one side of a configuration's port layout.
@@ -768,13 +739,6 @@ func buildConfig(c *catalog.Catalog, m *catalog.Mac, r *catalog.Release, cfg *ca
 					}
 				}
 				x.PortGroups = append(x.PortGroups, newCapPortGroup(pg))
-			}
-		}
-		if ru != nil && (x.Verdict == status.Failed || x.Verdict == status.Partial) {
-			if f, st, ok := fixes.Best(ru.Fixes, cp.ID, cfg.ID, cfg.Components, now); ok {
-				x.Fix = newFixView(f, st)
-				// Both RFC 3339 UTC, so they compare as strings, to the second.
-				x.Fix.Retest = st == fixes.Fixed && f.ClosedAt > x.Date
 			}
 		}
 		if x.Verdict == status.Supported {

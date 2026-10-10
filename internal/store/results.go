@@ -111,11 +111,12 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 		res, err = tx.ExecContext(ctx, `INSERT INTO results (code, config_id, source_id, source_version, profile, workflow, schema,
 			format, tester_handle, contact_hash, tested_at, omarchy_version, omarchy_major, omarchy_minor, omarchy_patch,
 			omarchy_revision, omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at, consent_notice, candidates,
-			omarchy_channel, omarchy_commit, omarchy_built_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			omarchy_channel, omarchy_commit, omarchy_built_at, context, fixes, replaced_parts)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			newCode(), r.ConfigID, r.SourceID, r.SourceVersion, r.Profile, r.Workflow, r.Schema, format, r.TesterHandle, contact,
 			r.TestedAt, r.OmarchyRaw, r.Omarchy.Major, r.Omarchy.Minor, r.Omarchy.Patch, r.Revision, r.Image, r.Kernel, r.Notes,
-			r.Hardware, Pending, actor, at, r.ConsentNotice, jsonList(r.Candidates), channelOr(r.Channel), r.Commit, r.BuiltAt)
+			r.Hardware, Pending, actor, at, r.ConsentNotice, jsonList(r.Candidates), channelOr(r.Channel), r.Commit, r.BuiltAt,
+			contextOr(r.Context), jsonList(r.Fixes), jsonParts(r.ReplacedParts))
 		if err == nil || attempt == 4 || !strings.Contains(err.Error(), "results.code") {
 			break // retry only on the (1 in 10^12) code collision
 		}
@@ -253,6 +254,8 @@ type ResultSummary struct {
 	Omarchy                               string // the canonical version (PLAN §28.1)
 	Channel                               string // stable | rc | beta | edge | dev
 	Kernel                                string
+	Context                               string   // installed | live
+	Fixes                                 []string // OmaBoot? fixes that took effect (data/fixes.yaml IDs)
 	State, StateReason, StateBy, StateAt  string
 	SubmittedBy, SubmittedAt              string
 	Supported, Partial, Failed, NotTested int
@@ -267,7 +270,7 @@ type ResultFilter struct {
 
 const summaryCols = `r.id, r.code, r.config_id, c.mac_identifier, m.slug, r.source_id, s.name, r.source_version, r.profile, r.workflow,
 	r.tester_handle, r.tested_at, r.omarchy_version, r.omarchy_channel, r.kernel, r.state, r.state_reason, r.state_by, r.state_at,
-	r.submitted_by, r.submitted_at,
+	r.submitted_by, r.submitted_at, r.context, r.fixes,
 	(SELECT count(*) FROM result_items i WHERE i.result_id = r.id AND i.status = 'supported'),
 	(SELECT count(*) FROM result_items i WHERE i.result_id = r.id AND i.status = 'partial'),
 	(SELECT count(*) FROM result_items i WHERE i.result_id = r.id AND i.status = 'failed'),
@@ -278,10 +281,12 @@ const summaryCols = `r.id, r.code, r.config_id, c.mac_identifier, m.slug, r.sour
 
 func scanSummary(sc interface{ Scan(...any) error }) (ResultSummary, error) {
 	var x ResultSummary
+	var fixes string
 	err := sc.Scan(&x.ID, &x.Code, &x.ConfigID, &x.Identifier, &x.Slug, &x.SourceID, &x.SourceName, &x.SourceVersion, &x.Profile,
 		&x.Workflow, &x.TesterHandle, &x.TestedAt, &x.Omarchy, &x.Channel, &x.Kernel, &x.State, &x.StateReason, &x.StateBy, &x.StateAt,
-		&x.SubmittedBy, &x.SubmittedAt, &x.Supported, &x.Partial, &x.Failed, &x.NotTested, &x.OpenFlags)
+		&x.SubmittedBy, &x.SubmittedAt, &x.Context, &fixes, &x.Supported, &x.Partial, &x.Failed, &x.NotTested, &x.OpenFlags)
 	x.Omarchy = CanonicalVersion(x.Omarchy)
+	json.Unmarshal([]byte(fixes), &x.Fixes)
 	return x, err
 }
 
@@ -292,6 +297,24 @@ func CanonicalVersion(stored string) string {
 		return v.String()
 	}
 	return stored
+}
+
+// IsLive reports whether the result came from a live boot.
+func (x ResultSummary) IsLive() bool { return x.Context == "live" }
+
+func contextOr(ctx string) string {
+	if ctx == "" {
+		return "installed"
+	}
+	return ctx
+}
+
+func jsonParts(ps []results.ReplacedPart) string {
+	if len(ps) == 0 {
+		return "[]"
+	}
+	b, _ := json.Marshal(ps)
+	return string(b)
 }
 
 func channelOr(ch string) string {
@@ -451,7 +474,8 @@ type ResultDetail struct {
 	OmarchyRevision, OmarchyImage, Notes, Hardware string
 	OmarchyCommit, OmarchyBuiltAt                  string // the build tested (PLAN §28.2); "" until looked up
 	ConsentNotice                                  string
-	Candidates                                     []string // configs the hardware fitted equally
+	Candidates                                     []string               // configs the hardware fitted equally
+	ReplacedParts                                  []results.ReplacedPart // parts that aren't the Mac's own
 	Items                                          []ResultItem
 	Extras                                         []results.FileExtra
 	Flags                                          []ResultFlag
@@ -470,15 +494,16 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 		return nil, err
 	}
 	d := &ResultDetail{ResultSummary: sum}
-	var cands string
+	var cands, parts string
 	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.omarchy_commit, r.omarchy_built_at, r.notes,
-		r.hardware, r.consent_notice, r.candidates, coalesce(p.size, 0), coalesce(p.visibility, 'private')
+		r.hardware, r.consent_notice, r.candidates, r.replaced_parts, coalesce(p.size, 0), coalesce(p.visibility, 'private')
 		FROM results r LEFT JOIN result_reports p ON p.result_id = r.id WHERE r.id = ?`, id).Scan(
-		&d.OmarchyRevision, &d.OmarchyImage, &d.OmarchyCommit, &d.OmarchyBuiltAt, &d.Notes, &d.Hardware, &d.ConsentNotice, &cands,
+		&d.OmarchyRevision, &d.OmarchyImage, &d.OmarchyCommit, &d.OmarchyBuiltAt, &d.Notes, &d.Hardware, &d.ConsentNotice, &cands, &parts,
 		&d.ReportSize, &d.ReportVisibility); err != nil {
 		return nil, err
 	}
 	json.Unmarshal([]byte(cands), &d.Candidates)
+	json.Unmarshal([]byte(parts), &d.ReplacedParts)
 	rows, err := s.db.QueryContext(ctx, `SELECT i.capability_id, cp.name, cp.category_id, k.name, i.connector, i.status, i.method,
 		i.reason, i.note, i.evidence, i.applicable
 		FROM result_items i JOIN capabilities cp ON cp.id = i.capability_id JOIN categories k ON k.id = cp.category_id
@@ -662,7 +687,6 @@ type Rollup struct {
 	StableLatest  map[string]string
 	Accepted      map[string][]ResultSummary   // config → accepted (and retracted) results, newest first
 	Unsupported   map[string]map[string]string // config → capability → reason
-	Fixes         []Fix                        // fix issues, newest first
 	CurrentMajor  int
 	Version       int64 // the data version this was read at
 }
@@ -761,24 +785,6 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 			r.Unsupported[cfg] = map[string]string{}
 		}
 		r.Unsupported[cfg][cp] = reason
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	// Fix issues (PLAN §26), in the same snapshot.
-	rows, err = tx.QueryContext(ctx, "SELECT "+fixCols+" FROM fixes ORDER BY issue DESC")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		f, err := scanFix(rows)
-		if err != nil {
-			return nil, err
-		}
-		r.Fixes = append(r.Fixes, f)
 	}
 	return r, rows.Err()
 }

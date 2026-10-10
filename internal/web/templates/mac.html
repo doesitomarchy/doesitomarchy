@@ -47,7 +47,7 @@
   {{with .Status.Blocker}}<p class="blocker-line">Blocked by: {{.}}</p>{{end}}
   {{range .Limitations}}<p class="limit-line"><span class="warn-i">{{template "icon" "alert"}}</span> Known limitation: {{.}}</p>{{end}}
   {{if .NewerOnly}}<p class="newer-line">Untested on stable. Newer builds (rc, beta, edge or dev) were tested: their results show under each criterion.</p>{{end}}
-  {{with .Latest}}<p class="latest-line">Latest diagnostic report <a href="/report/{{.Code}}">{{.Code}}</a> · {{osver .Omarchy .Channel .Kernel}} · tested {{utc .TestedAt}} · {{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}{{if gt (len $cfg.Results) 1}} · <a href="#results-{{$cfg.ID}}">all {{len $cfg.Results}} reports</a>{{end}}</p>{{end}}
+  {{with .Latest}}<p class="latest-line">Latest diagnostic report <a href="/report/{{.Code}}">{{.Code}}</a> · {{osver .Omarchy .Channel .Kernel}} · tested {{utc .TestedAt}} · {{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}{{template "runtags" .}}{{if gt (len $cfg.Results) 1}} · <a href="#results-{{$cfg.ID}}">all {{len $cfg.Results}} reports</a>{{end}}</p>{{end}}
   <div class="caps">
   {{range .Categories}}
     <details{{if .Problem}} open{{end}}>
@@ -56,7 +56,7 @@
         {{if .FromLatest}}<span class="capmeta inline">{{.Method}}</span>{{else if .Result}}<span class="capmeta"><a href="/report/{{.Code}}" title="The latest diagnostic report for this capability">{{osver .Omarchy .Channel .Kernel}} · {{utc .Date}}</a> · {{.Method}}{{if .Stale}} · <span class="stale" title="Tested on an older Omarchy major version">⌛ older Omarchy</span>{{end}}{{if .Conflict}} · <a href="#results-{{$cfg.ID}}" title="Reports for the same Omarchy build disagree">conflicting reports</a>{{end}}</span>{{end}}
         {{with .Newer}}<span class="capnewer">Newer build: {{template "vicon" .Verdict}}{{.Verdict.Label}} on <a href="/report/{{.Code}}" title="The newest build's report: an rc, beta, edge or dev build, which doesn't change the stable verdict">{{osver .Omarchy .Channel ""}}</a></span>{{end}}
         {{with .PortGroups}}{{if gt $cap.GroupsTotal 1}}<span class="capgroups muted">{{$cap.GroupsPassed}} of {{$cap.GroupsTotal}} port groups</span>{{end}}<span class="capports">{{range .}}<span class="capgroup g-{{.Verdict}}">{{range .Ports}}<span class="capport{{if .CoveredBy}} covered{{end}}{{if .Suspect}} suspect{{end}}" title="{{.ID}}: {{.Name}}, {{if .CoveredBy}}covered by {{.CoveredBy}} (same port group){{else if .Suspect}}failed while a port in the same port group passed: possibly a damaged port{{else}}{{.Verdict.Label}}{{end}}">{{if .CoveredBy}}{{template "vicon" "supported"}}{{else}}{{template "vicon" .Verdict}}{{end}}{{.ID}}{{if .Suspect}} <span class="tag">possible hardware fault</span>{{end}}</span>{{end}}</span>{{end}}</span>{{end}}
-        {{if or .Error .Reason (eq .Verdict "failed")}}<div class="why{{if eq .Verdict "partial"}} minor{{end}}">{{with .Error}}<p><span class="lbl">{{if eq $cap.Verdict "failed"}}Why it failed{{else}}Reported{{end}}</span> <code>{{.}}</code></p>{{end}}{{with .Reason}}<p><span class="lbl">Unsupported</span> {{.}}</p>{{end}}{{template "fixline" .}}</div>{{else if eq .Verdict "partial"}}<div class="why minor">{{template "fixline" .}}</div>{{end}}</li>{{end}}{{if eq .ID "ports"}}
+        {{if or .Error .Reason (eq .Verdict "failed")}}<div class="why{{if eq .Verdict "partial"}} minor{{end}}">{{with .Error}}<p><span class="lbl">{{if eq $cap.Verdict "failed"}}Why it failed{{else}}Reported{{end}}</span> <code>{{.}}</code></p>{{end}}{{with .Reason}}<p><span class="lbl">Unsupported</span> {{.}}</p>{{end}}{{template "fixline" .}}</div>{{end}}</li>{{end}}{{if eq .ID "ports"}}
         <li class="portmeth"><span class="capports"><a href="/methodology#ports">Port methodology</a></span></li>{{end}}</ul>
     </details>
   {{end}}
@@ -64,7 +64,7 @@
   {{with .Results}}<details class="hw results-list" id="results-{{$cfg.ID}}">
     <summary><span class="hw-title">{{template "icon" "matrix"}}Diagnostic reports</span><span class="muted">{{len .}}</span><span class="hw-toggle" aria-hidden="true"></span></summary>
     <ul>{{range .}}<li{{if eq .State "retracted"}} class="retracted"{{end}}><a href="/report/{{.Code}}">{{.Code}}</a> <span>tested {{utc .TestedAt}}</span> <span>{{osver .Omarchy .Channel .Kernel}}</span>
-      <span class="muted">{{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}</span>
+      <span class="muted">{{if .TesterHandle}}@{{.TesterHandle}}{{else}}anonymous{{end}} via {{.SourceName}}{{with .SourceVersion}} {{.}}{{end}}</span>{{template "runtags" .}}
       <span class="tally">{{template "vicon" "supported"}}{{.Supported}} {{template "vicon" "partial"}}{{.Partial}} {{template "vicon" "failed"}}{{.Failed}}</span>{{if eq .State "retracted"}} <span class="tag">retracted</span>{{end}}</li>{{end}}</ul>
   </details>{{end}}
   <details class="hw">

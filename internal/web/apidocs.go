@@ -170,7 +170,10 @@ type apiDocsData struct {
 	Quickstart        codeBlock
 	Prompt            codeBlock
 	Error             codeBlock
-	Example           codeBlock   // a full report
+	Example           codeBlock // a full report
+	LiveExample       codeBlock // a report from a live boot
+	PerMac            int
+	PerHourPublic     int
 	NoticeCode        codeBlock   // the consent notice, to copy
 	MCP               []codeBlock // connecting an assistant, and a call to try
 	MCPCallsPerMinute int
@@ -178,12 +181,13 @@ type apiDocsData struct {
 }
 
 func (s *Server) apiDocs(w http.ResponseWriter, r *http.Request) {
-	d := apiDocsData{Base: BaseURL, Notice: ConsentNotice, PerHour: ReportsPerHour, Req: map[string]codeBlock{}, Res: map[string]codeBlock{}, Changelog: apiChangelog,
-		Quickstart: codeBlock{Title: "Quickstart", Tabs: []codeTab{tab("quick", "sh", quickstartSh), tab("quick", "js", quickstartJS), tab("quick", "py", quickstartPy)}},
-		Prompt:     codeBlock{Title: "Prompt for your AI assistant", Tabs: []codeTab{tab("prompt", "text", aiPrompt)}},
-		Error:      codeBlock{Title: "Response: 400 Bad Request", Tabs: []codeTab{tab("error", "json", errorReply)}},
-		Example:    codeBlock{Title: "report.json", Tabs: []codeTab{tab("example", "json", apiExample)}},
-		NoticeCode: codeBlock{Title: "Consent notice", Tabs: []codeTab{tab("notice", "text", ConsentNotice)}},
+	d := apiDocsData{Base: BaseURL, Notice: ConsentNotice, PerHour: ReportsPerHour, PerMac: ReportsPerDayPerMac, PerHourPublic: ReportsPerHourPublic, Req: map[string]codeBlock{}, Res: map[string]codeBlock{}, Changelog: apiChangelog,
+		Quickstart:  codeBlock{Title: "Quickstart", Tabs: []codeTab{tab("quick", "sh", quickstartSh), tab("quick", "js", quickstartJS), tab("quick", "py", quickstartPy)}},
+		Prompt:      codeBlock{Title: "Prompt for your AI assistant", Tabs: []codeTab{tab("prompt", "text", aiPrompt)}},
+		Error:       codeBlock{Title: "Response: 400 Bad Request", Tabs: []codeTab{tab("error", "json", errorReply)}},
+		Example:     codeBlock{Title: "report.json", Tabs: []codeTab{tab("example", "json", apiExample)}},
+		LiveExample: codeBlock{Title: "A live boot's report.json", Tabs: []codeTab{tab("live-example", "json", apiLiveExample)}},
+		NoticeCode:  codeBlock{Title: "Consent notice", Tabs: []codeTab{tab("notice", "text", ConsentNotice)}},
 	}
 	// How much of each live reply to show: items per array, and how deep
 	// objects are shown before they fold to {…}.
@@ -204,6 +208,7 @@ func (s *Server) apiDocs(w http.ResponseWriter, r *http.Request) {
 		{Method: "POST", Title: "/mcp: try a tool", Tabs: []codeTab{tab("mcp-curl", "sh", mcpCurl)}},
 		{Title: "The answer's text", Tabs: []codeTab{tab("mcp-answer", "text", try)}},
 	}
+	d.Res["snapshot"] = codeBlock{Title: "Response: 200 OK", Tabs: []codeTab{tab("snapshot-res", "json", s.snapshotSample())}}
 	d.Res["submit"] = codeBlock{Title: "Response: 201 Created", Tabs: []codeTab{tab("submit-res", "json", submitReply)}}
 	d.Res["report"] = codeBlock{Title: "Response: 200 OK", Tabs: []codeTab{tab("report-res", "json", reportReply)}}
 	s.render(w, r, http.StatusOK, "api", page{Title: "API Reference", Nav: "api", Styles: []string{"syntax.css", "api.css"}, Scripts: []string{"api.js"},
@@ -422,4 +427,26 @@ const apiExample = `{
     "audio.headphone":  { "status": "not_tested", "reason": "no-equipment" }
   },
   "consent_notice": "This sends your test results to DoesItOmarchy.com. …"
+}`
+
+const apiLiveExample = `{
+  "schema": "doesitomarchy/report/v1",
+  "identifier": "iMac10,1",
+  "context": "live",
+  "tested_at": "2026-10-08T18:30:00-04:00",
+  "omarchy": { "version": "4.0.4", "image": "omaboot-live 2026.10" },
+  "kernel": "7.2.5-3-omarchy",
+  "fixes": ["omaboot.radeon-imac10-1-panel-clock"],
+  "hardware": {
+    "product_name": "iMac10,1",
+    "board_id": "Mac-F2268CC8",
+    "pci": ["1002:9488", "168c:002a"]
+  },
+  "items": {
+    "boot.installer-efi64":      { "status": "supported", "method": "automatic" },
+    "display.native-resolution": { "status": "supported", "method": "challenge",
+                                   "evidence": "tester picked taxi, then banana" },
+    "boot.install":              { "status": "not_tested", "reason": "live-limit" },
+    "thermal.fans":              { "status": "not_tested", "reason": "live-limit" }
+  }
 }`

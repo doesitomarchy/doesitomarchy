@@ -347,3 +347,77 @@ func TestConsentNotice(t *testing.T) {
 		t.Fatalf("%v %q", err, r.ConsentNotice)
 	}
 }
+
+// A live boot decides only what it can (LIVE-PLAN §7, capabilities.yaml
+// `live`), and fixes must be registered.
+func TestLiveReports(t *testing.T) {
+	c := loadCatalog(t)
+	// MacBookAir5,2 (Mid 2012): no T2 chip, a keyboard backlight and a fan.
+	air := `schema: doesitomarchy/report/v1
+config: macbookair5-2-mid-2012-a
+context: live
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
+items:
+  boot.installer-efi64: { status: supported, method: automatic }
+  boot.install: { status: not_tested, reason: live-limit }
+  display.brightness: { status: supported, method: challenge, evidence: "picked pizza, then radio" }
+`
+	tests := []struct {
+		name, yaml string
+		want       []string // substrings of the error; none: valid
+	}{
+		{"live limits respected", air, nil},
+		{"a criterion a live boot can't decide", air + "  thermal.fans: { status: supported, method: automatic }\n", []string{"items.thermal.fans", "can't decide", "live-limit"}},
+		{"T2-only criterion on a Mac without a T2 chip", air + "  input.keyboard-backlight: { status: supported, method: observed }\n", []string{"items.input.keyboard-backlight", "T2 chip", "live-limit"}},
+		{"T2-only criterion on a T2 Mac", strings.Replace(valid(), "boot.install: { status: supported, method: observed }",
+			"boot.install: { status: not_tested, reason: live-limit }\n  input.keyboard-backlight: { status: supported, method: observed }", 1) + "context: live\n", nil},
+		{"installed reports have no live limits", valid() + "  thermal.fans: { status: failed, method: automatic }\n", nil},
+		{"a fix that took effect lifts the limit on its criteria", air + "fixes: [omaboot.applesmc-led-container-of]\n" +
+			"  thermal.fans: { status: supported, method: automatic }\n  input.keyboard-backlight: { status: supported, method: challenge }\n", nil},
+		{"a fix lifts only its own criteria", air + "fixes: [omaboot.applesmc-led-container-of]\n  boot.power-cycle: { status: supported, method: observed }\n",
+			[]string{"items.boot.power-cycle", "can't decide"}},
+		{"unknown fix", valid() + "fixes: [omaboot.no-such-fix]\n", []string{"fixes:", "omaboot.no-such-fix", "not a registered fix"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Items after "fixes:" belong to items again, so move fixes to the end.
+			src := tt.yaml
+			if i := strings.Index(src, "fixes: ["); i >= 0 {
+				j := i + strings.Index(src[i:], "\n") + 1
+				src = src[:i] + src[j:] + src[i:j]
+			}
+			f, err := Parse([]byte(src))
+			if err != nil {
+				t.Fatal(err)
+			}
+			r, err := Validate(f, c, now)
+			if tt.want == nil {
+				if err != nil {
+					t.Fatal(err)
+				}
+				if f.IsLive() && r.Context != "live" || !f.IsLive() && r.Context != "installed" {
+					t.Errorf("context %q", r.Context)
+				}
+				return
+			}
+			if err == nil || !IsValidation(err) {
+				t.Fatalf("want a validation error, got %v", err)
+			}
+			for _, w := range tt.want {
+				if !strings.Contains(err.Error(), w) {
+					t.Errorf("error %q lacks %q", err, w)
+				}
+			}
+		})
+	}
+	// Fixes and replaced parts are kept, scrubbed.
+	f, _ := Parse([]byte(air + "fixes: [omaboot.applesmc-led-container-of]\nreplaced_parts:\n  - { kind: storage, detail: \"OWC Aura Pro X2 SSD, serial S1K5NYAF123456\", ids: [\"OWC Aura Pro X2\"] }\n"))
+	r, err := Validate(f, c, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(r.Fixes) != 1 || len(r.ReplacedParts) != 1 || r.ReplacedParts[0].Kind != "storage" || strings.Contains(r.ReplacedParts[0].Detail, "S1K5NYAF123456") {
+		t.Errorf("fixes %v, parts %+v", r.Fixes, r.ReplacedParts)
+	}
+}

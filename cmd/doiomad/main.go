@@ -38,7 +38,6 @@ Commands:
   maintainers  Who may review reports in /admin: list, add, remove
   shares     Hardware IDs shared from Identify my Mac: list, review
              (doiomad shares help)
-  fixes      Fix issues for failing criteria: list, open, sync (doiomad fixes help)
   unsupported  The maintainer's white flag: list, set, clear
   version    Print the version
   help       Show this help
@@ -75,8 +74,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return cmdSources(rest, stdout, stderr)
 	case "shares":
 		return cmdShares(rest, stdout, stderr)
-	case "fixes":
-		return cmdFixes(rest, stdout, stderr)
 	case "unsupported":
 		return cmdUnsupported(rest, stdout, stderr)
 	case "version", "-v", "--version":
@@ -112,7 +109,7 @@ func cmdValidate(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 	// Each source's mapping must name real criteria.
-	if _, err := results.LoadMapping(catalogFS(dir), "omacdiag", c); err != nil {
+	if _, err := results.LoadSources(catalogFS(dir), c); err != nil {
 		fmt.Fprintf(stderr, "catalog invalid:\n%v\n", err)
 		return 1
 	}

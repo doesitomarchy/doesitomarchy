@@ -83,7 +83,7 @@ type cheatsheetData struct {
 
 var cheatsheetTools = []csTool{
 	csToolFor[mcpSearchIn]("search_macs", "Find Macs by words or fields, with their verdicts."),
-	csToolFor[mcpMacIn]("get_mac", "One Mac's verdict per configuration, with failures, evidence and fixes."),
+	csToolFor[mcpMacIn]("get_mac", "One Mac's verdict per configuration, with failures and their evidence."),
 	csToolFor[mcpIdentifyIn]("identify_mac", "The Mac at hand and its exact configuration."),
 	csToolFor[mcpMacIn]("what_needs_testing", "What's untested or due a re-test on a Mac, and how to help."),
 }

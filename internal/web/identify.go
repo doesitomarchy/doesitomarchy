@@ -346,3 +346,15 @@ func (l *rateLimiter) allow(key string, now time.Time) bool {
 	l.seen[key] = append(ts, now)
 	return true
 }
+
+// wait is how long until key may have another event: until its oldest one
+// in the window leaves it.
+func (l *rateLimiter) wait(key string, now time.Time) time.Duration {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	ts := l.seen[key]
+	if len(ts) < l.limit {
+		return 0
+	}
+	return max(0, ts[len(ts)-l.limit].Add(l.window).Sub(now))
+}

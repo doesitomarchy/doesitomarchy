@@ -1,21 +1,35 @@
 {{define "content"}}{{with .Data}}
 <article class="fixes-page">
-<h1>Fixes</h1>
-<p class="lead">#WeCanFixEverything. Each fix is an issue in <a href="https://github.com/{{.Repo}}" rel="noopener">{{.Repo}}</a>, covering one test criterion on one component (so every Mac with that part) or on one configuration. Comment, ask to be assigned, or link a pull request; this page follows the issue within seconds.</p>
-{{range .Groups}}
-<section class="fix-group">
-  <h2>{{.Title}} <span class="muted count">{{len .Rows}}</span></h2>
-  {{if .Rows}}<div class="table-wrap" tabindex="0" role="region" aria-label="{{.Title}}"><table class="browse fixes">
-    <thead><tr><th scope="col">Issue</th><th scope="col">Criterion</th><th scope="col">On</th><th scope="col" class="num">Configurations</th><th scope="col">Status</th></tr></thead>
-    <tbody>{{range .Rows}}<tr>
-      <td><a href="{{.Fix.URL}}" rel="noopener">#{{.Fix.Issue}}</a></td>
-      <td>{{.Criterion}}</td>
-      <td>{{if .ScopeURL}}<a href="{{.ScopeURL}}">{{.Scope}}</a>{{else}}{{.Scope}}{{end}}</td>
-      <td class="num">{{.Configs}}{{if .Failing}} <span class="muted">({{.Failing}} failing)</span>{{end}}</td>
-      <td>{{if eq .State "claimed"}}@{{.Fix.Assignee}} · last activity {{slice .Fix.LastActivity 0 10}}{{else if eq .State "proposed"}}fix proposed{{if .Fix.Assignee}} by @{{.Fix.Assignee}}{{end}}{{else if eq .State "fixed"}}fixed {{slice .Fix.ClosedAt 0 10}}{{with .Fix.FixLink}} · <a class="inline-link" href="{{.}}" rel="noopener">the change</a>{{end}}{{else if eq .State "stale"}}open · the last claim went quiet{{else}}open{{end}}</td>
-    </tr>{{end}}</tbody>
-  </table></div>{{else}}<p class="muted">None right now.</p>{{end}}
+<h1>OmaBoot? fixes</h1>
+<p class="tagline-big">#WeCanFixEverything</p>
+<p class="lede">OmaBoot? tests Macs from a live boot, and carries a few fixes that stock Omarchy doesn't have yet, so a Mac that needs one can still be tested. A report lists the fixes that took effect. Its results count for the configuration as usual, marked <em>with OmaBoot? &lt;fix&gt;</em>, linked to the fix's entry below.</p>
+<section class="fix-upstream" aria-labelledby="upstream-h">
+<h2 id="upstream-h">Where fixes really happen</h2>
+<p>A fix here is a stopgap. The lasting fix lands upstream, where every Mac gets it:</p>
+<ul>
+  <li>Kernel drivers: the <a href="https://subspace.kernel.org/vger.kernel.org.html" rel="noopener">Linux kernel mailing lists</a> and the subsystem's maintainers (listed in the kernel's <code>MAINTAINERS</code> file).</li>
+  <li>T2 and Apple hardware patches: <a href="https://t2linux.org" rel="noopener">t2linux</a>, and its <a href="https://github.com/t2linux/linux-t2-patches" rel="noopener">kernel patches</a>.</li>
+  <li>Omarchy itself: <a href="https://github.com/omacom/omarchy" rel="noopener">omacom/omarchy</a>, and <a href="https://github.com/omacom/omarchy-pkgs" rel="noopener">omacom/omarchy-pkgs</a> for its <code>linux-omarchy</code> kernel.</li>
+  <li>Packaging: <a href="https://gitlab.archlinux.org/archlinux/packaging" rel="noopener">Arch Linux packaging</a>.</li>
+</ul>
+<p>Found what a Mac needs? Send it upstream, then <a href="/contribute">tell us</a>: once it ships in Omarchy, a new report turns the result green.</p>
 </section>
-{{end}}
+<ol class="fix-list">
+{{range $n, $f := .Fixes}}<li class="fix-entry">
+<h2 id="{{.ID}}"><span class="fix-num">{{add $n 1}}.</span> {{.Name}}</h2>
+<p>{{.Changes}}</p>
+<table class="defs fixdefs">
+  <tbody>
+    <tr><th scope="row">Hardware</th><td>{{.Targets.Hardware}}</td></tr>
+    {{with .Targets.Configs}}<tr><th scope="row">Configurations</th><td>{{range $i, $id := .}}{{if $i}}<br>{{end}}{{template "cfglink" index $.Data.Configs $id}}{{end}}</td></tr>{{end}}
+    <tr><th scope="row">Criteria</th><td>{{range $i, $id := .Targets.Criteria}}{{if $i}}, {{end}}{{index $.Data.CapNames $id}}{{end}}</td></tr>
+    <tr><th scope="row">Upstream</th><td>{{range $i, $u := .Upstream}}{{if $i}}<br>{{end}}<a href="{{$u.URL}}" rel="noopener">{{$u.Title}}</a>{{end}}{{with .UpstreamNote}}<br>{{.}}{{end}}</td></tr>
+    {{with .TestedOn}}<tr><th scope="row">Tested on</th><td>{{range $i, $id := .}}{{if $i}}<br>{{end}}{{template "cfglink" index $.Data.Configs $id}}{{end}}</td></tr>{{end}}
+    <tr><th scope="row">Since</th><td>OmaBoot? {{.Since}}</td></tr>
+    <tr><th scope="row">Report ID</th><td><code>{{.ID}}</code></td></tr>
+  </tbody>
+</table>
+</li>{{else}}<li class="muted">No fixes yet.</li>{{end}}
+</ol>
 </article>
 {{end}}{{end}}

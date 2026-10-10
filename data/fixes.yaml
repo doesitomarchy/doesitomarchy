@@ -1,0 +1,44 @@
+# OmaBoot? fixes: changes OmaBoot? makes in its live system, so a live boot
+# matches what an installed Omarchy gets, or gets ahead of it. A report lists
+# the ones that took effect on the Mac in `fixes`; unknown IDs are rejected.
+# Results that ran with a fix still count for the configuration and show
+# "with OmaBoot? <name>", linked to its entry on /fixes (/fixes#<id>).
+#
+#   id        omaboot.<slug>; permanent, since reports reference it
+#   name      short: it follows "with OmaBoot? "
+#   changes   what it changes, in a sentence or two
+#   targets   hardware: which Macs, in words · devices: PCI/USB IDs it acts
+#             on, with a subsystem when it checks that too · configs: when
+#             it's that narrow · criteria: the results it can change
+#   upstream  the fix's source, or the project it's heading to
+#   tested_on configurations it was tried on, on real hardware
+#   since     the first OmaBoot? build carrying it: a release ("2026.10") or
+#             a dev build ("dev <commit>")
+
+- id: omaboot.radeon-imac10-1-panel-clock
+  name: radeon panel clock fix
+  changes: "Corrects the built-in panel's clock in radeon's in-memory copy of the video BIOS's panel table: the BIOS says 108 MHz, the panel's EDID 138.5 MHz. Without it, the screen splits into distorted parts unless the Mac boots with nomodeset. It never writes the ROM."
+  targets:
+    hardware: "The 21.5-inch iMac10,1 with the Radeon HD 4670. It acts only on GPU 1002:9488 with subsystem 106b:00b6 driving a 1920×1080 panel, so every other Mac runs stock radeon."
+    devices:
+      - { id: "pci:1002:9488", subsystem: "106b:00b6" }
+    configs: [imac10-1-21-late-2009-b]
+    criteria: [display.native-resolution, graphics.discrete]
+  upstream:
+    - title: "omarchy-vintage-intel-imac-fix 0d5a406a31 (patches/panel-encoder-combined.patch)"
+      url: https://github.com/choyer/omarchy-vintage-intel-imac-fix/commit/0d5a406a31
+  tested_on: [imac10-1-21-late-2009-b]
+  since: "dev 1d36b14"
+
+- id: omaboot.applesmc-led-container-of
+  name: applesmc keyboard backlight fix
+  changes: "Fixes an oops while applesmc starts on Macs whose SMC has a keyboard-backlight key: t2linux patch 3001 takes the SMC's data from the backlight's LED device, which doesn't hold it. A one-line container_of fix. With it, fans, the light sensor and the keyboard backlight work in a live boot."
+  targets:
+    hardware: "Macs without a T2 chip whose SMC has a keyboard-backlight key, booted on OmaBoot?'s T2 kernel (linux-t2), which carries the t2linux applesmc patches. Other Macs load it without harm."
+    criteria: [input.keyboard-backlight, input.ambient-light-sensor, thermal.fans]
+  upstream:
+    - title: t2linux kernel patches
+      url: https://github.com/t2linux/linux-t2-patches
+  upstream_note: "Not upstream yet: a pull request to t2linux is planned."
+  tested_on: [macbookair5-2-mid-2012-a, imac10-1-21-late-2009-b, imac18-3-5k-2017-a]
+  since: "dev 1d36b14"

@@ -34,6 +34,9 @@ AI assistants can connect to the MCP server at {{.Base}}/mcp (Streamable HTTP; M
 - POST /api/v1/reports with `Authorization: Bearer doi_…` and one report (JSON or YAML) in the doesitomarchy/report/v1 format. Up to {{.PerHour}} reports per source per hour.
 - New reports are pending until a maintainer reviews them; GET /api/v1/reports/{code} tells where one stands.
 - Before submitting, the tool must show the tester this notice and let them stop, then send the text shown in `consent_notice`: "{{.Notice}}"
+- Each item says how it was tested: automatic, observed, fixture or challenge (the tool showed or played a random code and a person, a phone or a capture card gave it back). An untested item is not_tested, with a reason.
+- From a live boot (such as OmaBoot? Live), send `"context": "live"`. Each criterion's `live` flag (yes, no, or t2: only on Macs with a T2 chip) says whether a live boot can decide it; send the rest as not_tested with reason live-limit. List registered fixes that took effect in `fixes` (unknown IDs are rejected) and parts that aren't the Mac's own in `replaced_parts`. A source whose key ships in a public image may submit {{.PerHourPublic}} reports an hour, and {{.PerMac}} a day from each Mac.
+- GET /api/v1/snapshot is what a test tool needs from the catalog offline: match data, the criteria with their live flags, and the fixes. Send its ETag back in If-None-Match; an unchanged snapshot answers 304.
 - Only send results from real test runs on real hardware.
 
 ## Identify a Mac from its hardware

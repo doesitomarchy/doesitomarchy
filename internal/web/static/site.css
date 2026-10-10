@@ -421,6 +421,7 @@ dialog.overlay .foot { border-top: 1px solid var(--line); padding: 0.35rem 0.7re
 .rally .tagline { font-weight: 700; color: var(--accent); }
 .rally .help { font-weight: 700; color: var(--accent-contrast); background: var(--accent); padding: 0.1rem 0.6rem; }
 .rally .help:hover { text-decoration: none; filter: brightness(1.08); }
+.rally .rally-fixes { font-size: 0.9rem; text-decoration: underline; text-underline-offset: 2px; }
 
 /* ── Konami easter egg ──────────────────────────────────────────────── */
 .konami { position: fixed; inset: 0; z-index: 100; background: color-mix(in srgb, var(--bg) 86%, transparent); opacity: 0; transition: opacity 0.45s ease; }
@@ -742,13 +743,14 @@ ul.pmwhy .pmword[data-st="failed"] { color: var(--bad); }
 }
 .report-ports h2 { font-size: 1rem; margin: 1rem 0 0.4rem; }
 
-/* Fix tracking (PLAN §26). */
-.fixline b { font-weight: 600; }
-.fixes-page .lead { max-width: 70ch; }
-.fix-group { margin: 1.5rem 0; }
-.fix-group h2 { display: flex; gap: 0.5rem; align-items: baseline; }
-.fix-group .count { font-size: 13px; }
+/* The OmaBoot? fixes page, and the admin's failing-criteria table. */
+.fixes-page .tagline-big { font: 700 clamp(1.3rem, 3vw, 1.8rem)/1.2 var(--mono); color: var(--accent); margin: 0.25rem 0 0.75rem; }
+.fix-upstream, .fix-entry { font: 15px/1.6 var(--sans); }
+.fix-upstream p, .fix-upstream ul, .fix-entry > p { max-width: 70ch; }
+.fixes-page h2 { font-family: var(--mono); margin-top: 1.75rem; }
+.fix-upstream a, .fix-entry > p a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+/* The fixes, numbered, with a rule above each and below the last. */
+ol.fix-list { list-style: none; margin: 2rem 0 0; padding: 0; border-bottom: 1px solid var(--line-strong); }
+ol.fix-list > li { border-top: 1px solid var(--line-strong); padding: 0.25rem 0 1.25rem; }
+.fix-num { color: var(--accent); margin-right: 0.15rem; }
 table.fixes td { vertical-align: top; font-size: 13px; }
-table.fixes td.num, table.fixes th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.fix-actions { display: grid; gap: 0.4rem; justify-items: start; }
-table.fixes a.inline-link { text-decoration: underline; }
