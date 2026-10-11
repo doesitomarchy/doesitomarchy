@@ -293,6 +293,9 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 			case cp.Live == catalog.LiveT2 && m != nil && m.SecurityChip != "t2":
 				bad("items.%s: a live boot can decide %s (%s) only on a Mac with a T2 chip, and %s has none; send it as not_tested with reason %s",
 					key, id, cp.Name, m.Identifier, report.ReasonLiveLimit)
+			case cp.Live == catalog.LiveKernel && (m == nil || !report.InstallKernel(m.SecurityChip == "t2", f.Kernel)):
+				bad("items.%s: a live boot can decide %s (%s) only when it runs the kernel an install gives this Mac (linux-t2 on Macs with a T2 chip, linux-omarchy on the others), not %q; send it as not_tested with reason %s",
+					key, id, cp.Name, f.Kernel, report.ReasonLiveLimit)
 			}
 		}
 		it.Note, it.Evidence = Scrub(strings.TrimSpace(fi.Note)), Scrub(strings.TrimSpace(fi.Evidence))

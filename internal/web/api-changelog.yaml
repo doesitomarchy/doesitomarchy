@@ -4,6 +4,13 @@
 # Add an entry with every release that changes the API or the report format;
 # site pages (even API-related ones, like /api/register) don't belong here.
 
+- date: "2026-10-10"
+  title: Live results on the install's kernel
+  summary: "A criterion's `live` flag has a new value, `kernel`: a live boot decides it only when it runs the kernel an install gives that Mac (a kernel ending in `-t2` on Macs with a T2 chip, `-omarchy` on the others), read from the report's `kernel`. Otherwise it goes as `not_tested` with reason `live-limit`, as before. Fans, the ambient light sensor and the keyboard backlight use it."
+  notes:
+    - "`GET /api/v1/snapshot`: each release gains its `name` (e.g. \"iMac (21.5-inch, Late 2009)\"), so a tool can name a Mac offline."
+    - "`pkg/report` gains `LiveKernel` and `InstallKernel`."
+
 - date: "2026-10-09"
   title: Live boots, challenges and the catalog snapshot
   summary: "Reports can come from a live boot, such as OmaBoot? Live: they send `\"context\": \"live\"`, and each criterion's new `live` flag (`yes`, `no` or `t2`) says whether a live boot can decide it. The rest go as `not_tested` with the new reason `live-limit`; a live result for them is rejected. All new fields are optional, so existing reports and tools are unchanged."

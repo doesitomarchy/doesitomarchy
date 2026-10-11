@@ -253,7 +253,7 @@ func TestAPILive(t *testing.T) {
 			t.Errorf("If-None-Match %s: %d", inm, res.StatusCode)
 		}
 	}
-	if _, caps, _ := apiCall(t, c, "GET", ts.URL+"/api/v1/capabilities", "", nil); !strings.Contains(toJSON(caps), `"live":"t2"`) {
+	if _, caps, _ := apiCall(t, c, "GET", ts.URL+"/api/v1/capabilities", "", nil); !strings.Contains(toJSON(caps), `"live":"kernel"`) {
 		t.Error("capabilities lack the live flag")
 	}
 

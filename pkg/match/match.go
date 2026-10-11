@@ -33,6 +33,7 @@ type SnapshotMac struct {
 
 // SnapshotRelease is one release of a Mac.
 type SnapshotRelease struct {
+	Name     string           `json:"name,omitempty" doc:"The release's name, e.g. iMac (21.5-inch, Late 2009)"`
 	BoardIDs []string         `json:"board_ids,omitempty" doc:"Board IDs tied to this release by real machines"`
 	Configs  []SnapshotConfig `json:"configs"`
 }

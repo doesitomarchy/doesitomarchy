@@ -42,7 +42,7 @@ func Snapshot(c *catalog.Catalog) pm.Snapshot {
 			sm.SecurityChip = m.SecurityChip
 		}
 		for _, r := range m.Releases {
-			sr := pm.SnapshotRelease{BoardIDs: r.BoardIDs, Configs: []pm.SnapshotConfig{}}
+			sr := pm.SnapshotRelease{Name: r.Name, BoardIDs: r.BoardIDs, Configs: []pm.SnapshotConfig{}}
 			for _, cfg := range r.Configs {
 				sc := pm.SnapshotConfig{ID: cfg.ID}
 				for _, ref := range cfg.Components {

@@ -17,7 +17,7 @@
 
 - id: omaboot.radeon-imac10-1-panel-clock
   name: radeon panel clock fix
-  changes: "Corrects the built-in panel's clock in radeon's in-memory copy of the video BIOS's panel table: the BIOS says 108 MHz, the panel's EDID 138.5 MHz. Without it, the screen splits into distorted parts unless the Mac boots with nomodeset. It never writes the ROM."
+  changes: "Corrects the built-in panel's clock in radeon's in-memory copy of the video BIOS's panel table: the BIOS says 108 MHz, the panel's EDID 138.5 MHz. Without it, the screen splits into distorted parts unless the Mac boots with nomodeset. It never writes the ROM. OmaBoot? Live also boots this Mac with radeon.dpm=0 radeon.pcie_gen2=0 radeon.uvd=0, as the install fix does: with radeon's defaults the GPU locks up under load."
   targets:
     hardware: "The 21.5-inch iMac10,1 with the Radeon HD 4670. It acts only on GPU 1002:9488 with subsystem 106b:00b6 driving a 1920×1080 panel, so every other Mac runs stock radeon."
     devices:
