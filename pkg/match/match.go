@@ -44,6 +44,9 @@ type SnapshotConfig struct {
 	Parts []SnapshotPart `json:"parts,omitempty" doc:"Its standard parts that have hardware IDs"`
 	BTO   []string       `json:"bto_ids,omitempty" doc:"Hardware IDs of its build-to-order parts"`
 	CPUs  []string       `json:"cpus,omitempty" doc:"Its CPU models, standard and build-to-order, e.g. Core i7-2720QM"`
+	// Panel isn't used for matching; it tells a tool what "native resolution"
+	// means for the built-in display (a 5K iMac's EDID asks for less).
+	Panel string `json:"panel,omitempty" doc:"The built-in display's native resolution, e.g. 2560x1600; empty without one"`
 }
 
 // SnapshotPart is one part of a configuration and the IDs it's known by.

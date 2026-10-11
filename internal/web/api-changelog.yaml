@@ -4,6 +4,10 @@
 # Add an entry with every release that changes the API or the report format;
 # site pages (even API-related ones, like /api/register) don't belong here.
 
+- date: "2026-10-11"
+  title: Panel resolution in the snapshot
+  summary: "`GET /api/v1/snapshot`: each configuration gains `panel`, its built-in display's native resolution (e.g. `5120x2880`; absent without a built-in display), so a test tool can judge \"native resolution\" offline. A 5K iMac's display asks the GPU for less than its panel has, so the panel's own mode isn't enough. Additive; nothing else changes."
+
 - date: "2026-10-10"
   title: Live results on the install's kernel
   summary: "A criterion's `live` flag has a new value, `kernel`: a live boot decides it only when it runs the kernel an install gives that Mac (a kernel ending in `-t2` on Macs with a T2 chip, `-omarchy` on the others), read from the report's `kernel`. Otherwise it goes as `not_tested` with reason `live-limit`, as before. Fans, the ambient light sensor and the keyboard backlight use it."

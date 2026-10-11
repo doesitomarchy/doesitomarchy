@@ -45,6 +45,9 @@ func Snapshot(c *catalog.Catalog) pm.Snapshot {
 			sr := pm.SnapshotRelease{Name: r.Name, BoardIDs: r.BoardIDs, Configs: []pm.SnapshotConfig{}}
 			for _, cfg := range r.Configs {
 				sc := pm.SnapshotConfig{ID: cfg.ID}
+				if cfg.Display != nil {
+					sc.Panel = cfg.Display.Resolution
+				}
 				for _, ref := range cfg.Components {
 					if comp := c.Components[ref]; comp != nil && len(comp.IDs) > 0 {
 						sc.Parts = append(sc.Parts, pm.SnapshotPart{Kind: comp.Kind, IDs: comp.IDs})
