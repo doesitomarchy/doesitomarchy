@@ -2,6 +2,10 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-10"
+  title: Fans, light sensor and keyboard backlight from live boots
+  summary: "A live boot can now decide three more criteria, fans, the ambient light sensor and the keyboard backlight, when it runs the kernel an install gives that Mac (linux-omarchy, or linux-t2 on Macs with a T2 chip). OmaBoot? Live boots that kernel by default, so its reports can include them; a live boot on another kernel still sends them as not tested."
+
 - date: "2026-10-09"
   title: Results from live boots, and OmaBoot? fixes
   summary: "Results can now come from OmaBoot? Live, which tests a Mac from a USB stick without installing anything. They count like an installed system's for what a live boot can decide, and carry a Live boot tag. Each criterion now says whether a live boot can decide it: 37 can, 8 can't (installing, restarting the installed system, 32-bit EFI, the light sensor, the Touch Bar, Touch ID, fans, and the Touch Bar camera bridge), and the keyboard backlight only on Macs with a T2 chip."

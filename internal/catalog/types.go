@@ -75,6 +75,9 @@ const (
 	LiveYes = "yes"
 	LiveNo  = "no"
 	LiveT2  = "t2"
+	// LiveKernel: decidable live only when the live system runs the kernel an install gives
+	// the Mac (report.InstallKernel).
+	LiveKernel = "kernel"
 )
 
 // Category returns the category part of the capability ID ("boot" for "boot.install").
