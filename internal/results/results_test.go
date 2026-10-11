@@ -223,6 +223,7 @@ func TestScrub(t *testing.T) {
 		{"carl@work-mbp:~$ lspci", "work-mbp", "lspci"},
 		{"[carl@work-mbp ~]$ ls", "work-mbp", "ls"},
 		{"contact me at carl@example.com", "carl@example.com", "contact me at"},
+		{`hid-F0T036401FNJKNCAQ-battery-144: status "Charging", 80 %`, "F0T036401FNJKNCAQ", "hid-[redacted]-battery-144: status"},
 	}
 	for _, tt := range tests {
 		got := Scrub(tt.in)

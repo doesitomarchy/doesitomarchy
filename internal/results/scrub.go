@@ -21,6 +21,9 @@ var scrubRules = []struct {
 	// "serial C02XG0FDH7JY" without a separator: only an upper-case code of
 	// 8–20 characters, so "serial port" and the like survive.
 	{regexp.MustCompile(`((?i:\bserial(?:\s+number)?)\s+)[A-Z0-9]{8,20}\b`), "${1}" + Redacted},
+	// Peripheral batteries: the kernel names them hid-<uniq>-battery, and uniq is
+	// often the device's serial ("hid-F0T036401FNJKNCAQ-battery-144").
+	{regexp.MustCompile(`\bhid-[^\s"',;/]+-battery\b`), "hid-" + Redacted + "-battery"},
 	// MAC addresses: 6 hex pairs separated by ":" or "-".
 	{regexp.MustCompile(`(?i)\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b`), Redacted},
 	// IPv6: hex groups with "::", or at least four colon-separated groups (times have two).
