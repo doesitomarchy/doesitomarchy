@@ -29,4 +29,4 @@ releases:
         display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
         components: [gpu/ati-radeon-hd-4850, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/broadcom-bcm5764m, firewire/ti-xio2213, storage/intel-5-series-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
         ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive, displayport-audio]

@@ -35,7 +35,7 @@ releases:
         display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
         components: [gpu/nvidia-geforce-9400m, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/nvidia-mcp79, firewire/ti-xio2213, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
         ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive, displayport-audio]
       - id: imac10-1-21-late-2009-b
         label: "Core 2 Duo 3.06 GHz \u00b7 Radeon HD 4670"
         order_numbers: [MC413LL/A]
@@ -48,7 +48,7 @@ releases:
         display: { inches: 21.5, resolution: 1920x1080, panel: "LED IPS" }
         components: [gpu/ati-radeon-hd-4670, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/nvidia-mcp79, firewire/ti-xio2213, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
         ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive, displayport-audio]
   - id: "27-late-2009"
     name: "iMac (27-inch, Late 2009)"
     announced: 2009-10-20
@@ -69,4 +69,4 @@ releases:
         display: { inches: 27, resolution: 2560x1440, panel: "LED IPS" }
         components: [gpu/ati-radeon-hd-4670, wifi/atheros-ar928x, bluetooth/apple-05ac-8215, audio/cirrus-cs4206, ethernet/nvidia-mcp79, firewire/ti-xio2213, storage/nvidia-mcp79-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242, card-reader/apple-usb-8403]
         ports: { usb-a-2: 4, firewire-800: 1, mini-displayport: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1, sd-card: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive, displayport-audio]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive, displayport-audio]
