@@ -30,7 +30,7 @@ releases:
         display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
         components: [gpu/ati-radeon-hd-2400-xt, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
         ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive]
       - id: imac8-1-20-early-2008-b
         label: "Core 2 Duo 2.66 GHz \u00b7 Radeon HD 2600 Pro"
         order_numbers: [MB324LL/A]
@@ -42,7 +42,7 @@ releases:
         display: { inches: 20, resolution: 1680x1050, panel: "LCD" }
         components: [gpu/ati-radeon-hd-2600-pro, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
         ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive]
   - id: "24-early-2008"
     name: "iMac (24-inch, Early 2008)"
     announced: 2008-04-28
@@ -62,7 +62,7 @@ releases:
         display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
         components: [gpu/ati-radeon-hd-2600-pro, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
         ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive]
       - id: imac8-1-24-early-2008-b
         label: "Core 2 Duo 3.06 GHz \u00b7 GeForce 8800 GS"
         order_numbers: [MB398LL/A]
@@ -74,4 +74,4 @@ releases:
         display: { inches: 24, resolution: 1920x1200, panel: "LCD" }
         components: [gpu/nvidia-geforce-8800-gs, wifi/broadcom-bcm4321, bluetooth/apple-05ac-820f, audio/realtek-alc889a, ethernet/marvell-88e8058, firewire/lsi-fw643, storage/intel-ich8m-sata, camera/apple-isight-05ac-8502, ir/apple-05ac-8242]
         ports: { usb-a-2: 3, firewire-400: 1, firewire-800: 1, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive]

@@ -28,4 +28,4 @@ releases:
         display: { inches: 17, resolution: 1440x900, panel: "LCD" }
         components: [gpu/intel-gma-950, wifi/broadcom-bcm4311, bluetooth/apple-05ac-8206, audio/sigmatel-stac9221, ethernet/marvell-88e8053, firewire/lsi-fw322, storage/intel-ich7-sata, camera/apple-isight-05ac-8300, ir/apple-05ac-8240]
         ports: { usb-a-2: 3, firewire-400: 2, mini-dvi: 1, ethernet-gbe: 1, audio-in: 1, audio-in-optical: 1, audio-out: 1, audio-out-optical: 1 }
-        features: [builtin-display, builtin-speaker, builtin-mic, fan, ir-receiver, optical-drive]
+        features: [builtin-display, builtin-speaker, builtin-mic, fan, ambient-light-sensor, ir-receiver, optical-drive]
