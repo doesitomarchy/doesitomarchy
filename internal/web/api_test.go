@@ -241,6 +241,17 @@ func TestAPILive(t *testing.T) {
 	if r := match.New(snap.Match).Match(match.Probe{ProductName: "MacBookPro8,2", PCI: []string{"1002:6760"}}); r.Best() != "macbookpro8-2-15-early-2011-a" {
 		t.Errorf("matching on the snapshot: %+v", r)
 	}
+	panels := map[string]string{}
+	for _, m := range snap.Match.Macs {
+		for _, r := range m.Releases {
+			for _, cf := range r.Configs {
+				panels[cf.ID] = cf.Panel
+			}
+		}
+	}
+	if p, ok := panels["imac18-3-5k-2017-a"]; p != "5120x2880" || !ok || panels["macmini6-2-late-2012-a"] != "" {
+		t.Errorf("snapshot panels: iMac18,3 %q, Mac mini %q", p, panels["macmini6-2-late-2012-a"])
+	}
 	for _, inm := range []string{`"` + snap.Version + `"`, `W/"` + snap.Version + `", "other"`, "*"} {
 		req, _ := http.NewRequest("GET", ts.URL+"/api/v1/snapshot", nil)
 		req.Header.Set("If-None-Match", inm)
