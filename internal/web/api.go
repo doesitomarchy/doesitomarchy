@@ -33,6 +33,22 @@ var ReportsPerHourPublic = 30
 // (OmaBoot? Live). A Mac is its hardware fingerprint: no serial numbers.
 var ReportsPerDayPerMac = 5
 
+// vmVendors are PCI vendor IDs only virtual machines show: QEMU's emulated VGA (1234), Red Hat's
+// QEMU devices (1b36) and virtio (1af4).
+var vmVendors = []string{"1234:", "1b36:", "1af4:"}
+
+// fromVM says whether a report's PCI IDs come from a virtual machine (Options.ExemptVMs).
+func fromVM(f *results.File) bool {
+	for _, id := range results.ProbeFromHardware(f.Hardware, f.Identifier).PCI {
+		for _, v := range vmVendors {
+			if strings.HasPrefix(strings.ToLower(id), v) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // publicKeySources are the sources limited per Mac.
 var publicKeySources = map[string]bool{"boot-live": true}
 
@@ -477,7 +493,7 @@ func (s *Server) apiSubmit(w http.ResponseWriter, r *http.Request) {
 		apiFail(w, http.StatusBadRequest, "invalid report", err.Error())
 		return
 	}
-	if publicKeySources[src.ID] {
+	if publicKeySources[src.ID] && !(s.opt.ExemptVMs && fromVM(f)) {
 		// The key is public, so the limit is per Mac, counting only reports that would be stored.
 		now := time.Now()
 		if key := src.ID + " " + results.HardwareFingerprint(f); !s.macLimit.allow(key, now) {
