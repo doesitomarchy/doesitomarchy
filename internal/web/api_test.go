@@ -6,13 +6,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/internal/testdb"
 	"github.com/doesitomarchy/doesitomarchy/pkg/match"
 	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
@@ -341,5 +344,39 @@ items:
 	}
 	if ReportsPerHourPublic >= ReportsPerHour || old >= ReportsPerHour {
 		t.Error("the public key's hourly limit should be below the usual one")
+	}
+}
+
+// TestAPIExemptVMs: staging's smoke-test VM isn't held to the per-Mac limit, and only when the
+// server is told so.
+func TestAPIExemptVMs(t *testing.T) {
+	vm := []byte(`schema: doesitomarchy/report/v1
+identifier: MacBookAir5,2
+context: live
+hardware: { board_id: Mac-2E6FAB96566FE58C, pci: ["1234:1111", "8086:29c0"] }
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
+items:
+  boot.install: { status: not_tested, reason: live-limit }
+`)
+	for _, exempt := range []bool{false, true} {
+		st, c := testdb.Open(t)
+		srv, err := New(st, c, slog.New(slog.NewTextHandler(io.Discard, nil)), Options{Version: "test", ExemptVMs: exempt})
+		if err != nil {
+			t.Fatal(err)
+		}
+		ts := httptest.NewServer(srv.Handler())
+		key, err := st.AddSource(context.Background(), "boot-live", "OmaBoot? Live", "https://doesitboot.com")
+		if err != nil {
+			t.Fatal(err)
+		}
+		last := 0
+		for i := 0; i <= ReportsPerDayPerMac; i++ {
+			last, _, _ = apiCall(t, ts.Client(), "POST", ts.URL+"/api/v1/reports", key, vm)
+		}
+		ts.Close()
+		if want := map[bool]int{false: 429, true: 201}[exempt]; last != want {
+			t.Errorf("ExemptVMs %v: report %d got %d, want %d", exempt, ReportsPerDayPerMac+1, last, want)
+		}
 	}
 }

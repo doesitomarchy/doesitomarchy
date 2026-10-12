@@ -160,7 +160,7 @@ func cmdServe(args []string, stdout, stderr io.Writer) int {
 	srv, err := web.New(st, c, log, web.Options{Version: version, CatalogHash: hash, CatalogDate: catalogDate, CatalogCommit: catalogCommit,
 		Demo: *demo, PurgeZone: os.Getenv("CF_ZONE_ID"), PurgeToken: os.Getenv("CF_PURGE_TOKEN"),
 		AccessTeam: os.Getenv("CF_ACCESS_TEAM"), AccessAUD: os.Getenv("CF_ACCESS_AUD"), AdminInsecure: *adminInsecure,
-		CatalogFS: catalogFS(*dataDir), BuildsAPI: buildsAPI(*demo)})
+		CatalogFS: catalogFS(*dataDir), BuildsAPI: buildsAPI(*demo), ExemptVMs: os.Getenv("DOIOMAD_EXEMPT_VMS") == "1"})
 	log.Info("views and search index built", "ms", time.Since(start).Milliseconds(), "demo", *demo)
 	if err != nil {
 		log.Error("templates", "err", err)
