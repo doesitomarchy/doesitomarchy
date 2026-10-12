@@ -9,6 +9,7 @@ import "github.com/doesitomarchy/doesitomarchy/pkg/match"
 // and fetches a newer one when it's online.
 type CatalogSnapshot struct {
 	Version      string              `json:"version" doc:"Changes whenever the content does; the response's ETag is this value, quoted"`
+	Date         string              `json:"date,omitempty" doc:"The day the catalog's content last changed, YYYY-MM-DD"`
 	Match        match.Snapshot      `json:"match" doc:"Every Mac's identifier, board IDs and configurations with their hardware IDs and CPUs, for matching a Mac offline"`
 	Capabilities []SnapshotCriterion `json:"capabilities" doc:"The test criteria, with whether a live boot can decide each"`
 	Fixes        []BootFix           `json:"fixes" doc:"The registered OmaBoot? fixes a report may list in fixes"`

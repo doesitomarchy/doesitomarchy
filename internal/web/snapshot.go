@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/match"
@@ -19,8 +20,12 @@ import (
 // for the life of the process, so the body and its ETag are built once.
 
 // catalogSnapshot builds the snapshot from the catalog. Its version is a
-// hash of the content, so it changes exactly when the content does.
-func catalogSnapshot(c *catalog.Catalog) (report.CatalogSnapshot, []byte) {
+// hash of the content, so it changes exactly when the content does. Its date
+// is the catalog's last change: date, the day of the last commit to the
+// catalog data that the build stamps (Options.CatalogDate), or, in a build
+// without that stamp, the newest entry in the catalog's changelog. Neither
+// goes into the hash.
+func catalogSnapshot(c *catalog.Catalog, date string) (report.CatalogSnapshot, []byte) {
 	x := report.CatalogSnapshot{Match: match.Snapshot(c), Capabilities: []report.SnapshotCriterion{}, Fixes: []report.BootFix{}}
 	for _, cp := range c.Capabilities {
 		x.Capabilities = append(x.Capabilities, report.SnapshotCriterion{ID: cp.ID, Name: cp.Name, Category: cp.Category(), Live: cp.Live, Retired: cp.Retired})
@@ -31,6 +36,15 @@ func catalogSnapshot(c *catalog.Catalog) (report.CatalogSnapshot, []byte) {
 	body, _ := json.Marshal(x)
 	sum := sha256.Sum256(body)
 	x.Version = hex.EncodeToString(sum[:8])
+	if _, err := time.Parse(time.DateOnly, date); err != nil {
+		date = ""
+		for _, e := range c.Changelog {
+			if _, err := time.Parse(time.DateOnly, e.Date); err == nil && e.Date > date {
+				date = e.Date
+			}
+		}
+	}
+	x.Date = date
 	body, _ = json.Marshal(x)
 	return x, body
 }

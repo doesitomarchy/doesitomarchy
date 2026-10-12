@@ -47,6 +47,30 @@ type SnapshotConfig struct {
 	// Panel isn't used for matching; it tells a tool what "native resolution"
 	// means for the built-in display (a 5K iMac's EDID asks for less).
 	Panel string `json:"panel,omitempty" doc:"The built-in display's native resolution, e.g. 2560x1600; empty without one"`
+	// Ports isn't used for matching either; it lets a tool draw the Mac's
+	// ports and count them by kind (the site's port map drawing, as data).
+	Ports []SnapshotSide `json:"ports,omitempty" doc:"Its ports side by side, from the site's port map drawing; absent without one"`
+}
+
+// SnapshotSide is one side of a configuration's port map drawing, in
+// millimetres, to scale. Every side is drawn as you face it: x runs left to
+// right as you face that side, from its outline's left end, and y down from
+// the outline's top.
+type SnapshotSide struct {
+	Side   string         `json:"side" doc:"left, right, back, front or top"`
+	Length float64        `json:"length" doc:"The side's outline along x, in mm (a laptop's depth, a desktop's width)"`
+	Height float64        `json:"height" doc:"The side's outline along y, in mm, as drawn"`
+	Start  string         `json:"start" doc:"The end at x=0: back or front on a left or right side; left on a back, front or top face, as you face it (from behind for the back, so the Mac's right as seen from the front)"`
+	Ports  []SnapshotPort `json:"ports" doc:"In connector order, as the site numbers them"`
+}
+
+// SnapshotPort is one port on a side.
+type SnapshotPort struct {
+	ID   string  `json:"id" doc:"The connector ID, <side>-<n>, e.g. left-2"`
+	Kind string  `json:"kind" doc:"usb-a, usb-c, thunderbolt (Thunderbolt 1 or 2, a Mini DisplayPort socket), thunderbolt3 (a USB-C socket), mini-displayport, hdmi, dvi, mini-dvi, micro-dvi, magsafe, magsafe2, power, ethernet, firewire400, firewire800, sd, expresscard, headphone, line-out, line-in, optical-out or optical-in"`
+	Name string  `json:"name" doc:"As the drawing names it, e.g. USB 3 or Headphone + optical out"`
+	X    float64 `json:"x" doc:"The centre of its opening, in mm from x=0"`
+	Y    float64 `json:"y" doc:"The centre of its opening, in mm down from the top"`
 }
 
 // SnapshotPart is one part of a configuration and the IDs it's known by.

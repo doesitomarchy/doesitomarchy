@@ -44,7 +44,10 @@ func (l *loader) validateLayouts() {
 	seen := map[string]bool{}
 	drawn := map[string]bool{} // port map drawings that belong to a laid-out release
 	defer func() {
-		for key := range c.Portmaps {
+		for key, pm := range c.Portmaps {
+			if pm.err != nil {
+				l.errf("portmaps/"+key+".svg", "%v", pm.err)
+			}
 			if !drawn[key] {
 				l.errf("portmaps/"+key+".svg", "no release with a port layout has this key (<Identifier>_<release>)")
 			}
