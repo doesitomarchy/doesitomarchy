@@ -1,11 +1,17 @@
 package catalog
 
 import (
+	"bytes"
+	"encoding/xml"
 	"errors"
+	"fmt"
+	"io"
 	"io/fs"
+	"math"
 	"path"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -53,6 +59,9 @@ func (l *loader) loadPortmaps() {
 		for _, m := range rePortConn.FindAllSubmatch(site, -1) {
 			pm.Conns = append(pm.Conns, string(m[1]))
 		}
+		// a drawing that can't be read is reported with the layouts
+		// (validateLayouts), next to a mismatch with them, its likely cause
+		pm.Sides, pm.err = parsePortmap(site)
 		l.cat.Portmaps[key] = pm
 	}
 }
@@ -101,4 +110,315 @@ func (l *loader) matchPortmap(file, identifier, release string, cfg *Config, own
 	}
 	cfg.Portmap, cfg.PortmapHidden = key, hidden
 	return key
+}
+
+// PortKinds maps each port name the drawings use (the first one, for a
+// connector that carries more: "Headphone + optical out") to a stable kind,
+// for tools that count or draw ports. A drawing with a name not listed here
+// is a catalog error, so a new drawing can't lose ports silently.
+var PortKinds = map[string]string{
+	"USB 2": "usb-a", "USB 3": "usb-a",
+	"USB-C":                 "usb-c",
+	"Thunderbolt":           "thunderbolt", // Thunderbolt 1 and 2: a Mini DisplayPort socket
+	"Thunderbolt 2":         "thunderbolt",
+	"Thunderbolt 3 (USB-C)": "thunderbolt3", // a USB-C socket
+	"Mini DisplayPort":      "mini-displayport",
+	"HDMI":                  "hdmi",
+	"DVI":                   "dvi",
+	"Mini-DVI":              "mini-dvi",
+	"Micro-DVI":             "micro-dvi",
+	"MagSafe":               "magsafe",
+	"MagSafe 2":             "magsafe2",
+	"Power":                 "power",
+	"Ethernet":              "ethernet", "Gigabit Ethernet": "ethernet", "10Gb Ethernet": "ethernet",
+	"FireWire 400": "firewire400", "FireWire 800": "firewire800",
+	"SD card":        "sd",
+	"ExpressCard/34": "expresscard",
+	"Headphone":      "headphone", "Line out": "line-out", "Line in": "line-in",
+	"optical out": "optical-out", "optical in": "optical-in",
+}
+
+// portmapSides maps a drawing's side headings to side IDs.
+var portmapSides = map[string]string{"Left side": "left", "Right side": "right", "Back": "back", "Front": "front", "Top": "top"}
+
+// affine is a transform without rotation: x' = sx*x + tx, y' = sy*y + ty.
+type affine struct{ sx, tx, sy, ty float64 }
+
+func (a affine) apply(x, y float64) (float64, float64) { return a.sx*x + a.tx, a.sy*y + a.ty }
+
+// then is a applied after b.
+func (a affine) then(b affine) affine {
+	return affine{a.sx * b.sx, a.sx*b.tx + a.tx, a.sy * b.sy, a.sy*b.ty + a.ty}
+}
+
+var reTransform = regexp.MustCompile(`([a-z]+)\(([^)]*)\)`)
+
+// parseTransform reads an SVG transform list of translate and scale; a
+// rotate counts only where the element's own origin matters (a port).
+func parseTransform(t string, rotateOK bool) (affine, error) {
+	out := affine{1, 0, 1, 0}
+	for _, m := range reTransform.FindAllStringSubmatch(t, -1) {
+		args := numbers(m[2])
+		var f affine
+		switch {
+		case m[1] == "translate" && len(args) == 2:
+			f = affine{1, args[0], 1, args[1]}
+		case m[1] == "translate" && len(args) == 1:
+			f = affine{1, args[0], 1, 0}
+		case m[1] == "scale" && len(args) == 2:
+			f = affine{args[0], 0, args[1], 0}
+		case m[1] == "scale" && len(args) == 1:
+			f = affine{args[0], 0, args[0], 0}
+		case m[1] == "rotate" && rotateOK:
+			continue
+		default:
+			return out, fmt.Errorf("transform %q: only translate and scale are understood", m[0])
+		}
+		out = out.then(f)
+	}
+	return out, nil
+}
+
+var reNumber = regexp.MustCompile(`[-+]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][-+]?[0-9]+)?`)
+
+func numbers(s string) []float64 {
+	var out []float64
+	for _, n := range reNumber.FindAllString(s, -1) {
+		v, _ := strconv.ParseFloat(n, 64)
+		out = append(out, v)
+	}
+	return out
+}
+
+var rePathCmd = regexp.MustCompile(`[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*`)
+
+// pathPoints is the end points of an SVG path's segments (enough for the
+// extent of the drawings' outlines, whose curves stay between their ends).
+func pathPoints(d string) ([][2]float64, error) {
+	var pts [][2]float64
+	var x, y, x0, y0 float64
+	for _, seg := range rePathCmd.FindAllString(d, -1) {
+		cmd, args := seg[0], numbers(seg[1:])
+		rel := cmd >= 'a'
+		step := map[byte]int{'M': 2, 'L': 2, 'T': 2, 'H': 1, 'V': 1, 'C': 6, 'S': 4, 'Q': 4, 'A': 7, 'Z': 0}[cmd&^0x20]
+		if step == 0 {
+			x, y = x0, y0
+			continue
+		}
+		if len(args) == 0 || len(args)%step != 0 {
+			return nil, fmt.Errorf("path segment %q", seg)
+		}
+		for i := 0; i < len(args); i += step {
+			a := args[i : i+step]
+			nx, ny := x, y
+			switch cmd &^ 0x20 {
+			case 'H':
+				nx = a[0]
+				if rel {
+					nx += x
+				}
+			case 'V':
+				ny = a[0]
+				if rel {
+					ny += y
+				}
+			default:
+				nx, ny = a[step-2], a[step-1]
+				if rel {
+					nx, ny = nx+x, ny+y
+				}
+			}
+			x, y = nx, ny
+			if cmd&^0x20 == 'M' && i == 0 {
+				x0, y0 = x, y
+			}
+			pts = append(pts, [2]float64{x, y})
+		}
+	}
+	return pts, nil
+}
+
+// parsePortmap reads a site-flavour drawing's sides: each side's heading
+// (text.pm-h) starts it, its outline (.pm-o) gives its extent, its end
+// labels (text.pm-e "back"/"front", on laptops) which end is which, and its
+// ports (g.pm-port) their places; the names come from the drawing's <desc>
+// ("Left side, left to right: 1 MagSafe 2, 2 USB 3; Right side, …").
+func parsePortmap(svg []byte) ([]PortSide, error) {
+	type label struct {
+		text string
+		x    float64
+	}
+	type side struct {
+		PortSide
+		depth          int // the element that holds it
+		x0, x1, y0, y1 float64
+		outlined       bool
+		labels         []label
+		absX, absY     []float64
+	}
+	var (
+		sides  []*side
+		cur    *side
+		stack  = []affine{{1, 0, 1, 0}}
+		names  = map[string]string{}
+		inText string // the class of the text element being read
+		textX  float64
+		text   strings.Builder
+		desc   strings.Builder
+		inDesc bool
+	)
+	dec := xml.NewDecoder(bytes.NewReader(svg))
+	for {
+		tok, err := dec.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			attr := map[string]string{}
+			for _, a := range t.Attr {
+				attr[a.Name.Local] = a.Value
+			}
+			class := attr["class"]
+			port := t.Name.Local == "g" && class == "pm-port"
+			local, err := parseTransform(attr["transform"], port)
+			if err != nil {
+				return nil, err
+			}
+			a := stack[len(stack)-1].then(local)
+			stack = append(stack, a)
+			switch {
+			case t.Name.Local == "desc":
+				inDesc = true
+			case t.Name.Local == "text" && (class == "pm-h" || class == "pm-e"):
+				inText, text = class, strings.Builder{}
+				x, _ := strconv.ParseFloat(attr["x"], 64)
+				textX, _ = a.apply(x, 0)
+			case port:
+				if cur == nil {
+					return nil, fmt.Errorf("port %s is outside any side", attr["data-conn"])
+				}
+				x, y := a.apply(0, 0)
+				cur.Ports = append(cur.Ports, PlacedPort{Conn: attr["data-conn"]})
+				cur.absX, cur.absY = append(cur.absX, x), append(cur.absY, y)
+			case class == "pm-o" && cur != nil:
+				var pts [][2]float64
+				switch t.Name.Local {
+				case "rect":
+					v := numbers(attr["x"] + " " + attr["y"] + " " + attr["width"] + " " + attr["height"])
+					if len(v) != 4 {
+						return nil, fmt.Errorf("%s outline: a rect needs x, y, width and height", cur.Side)
+					}
+					pts = [][2]float64{{v[0], v[1]}, {v[0] + v[2], v[1] + v[3]}}
+				case "path":
+					if pts, err = pathPoints(attr["d"]); err != nil {
+						return nil, fmt.Errorf("%s outline: %v", cur.Side, err)
+					}
+				default:
+					return nil, fmt.Errorf("%s outline: a %s isn't understood", cur.Side, t.Name.Local)
+				}
+				for _, p := range pts {
+					x, y := a.apply(p[0], p[1])
+					if !cur.outlined {
+						cur.x0, cur.x1, cur.y0, cur.y1, cur.outlined = x, x, y, y, true
+					}
+					cur.x0, cur.x1 = math.Min(cur.x0, x), math.Max(cur.x1, x)
+					cur.y0, cur.y1 = math.Min(cur.y0, y), math.Max(cur.y1, y)
+				}
+			}
+		case xml.EndElement:
+			switch {
+			case t.Name.Local == "desc":
+				inDesc = false
+			case t.Name.Local == "text" && inText == "pm-h":
+				id, ok := portmapSides[text.String()]
+				if !ok {
+					return nil, fmt.Errorf("side heading %q: want one of Left side, Right side, Back, Front or Top", text.String())
+				}
+				// the side is the group around its heading
+				cur = &side{PortSide: PortSide{Side: id}, depth: len(stack) - 2}
+				sides = append(sides, cur)
+			case t.Name.Local == "text" && inText == "pm-e" && cur != nil:
+				cur.labels = append(cur.labels, label{text.String(), textX})
+			}
+			if t.Name.Local == "text" {
+				inText = ""
+			}
+			stack = stack[:len(stack)-1]
+			if cur != nil && len(stack) == cur.depth {
+				cur = nil
+			}
+		case xml.CharData:
+			if inDesc {
+				desc.Write(t)
+			}
+			if inText != "" {
+				text.Write(t)
+			}
+		}
+	}
+	// The names: "<heading>, left to right: <n> <name>, …" per side, "; " between sides.
+	for _, part := range strings.Split(desc.String(), "; ") {
+		head, list, ok := strings.Cut(part, ", left to right: ")
+		id := portmapSides[head]
+		if !ok || id == "" {
+			return nil, fmt.Errorf("desc: %q isn't \"<side>, left to right: …\"", part)
+		}
+		if list == "no connectors" {
+			continue
+		}
+		for _, item := range strings.Split(list, ", ") {
+			n, name, _ := strings.Cut(item, " ")
+			names[id+"-"+n] = name
+		}
+	}
+	round := func(v float64) float64 { return math.Round(v*100) / 100 }
+	var out []PortSide
+	for _, sd := range sides {
+		if len(sd.Ports) == 0 {
+			continue
+		}
+		if !sd.outlined {
+			return nil, fmt.Errorf("%s: no outline (.pm-o) to place its ports on", sd.Side)
+		}
+		sd.Length, sd.Height, sd.Start = round(sd.x1-sd.x0), round(sd.y1-sd.y0), "left"
+		if sd.Side == "left" || sd.Side == "right" {
+			best := math.Inf(1)
+			for _, lb := range sd.labels {
+				if d := math.Abs(lb.x - sd.x0); (lb.text == "back" || lb.text == "front") && d < best {
+					sd.Start, best = lb.text, d
+				}
+			}
+			if math.IsInf(best, 1) {
+				return nil, fmt.Errorf("%s: no back/front end labels", sd.Side)
+			}
+		}
+		for i := range sd.Ports {
+			p := &sd.Ports[i]
+			p.Name = names[p.Conn]
+			if p.Name == "" {
+				return nil, fmt.Errorf("port %s isn't named in the desc", p.Conn)
+			}
+			first, _, _ := strings.Cut(p.Name, " + ")
+			if p.Kind = PortKinds[first]; p.Kind == "" {
+				return nil, fmt.Errorf("port %s: no kind for %q (add it to catalog.PortKinds)", p.Conn, first)
+			}
+			if side, _, _ := strings.Cut(p.Conn, "-"); side != sd.Side {
+				return nil, fmt.Errorf("port %s is drawn on the %s side", p.Conn, sd.Side)
+			}
+			p.X, p.Y = round(sd.absX[i]-sd.x0), round(sd.absY[i]-sd.y0)
+		}
+		out = append(out, sd.PortSide)
+	}
+	n := 0
+	for _, sd := range out {
+		n += len(sd.Ports)
+	}
+	if n != len(names) {
+		return nil, fmt.Errorf("the desc names %d ports, the drawing has %d", len(names), n)
+	}
+	return out, nil
 }

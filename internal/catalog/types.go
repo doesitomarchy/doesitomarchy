@@ -369,4 +369,33 @@ type Portmap struct {
 	Site     []byte   // the site flavour, inlined in pages (no <style>, data-conn on ports)
 	Download []byte   // the standalone flavour, served at /portmap/<Key>.svg
 	Conns    []string // the connector IDs its ports carry, in drawing order
+	// Sides is the drawing's ports, side by side, read from the SVG at load
+	// time (positions only exist there): in drawing order, sides without
+	// ports left out.
+	Sides []PortSide
+	err   error // reading Sides failed
+}
+
+// PortSide is one side (laptop) or face (desktop) of a port map drawing, in
+// the drawing's millimetres. Every side is drawn as you face it, so x runs
+// left to right as you face that side, from its outline's left end; y runs
+// down from the outline's top.
+type PortSide struct {
+	Side   string  // left, right, back, front or top
+	Length float64 // the outline's extent along x
+	Height float64 // the outline's extent along y
+	// Start is the end of the side at x=0: back or front for a laptop's (or
+	// an iMac's) left or right side, from the drawing's end labels; left for
+	// a back, front or top face (as you face it: from behind for the back).
+	Start string
+	Ports []PlacedPort
+}
+
+// PlacedPort is one port on a drawing: its connector and the centre of its
+// opening on the side.
+type PlacedPort struct {
+	Conn string // the connector ID, e.g. left-2
+	Kind string // a stable port kind (PortKinds), e.g. usb-a
+	Name string // as the drawing names it, e.g. "USB 3" or "Headphone + optical out"
+	X, Y float64
 }

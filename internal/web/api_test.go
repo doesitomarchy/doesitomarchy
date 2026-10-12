@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
@@ -251,6 +252,39 @@ func TestAPILive(t *testing.T) {
 	}
 	if p, ok := panels["imac18-3-5k-2017-a"]; p != "5120x2880" || !ok || panels["macmini6-2-late-2012-a"] != "" {
 		t.Errorf("snapshot panels: iMac18,3 %q, Mac mini %q", p, panels["macmini6-2-late-2012-a"])
+	}
+	// Ports: each side's start and its ports' kinds in connector order.
+	ports := map[string]string{}
+	for _, m := range snap.Match.Macs {
+		for _, r := range m.Releases {
+			for _, cf := range r.Configs {
+				var sides []string
+				for _, sd := range cf.Ports {
+					kinds := []string{}
+					for _, p := range sd.Ports {
+						kinds = append(kinds, p.Kind)
+						if p.X <= 0 || p.X >= sd.Length || p.Y <= 0 || p.Y >= sd.Height || p.Name == "" || p.ID == "" {
+							t.Errorf("%s %s: %+v outside %gx%g", cf.ID, sd.Side, p, sd.Length, sd.Height)
+						}
+					}
+					sides = append(sides, sd.Side+"@"+sd.Start+": "+strings.Join(kinds, " "))
+				}
+				ports[cf.ID] = strings.Join(sides, "; ")
+			}
+		}
+	}
+	for id, want := range map[string]string{
+		"macbookair5-2-mid-2012-a": "left@back: magsafe2 usb-a headphone; right@front: sd usb-a thunderbolt",
+		"imac18-3-5k-2017-a":       "back@left: headphone sd usb-a usb-a usb-a usb-a thunderbolt3 thunderbolt3 ethernet",
+		// a graphics module with one HDMI port: the drawing's second one is hidden
+		"macpro7-1-2019-w5700x": "top@left: thunderbolt3 thunderbolt3; back@left: headphone thunderbolt3 thunderbolt3 usb-a usb-a hdmi ethernet power ethernet",
+	} {
+		if ports[id] != want {
+			t.Errorf("snapshot ports of %s:\n got %s\nwant %s", id, ports[id], want)
+		}
+	}
+	if _, err := time.Parse(time.DateOnly, snap.Date); err != nil {
+		t.Errorf("snapshot date %q: %v", snap.Date, err)
 	}
 	for _, inm := range []string{`"` + snap.Version + `"`, `W/"` + snap.Version + `", "other"`, "*"} {
 		req, _ := http.NewRequest("GET", ts.URL+"/api/v1/snapshot", nil)

@@ -108,7 +108,7 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD),
 		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour), registerLimit: newRateLimiter(RequestsPerDayPerIP, 24*time.Hour),
 		macLimit: newRateLimiter(ReportsPerDayPerMac, 24*time.Hour)}
-	snap, body := catalogSnapshot(c)
+	snap, body := catalogSnapshot(c, opt.CatalogDate)
 	s.snapJSON, s.snapETag = body, `"`+snap.Version+`"`
 	if opt.BuildsAPI != "" {
 		s.builds = builds.New(st, "", log) // public repo: no token needed, at GitHub's lower rate limit
