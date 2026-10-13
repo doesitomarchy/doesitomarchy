@@ -42,3 +42,16 @@
   upstream_note: "Not upstream yet: a pull request to t2linux is planned."
   tested_on: [macbookair5-2-mid-2012-a, imac10-1-21-late-2009-b, imac18-3-5k-2017-a]
   since: "dev 1d36b14"
+
+- id: omaboot.lid-wake-closed-only
+  name: lid wake fix
+  changes: "Arms the lid's wake only for a sleep that starts with the lid closed. On these Macs the lid's wake is a bit in the embedded controller, set before every sleep, so a sleep that starts with the lid open (Suspend from the menu, an idle suspend) is woken by the lid a few seconds in. A small systemd-sleep hook turns the lid's wake off in /proc/acpi/wakeup for such a sleep and back on after it; a sleep from closing the lid still wakes when it opens. OmaBoot? Live's sleep test naps once with the stock setting and, if the lid woke it, once more with the fix."
+  targets:
+    hardware: "Mac laptops whose lid wake goes through the embedded controller: the lid's ACPI _PSW sets a wake-on-lid-open bit. Found on the MacBook Air (13-inch, Mid 2012); every other Mac laptop whose ACPI tables were checked has the same pattern (8 models from 2009 to 2019, MacBook Pro and MacBook Air, in public hardware probes). It does nothing on a Mac without a lid, or when the lid is closed."
+    criteria: [power.sleep-wake]
+  upstream:
+    - title: "Omarchy (Apple hardware fixes in install/hardware/apple)"
+      url: https://github.com/omacom/omarchy
+  upstream_note: "Not upstream yet: a proposal to Omarchy's Apple hardware fixes is planned."
+  tested_on: [macbookair5-2-mid-2012-a]
+  since: "dev 327b2e3"
