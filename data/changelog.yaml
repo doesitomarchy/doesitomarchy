@@ -2,6 +2,13 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-13"
+  title: A lid wake fix for sleep on Mac laptops
+  summary: "A third OmaBoot? fix: on Mac laptops whose lid wake is a bit in the embedded controller, Linux arms it before every sleep, so a sleep that starts with the lid open wakes again a few seconds later. The fix arms the lid's wake only when the lid is closed. OmaBoot? Live's sleep test now names this cause and naps again with the fix, and a result that ran with it says so."
+  notes:
+    - "Found on a MacBook Air (13-inch, Mid 2012): it woke about 3 seconds into every 20-second test sleep with the lid open, and slept the full 20 seconds with the lid's wake turned off. Closing the lid still woke it on opening."
+    - "Every other Mac laptop whose ACPI tables are in linuxhw's public hardware probes (8 models, MacBook Pro and MacBook Air, 2009 to 2019) arms its lid wake the same way, so they very likely wake the same way too; OmaBoot? Live's sleep test will say for each Mac it runs on."
+
 - date: "2026-10-11"
   title: iMacs have an ambient light sensor
   summary: "Every Intel iMac now lists an ambient light sensor, so the Ambient light sensor criterion applies to them. Before, only the laptops listed one."
