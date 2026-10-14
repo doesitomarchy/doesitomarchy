@@ -89,12 +89,10 @@
 - id: camera/apple-t2-facetime-hd-1080p
   name: Apple 1080p FaceTime HD camera via T2
   vendor: Apple
-  ids: []
+  ids: [usb:05ac:8514]
+  notes: Seen on a real iMac20,2 as "FaceTime HD Camera (Built-in)", behind the T2's iBridge (05ac:8233).
   sources:
     - https://github.com/linuxhw/LsUSB/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
-  uncertain:
-    - field: ids
-      note: No probe lists the 2020 iMac camera's USB ID.
 
 - id: camera/apple-isight-05ac-8507
   name: Apple iSight (USB 05ac:8507)

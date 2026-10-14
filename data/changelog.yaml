@@ -2,6 +2,12 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-14"
+  title: "iMac (2020): first Linux hardware probe"
+  summary: "The 27-inch iMac20,2 had no Linux probe. One from a real machine with a Radeon Pro 5700 matches the Gigabit Ethernet configuration exactly, and adds the GPU's PCI ID (1002:731b) and the FaceTime camera's USB ID (05ac:8514)."
+  notes:
+    - "The 5700's ID differs from the 1002:7319 the catalog took from an iMac20,1 probe; the PCI ID database names 1002:7319 the Radeon Pro 5700 XT and 1002:731b the Radeon Pro 5700, so both are listed and the question is settled."
+
 - date: "2026-10-13"
   title: A lid wake fix for sleep on Mac laptops
   summary: "A third OmaBoot? fix: on Mac laptops whose lid wake is a bit in the embedded controller, Linux arms it before every sleep, so a sleep that starts with the lid open wakes again a few seconds later. The fix arms the lid's wake only when the lid is closed. OmaBoot? Live's sleep test now names this cause and naps again with the fix, and a result that ran with it says so."
