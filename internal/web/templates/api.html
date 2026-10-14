@@ -157,7 +157,7 @@
         <tr><th scope="row">404</th><td>No such Mac, configuration, report or endpoint.</td></tr>
         <tr><th scope="row">413</th><td>The report is over 1 MiB.</td></tr>
         <tr><th scope="row">415</th><td>A report format we don't read.</td></tr>
-        <tr><th scope="row">422</th><td>No configuration in the catalog fits the report's hardware.</td></tr>
+        <tr><th scope="row">422</th><td>No configuration in the catalog fits the report's hardware, or results were changed in a console.</td></tr>
         <tr><th scope="row">429</th><td>Too many reports this hour, or from this Mac today (live boots). Wait <code>Retry-After</code> seconds.</td></tr>
       </tbody>
     </table>
@@ -234,6 +234,7 @@
       <li><code>omarchy.version</code> is <code>/etc/os-release</code>'s <code>VERSION_ID</code>, from any channel: a release (<code>4.0.4</code>), a pre-release (<code>4.0.4rc2</code>) or an edge build (<code>4.0.0.r6713.ga85e29a</code>). For a dev install, add <code>"channel": "dev"</code> and the checkout's commit as <code>revision</code>. Stable releases decide verdicts; other channels show as <code>newest_build</code> where they differ.</li>
       <li>Port criteria can be reported per connector, as <code>ports.usb-a@left-2</code>, using the IDs in the configuration's <code>connectors</code>. A criterion is fully verified only when every connector it applies to has passed.</li>
       <li>A port test that knows which connector a device is on says so in <code>ports</code>: the bus <code>paths</code> behind it (<code>usb3:0000:00:14.0/1</code>: the root hub by speed, its controller and the port chain) and <code>how</code> it knows.</li>
+      <li>A tool with a console lists commands that measured again (<code>redo</code>) or changed a result (<code>change</code>) in <code>console</code>. A report with a <code>change</code> is refused.</li>
       <li>Put the check's output in <code>evidence</code> when something fails or only partly works. It's what helps someone fix it.</li>
       <li>An item you didn't test is <code>not_tested</code>, with a <code>reason</code>: <code>no-equipment</code>, <code>not-in-profile</code>, <code>uncertain</code>, <code>live-limit</code> (<a href="#live">live boots</a> only) or <code>other</code>.</li>
       <li>From a live boot, send <code>"context": "live"</code>, and the image in <code>omarchy.image</code>. List any <a href="#snapshot">registered fixes</a> that took effect in <code>fixes</code>, and parts that aren't the Mac's own in <code>replaced_parts</code>.</li>

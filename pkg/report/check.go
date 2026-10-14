@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 )
@@ -40,12 +42,14 @@ const (
 	maxPorts    = 32
 	maxPaths    = 4
 	maxPathLen  = 80
+	maxConsole  = 64
+	maxCommand  = 200 // characters
 )
 
 // Check runs every check that needs no catalog: the schema, the tester's
 // handle, the test date (now bounds it: no future dates), the Omarchy
 // version, text sizes, each item's status, method and reason, extras, and
-// the context, fixes, replaced parts and ports. It returns Errors listing every
+// the context, fixes, replaced parts, ports and console. It returns Errors listing every
 // problem, or nil. The server runs it first, then checks the report against
 // the catalog (the configuration, criteria, connectors, live limits and
 // fix IDs; a ports entry's connector).
@@ -177,6 +181,7 @@ func Check(f *File, now time.Time) error {
 	}
 
 	checkPorts(f.Ports, bad)
+	checkConsole(f.Console, bad)
 
 	if len(f.ConsentNotice) > MaxNote {
 		bad("consent_notice: %d bytes; the limit is %d", len(f.ConsentNotice), MaxNote)
@@ -233,4 +238,37 @@ func checkPorts(ports []PortAnswer, bad func(string, ...any)) {
 			bad("ports[%d].wiring_said: only corrected entries take it", i)
 		}
 	}
+}
+
+// checkConsole checks the console entries: a command as typed, one line of
+// printable text, and its kind.
+func checkConsole(cmds []ConsoleEntry, bad func(string, ...any)) {
+	if len(cmds) > maxConsole {
+		bad("console: %d entries; the limit is %d", len(cmds), maxConsole)
+	}
+	for i, c := range cmds {
+		switch cmd := strings.TrimSpace(c.Command); {
+		case cmd == "":
+			bad("console[%d].command: empty", i)
+		case utf8.RuneCountInString(c.Command) > maxCommand:
+			bad("console[%d].command: %d characters; the limit is %d", i, utf8.RuneCountInString(c.Command), maxCommand)
+		case !printable(c.Command):
+			bad("console[%d].command: %q must be one line of printable text", i, c.Command)
+		}
+		if k := strings.TrimSpace(c.Kind); !oneOf(k, ConsoleKinds) {
+			bad("console[%d].kind: %q must be one of %s (read-only commands aren't recorded)", i, c.Kind, strings.Join(ConsoleKinds, ", "))
+		}
+	}
+}
+
+func printable(s string) bool {
+	if !utf8.ValidString(s) {
+		return false
+	}
+	for _, r := range s {
+		if !unicode.IsPrint(r) {
+			return false
+		}
+	}
+	return true
 }

@@ -15,6 +15,7 @@
     {{with $r.OmarchyImage}}<div><dt>Image</dt><dd><code>{{.}}</code></dd></div>{{end}}
     {{with $r.Fixes}}<div><dt>OmaBoot? fixes</dt><dd>{{range $i, $id := .}}{{if $i}}, {{end}}{{with bootfix $id}}<a class="fixref" href="{{fixURL .ID}}">{{.Name}}</a> <span class="muted">({{join .Targets.Criteria ", "}})</span>{{else}}<code>{{$id}}</code>{{end}}{{end}}</dd></div>{{end}}
     {{with $r.ReplacedParts}}<div><dt>Replaced parts</dt><dd>{{range $i, $p := .}}{{if $i}}<br>{{end}}{{partKind $p.Kind}}{{with $p.Detail}}: {{.}}{{end}}{{range $p.IDs}} · <code>{{.}}</code>{{end}}{{end}}<br><span class="muted">Results these parts decide may not hold for the stock configuration.</span></dd></div>{{end}}
+    {{with $r.Console}}<div><dt>Console</dt><dd>{{range $i, $c := .}}{{if $i}}<br>{{end}}<code>{{$c.Command}}</code> {{if eq $c.Kind "change"}}<span class="tag warn-tag">changed a result</span>{{else}}<span class="tag">measured again</span>{{end}}{{end}}</dd></div>{{end}}
     {{with $d.Challenges}}<div><dt>Challenges</dt><dd>{{len .}} {{plural (len .) "item" "items"}} answered a challenge: {{range $i, $it := .}}{{if $i}}, {{end}}{{$it.CapabilityName}}{{end}} <span class="muted">(their evidence is in the table below)</span></dd></div>{{end}}
       <div><dt>Built</dt><dd>{{with $r.OmarchyBuiltAt}}{{utc .}} · <a href="https://github.com/basecamp/omarchy/commit/{{$r.OmarchyCommit}}" rel="noopener">{{slice $r.OmarchyCommit 0 7}}</a>{{else}}<span class="muted">not known yet: the test date stands in</span>{{end}}</dd></div>
     <div><dt>Results</dt><dd>{{template "tally" $r}} <span class="muted">· {{$r.NotTested}} not tested</span></dd></div>
@@ -25,6 +26,7 @@
     {{if eq $r.State "accepted" "retracted"}}<div><dt>Public page</dt><dd><a href="/report/{{$r.Code}}">/report/{{$r.Code}}</a></dd></div>{{end}}
   </dl>
 </header>
+{{with $d.Changed}}<p class="notice" role="note"><b>Changed in the console.</b> The tester changed results by hand with {{range $i, $c := .}}{{if $i}}, {{end}}<code>{{$c}}</code>{{end}}, so they aren't what the tool measured. DoesItOmarchy.com refuses such reports; this server takes them for testing.</p>{{end}}
 
 <section class="panel admin-section">
   <h2>Hardware the report sent</h2>

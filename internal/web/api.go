@@ -49,6 +49,23 @@ func fromVM(f *results.File) bool {
 	return false
 }
 
+// consoleRefusal says why a report whose results were changed in the test tool's console
+// (force, fake) can't be stored here, or "" when it can: always on staging
+// (Options.AcceptConsoleChanges), never in production.
+func (s *Server) consoleRefusal(r *results.Result) string {
+	var ch []string
+	for _, c := range r.Console {
+		if c.Kind == report.ConsoleChange {
+			ch = append(ch, c.Command)
+		}
+	}
+	if len(ch) == 0 || s.opt.AcceptConsoleChanges {
+		return ""
+	}
+	return "console: results were changed in the tester's console (" + strings.Join(ch, "; ") +
+		"); such reports can't be submitted here"
+}
+
 // publicKeySources are the sources limited per Mac.
 var publicKeySources = map[string]bool{"boot-live": true}
 
@@ -494,6 +511,10 @@ func (s *Server) apiSubmit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		apiFail(w, http.StatusBadRequest, "invalid report", err.Error())
+		return
+	}
+	if p := s.consoleRefusal(res); p != "" {
+		apiFail(w, http.StatusUnprocessableEntity, "invalid report", p)
 		return
 	}
 	if publicKeySources[src.ID] && !(s.opt.ExemptVMs && fromVM(f)) {

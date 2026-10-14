@@ -231,7 +231,7 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 
 	// OmaBoot? Live reports: an accepted one on the 21.5-inch iMac10,1 that
 	// ran with the radeon fix, and a pending one on the MacBookAir5,2 with
-	// the applesmc fix and a replaced drive, for review. What a live boot
+	// the applesmc fix, a replaced drive and console commands, for review. What a live boot
 	// can't decide comes as not tested, reason live-limit.
 	live, err := results.LoadMapping(data.FS, "boot-live", c)
 	if err != nil {
@@ -266,8 +266,11 @@ func seedDemo(ctx context.Context, st *store.Store, c *catalog.Catalog) error {
 	if _, err := add(liveFile("imac10-1-21-late-2009-b", "2026-10-04T15:30:00Z", []string{"omaboot.radeon-imac10-1-panel-clock"}, nil), true); err != nil {
 		return err
 	}
-	if _, err := add(liveFile("macbookair5-2-mid-2012-a", "2026-10-05T15:30:00Z", []string{"omaboot.applesmc-led-container-of"},
-		[]results.ReplacedPart{{Kind: "storage", Detail: "Third-party NVMe SSD on an adapter", IDs: []string{"OWC Aura Pro X2"}}}), false); err != nil {
+	air := liveFile("macbookair5-2-mid-2012-a", "2026-10-05T15:30:00Z", []string{"omaboot.applesmc-led-container-of"},
+		[]results.ReplacedPart{{Kind: "storage", Detail: "Third-party NVMe SSD on an adapter", IDs: []string{"OWC Aura Pro X2"}}})
+	air.Console = []results.ConsoleEntry{{Command: "rerun graphics.acceleration", Kind: "redo"},
+		{Command: "force display.native-resolution pass", Kind: "change"}} // a dev build's run, as staging takes it
+	if _, err := add(air, false); err != nil {
 		return err
 	}
 

@@ -73,7 +73,8 @@ type Result struct {
 	Candidates    []string // when the hardware fits several configs: all of them (ConfigID is the first)
 	Fixes         []string // registered OmaBoot? fix IDs that took effect (data/fixes.yaml)
 	ReplacedParts []ReplacedPart
-	Ports         []PortAnswer // which paths sit behind which connector, as the port tests learned it
+	Ports         []PortAnswer   // which paths sit behind which connector, as the port tests learned it
+	Console       []ConsoleEntry // console commands that redid or changed a result, scrubbed
 	ConsentNotice string
 	Items         []Item
 	Extras        []FileExtra
@@ -234,6 +235,12 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 			}
 		}
 		r.Ports = append(r.Ports, pa)
+	}
+
+	// Console commands are kept as typed, scrubbed; whether a change entry
+	// is accepted is the server's call (Options.AcceptConsoleChanges).
+	for _, x := range f.Console {
+		r.Console = append(r.Console, ConsoleEntry{Command: Scrub(strings.TrimSpace(x.Command)), Kind: strings.TrimSpace(x.Kind)})
 	}
 
 	// Items, in catalog order so results read like the criteria list.

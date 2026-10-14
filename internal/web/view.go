@@ -59,6 +59,11 @@ type Options struct {
 	// vendor IDs, which no Mac has): staging's OmaBoot? smoke tests send one after every
 	// build. Set by DOIOMAD_EXEMPT_VMS=1 on staging only; never in production.
 	ExemptVMs bool
+	// AcceptConsoleChanges takes reports whose results were changed in the test tool's
+	// console (a console entry of kind change), which are otherwise refused: dev OmaBoot?
+	// builds send them to staging. Set by DOIOMAD_ACCEPT_CONSOLE_CHANGES=1 on staging only;
+	// never in production.
+	AcceptConsoleChanges bool
 }
 
 type site struct {

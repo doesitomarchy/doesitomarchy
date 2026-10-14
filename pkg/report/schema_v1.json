@@ -75,6 +75,17 @@
         }
       }
     },
+    "console": {
+      "type": "array", "maxItems": 64,
+      "description": "Commands typed in the test tool's console that measured a check again (redo) or changed a result by hand (change), in order. Read-only commands aren't recorded. DoesItOmarchy.com refuses a report with a change entry.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["command", "kind"],
+        "properties": {
+          "command": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*\\S[^\\u0000-\\u001f\\u007f-\\u009f]*$", "examples": ["rerun graphics.acceleration"], "description": "The command as typed: one line of printable text." },
+          "kind": { "enum": ["redo", "change"] }
+        }
+      }
+    },
     "hardware": {
       "type": "object",
       "description": "The hardware probe. Standard keys (product_name, board_id, cpu, pci, usb) identify the configuration; other keys are kept. Personal data (serials, MAC/IP addresses, host and user names) is removed before storage; please don't send it.",
