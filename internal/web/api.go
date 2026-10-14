@@ -33,6 +33,39 @@ var ReportsPerHourPublic = 30
 // (OmaBoot? Live). A Mac is its hardware fingerprint: no serial numbers.
 var ReportsPerDayPerMac = 5
 
+// vmVendors are PCI vendor IDs only virtual machines show: QEMU's emulated VGA (1234), Red Hat's
+// QEMU devices (1b36) and virtio (1af4).
+var vmVendors = []string{"1234:", "1b36:", "1af4:"}
+
+// fromVM says whether a report's PCI IDs come from a virtual machine (Options.ExemptVMs).
+func fromVM(f *results.File) bool {
+	for _, id := range results.ProbeFromHardware(f.Hardware, f.Identifier).PCI {
+		for _, v := range vmVendors {
+			if strings.HasPrefix(strings.ToLower(id), v) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// consoleRefusal says why a report whose results were changed in the test tool's console
+// (force, fake) can't be stored here, or "" when it can: always on staging
+// (Options.AcceptConsoleChanges), never in production.
+func (s *Server) consoleRefusal(r *results.Result) string {
+	var ch []string
+	for _, c := range r.Console {
+		if c.Kind == report.ConsoleChange {
+			ch = append(ch, c.Command)
+		}
+	}
+	if len(ch) == 0 || s.opt.AcceptConsoleChanges {
+		return ""
+	}
+	return "console: results were changed in the tester's console (" + strings.Join(ch, "; ") +
+		"); such reports can't be submitted here"
+}
+
 // publicKeySources are the sources limited per Mac.
 var publicKeySources = map[string]bool{"boot-live": true}
 
@@ -265,7 +298,10 @@ type apiReportRef struct {
 	Kernel         string   `json:"kernel,omitempty"`
 	Context        string   `json:"context" doc:"Where the test ran: installed, or live (a live boot)"`
 	Fixes          []string `json:"fixes,omitempty" doc:"OmaBoot? fixes that took effect, by ID (see /api/v1/snapshot)"`
-	URL            string   `json:"url"`
+	// Ports are the report's port answers; the wiring they agree on is in
+	// the snapshot.
+	Ports []report.PortAnswer `json:"ports,omitempty" doc:"Which bus paths it put behind which connector (see /api/v1/snapshot, wiring)"`
+	URL   string              `json:"url"`
 }
 
 type apiConfig struct {
@@ -329,7 +365,7 @@ func configJSON(cv *configView) apiConfig {
 		}
 	}
 	for _, rs := range cv.Results {
-		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Channel, rs.Kernel, rs.Context, rs.Fixes, BaseURL + "/report/" + rs.Code})
+		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Channel, rs.Kernel, rs.Context, rs.Fixes, rs.Ports, BaseURL + "/report/" + rs.Code})
 	}
 	return x
 }
@@ -477,7 +513,11 @@ func (s *Server) apiSubmit(w http.ResponseWriter, r *http.Request) {
 		apiFail(w, http.StatusBadRequest, "invalid report", err.Error())
 		return
 	}
-	if publicKeySources[src.ID] {
+	if p := s.consoleRefusal(res); p != "" {
+		apiFail(w, http.StatusUnprocessableEntity, "invalid report", p)
+		return
+	}
+	if publicKeySources[src.ID] && !(s.opt.ExemptVMs && fromVM(f)) {
 		// The key is public, so the limit is per Mac, counting only reports that would be stored.
 		now := time.Now()
 		if key := src.ID + " " + results.HardwareFingerprint(f); !s.macLimit.allow(key, now) {

@@ -101,6 +101,9 @@ func TestPortmapValidation(t *testing.T) {
 			const lay = "layouts/MacPro7-1.yaml"
 			m[lay].Data = []byte(strings.Replace(string(m[lay].Data), "        - { id: back-10, type: ethernet-10gbe }\n", "        - { id: back-11, type: ethernet-10gbe }\n", 1))
 		}, "don't match"},
+		"unknown port name": {func(m fstest.MapFS) {
+			m[key].Data = []byte(strings.Replace(string(m[key].Data), "1 MagSafe 2,", "1 MagSafe 4,", 1))
+		}, `no kind for "MagSafe 4"`},
 		"inline style": {func(m fstest.MapFS) {
 			m[key].Data = []byte(strings.Replace(string(m[key].Data), "<title", "<style>.x{}</style><title", 1))
 		}, "must not carry styles"},

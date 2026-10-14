@@ -59,9 +59,6 @@ type Server struct {
 	// macLimit caps reports per Mac a day from sources whose key is public
 	// (OmaBoot? Live), by hardware fingerprint, in memory only.
 	macLimit *rateLimiter
-	// snapJSON and snapETag are the catalog snapshot (GET /api/v1/snapshot).
-	snapJSON []byte
-	snapETag string
 	// cfgs maps config IDs to the catalog's configurations.
 	cfgs map[string]*catalog.Config
 	// builds looks up which Omarchy commit a result ran on; nil when off.
@@ -75,6 +72,12 @@ type snapshot struct {
 	view    *catalogView
 	index   *search.Index
 	version int64 // the store's data version it was built from
+	// wiring is each configuration's port wiring, from accepted reports.
+	wiring map[string]configWiring
+	// snapJSON and snapETag are the catalog snapshot (GET /api/v1/snapshot),
+	// which carries the wiring.
+	snapJSON []byte
+	snapETag string
 }
 
 // current reports whether the snapshot still matches the store's data version.
@@ -108,8 +111,6 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		purge: newPurger(opt.PurgeZone, opt.PurgeToken, log), match: match.New(c), access: newAccessVerifier(opt.AccessTeam, opt.AccessAUD),
 		shareLimit: newRateLimiter(SharesPerHourPerIP, time.Hour), registerLimit: newRateLimiter(RequestsPerDayPerIP, 24*time.Hour),
 		macLimit: newRateLimiter(ReportsPerDayPerMac, 24*time.Hour)}
-	snap, body := catalogSnapshot(c)
-	s.snapJSON, s.snapETag = body, `"`+snap.Version+`"`
 	if opt.BuildsAPI != "" {
 		s.builds = builds.New(st, "", log) // public repo: no token needed, at GitHub's lower rate limit
 		s.builds.Base = opt.BuildsAPI
@@ -352,8 +353,8 @@ func joinLimit(xs []string, n int) string {
 	return strings.Join(xs[:n], ", ") + fmt.Sprintf(" +%d", len(xs)-n)
 }
 
-// Refresh rebuilds the views and search index from the store's accepted
-// results if they changed since the current snapshot, and swaps them in.
+// Refresh rebuilds the views, the search index and the catalog snapshot
+// (its wiring) from the store's accepted results if they changed since the current snapshot, and swaps them in.
 // It reports whether it rebuilt.
 func (s *Server) Refresh(ctx context.Context) (bool, error) {
 	ru, err := s.store.RollupData(ctx)
@@ -365,7 +366,10 @@ func (s *Server) Refresh(ctx context.Context) (bool, error) {
 		return false, nil
 	}
 	view := buildView(s.cat, s.opt, ru, start)
-	s.snap.Store(&snapshot{view: view, index: search.Build(s.cat, view.states), version: ru.Version})
+	wiring := s.wiringOf(ru.Ports)
+	cs, body := catalogSnapshot(s.cat, s.opt.CatalogDate, wiring)
+	s.snap.Store(&snapshot{view: view, index: search.Build(s.cat, view.states), version: ru.Version, wiring: wiring,
+		snapJSON: body, snapETag: `"` + cs.Version + `"`})
 	s.log.Info("results loaded", "data_version", ru.Version, "verified", view.site.Coverage.Verified,
 		"tested", view.site.Coverage.Tested, "ms", time.Since(start).Milliseconds())
 	return true, nil

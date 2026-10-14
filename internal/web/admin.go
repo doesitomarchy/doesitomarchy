@@ -17,6 +17,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 // The maintainers' review queue (PLAN.md §22.5). Cloudflare Access protects
@@ -163,8 +164,29 @@ type adminReportData struct {
 	// Challenges are the items a person (or a phone) answered with a code
 	// the tool showed or played.
 	Challenges []store.ResultItem
-	Done, Err  string
+	// Ports are the report's port answers beside the configuration's
+	// current wiring; Dropped, the configuration's paths its reports put on
+	// more than one connector.
+	Ports   []adminPort
+	Dropped []wiringConflict
+	// Changed are the console commands that changed a result by hand: only
+	// a server that takes them (staging) stores such a report.
+	Changed   []string
+	Done, Err string
 }
+
+// adminPort is one ports entry, read against the stored wiring.
+type adminPort struct {
+	Test, Connector, ConnName string
+	Paths                     []adminPath
+	How, WiringSaid           string
+	Stored                    []string // what the wiring has on this connector
+	Disagree                  []string // why it disagrees with the wiring, in words
+}
+
+// adminPath is one path of a ports entry; On is where the wiring puts it
+// instead, when that's another connector.
+type adminPath struct{ Path, On string }
 
 func (s *Server) adminReport(w http.ResponseWriter, r *http.Request, who string) {
 	ctx := r.Context()
@@ -209,6 +231,12 @@ func (s *Server) adminReport(w http.ResponseWriter, r *http.Request, who string)
 			d.Challenges = append(d.Challenges, it)
 		}
 	}
+	d.Ports, d.Dropped = s.adminPorts(rd)
+	for _, c := range rd.Console {
+		if c.Kind == report.ConsoleChange {
+			d.Changed = append(d.Changed, c.Command)
+		}
+	}
 	s.render(w, r, http.StatusOK, "admin-report", page{Title: "Review " + rd.Code, Data: d})
 }
 
@@ -228,6 +256,10 @@ func (s *Server) adminAction(w http.ResponseWriter, r *http.Request, who string)
 		err = s.store.SetResultState(ctx, id, store.Rejected, reason, who)
 	case "retract":
 		err = s.store.SetResultState(ctx, id, store.Retracted, reason, who)
+	case "wiring-checked":
+		err = s.store.SetWiringChecked(ctx, id, true, who)
+	case "wiring-unchecked":
+		err = s.store.SetWiringChecked(ctx, id, false, who)
 	case "config":
 		var applicable map[string]bool
 		if applicable, err = results.ApplicableSet(s.cat, r.FormValue("config")); err == nil {
@@ -238,6 +270,41 @@ func (s *Server) adminAction(w http.ResponseWriter, r *http.Request, who string)
 		return
 	}
 	s.afterAction(w, r, code, r.PathValue("action"), err)
+}
+
+// adminPorts reads a report's ports entries against its configuration's
+// current wiring: a path the wiring puts on another connector, a corrected
+// entry, or a connector the layout lacks is a disagreement, which is how a
+// wrong wiring entry gets caught.
+func (s *Server) adminPorts(rd *store.ResultDetail) ([]adminPort, []wiringConflict) {
+	wiring := s.data().wiring[rd.ConfigID]
+	names := map[string]string{}
+	if cfg := s.cfgs[rd.ConfigID]; cfg != nil {
+		for _, cn := range cfg.Connectors {
+			names[cn.ID] = s.cat.ConnectorName(cn)
+		}
+	}
+	var out []adminPort
+	for _, p := range rd.Ports {
+		x := adminPort{Test: p.Test, Connector: p.Connector, ConnName: names[p.Connector], How: p.How, WiringSaid: p.WiringSaid,
+			Stored: wiring.Conns[p.Connector]}
+		if x.ConnName == "" {
+			x.Disagree = append(x.Disagree, "the configuration's layout has no "+p.Connector)
+		}
+		if p.How == "corrected" {
+			x.Disagree = append(x.Disagree, "the tester corrected the wiring, which said "+p.WiringSaid)
+		}
+		for _, path := range p.Paths {
+			ap := adminPath{Path: path}
+			if on := wiring.connectorOf(path); on != "" && on != p.Connector {
+				ap.On = on
+				x.Disagree = append(x.Disagree, "the wiring puts "+path+" on "+on)
+			}
+			x.Paths = append(x.Paths, ap)
+		}
+		out = append(out, x)
+	}
+	return out, wiring.Dropped
 }
 
 func (s *Server) adminResolve(w http.ResponseWriter, r *http.Request, who string) {
@@ -415,6 +482,10 @@ func (s *Server) adminImport(w http.ResponseWriter, r *http.Request, who string)
 			Tester: r.FormValue("tester")}, time.Now())
 	if err != nil {
 		back(err.Error())
+		return
+	}
+	if p := s.consoleRefusal(imp.Result); p != "" {
+		back(p)
 		return
 	}
 	if src := imp.Source; src != nil {

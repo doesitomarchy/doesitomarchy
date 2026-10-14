@@ -42,9 +42,13 @@ func Snapshot(c *catalog.Catalog) pm.Snapshot {
 			sm.SecurityChip = m.SecurityChip
 		}
 		for _, r := range m.Releases {
-			sr := pm.SnapshotRelease{BoardIDs: r.BoardIDs, Configs: []pm.SnapshotConfig{}}
+			sr := pm.SnapshotRelease{Name: r.Name, BoardIDs: r.BoardIDs, Configs: []pm.SnapshotConfig{}}
 			for _, cfg := range r.Configs {
 				sc := pm.SnapshotConfig{ID: cfg.ID}
+				if cfg.Display != nil {
+					sc.Panel = cfg.Display.Resolution
+				}
+				sc.Ports = snapshotPorts(c, &cfg)
 				for _, ref := range cfg.Components {
 					if comp := c.Components[ref]; comp != nil && len(comp.IDs) > 0 {
 						sc.Parts = append(sc.Parts, pm.SnapshotPart{Kind: comp.Kind, IDs: comp.IDs})
@@ -65,4 +69,30 @@ func Snapshot(c *catalog.Catalog) pm.Snapshot {
 		snap.Macs = append(snap.Macs, sm)
 	}
 	return snap
+}
+
+// snapshotPorts is a configuration's port map drawing as data, without the
+// drawing's ports it lacks (PortmapHidden), and its sides left without any.
+func snapshotPorts(c *catalog.Catalog, cfg *catalog.Config) []pm.SnapshotSide {
+	drawing := c.Portmaps[cfg.Portmap]
+	if cfg.Portmap == "" || drawing == nil {
+		return nil
+	}
+	hidden := map[string]bool{}
+	for _, id := range cfg.PortmapHidden {
+		hidden[id] = true
+	}
+	var out []pm.SnapshotSide
+	for _, sd := range drawing.Sides {
+		ss := pm.SnapshotSide{Side: sd.Side, Length: sd.Length, Height: sd.Height, Start: sd.Start}
+		for _, p := range sd.Ports {
+			if !hidden[p.Conn] {
+				ss.Ports = append(ss.Ports, pm.SnapshotPort{ID: p.Conn, Kind: p.Kind, Name: p.Name, X: p.X, Y: p.Y})
+			}
+		}
+		if len(ss.Ports) > 0 {
+			out = append(out, ss)
+		}
+	}
+	return out
 }

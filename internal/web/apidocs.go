@@ -448,5 +448,9 @@ const apiLiveExample = `{
                                    "evidence": "tester picked taxi, then banana" },
     "boot.install":              { "status": "not_tested", "reason": "live-limit" },
     "thermal.fans":              { "status": "not_tested", "reason": "live-limit" }
-  }
+  },
+  "ports": [
+    { "test": "ports.usb-a", "connector": "back-3",
+      "paths": ["usb1:0000:00:04.0/1", "usb2:0000:00:04.1/1"], "how": "asked" }
+  ]
 }`

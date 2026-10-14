@@ -230,3 +230,19 @@ func TestSnapshotRoundTrip(t *testing.T) {
 		t.Error("the snapshot lost board IDs or CPUs")
 	}
 }
+
+// A configuration without a port map drawing has no ports in the snapshot.
+func TestSnapshotPortsWithoutDrawing(t *testing.T) {
+	c, err := catalog.LoadFS(data.FS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := &c.Macs[0].Releases[0].Configs[0]
+	if len(snapshotPorts(c, cfg)) == 0 {
+		t.Fatalf("%s: no ports with its drawing %q", cfg.ID, cfg.Portmap)
+	}
+	cfg.Portmap = ""
+	if got := Snapshot(c).Macs[0].Releases[0].Configs[0]; got.Ports != nil {
+		t.Errorf("%s without a drawing: ports %+v", got.ID, got.Ports)
+	}
+}

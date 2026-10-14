@@ -55,6 +55,15 @@ type Options struct {
 	// BuildsAPI is the GitHub API root for looking up which Omarchy commit a
 	// result ran on (PLAN §28.2); "" turns lookups off (demo mode, tests).
 	BuildsAPI string
+	// ExemptVMs lifts the per-Mac limit for reports from a virtual machine (QEMU's own PCI
+	// vendor IDs, which no Mac has): staging's OmaBoot? smoke tests send one after every
+	// build. Set by DOIOMAD_EXEMPT_VMS=1 on staging only; never in production.
+	ExemptVMs bool
+	// AcceptConsoleChanges takes reports whose results were changed in the test tool's
+	// console (a console entry of kind change), which are otherwise refused: dev OmaBoot?
+	// builds send them to staging. Set by DOIOMAD_ACCEPT_CONSOLE_CHANGES=1 on staging only;
+	// never in production.
+	AcceptConsoleChanges bool
 }
 
 type site struct {

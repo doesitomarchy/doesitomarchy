@@ -1,5 +1,7 @@
 package report
 
+import "strings"
+
 import "github.com/doesitomarchy/doesitomarchy/pkg/match"
 
 // CatalogSnapshot is GET /api/v1/snapshot: what a test tool needs from the
@@ -7,6 +9,7 @@ import "github.com/doesitomarchy/doesitomarchy/pkg/match"
 // and fetches a newer one when it's online.
 type CatalogSnapshot struct {
 	Version      string              `json:"version" doc:"Changes whenever the content does; the response's ETag is this value, quoted"`
+	Date         string              `json:"date,omitempty" doc:"The day the catalog's content last changed, YYYY-MM-DD"`
 	Match        match.Snapshot      `json:"match" doc:"Every Mac's identifier, board IDs and configurations with their hardware IDs and CPUs, for matching a Mac offline"`
 	Capabilities []SnapshotCriterion `json:"capabilities" doc:"The test criteria, with whether a live boot can decide each"`
 	Fixes        []BootFix           `json:"fixes" doc:"The registered OmaBoot? fixes a report may list in fixes"`
@@ -17,7 +20,21 @@ const (
 	LiveYes = "yes" // a live boot decides it as an installed system would
 	LiveNo  = "no"  // only an installed system can: send it as not_tested, reason live-limit
 	LiveT2  = "t2"  // only on Macs with a T2 chip
+	// LiveKernel: only when the live system runs the kernel an install gives the Mac
+	// (InstallKernel), e.g. what needs that kernel's SMC driver.
+	LiveKernel = "kernel"
 )
+
+// InstallKernel reports whether kernel (uname -r, a report's kernel) is the kernel an Omarchy
+// install gives a Mac: linux-t2 on Macs with a T2 chip, linux-omarchy on the others (omarchy-iso
+// since 2026-09-14). OmaBoot? Live boots that kernel by default.
+func InstallKernel(t2 bool, kernel string) bool {
+	kernel = strings.TrimSpace(kernel)
+	if t2 {
+		return strings.HasSuffix(kernel, "-t2")
+	}
+	return strings.HasSuffix(kernel, "-omarchy")
+}
 
 // SnapshotCriterion is one test criterion.
 type SnapshotCriterion struct {

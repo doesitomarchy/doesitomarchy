@@ -58,3 +58,39 @@ items:
 		}
 	}
 }
+
+// A ports entry's connectors must be in the configuration's layout.
+func TestPortsConnectors(t *testing.T) {
+	c := loadCatalog(t)
+	base := `schema: doesitomarchy/report/v1
+config: macbookpro11-3-15-late-2013-a
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4" }
+items:
+  ports.usb-a@left-4: { status: supported, method: fixture }
+`
+	f, err := Parse([]byte(base + `ports: [{ test: ports.usb-a, connector: left-4, paths: ["usb2:0000:00:14.0/1", "usb3:0000:00:14.0/1"], how: corrected, wiring_said: right-3 }]` + "\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := Validate(f, c, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(r.Ports) != 1 || r.Ports[0].Connector != "left-4" || r.Ports[0].WiringSaid != "right-3" || len(r.Ports[0].Paths) != 2 {
+		t.Errorf("ports: %+v", r.Ports)
+	}
+	for name, tc := range map[string]struct{ entry, want string }{
+		"no such connector":      {`{ test: ports.usb-a, connector: left-9, paths: ["usb2:0000:00:14.0/1"], how: asked }`, `no connector "left-9"`},
+		"no such wiring_said":    {`{ test: ports.usb-a, connector: left-4, paths: ["usb2:0000:00:14.0/1"], how: corrected, wiring_said: back-1 }`, `no connector "back-1"`},
+		"a bad path still fails": {`{ test: ports.usb-a, connector: left-4, paths: ["3-1"], how: asked }`, "ports[0].paths[0]"},
+	} {
+		f, err := Parse([]byte(base + "ports: [" + tc.entry + "]\n"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Validate(f, c, now); err == nil || !strings.Contains(err.Error(), tc.want) {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+}

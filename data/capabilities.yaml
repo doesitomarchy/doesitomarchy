@@ -28,11 +28,13 @@
 # omarchaeology's findings/usb-c-charging.md.
 #
 # `live` says whether a live boot (OmaBoot? Live) can decide the criterion as
-# an installed Omarchy would: yes, no, or t2 (only on Macs with a T2 chip).
-# A live report sends the others as not_tested with reason live-limit.
-# "no" includes what a live boot can't decide without a fix it doesn't carry
-# yet: the T2 Touch Bar setup, and applesmc on pre-T2 Macs (fans, the light
-# sensor and, on those Macs, the keyboard backlight).
+# an installed Omarchy would: yes, no, t2 (only on Macs with a T2 chip), or
+# kernel (only when the live system runs the kernel an install gives that Mac:
+# linux-t2 on T2 Macs, linux-omarchy on the others; OmaBoot? Live boots it by
+# default). A live report sends the others as not_tested with reason live-limit.
+# "kernel" is the SMC criteria (fans, the light sensor, the keyboard
+# backlight): applesmc behaves as installed only with the install's kernel.
+# "no" includes the T2 Touch Bar setup, which no live boot carries yet.
 
 categories:
   - { id: boot,     name: Boot,       icon: power,     blocking: true }
@@ -117,12 +119,12 @@ capabilities:
     when: { all: ["feature:trackpad"] }
   - id: input.keyboard-backlight
     name: Keyboard backlight
-    live: t2
+    live: kernel
     fix_by: input
     when: { all: ["feature:keyboard-backlight"] }
   - id: input.ambient-light-sensor
     name: Ambient light sensor
-    live: no
+    live: kernel
     when: { all: ["feature:ambient-light-sensor"] }
   - id: input.force-touch
     name: Force Touch click and pressure sensing
@@ -274,7 +276,7 @@ capabilities:
     live: yes
   - id: thermal.fans
     name: Fans respond to load
-    live: no
+    live: kernel
     when: { all: ["feature:fan"] }
 
   # ── Bridge (T2) ─────────────────────────────────────────────────────────

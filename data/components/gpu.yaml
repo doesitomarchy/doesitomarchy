@@ -553,12 +553,11 @@
   gles: "3.2"
   ids: [pci:1002:7319, pci:1002:731b]
   driver: amdgpu
-  notes: A Radeon Pro 5700 in an iMac20,2 reports 1002:731b with Apple subsystem 106b:021a; the 5700 XT's ID is unconfirmed.
+  notes: A Radeon Pro 5700 in an iMac20,2 reports 1002:731b with Apple subsystem 106b:021a; the PCI ID database names 1002:7319 the Radeon Pro 5700 XT and 1002:731b the Radeon Pro 5700.
   sources:
     - https://github.com/linuxhw/LsPCI/tree/master/All%20In%20One/Apple/iMac20/iMac20%2C1
-  uncertain:
-    - field: ids
-      note: 1002:7319 comes from a single iMac20,1 probe; 1002:731b is from a real iMac20,2. Which ID belongs to the 5700 XT is unconfirmed.
+    - https://pci-ids.ucw.cz/read/PC/1002/7319
+    - https://pci-ids.ucw.cz/read/PC/1002/731b
 
 - id: gpu/intel-iris-pro-5200
   name: Intel Iris Pro Graphics 5200

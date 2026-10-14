@@ -6,12 +6,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/internal/testdb"
 	"github.com/doesitomarchy/doesitomarchy/pkg/match"
 	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
@@ -241,6 +245,50 @@ func TestAPILive(t *testing.T) {
 	if r := match.New(snap.Match).Match(match.Probe{ProductName: "MacBookPro8,2", PCI: []string{"1002:6760"}}); r.Best() != "macbookpro8-2-15-early-2011-a" {
 		t.Errorf("matching on the snapshot: %+v", r)
 	}
+	panels := map[string]string{}
+	for _, m := range snap.Match.Macs {
+		for _, r := range m.Releases {
+			for _, cf := range r.Configs {
+				panels[cf.ID] = cf.Panel
+			}
+		}
+	}
+	if p, ok := panels["imac18-3-5k-2017-a"]; p != "5120x2880" || !ok || panels["macmini6-2-late-2012-a"] != "" {
+		t.Errorf("snapshot panels: iMac18,3 %q, Mac mini %q", p, panels["macmini6-2-late-2012-a"])
+	}
+	// Ports: each side's start and its ports' kinds in connector order.
+	ports := map[string]string{}
+	for _, m := range snap.Match.Macs {
+		for _, r := range m.Releases {
+			for _, cf := range r.Configs {
+				var sides []string
+				for _, sd := range cf.Ports {
+					kinds := []string{}
+					for _, p := range sd.Ports {
+						kinds = append(kinds, p.Kind)
+						if p.X <= 0 || p.X >= sd.Length || p.Y <= 0 || p.Y >= sd.Height || p.Name == "" || p.ID == "" {
+							t.Errorf("%s %s: %+v outside %gx%g", cf.ID, sd.Side, p, sd.Length, sd.Height)
+						}
+					}
+					sides = append(sides, sd.Side+"@"+sd.Start+": "+strings.Join(kinds, " "))
+				}
+				ports[cf.ID] = strings.Join(sides, "; ")
+			}
+		}
+	}
+	for id, want := range map[string]string{
+		"macbookair5-2-mid-2012-a": "left@back: magsafe2 usb-a headphone; right@front: sd usb-a thunderbolt",
+		"imac18-3-5k-2017-a":       "back@left: headphone sd usb-a usb-a usb-a usb-a thunderbolt3 thunderbolt3 ethernet",
+		// a graphics module with one HDMI port: the drawing's second one is hidden
+		"macpro7-1-2019-w5700x": "top@left: thunderbolt3 thunderbolt3; back@left: headphone thunderbolt3 thunderbolt3 usb-a usb-a hdmi ethernet power ethernet",
+	} {
+		if ports[id] != want {
+			t.Errorf("snapshot ports of %s:\n got %s\nwant %s", id, ports[id], want)
+		}
+	}
+	if _, err := time.Parse(time.DateOnly, snap.Date); err != nil {
+		t.Errorf("snapshot date %q: %v", snap.Date, err)
+	}
 	for _, inm := range []string{`"` + snap.Version + `"`, `W/"` + snap.Version + `", "other"`, "*"} {
 		req, _ := http.NewRequest("GET", ts.URL+"/api/v1/snapshot", nil)
 		req.Header.Set("If-None-Match", inm)
@@ -253,7 +301,7 @@ func TestAPILive(t *testing.T) {
 			t.Errorf("If-None-Match %s: %d", inm, res.StatusCode)
 		}
 	}
-	if _, caps, _ := apiCall(t, c, "GET", ts.URL+"/api/v1/capabilities", "", nil); !strings.Contains(toJSON(caps), `"live":"t2"`) {
+	if _, caps, _ := apiCall(t, c, "GET", ts.URL+"/api/v1/capabilities", "", nil); !strings.Contains(toJSON(caps), `"live":"kernel"`) {
 		t.Error("capabilities lack the live flag")
 	}
 
@@ -296,5 +344,88 @@ items:
 	}
 	if ReportsPerHourPublic >= ReportsPerHour || old >= ReportsPerHour {
 		t.Error("the public key's hourly limit should be below the usual one")
+	}
+}
+
+// TestAPIExemptVMs: staging's smoke-test VM isn't held to the per-Mac limit, and only when the
+// server is told so.
+func TestAPIExemptVMs(t *testing.T) {
+	vm := []byte(`schema: doesitomarchy/report/v1
+identifier: MacBookAir5,2
+context: live
+hardware: { board_id: Mac-2E6FAB96566FE58C, pci: ["1234:1111", "8086:29c0"] }
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
+items:
+  boot.install: { status: not_tested, reason: live-limit }
+`)
+	for _, exempt := range []bool{false, true} {
+		st, c := testdb.Open(t)
+		srv, err := New(st, c, slog.New(slog.NewTextHandler(io.Discard, nil)), Options{Version: "test", ExemptVMs: exempt})
+		if err != nil {
+			t.Fatal(err)
+		}
+		ts := httptest.NewServer(srv.Handler())
+		key, err := st.AddSource(context.Background(), "boot-live", "OmaBoot? Live", "https://doesitboot.com")
+		if err != nil {
+			t.Fatal(err)
+		}
+		last := 0
+		for i := 0; i <= ReportsPerDayPerMac; i++ {
+			last, _, _ = apiCall(t, ts.Client(), "POST", ts.URL+"/api/v1/reports", key, vm)
+		}
+		ts.Close()
+		if want := map[bool]int{false: 429, true: 201}[exempt]; last != want {
+			t.Errorf("ExemptVMs %v: report %d got %d, want %d", exempt, ReportsPerDayPerMac+1, last, want)
+		}
+	}
+}
+
+// TestAPIConsoleChanges: a report whose results were changed in the tester's console is refused
+// unless the server takes them (staging); one that only measured again is always taken.
+func TestAPIConsoleChanges(t *testing.T) {
+	base := `schema: doesitomarchy/report/v1
+identifier: MacBookAir5,2
+context: live
+hardware: { board_id: Mac-2E6FAB96566FE58C }
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
+items:
+  boot.install: { status: not_tested, reason: live-limit }
+`
+	redo := []byte(base + "console: [{ command: rerun graphics.acceleration, kind: redo }]\n")
+	change := []byte(base + `console: [{ command: rerun graphics.acceleration, kind: redo }, { command: "force display.native-resolution pass", kind: change }]` + "\n")
+	for _, accept := range []bool{false, true} {
+		st, c := testdb.Open(t)
+		srv, err := New(st, c, slog.New(slog.NewTextHandler(io.Discard, nil)), Options{Version: "test", AcceptConsoleChanges: accept})
+		if err != nil {
+			t.Fatal(err)
+		}
+		ts := httptest.NewServer(srv.Handler())
+		key, err := st.AddSource(context.Background(), "test-tool", "Test tool", "https://example.com")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if code, out, _ := apiCall(t, ts.Client(), "POST", ts.URL+"/api/v1/reports", key, redo); code != 201 {
+			t.Errorf("accept %v: a redo-only report got %d %v", accept, code, out)
+		}
+		code, out, _ := apiCall(t, ts.Client(), "POST", ts.URL+"/api/v1/reports", key, change)
+		ts.Close()
+		if !accept {
+			if code != 422 || !strings.Contains(toJSON(out["problems"]), "force display.native-resolution pass") {
+				t.Errorf("refusing: a changed report got %d %v", code, out)
+			}
+			continue
+		}
+		if code != 201 {
+			t.Fatalf("accepting: a changed report got %d %v", code, out)
+		}
+		d, err := st.Result(context.Background(), mustID(t, st, out["code"].(string)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(d.Console) != 2 || d.Console[1].Kind != report.ConsoleChange || d.Console[1].Command != "force display.native-resolution pass" {
+			t.Errorf("stored console: %+v", d.Console)
+		}
 	}
 }

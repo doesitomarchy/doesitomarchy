@@ -15,6 +15,7 @@
     {{with $r.OmarchyImage}}<div><dt>Image</dt><dd><code>{{.}}</code></dd></div>{{end}}
     {{with $r.Fixes}}<div><dt>OmaBoot? fixes</dt><dd>{{range $i, $id := .}}{{if $i}}, {{end}}{{with bootfix $id}}<a class="fixref" href="{{fixURL .ID}}">{{.Name}}</a> <span class="muted">({{join .Targets.Criteria ", "}})</span>{{else}}<code>{{$id}}</code>{{end}}{{end}}</dd></div>{{end}}
     {{with $r.ReplacedParts}}<div><dt>Replaced parts</dt><dd>{{range $i, $p := .}}{{if $i}}<br>{{end}}{{partKind $p.Kind}}{{with $p.Detail}}: {{.}}{{end}}{{range $p.IDs}} · <code>{{.}}</code>{{end}}{{end}}<br><span class="muted">Results these parts decide may not hold for the stock configuration.</span></dd></div>{{end}}
+    {{with $r.Console}}<div><dt>Console</dt><dd>{{range $i, $c := .}}{{if $i}}<br>{{end}}<code>{{$c.Command}}</code> {{if eq $c.Kind "change"}}<span class="tag warn-tag">changed a result</span>{{else}}<span class="tag">measured again</span>{{end}}{{end}}</dd></div>{{end}}
     {{with $d.Challenges}}<div><dt>Challenges</dt><dd>{{len .}} {{plural (len .) "item" "items"}} answered a challenge: {{range $i, $it := .}}{{if $i}}, {{end}}{{$it.CapabilityName}}{{end}} <span class="muted">(their evidence is in the table below)</span></dd></div>{{end}}
       <div><dt>Built</dt><dd>{{with $r.OmarchyBuiltAt}}{{utc .}} · <a href="https://github.com/basecamp/omarchy/commit/{{$r.OmarchyCommit}}" rel="noopener">{{slice $r.OmarchyCommit 0 7}}</a>{{else}}<span class="muted">not known yet: the test date stands in</span>{{end}}</dd></div>
     <div><dt>Results</dt><dd>{{template "tally" $r}} <span class="muted">· {{$r.NotTested}} not tested</span></dd></div>
@@ -25,6 +26,7 @@
     {{if eq $r.State "accepted" "retracted"}}<div><dt>Public page</dt><dd><a href="/report/{{$r.Code}}">/report/{{$r.Code}}</a></dd></div>{{end}}
   </dl>
 </header>
+{{with $d.Changed}}<p class="notice" role="note"><b>Changed in the console.</b> The tester changed results by hand with {{range $i, $c := .}}{{if $i}}, {{end}}<code>{{$c}}</code>{{end}}, so they aren't what the tool measured. DoesItOmarchy.com refuses such reports; this server takes them for testing.</p>{{end}}
 
 <section class="panel admin-section">
   <h2>Hardware the report sent</h2>
@@ -88,6 +90,24 @@
       <input type="hidden" name="csrf" value="{{$d.CSRF}}"><input type="hidden" name="report" value="{{$r.Code}}">
       <div class="cf-field"><label class="cf-label" for="note-{{.ID}}">How it was dealt with</label><input class="cf-input" id="note-{{.ID}}" name="note" required></div>
       <div class="cf-actions"><button class="cf-btn tertiary" type="submit">Resolve</button></div></form>{{end}}</li>{{end}}</ul>
+</section>{{end}}
+
+{{if $r.Ports}}<section class="panel admin-section">
+  <h2>Ports</h2>
+  <p>Which bus paths the report puts behind which connector, beside what the configuration's wiring says now. The wiring counts a path once two accepted reports agree on it, or one marked checked.</p>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Port answers"><table class="browse">
+    <thead><tr><th scope="col">Criterion</th><th scope="col">Connector</th><th scope="col">Paths</th><th scope="col">How</th><th scope="col">The wiring has</th></tr></thead>
+    <tbody>{{range .Ports}}<tr><td><code>{{.Test}}</code></td><td><code class="connref">{{.Connector}}</code>{{with .ConnName}} {{.}}{{end}}</td>
+      <td>{{range $i, $p := .Paths}}{{if $i}}<br>{{end}}<code>{{$p.Path}}</code>{{with $p.On}} <span class="tag warn-tag">wiring: {{.}}</span>{{end}}{{end}}</td>
+      <td>{{.How}}{{with .WiringSaid}} <span class="muted">(the wiring said {{.}})</span>{{end}}</td>
+      <td>{{range $i, $p := .Stored}}{{if $i}}<br>{{end}}<code>{{$p}}</code>{{else}}<span class="muted">nothing yet</span>{{end}}{{range .Disagree}}<br><span class="tag warn-tag">disagrees</span> {{.}}{{end}}</td></tr>{{end}}</tbody>
+  </table></div>
+  {{with $d.Dropped}}<p class="notice" role="note">Left out of this configuration's wiring: reports put {{range $i, $c := .}}{{if $i}}; {{end}}<code>{{$c.Path}}</code> on {{join $c.Connectors " and "}}{{end}}. Retract or unmark the wrong report.</p>{{end}}
+  {{if $r.WiringCheckedAt}}<p>Wiring checked by {{$r.WiringCheckedBy}}, {{utc $r.WiringCheckedAt}}.</p>{{end}}
+  {{if or $r.WiringCheckedAt (eq $r.State "accepted")}}<form method="post" action="/admin/report/{{$r.Code}}/{{if $r.WiringCheckedAt}}wiring-unchecked{{else}}wiring-checked{{end}}" class="cf-inline">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="cf-actions"><button class="cf-btn tertiary" type="submit">{{if $r.WiringCheckedAt}}Unmark: wiring checked{{else}}Mark: wiring checked{{end}}</button></div>
+  </form>{{else}}<p class="muted">Once accepted, its answers can be marked checked.</p>{{end}}
 </section>{{end}}
 
 {{with $r.Notes}}<div class="result-notes"><p>{{.}}</p></div>{{end}}

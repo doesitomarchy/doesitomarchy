@@ -2,11 +2,30 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
-- date: "2026-10-10"
+- date: "2026-10-14"
   title: "iMac (2020): first Linux hardware probe"
   summary: "The 27-inch iMac20,2 had no Linux probe. One from a real machine with a Radeon Pro 5700 matches the Gigabit Ethernet configuration exactly, and adds the GPU's PCI ID (1002:731b) and the FaceTime camera's USB ID (05ac:8514)."
   notes:
-    - "The 5700's ID differs from the 1002:7319 the catalog took from an iMac20,1 probe, so both are listed. The 5700 XT's ID is still unconfirmed."
+    - "The 5700's ID differs from the 1002:7319 the catalog took from an iMac20,1 probe; the PCI ID database names 1002:7319 the Radeon Pro 5700 XT and 1002:731b the Radeon Pro 5700, so both are listed and the question is settled."
+
+- date: "2026-10-13"
+  title: A lid wake fix for sleep on Mac laptops
+  summary: "A third OmaBoot? fix: on Mac laptops whose lid wake is a bit in the embedded controller, Linux arms it before every sleep, so a sleep that starts with the lid open wakes again a few seconds later. The fix arms the lid's wake only when the lid is closed. OmaBoot? Live's sleep test now names this cause and naps again with the fix, and a result that ran with it says so."
+  notes:
+    - "Found on a MacBook Air (13-inch, Mid 2012): it woke about 3 seconds into every 20-second test sleep with the lid open, and slept the full 20 seconds with the lid's wake turned off. Closing the lid still woke it on opening."
+    - "Every other Mac laptop whose ACPI tables are in linuxhw's public hardware probes (8 models, MacBook Pro and MacBook Air, 2009 to 2019) arms its lid wake the same way, so they very likely wake the same way too; OmaBoot? Live's sleep test will say for each Mac it runs on."
+
+- date: "2026-10-11"
+  title: iMacs have an ambient light sensor
+  summary: "Every Intel iMac now lists an ambient light sensor, so the Ambient light sensor criterion applies to them. Before, only the laptops listed one."
+  notes:
+    - "Evidence: the Linux applesmc driver finds the SMC's light-sensor keys on every iMac model in linuxhw's hardware probes, and none on any Mac mini or Mac Pro. On an iMac18,3 the reading follows the light: 0 covered, 3 in the room, 255 under a flashlight. Apple lists True Tone, which needs the sensor, for the 2020 iMac."
+    - "The one exception is the 21.5-inch iMac11,2 (Late 2009/Mid 2010): none of 27 probed machines shows the keys. Like every iMac it has a built-in camera, and iMacs with a camera very likely have the sensor too, so it is listed; if Linux can't read it there, reports will say so."
+    - "The iMac Pro stays without one until a probe shows its sensor; its T2 chip handles it differently."
+
+- date: "2026-10-10"
+  title: Fans, light sensor and keyboard backlight from live boots
+  summary: "A live boot can now decide three more criteria, fans, the ambient light sensor and the keyboard backlight, when it runs the kernel an install gives that Mac (linux-omarchy, or linux-t2 on Macs with a T2 chip). OmaBoot? Live boots that kernel by default, so its reports can include them; a live boot on another kernel still sends them as not tested."
 
 - date: "2026-10-09"
   title: Results from live boots, and OmaBoot? fixes

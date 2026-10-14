@@ -4,6 +4,29 @@
 # Add an entry with every release that changes the API or the report format;
 # site pages (even API-related ones, like /api/register) don't belong here.
 
+- date: "2026-10-14"
+  title: Console commands in reports
+  summary: "Reports gain an optional `console` list: commands typed in a test tool's console that measured a check again (`redo`) or changed a result (`change`). A report with a `change` is refused (422). Additive."
+
+- date: "2026-10-14"
+  title: Port wiring from reports
+  summary: "Reports gain an optional `ports` list: the bus `paths` behind each connector, and `how` the tool knows. In `GET /api/v1/snapshot`, configurations gain `wiring`, the paths accepted reports agree on, so a tool can place a device without asking; a configuration's `reports` gain `ports`. Additive."
+
+- date: "2026-10-11"
+  title: Port layouts and the catalog's date in the snapshot
+  summary: "`GET /api/v1/snapshot`: each configuration gains `ports`, its port map drawing as data, so a test tool can draw the Mac's ports and count them by kind (USB-A, USB-C, Thunderbolt, …) offline: its sides (`left`, `right`, `back`, `front` or `top`), each with its `length` and `height` in millimetres, which end is at x=0 (`start`), and its ports in connector order with their `id`, `kind`, `name` and place (`x`, `y`, in mm). The snapshot also gains `date`, the day the catalog's content last changed (YYYY-MM-DD), to show beside `version`. Additive; nothing else changes."
+
+- date: "2026-10-11"
+  title: Panel resolution in the snapshot
+  summary: "`GET /api/v1/snapshot`: each configuration gains `panel`, its built-in display's native resolution (e.g. `5120x2880`; absent without a built-in display), so a test tool can judge \"native resolution\" offline. A 5K iMac's display asks the GPU for less than its panel has, so the panel's own mode isn't enough. Additive; nothing else changes."
+
+- date: "2026-10-10"
+  title: Live results on the install's kernel
+  summary: "A criterion's `live` flag has a new value, `kernel`: a live boot decides it only when it runs the kernel an install gives that Mac (a kernel ending in `-t2` on Macs with a T2 chip, `-omarchy` on the others), read from the report's `kernel`. Otherwise it goes as `not_tested` with reason `live-limit`, as before. Fans, the ambient light sensor and the keyboard backlight use it."
+  notes:
+    - "`GET /api/v1/snapshot`: each release gains its `name` (e.g. \"iMac (21.5-inch, Late 2009)\"), so a tool can name a Mac offline."
+    - "`pkg/report` gains `LiveKernel` and `InstallKernel`."
+
 - date: "2026-10-09"
   title: Live boots, challenges and the catalog snapshot
   summary: "Reports can come from a live boot, such as OmaBoot? Live: they send `\"context\": \"live\"`, and each criterion's new `live` flag (`yes`, `no` or `t2`) says whether a live boot can decide it. The rest go as `not_tested` with the new reason `live-limit`; a live result for them is rejected. All new fields are optional, so existing reports and tools are unchanged."

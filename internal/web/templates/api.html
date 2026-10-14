@@ -157,7 +157,7 @@
         <tr><th scope="row">404</th><td>No such Mac, configuration, report or endpoint.</td></tr>
         <tr><th scope="row">413</th><td>The report is over 1 MiB.</td></tr>
         <tr><th scope="row">415</th><td>A report format we don't read.</td></tr>
-        <tr><th scope="row">422</th><td>No configuration in the catalog fits the report's hardware.</td></tr>
+        <tr><th scope="row">422</th><td>No configuration in the catalog fits the report's hardware, or results were changed in a console.</td></tr>
         <tr><th scope="row">429</th><td>Too many reports this hour, or from this Mac today (live boots). Wait <code>Retry-After</code> seconds.</td></tr>
       </tbody>
     </table>
@@ -233,6 +233,8 @@
       <li><code>tested_at</code> is when the test ran, with a time zone. The site shows every time in UTC.</li>
       <li><code>omarchy.version</code> is <code>/etc/os-release</code>'s <code>VERSION_ID</code>, from any channel: a release (<code>4.0.4</code>), a pre-release (<code>4.0.4rc2</code>) or an edge build (<code>4.0.0.r6713.ga85e29a</code>). For a dev install, add <code>"channel": "dev"</code> and the checkout's commit as <code>revision</code>. Stable releases decide verdicts; other channels show as <code>newest_build</code> where they differ.</li>
       <li>Port criteria can be reported per connector, as <code>ports.usb-a@left-2</code>, using the IDs in the configuration's <code>connectors</code>. A criterion is fully verified only when every connector it applies to has passed.</li>
+      <li>A port test that knows which connector a device is on says so in <code>ports</code>: the bus <code>paths</code> behind it (<code>usb3:0000:00:14.0/1</code>: the root hub by speed, its controller and the port chain) and <code>how</code> it knows.</li>
+      <li>A tool with a console lists commands that measured again (<code>redo</code>) or changed a result (<code>change</code>) in <code>console</code>. A report with a <code>change</code> is refused.</li>
       <li>Put the check's output in <code>evidence</code> when something fails or only partly works. It's what helps someone fix it.</li>
       <li>An item you didn't test is <code>not_tested</code>, with a <code>reason</code>: <code>no-equipment</code>, <code>not-in-profile</code>, <code>uncertain</code>, <code>live-limit</code> (<a href="#live">live boots</a> only) or <code>other</code>.</li>
       <li>From a live boot, send <code>"context": "live"</code>, and the image in <code>omarchy.image</code>. List any <a href="#snapshot">registered fixes</a> that took effect in <code>fixes</code>, and parts that aren't the Mac's own in <code>replaced_parts</code>.</li>
@@ -264,6 +266,7 @@
     <p>What a test tool needs from the catalog to build, check and match a report offline, in one file: the data <a href="#match">Identify a Mac</a> matches on, the criteria with their <code>live</code> flags, and the registered OmaBoot? <code>fixes</code>. Go tools can match on it with the <code>pkg/match</code> package and check a report with <code>pkg/report</code>, the same code the server runs.</p>
     <ul>
       <li>Embed a copy when you build your tool, and fetch a newer one when it's online.</li>
+      <li>Each configuration's <code>wiring</code> gives the bus paths behind its connectors that two accepted reports agree on, or a maintainer checked. Place a device from it instead of asking.</li>
       <li><code>version</code> changes whenever the content does, and the <code>ETag</code> header carries it. Send it back in <code>If-None-Match</code>, and an unchanged snapshot answers <code>304 Not Modified</code> with no body.</li>
     </ul>
   </div>
@@ -344,7 +347,7 @@
         <tr><th scope="row">capabilities</th><td>Each applicable criterion's current result: its <code>verdict</code>, the Omarchy version and kernel tested, the <code>method</code> and the <code>latest_report</code>. Port criteria add <code>ports</code>, one result per connector.</td></tr>
         <tr><th scope="row">components</th><td>Its parts, with the <code>hardware_ids</code> that identify them (and <code>gles</code> for GPUs).</td></tr>
         <tr><th scope="row">connectors</th><td>Its port layout, with the criteria each connector is tested for. <code>portmap_url</code> is the drawing (SVG).</td></tr>
-        <tr><th scope="row">reports</th><td>The reports behind its results. A report from a live boot has <code>context</code> <code>live</code>, and lists the OmaBoot? <code>fixes</code> it ran with.</td></tr>
+        <tr><th scope="row">reports</th><td>The reports behind its results. A report from a live boot has <code>context</code> <code>live</code>, and lists the OmaBoot? <code>fixes</code> it ran with. <code>ports</code> are its port answers.</td></tr>
       </tbody>
     </table>
   </div>

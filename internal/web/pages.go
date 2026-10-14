@@ -467,9 +467,9 @@ type methodologyData struct {
 	Categories []catalog.Category
 	Caps       map[string][]catalog.Capability
 	Icons      map[string]string // category ID → sprite icon
-	// What a live boot can't decide: anywhere (LiveNo), and on Macs without
-	// a T2 chip (LiveT2).
-	LiveNo, LiveT2 []string
+	// What a live boot can't decide: anywhere (LiveNo), on Macs without
+	// a T2 chip (LiveT2), and unless it runs the install's kernel (LiveKernel).
+	LiveNo, LiveT2, LiveKernel []string
 }
 
 func (s *Server) methodology(w http.ResponseWriter, r *http.Request) {
@@ -487,6 +487,8 @@ func (s *Server) methodology(w http.ResponseWriter, r *http.Request) {
 			d.LiveNo = append(d.LiveNo, c.Name)
 		case catalog.LiveT2:
 			d.LiveT2 = append(d.LiveT2, c.Name)
+		case catalog.LiveKernel:
+			d.LiveKernel = append(d.LiveKernel, c.Name)
 		}
 	}
 	s.render(w, r, http.StatusOK, "methodology", page{Title: "Methodology", Nav: "methodology", Data: d})

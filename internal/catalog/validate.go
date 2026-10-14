@@ -199,9 +199,9 @@ func (l *loader) validateCapabilities() {
 			l.errf(path, "capability %q: name is required", cap.ID)
 		}
 		switch cap.Live {
-		case LiveYes, LiveNo, LiveT2:
+		case LiveYes, LiveNo, LiveT2, LiveKernel:
 		default:
-			l.errf(path, "capability %q: live must be yes, no or t2, not %q", cap.ID, cap.Live)
+			l.errf(path, "capability %q: live must be yes, no, t2 or kernel, not %q", cap.ID, cap.Live)
 		}
 		if cap.FixBy != "" {
 			kind, role, _ := strings.Cut(cap.FixBy, ":")

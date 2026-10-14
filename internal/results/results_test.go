@@ -223,6 +223,7 @@ func TestScrub(t *testing.T) {
 		{"carl@work-mbp:~$ lspci", "work-mbp", "lspci"},
 		{"[carl@work-mbp ~]$ ls", "work-mbp", "ls"},
 		{"contact me at carl@example.com", "carl@example.com", "contact me at"},
+		{`hid-F0T036401FNJKNCAQ-battery-144: status "Charging", 80 %`, "F0T036401FNJKNCAQ", "hid-[redacted]-battery-144: status"},
 	}
 	for _, tt := range tests {
 		got := Scrub(tt.in)
@@ -368,10 +369,14 @@ items:
 		want       []string // substrings of the error; none: valid
 	}{
 		{"live limits respected", air, nil},
-		{"a criterion a live boot can't decide", air + "  thermal.fans: { status: supported, method: automatic }\n", []string{"items.thermal.fans", "can't decide", "live-limit"}},
-		{"T2-only criterion on a Mac without a T2 chip", air + "  input.keyboard-backlight: { status: supported, method: observed }\n", []string{"items.input.keyboard-backlight", "T2 chip", "live-limit"}},
-		{"T2-only criterion on a T2 Mac", strings.Replace(valid(), "boot.install: { status: supported, method: observed }",
-			"boot.install: { status: not_tested, reason: live-limit }\n  input.keyboard-backlight: { status: supported, method: observed }", 1) + "context: live\n", nil},
+		{"a criterion a live boot can't decide", air + "  boot.power-cycle: { status: supported, method: observed }\n", []string{"items.boot.power-cycle", "can't decide", "live-limit"}},
+		// SMC criteria (live: kernel): only on the kernel an install gives the Mac
+		{"SMC criterion, kernel unknown", air + "  thermal.fans: { status: supported, method: automatic }\n", []string{"items.thermal.fans", "kernel an install gives", "live-limit"}},
+		{"SMC criterion, another Mac's kernel", air + "  thermal.fans: { status: supported, method: automatic }\nkernel: 7.2.9-arch1-Watanare-T2-1-t2\n", []string{"items.thermal.fans", "linux-omarchy"}},
+		{"SMC criteria on the install's kernel", air + "  thermal.fans: { status: supported, method: automatic }\n" +
+			"  input.keyboard-backlight: { status: supported, method: observed }\n  input.ambient-light-sensor: { status: supported, method: automatic }\nkernel: 7.2.5-3-omarchy\n", nil},
+		{"SMC criterion on a T2 Mac's install kernel", strings.Replace(valid(), "boot.install: { status: supported, method: observed }",
+			"boot.install: { status: not_tested, reason: live-limit }\n  input.keyboard-backlight: { status: supported, method: observed }", 1) + "context: live\nkernel: 7.2.9-arch1-Watanare-T2-1-t2\n", nil},
 		{"installed reports have no live limits", valid() + "  thermal.fans: { status: failed, method: automatic }\n", nil},
 		{"a fix that took effect lifts the limit on its criteria", air + "fixes: [omaboot.applesmc-led-container-of]\n" +
 			"  thermal.fans: { status: supported, method: automatic }\n  input.keyboard-backlight: { status: supported, method: challenge }\n", nil},
