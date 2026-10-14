@@ -17,16 +17,27 @@ import (
 // The catalog snapshot (GET /api/v1/snapshot): what a test tool needs to
 // build, check and match a report offline. OmaBoot? Live embeds a copy at
 // build time and fetches a newer one when it's online. The catalog is fixed
-// for the life of the process, so the body and its ETag are built once.
+// for the life of the process, but the wiring comes from accepted reports,
+// so the body and its ETag are rebuilt with the views (Refresh).
 
-// catalogSnapshot builds the snapshot from the catalog. Its version is a
+// catalogSnapshot builds the snapshot from the catalog and each
+// configuration's wiring (config ID → wiring). Its version is a
 // hash of the content, so it changes exactly when the content does. Its date
 // is the catalog's last change: date, the day of the last commit to the
 // catalog data that the build stamps (Options.CatalogDate), or, in a build
 // without that stamp, the newest entry in the catalog's changelog. Neither
 // goes into the hash.
-func catalogSnapshot(c *catalog.Catalog, date string) (report.CatalogSnapshot, []byte) {
+func catalogSnapshot(c *catalog.Catalog, date string, wiring map[string]configWiring) (report.CatalogSnapshot, []byte) {
 	x := report.CatalogSnapshot{Match: match.Snapshot(c), Capabilities: []report.SnapshotCriterion{}, Fixes: []report.BootFix{}}
+	for _, m := range x.Match.Macs {
+		for _, r := range m.Releases {
+			for i := range r.Configs {
+				if w, ok := wiring[r.Configs[i].ID]; ok {
+					r.Configs[i].Wiring = w.snapshot()
+				}
+			}
+		}
+	}
 	for _, cp := range c.Capabilities {
 		x.Capabilities = append(x.Capabilities, report.SnapshotCriterion{ID: cp.ID, Name: cp.Name, Category: cp.Category(), Live: cp.Live, Retired: cp.Retired})
 	}
@@ -67,7 +78,7 @@ func bootFixJSON(f catalog.OmabootFix) report.BootFix {
 // texts cut to their start.
 func (s *Server) snapshotSample() string {
 	var x report.CatalogSnapshot
-	if err := json.Unmarshal(s.snapJSON, &x); err != nil {
+	if err := json.Unmarshal(s.data().snapJSON, &x); err != nil {
 		return ""
 	}
 	cut := func(s string) string {
@@ -92,15 +103,16 @@ func (s *Server) snapshotSample() string {
 }
 
 func (s *Server) apiSnapshot(w http.ResponseWriter, r *http.Request) {
+	sn := s.data()
 	readable(w)
-	w.Header().Set("ETag", s.snapETag)
-	if etagMatches(r.Header.Get("If-None-Match"), s.snapETag) {
+	w.Header().Set("ETag", sn.snapETag)
+	if etagMatches(r.Header.Get("If-None-Match"), sn.snapETag) {
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	if r.Method != http.MethodHead {
-		w.Write(s.snapJSON)
+		w.Write(sn.snapJSON)
 	}
 }
 

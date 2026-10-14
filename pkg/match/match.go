@@ -50,6 +50,15 @@ type SnapshotConfig struct {
 	// Ports isn't used for matching either; it lets a tool draw the Mac's
 	// ports and count them by kind (the site's port map drawing, as data).
 	Ports []SnapshotSide `json:"ports,omitempty" doc:"Its ports side by side, from the site's port map drawing; absent without one"`
+	// Wiring isn't used for matching either; it tells a port test which
+	// connector a device it sees is on, from accepted reports' ports.
+	Wiring []SnapshotWiring `json:"wiring,omitempty" doc:"Which bus paths sit behind which connector, as accepted reports agree on it (two reports, or one a maintainer checked); sorted by connector, absent until known"`
+}
+
+// SnapshotWiring is what's behind one connector.
+type SnapshotWiring struct {
+	Connector string   `json:"connector" doc:"The connector ID, <side>-<n>, e.g. left-2"`
+	Paths     []string `json:"paths" doc:"Its bus paths, as a report's ports send them: usb2:0000:00:14.0/1 (a USB root hub's port chain, usb1/usb2/usb3 by speed), pci:0000:03:00.0 (an SD card reader on PCI) or tb:0-1 (a Thunderbolt route)"`
 }
 
 // SnapshotSide is one side of a configuration's port map drawing, in

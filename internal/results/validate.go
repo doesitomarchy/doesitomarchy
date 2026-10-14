@@ -73,6 +73,7 @@ type Result struct {
 	Candidates    []string // when the hardware fits several configs: all of them (ConfigID is the first)
 	Fixes         []string // registered OmaBoot? fix IDs that took effect (data/fixes.yaml)
 	ReplacedParts []ReplacedPart
+	Ports         []PortAnswer // which paths sit behind which connector, as the port tests learned it
 	ConsentNotice string
 	Items         []Item
 	Extras        []FileExtra
@@ -102,8 +103,8 @@ type Errors = report.Errors
 // Validate checks a parsed submission and returns the canonical, scrubbed
 // result. It runs report.Check (everything that needs no catalog) first,
 // then checks the report against the catalog: the configuration, the
-// criteria and connectors, the live limits and the fix IDs. now bounds
-// tested_at (no future dates).
+// criteria and connectors, the live limits, the fix IDs and the ports
+// entries' connectors. now bounds tested_at (no future dates).
 func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 	var errs Errors
 	if err := report.Check(f, now); err != nil {
@@ -215,6 +216,26 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 		r.ReplacedParts = append(r.ReplacedParts, rp)
 	}
 
+	// Ports: each connector must be in the configuration's layout, like a
+	// per-connector item's; so must the one the wiring said.
+	for i, p := range f.Ports {
+		pa := PortAnswer{Test: strings.TrimSpace(p.Test), Connector: strings.TrimSpace(p.Connector), Paths: p.Paths,
+			How: strings.TrimSpace(p.How), WiringSaid: strings.TrimSpace(p.WiringSaid)}
+		switch {
+		case cfg == nil:
+			continue // the config error is already reported
+		case len(cfg.Connectors) == 0:
+			bad("ports[%d]: %s has no port layout yet, so ports can't be placed; leave ports out", i, cfg.ID)
+			continue
+		}
+		for _, cn := range []string{pa.Connector, pa.WiringSaid} {
+			if cn != "" && !hasConnector(cfg, cn) {
+				bad("ports[%d]: %s has no connector %q (it has %s)", i, cfg.ID, cn, strings.Join(connectorIDs(cfg), ", "))
+			}
+		}
+		r.Ports = append(r.Ports, pa)
+	}
+
 	// Items, in catalog order so results read like the criteria list.
 	order, byID := map[string]int{}, map[string]catalog.Capability{}
 	for i, cp := range c.Capabilities {
@@ -267,11 +288,7 @@ func Validate(f *File, c *catalog.Catalog, now time.Time) (*Result, error) {
 				}
 			}
 			if found == nil {
-				var ids []string
-				for _, cn := range cfg.Connectors {
-					ids = append(ids, cn.ID)
-				}
-				bad("items.%s: %s has no connector %q (it has %s)", key, cfg.ID, conn, strings.Join(ids, ", "))
+				bad("items.%s: %s has no connector %q (it has %s)", key, cfg.ID, conn, strings.Join(connectorIDs(cfg), ", "))
 				continue
 			}
 			if !oneOf(id, c.ConnectorCriteria(m, cfg, *found)) {
@@ -349,6 +366,23 @@ func findConfig(c *catalog.Catalog, id string) (*catalog.Mac, *catalog.Config) {
 		}
 	}
 	return nil, nil
+}
+
+func hasConnector(cfg *catalog.Config, id string) bool {
+	for _, cn := range cfg.Connectors {
+		if cn.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+func connectorIDs(cfg *catalog.Config) []string {
+	var ids []string
+	for _, cn := range cfg.Connectors {
+		ids = append(ids, cn.ID)
+	}
+	return ids
 }
 
 func oneOf(s string, set []string) bool {

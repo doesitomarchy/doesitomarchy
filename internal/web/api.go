@@ -281,7 +281,10 @@ type apiReportRef struct {
 	Kernel         string   `json:"kernel,omitempty"`
 	Context        string   `json:"context" doc:"Where the test ran: installed, or live (a live boot)"`
 	Fixes          []string `json:"fixes,omitempty" doc:"OmaBoot? fixes that took effect, by ID (see /api/v1/snapshot)"`
-	URL            string   `json:"url"`
+	// Ports are the report's port answers; the wiring they agree on is in
+	// the snapshot.
+	Ports []report.PortAnswer `json:"ports,omitempty" doc:"Which bus paths it put behind which connector (see /api/v1/snapshot, wiring)"`
+	URL   string              `json:"url"`
 }
 
 type apiConfig struct {
@@ -345,7 +348,7 @@ func configJSON(cv *configView) apiConfig {
 		}
 	}
 	for _, rs := range cv.Results {
-		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Channel, rs.Kernel, rs.Context, rs.Fixes, BaseURL + "/report/" + rs.Code})
+		x.Reports = append(x.Reports, apiReportRef{rs.Code, rs.State, rs.TestedAt, rs.Omarchy, rs.Channel, rs.Kernel, rs.Context, rs.Fixes, rs.Ports, BaseURL + "/report/" + rs.Code})
 	}
 	return x
 }
