@@ -56,6 +56,25 @@
         }
       }
     },
+    "ports": {
+      "type": "array", "maxItems": 32,
+      "description": "Which bus paths sit behind which connector, as the port tests learned it. Each criterion and connector appears once. A path the configuration's accepted reports agree on goes into the snapshot's wiring (GET /api/v1/snapshot).",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["test", "connector", "paths", "how"],
+        "properties": {
+          "test": { "enum": ["ports.usb-a", "ports.usb-c", "ports.sd-card", "ports.thunderbolt"] },
+          "connector": { "type": "string", "pattern": "^(left|right|back|front|top)-([1-9][0-9]?)$", "examples": ["left-2"], "description": "A connector from the configuration's layout (GET /api/v1/configs/{id}, connectors)." },
+          "paths": {
+            "type": "array", "minItems": 1, "maxItems": 4, "uniqueItems": true,
+            "items": { "type": "string", "maxLength": 80, "pattern": "^(usb[123]:[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\\.[0-7]/[0-9]+(\\.[0-9]+)*|pci:[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\\.[0-7]|tb:[0-9]+-[0-9a-f-]+)$" },
+            "examples": [["usb2:0000:00:14.0/1", "usb3:0000:00:14.0/1"]],
+            "description": "What's behind the connector. usb1:, usb2: or usb3: is a USB root hub (12 Mb/s or slower, 480 Mb/s, 5 Gb/s or faster), then its host controller's PCI address and the port chain: stable across boots, unlike bus numbers. pci: is an SD card reader on PCI; tb: a Thunderbolt route."
+          },
+          "how": { "enum": ["ring", "asked", "confirmed", "corrected"], "description": "ring: a device showed up on the port the tester was asked to use. asked: the tester said which port; no wiring was known. confirmed: the tester agreed with the snapshot's wiring. corrected: the tester picked another port than the wiring said." },
+          "wiring_said": { "type": "string", "pattern": "^(left|right|back|front|top)-([1-9][0-9]?)$", "description": "corrected only, and required there: the connector the wiring gave." }
+        }
+      }
+    },
     "hardware": {
       "type": "object",
       "description": "The hardware probe. Standard keys (product_name, board_id, cpu, pci, usb) identify the configuration; other keys are kept. Personal data (serials, MAC/IP addresses, host and user names) is removed before storage; please don't send it.",

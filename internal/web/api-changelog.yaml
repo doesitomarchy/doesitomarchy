@@ -4,6 +4,10 @@
 # Add an entry with every release that changes the API or the report format;
 # site pages (even API-related ones, like /api/register) don't belong here.
 
+- date: "2026-10-14"
+  title: Port wiring from reports
+  summary: "Reports gain an optional `ports` list: the bus `paths` behind each connector, and `how` the tool knows. In `GET /api/v1/snapshot`, configurations gain `wiring`, the paths accepted reports agree on, so a tool can place a device without asking; a configuration's `reports` gain `ports`. Additive."
+
 - date: "2026-10-11"
   title: Port layouts and the catalog's date in the snapshot
   summary: "`GET /api/v1/snapshot`: each configuration gains `ports`, its port map drawing as data, so a test tool can draw the Mac's ports and count them by kind (USB-A, USB-C, Thunderbolt, …) offline: its sides (`left`, `right`, `back`, `front` or `top`), each with its `length` and `height` in millimetres, which end is at x=0 (`start`), and its ports in connector order with their `id`, `kind`, `name` and place (`x`, `y`, in mm). The snapshot also gains `date`, the day the catalog's content last changed (YYYY-MM-DD), to show beside `version`. Additive; nothing else changes."

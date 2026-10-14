@@ -39,6 +39,18 @@ var (
 	Contexts = []string{ContextInstalled, ContextLive}
 	// PartKinds are the kinds of part a replaced_parts entry names.
 	PartKinds = []string{"wifi", "bluetooth", "gpu", "storage", "display", "battery", "other"}
+	// PortTests are the criteria a ports entry may answer for.
+	PortTests = []string{"ports.usb-a", "ports.usb-c", "ports.sd-card", "ports.thunderbolt"}
+	// PortHows: how a ports entry learned which connector a path is.
+	PortHows = []string{PortRing, PortAsked, PortConfirmed, PortCorrected}
+)
+
+// How a ports entry placed its paths on a connector.
+const (
+	PortRing      = "ring"      // a device showed up on the port the tester was asked to use
+	PortAsked     = "asked"     // the tester said which port; no wiring was known
+	PortConfirmed = "confirmed" // the tester agreed with the catalog's wiring
+	PortCorrected = "corrected" // the tester picked another port than the wiring said (wiring_said)
 )
 
 // Contexts.
@@ -67,10 +79,14 @@ type File struct {
 	// took effect on this Mac during the test.
 	Fixes []string `yaml:"fixes" json:"fixes,omitempty"`
 	// ReplacedParts lists parts that aren't the Mac's original ones.
-	ReplacedParts []ReplacedPart      `yaml:"replaced_parts" json:"replaced_parts,omitempty"`
-	Hardware      map[string]any      `yaml:"hardware" json:"hardware,omitempty"`
-	Items         map[string]FileItem `yaml:"items" json:"items"`
-	Extras        []FileExtra         `yaml:"extras" json:"extras,omitempty"`
+	ReplacedParts []ReplacedPart `yaml:"replaced_parts" json:"replaced_parts,omitempty"`
+	// Ports says which bus paths sit behind which connector, as the port
+	// tests learned it: the wiring a configuration's reports agree on goes
+	// into the snapshot (GET /api/v1/snapshot, wiring).
+	Ports    []PortAnswer        `yaml:"ports" json:"ports,omitempty"`
+	Hardware map[string]any      `yaml:"hardware" json:"hardware,omitempty"`
+	Items    map[string]FileItem `yaml:"items" json:"items"`
+	Extras   []FileExtra         `yaml:"extras" json:"extras,omitempty"`
 	// ConsentNotice is the notice the tool showed the tester before
 	// submitting (PLAN §22.1); stored for the record.
 	ConsentNotice string `yaml:"consent_notice" json:"consent_notice,omitempty"`
@@ -124,6 +140,21 @@ type ReplacedPart struct {
 	Kind   string   `yaml:"kind" json:"kind"`               // one of PartKinds
 	Detail string   `yaml:"detail" json:"detail,omitempty"` // e.g. "Broadcom BCM94360CD from a 2013 iMac"
 	IDs    []string `yaml:"ids" json:"ids,omitempty"`       // what identifies it: PCI/USB IDs, a drive model, an EDID panel ID
+}
+
+// PortAnswer places bus paths on one connector of the configuration's port
+// layout, for one port criterion.
+type PortAnswer struct {
+	Test      string `yaml:"test" json:"test" doc:"ports.usb-a, ports.usb-c, ports.sd-card or ports.thunderbolt"`
+	Connector string `yaml:"connector" json:"connector" doc:"The connector, from the configuration's layout, e.g. left-2"`
+	// Paths are what Linux sees behind the connector (PortPathRe): a USB
+	// root hub's port chain ("usb3:0000:00:14.0/1"), an SD reader on PCI
+	// ("pci:0000:03:00.0") or a Thunderbolt route ("tb:0-1").
+	Paths []string `yaml:"paths" json:"paths" doc:"Its bus paths, e.g. usb2:0000:00:14.0/1"`
+	How   string   `yaml:"how" json:"how" doc:"ring, asked, confirmed or corrected: how the tool learned the connector"`
+	// WiringSaid is the connector the catalog's wiring gave, when the
+	// tester corrected it (how: corrected only).
+	WiringSaid string `yaml:"wiring_said" json:"wiring_said,omitempty" doc:"corrected only: the connector the snapshot's wiring gave"`
 }
 
 // Parse reads a YAML or JSON submission. Unknown fields are errors, so a

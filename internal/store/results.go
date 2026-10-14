@@ -139,6 +139,12 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 			return 0, fmt.Errorf("item %s: %w", it.Capability, err)
 		}
 	}
+	for i, p := range r.Ports {
+		if _, err = tx.ExecContext(ctx, "INSERT INTO result_ports (result_id, ord, test, connector, paths, how, wiring_said) VALUES (?, ?, ?, ?, ?, ?, ?)",
+			id, i, p.Test, p.Connector, jsonList(p.Paths), p.How, p.WiringSaid); err != nil {
+			return 0, fmt.Errorf("ports %s@%s: %w", p.Test, p.Connector, err)
+		}
+	}
 	for i, x := range r.Extras {
 		if _, err = tx.ExecContext(ctx, "INSERT INTO result_extras (result_id, ord, check_id, label, status, detail) VALUES (?, ?, ?, ?, ?, ?)",
 			id, i, x.ID, x.Label, x.Status, x.Detail); err != nil {
@@ -233,6 +239,55 @@ func (s *Store) SetResultState(ctx context.Context, id int64, to, reason, actor 
 	return tx.Commit()
 }
 
+// SetWiringChecked marks an accepted report's port answers as checked by a
+// maintainer, or clears the mark (checked false): one checked report is
+// enough for its wiring to count in the snapshot. Either way the data
+// version is bumped, so the snapshot is rebuilt.
+func (s *Store) SetWiringChecked(ctx context.Context, id int64, checked bool, actor string) (err error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+	var state, at string
+	var ports int
+	if err = tx.QueryRowContext(ctx, `SELECT state, wiring_checked_at, (SELECT count(*) FROM result_ports p WHERE p.result_id = r.id)
+		FROM results r WHERE id = ?`, id).Scan(&state, &at, &ports); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = fmt.Errorf("result %d: %w", id, ErrNotFound)
+		}
+		return err
+	}
+	switch {
+	case checked && state != Accepted:
+		return fmt.Errorf("result %d is %s; only an accepted report's wiring can be marked checked: %w", id, state, ErrState)
+	case checked && ports == 0:
+		return fmt.Errorf("result %d has no port answers to check: %w", id, ErrState)
+	case checked == (at != ""):
+		return nil // already so
+	}
+	action, by := "wiring-unchecked", ""
+	if checked {
+		action, at, by = "wiring-checked", now(), actor
+	} else {
+		at = ""
+	}
+	if _, err = tx.ExecContext(ctx, "UPDATE results SET wiring_checked_at = ?, wiring_checked_by = ? WHERE id = ?", at, by, id); err != nil {
+		return err
+	}
+	if err = event(ctx, tx, id, actor, action, ""); err != nil {
+		return err
+	}
+	if err = bumpDataVersion(ctx, tx); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
 // DataVersion is bumped by every change to what counts (moderation, the
 // Unsupported flag). Servers poll it and rebuild when it changes.
 func (s *Store) DataVersion(ctx context.Context) (int64, error) {
@@ -245,17 +300,20 @@ func (s *Store) DataVersion(ctx context.Context) (int64, error) {
 
 // ResultSummary is one row of a results list.
 type ResultSummary struct {
-	ID                                    int64
-	Code                                  string
-	ConfigID, Identifier, Slug            string
-	SourceID, SourceName, SourceVersion   string
-	Profile, Workflow                     string
-	TesterHandle, TestedAt                string
-	Omarchy                               string // the canonical version (PLAN §28.1)
-	Channel                               string // stable | rc | beta | edge | dev
-	Kernel                                string
-	Context                               string   // installed | live
-	Fixes                                 []string // OmaBoot? fixes that took effect (data/fixes.yaml IDs)
+	ID                                  int64
+	Code                                string
+	ConfigID, Identifier, Slug          string
+	SourceID, SourceName, SourceVersion string
+	Profile, Workflow                   string
+	TesterHandle, TestedAt              string
+	Omarchy                             string // the canonical version (PLAN §28.1)
+	Channel                             string // stable | rc | beta | edge | dev
+	Kernel                              string
+	Context                             string   // installed | live
+	Fixes                               []string // OmaBoot? fixes that took effect (data/fixes.yaml IDs)
+	// Ports are its port answers: filled by Result, and by RollupData for
+	// accepted and retracted results; ListResults leaves them out.
+	Ports                                 []results.PortAnswer
 	State, StateReason, StateBy, StateAt  string
 	SubmittedBy, SubmittedAt              string
 	Supported, Partial, Failed, NotTested int
@@ -476,6 +534,7 @@ type ResultDetail struct {
 	ConsentNotice                                  string
 	Candidates                                     []string               // configs the hardware fitted equally
 	ReplacedParts                                  []results.ReplacedPart // parts that aren't the Mac's own
+	WiringCheckedAt, WiringCheckedBy               string                 // a maintainer checked the port answers
 	Items                                          []ResultItem
 	Extras                                         []results.FileExtra
 	Flags                                          []ResultFlag
@@ -496,14 +555,18 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 	d := &ResultDetail{ResultSummary: sum}
 	var cands, parts string
 	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.omarchy_commit, r.omarchy_built_at, r.notes,
-		r.hardware, r.consent_notice, r.candidates, r.replaced_parts, coalesce(p.size, 0), coalesce(p.visibility, 'private')
+		r.hardware, r.consent_notice, r.candidates, r.replaced_parts, r.wiring_checked_at, r.wiring_checked_by,
+		coalesce(p.size, 0), coalesce(p.visibility, 'private')
 		FROM results r LEFT JOIN result_reports p ON p.result_id = r.id WHERE r.id = ?`, id).Scan(
 		&d.OmarchyRevision, &d.OmarchyImage, &d.OmarchyCommit, &d.OmarchyBuiltAt, &d.Notes, &d.Hardware, &d.ConsentNotice, &cands, &parts,
-		&d.ReportSize, &d.ReportVisibility); err != nil {
+		&d.WiringCheckedAt, &d.WiringCheckedBy, &d.ReportSize, &d.ReportVisibility); err != nil {
 		return nil, err
 	}
 	json.Unmarshal([]byte(cands), &d.Candidates)
 	json.Unmarshal([]byte(parts), &d.ReplacedParts)
+	if d.Ports, err = portAnswers(ctx, s.db, "WHERE p.result_id = ?", id); err != nil {
+		return nil, err
+	}
 	rows, err := s.db.QueryContext(ctx, `SELECT i.capability_id, cp.name, cp.category_id, k.name, i.connector, i.status, i.method,
 		i.reason, i.note, i.evidence, i.applicable
 		FROM result_items i JOIN capabilities cp ON cp.id = i.capability_id JOIN categories k ON k.id = cp.category_id
@@ -552,6 +615,53 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 		d.Events = append(d.Events, e)
 	}
 	return d, rows.Err()
+}
+
+// PortRow is one ports entry of an accepted report, for the wiring.
+type PortRow struct {
+	ResultID int64
+	results.PortAnswer
+	Checked bool // a maintainer marked the report's wiring checked
+}
+
+type querier interface {
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+}
+
+// portRows reads ports entries with their result's ID, state and mark, in
+// the results' order.
+func portRows(ctx context.Context, q querier, where string, args ...any) ([]portRow, error) {
+	rows, err := q.QueryContext(ctx, `SELECT p.result_id, r.config_id, r.state, r.wiring_checked_at <> '', p.test, p.connector, p.paths,
+		p.how, p.wiring_said FROM result_ports p JOIN results r ON r.id = p.result_id `+where+" ORDER BY p.result_id, p.ord", args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []portRow
+	for rows.Next() {
+		var x portRow
+		var paths string
+		if err := rows.Scan(&x.ResultID, &x.config, &x.state, &x.Checked, &x.Test, &x.Connector, &paths, &x.How, &x.WiringSaid); err != nil {
+			return nil, err
+		}
+		json.Unmarshal([]byte(paths), &x.Paths)
+		out = append(out, x)
+	}
+	return out, rows.Err()
+}
+
+type portRow struct {
+	PortRow
+	config, state string
+}
+
+func portAnswers(ctx context.Context, q querier, where string, args ...any) ([]results.PortAnswer, error) {
+	rows, err := portRows(ctx, q, where, args...)
+	var out []results.PortAnswer
+	for _, x := range rows {
+		out = append(out, x.PortAnswer)
+	}
+	return out, err
 }
 
 // ResultReport returns a result's scrubbed raw submission.
@@ -686,6 +796,7 @@ type Rollup struct {
 	StableResults map[string]int
 	StableLatest  map[string]string
 	Accepted      map[string][]ResultSummary   // config → accepted (and retracted) results, newest first
+	Ports         map[string][]PortRow         // config → accepted results' ports entries, for the wiring
 	Unsupported   map[string]map[string]string // config → capability → reason
 	CurrentMajor  int
 	Version       int64 // the data version this was read at
@@ -702,7 +813,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	defer tx.Rollback()
 	r := &Rollup{Items: map[string][]status.Item{}, Results: map[string]int{}, Latest: map[string]string{},
 		StableResults: map[string]int{}, StableLatest: map[string]string{},
-		Accepted: map[string][]ResultSummary{}, Unsupported: map[string]map[string]string{}}
+		Accepted: map[string][]ResultSummary{}, Ports: map[string][]PortRow{}, Unsupported: map[string]map[string]string{}}
 	var major, version string
 	if err := tx.QueryRowContext(ctx, "SELECT value FROM settings WHERE key = 'current_omarchy_major'").Scan(&major); err != nil {
 		return nil, err
@@ -739,6 +850,18 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 	}
 	rows.Close()
 
+	ports, err := portRows(ctx, tx, "WHERE r.state IN ('accepted', 'retracted')")
+	if err != nil {
+		return nil, err
+	}
+	answers := map[int64][]results.PortAnswer{}
+	for _, p := range ports {
+		answers[p.ResultID] = append(answers[p.ResultID], p.PortAnswer)
+		if p.state == Accepted {
+			r.Ports[p.config] = append(r.Ports[p.config], p.PortRow)
+		}
+	}
+
 	rows, err = tx.QueryContext(ctx, "SELECT "+summaryCols+" WHERE r.state IN ('accepted', 'retracted') ORDER BY r.tested_at DESC, r.id DESC")
 	if err != nil {
 		return nil, err
@@ -749,6 +872,7 @@ func (s *Store) RollupData(ctx context.Context) (*Rollup, error) {
 			rows.Close()
 			return nil, err
 		}
+		x.Ports = answers[x.ID]
 		r.Accepted[x.ConfigID] = append(r.Accepted[x.ConfigID], x)
 		if x.State == Accepted {
 			r.Results[x.ConfigID]++
