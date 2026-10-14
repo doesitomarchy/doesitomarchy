@@ -17,6 +17,7 @@ import (
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 // The maintainers' review queue (PLAN.md §22.5). Cloudflare Access protects
@@ -166,8 +167,11 @@ type adminReportData struct {
 	// Ports are the report's port answers beside the configuration's
 	// current wiring; Dropped, the configuration's paths its reports put on
 	// more than one connector.
-	Ports     []adminPort
-	Dropped   []wiringConflict
+	Ports   []adminPort
+	Dropped []wiringConflict
+	// Changed are the console commands that changed a result by hand: only
+	// a server that takes them (staging) stores such a report.
+	Changed   []string
 	Done, Err string
 }
 
@@ -228,6 +232,11 @@ func (s *Server) adminReport(w http.ResponseWriter, r *http.Request, who string)
 		}
 	}
 	d.Ports, d.Dropped = s.adminPorts(rd)
+	for _, c := range rd.Console {
+		if c.Kind == report.ConsoleChange {
+			d.Changed = append(d.Changed, c.Command)
+		}
+	}
 	s.render(w, r, http.StatusOK, "admin-report", page{Title: "Review " + rd.Code, Data: d})
 }
 
@@ -473,6 +482,10 @@ func (s *Server) adminImport(w http.ResponseWriter, r *http.Request, who string)
 			Tester: r.FormValue("tester")}, time.Now())
 	if err != nil {
 		back(err.Error())
+		return
+	}
+	if p := s.consoleRefusal(imp.Result); p != "" {
+		back(p)
 		return
 	}
 	if src := imp.Source; src != nil {

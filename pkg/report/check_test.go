@@ -47,6 +47,12 @@ func TestCheck(t *testing.T) {
 		{"corrected without wiring_said", valid + `ports: [{ test: ports.usb-a, connector: left-2, paths: ["usb2:0000:00:14.0/1"], how: corrected }]` + "\n", []string{"ports[0].wiring_said"}},
 		{"corrected to itself", valid + `ports: [{ test: ports.usb-a, connector: left-2, paths: ["usb2:0000:00:14.0/1"], how: corrected, wiring_said: left-2 }]` + "\n", []string{"the connector itself"}},
 		{"wiring_said when not corrected", valid + `ports: [{ test: ports.usb-a, connector: left-2, paths: ["usb2:0000:00:14.0/1"], how: confirmed, wiring_said: left-1 }]` + "\n", []string{"only corrected"}},
+		{"console", valid + `console: [{ command: rerun graphics.acceleration, kind: redo }, { command: "force display.native-resolution pass", kind: change }]` + "\n", nil},
+		{"a read-only command", valid + `console: [{ command: why boot.install, kind: read }]` + "\n", []string{"console[0].kind", "redo, change", "read-only"}},
+		{"an empty command", valid + `console: [{ command: " ", kind: redo }]` + "\n", []string{"console[0].command: empty"}},
+		{"a command over two lines", valid + `console: [{ command: "rerun x\nforce y pass", kind: redo }]` + "\n", []string{"console[0].command", "printable"}},
+		{"a long command", valid + `console: [{ command: "rerun ` + strings.Repeat("é", 200) + `", kind: redo }]` + "\n", []string{"console[0].command: 206 characters"}},
+		{"too many commands", valid + "console: [" + strings.Repeat("{ command: rerun boot.install, kind: redo }, ", 64) + "{ command: rerun boot.install, kind: redo }]\n", []string{"console: 65 entries"}},
 		{"bad version", strings.Replace(valid, `"4.0.4"`, `"four"`, 1), []string{"omarchy.version"}},
 		{"future date", strings.Replace(valid, "2026-10-01T12:00:00Z", "2026-10-03T13:00:00Z", 1), []string{"in the future"}},
 	}

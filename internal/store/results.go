@@ -111,12 +111,12 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 		res, err = tx.ExecContext(ctx, `INSERT INTO results (code, config_id, source_id, source_version, profile, workflow, schema,
 			format, tester_handle, contact_hash, tested_at, omarchy_version, omarchy_major, omarchy_minor, omarchy_patch,
 			omarchy_revision, omarchy_image, kernel, notes, hardware, state, submitted_by, submitted_at, consent_notice, candidates,
-			omarchy_channel, omarchy_commit, omarchy_built_at, context, fixes, replaced_parts)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			omarchy_channel, omarchy_commit, omarchy_built_at, context, fixes, replaced_parts, console)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			newCode(), r.ConfigID, r.SourceID, r.SourceVersion, r.Profile, r.Workflow, r.Schema, format, r.TesterHandle, contact,
 			r.TestedAt, r.OmarchyRaw, r.Omarchy.Major, r.Omarchy.Minor, r.Omarchy.Patch, r.Revision, r.Image, r.Kernel, r.Notes,
 			r.Hardware, Pending, actor, at, r.ConsentNotice, jsonList(r.Candidates), channelOr(r.Channel), r.Commit, r.BuiltAt,
-			contextOr(r.Context), jsonList(r.Fixes), jsonParts(r.ReplacedParts))
+			contextOr(r.Context), jsonList(r.Fixes), jsonParts(r.ReplacedParts), jsonConsole(r.Console))
 		if err == nil || attempt == 4 || !strings.Contains(err.Error(), "results.code") {
 			break // retry only on the (1 in 10^12) code collision
 		}
@@ -375,6 +375,14 @@ func jsonParts(ps []results.ReplacedPart) string {
 	return string(b)
 }
 
+func jsonConsole(cs []results.ConsoleEntry) string {
+	if len(cs) == 0 {
+		return "[]"
+	}
+	b, _ := json.Marshal(cs)
+	return string(b)
+}
+
 func channelOr(ch string) string {
 	if ch == "" {
 		return status.Stable
@@ -534,6 +542,7 @@ type ResultDetail struct {
 	ConsentNotice                                  string
 	Candidates                                     []string               // configs the hardware fitted equally
 	ReplacedParts                                  []results.ReplacedPart // parts that aren't the Mac's own
+	Console                                        []results.ConsoleEntry // console commands that redid or changed a result
 	WiringCheckedAt, WiringCheckedBy               string                 // a maintainer checked the port answers
 	Items                                          []ResultItem
 	Extras                                         []results.FileExtra
@@ -553,17 +562,18 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 		return nil, err
 	}
 	d := &ResultDetail{ResultSummary: sum}
-	var cands, parts string
+	var cands, parts, console string
 	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.omarchy_commit, r.omarchy_built_at, r.notes,
-		r.hardware, r.consent_notice, r.candidates, r.replaced_parts, r.wiring_checked_at, r.wiring_checked_by,
+		r.hardware, r.consent_notice, r.candidates, r.replaced_parts, r.console, r.wiring_checked_at, r.wiring_checked_by,
 		coalesce(p.size, 0), coalesce(p.visibility, 'private')
 		FROM results r LEFT JOIN result_reports p ON p.result_id = r.id WHERE r.id = ?`, id).Scan(
 		&d.OmarchyRevision, &d.OmarchyImage, &d.OmarchyCommit, &d.OmarchyBuiltAt, &d.Notes, &d.Hardware, &d.ConsentNotice, &cands, &parts,
-		&d.WiringCheckedAt, &d.WiringCheckedBy, &d.ReportSize, &d.ReportVisibility); err != nil {
+		&console, &d.WiringCheckedAt, &d.WiringCheckedBy, &d.ReportSize, &d.ReportVisibility); err != nil {
 		return nil, err
 	}
 	json.Unmarshal([]byte(cands), &d.Candidates)
 	json.Unmarshal([]byte(parts), &d.ReplacedParts)
+	json.Unmarshal([]byte(console), &d.Console)
 	if d.Ports, err = portAnswers(ctx, s.db, "WHERE p.result_id = ?", id); err != nil {
 		return nil, err
 	}

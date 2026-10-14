@@ -380,3 +380,52 @@ items:
 		}
 	}
 }
+
+// TestAPIConsoleChanges: a report whose results were changed in the tester's console is refused
+// unless the server takes them (staging); one that only measured again is always taken.
+func TestAPIConsoleChanges(t *testing.T) {
+	base := `schema: doesitomarchy/report/v1
+identifier: MacBookAir5,2
+context: live
+hardware: { board_id: Mac-2E6FAB96566FE58C }
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
+items:
+  boot.install: { status: not_tested, reason: live-limit }
+`
+	redo := []byte(base + "console: [{ command: rerun graphics.acceleration, kind: redo }]\n")
+	change := []byte(base + `console: [{ command: rerun graphics.acceleration, kind: redo }, { command: "force display.native-resolution pass", kind: change }]` + "\n")
+	for _, accept := range []bool{false, true} {
+		st, c := testdb.Open(t)
+		srv, err := New(st, c, slog.New(slog.NewTextHandler(io.Discard, nil)), Options{Version: "test", AcceptConsoleChanges: accept})
+		if err != nil {
+			t.Fatal(err)
+		}
+		ts := httptest.NewServer(srv.Handler())
+		key, err := st.AddSource(context.Background(), "test-tool", "Test tool", "https://example.com")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if code, out, _ := apiCall(t, ts.Client(), "POST", ts.URL+"/api/v1/reports", key, redo); code != 201 {
+			t.Errorf("accept %v: a redo-only report got %d %v", accept, code, out)
+		}
+		code, out, _ := apiCall(t, ts.Client(), "POST", ts.URL+"/api/v1/reports", key, change)
+		ts.Close()
+		if !accept {
+			if code != 422 || !strings.Contains(toJSON(out["problems"]), "force display.native-resolution pass") {
+				t.Errorf("refusing: a changed report got %d %v", code, out)
+			}
+			continue
+		}
+		if code != 201 {
+			t.Fatalf("accepting: a changed report got %d %v", code, out)
+		}
+		d, err := st.Result(context.Background(), mustID(t, st, out["code"].(string)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(d.Console) != 2 || d.Console[1].Kind != report.ConsoleChange || d.Console[1].Command != "force display.native-resolution pass" {
+			t.Errorf("stored console: %+v", d.Console)
+		}
+	}
+}
