@@ -43,6 +43,8 @@ var (
 	PortTests = []string{"ports.usb-a", "ports.usb-c", "ports.sd-card", "ports.thunderbolt"}
 	// PortHows: how a ports entry learned which connector a path is.
 	PortHows = []string{PortRing, PortAsked, PortConfirmed, PortCorrected}
+	// ConsoleKinds are the kinds of console command a report records.
+	ConsoleKinds = []string{ConsoleRedo, ConsoleChange}
 )
 
 // How a ports entry placed its paths on a connector.
@@ -51,6 +53,12 @@ const (
 	PortAsked     = "asked"     // the tester said which port; no wiring was known
 	PortConfirmed = "confirmed" // the tester agreed with the catalog's wiring
 	PortCorrected = "corrected" // the tester picked another port than the wiring said (wiring_said)
+)
+
+// Kinds of console command a report records; read-only ones aren't recorded.
+const (
+	ConsoleRedo   = "redo"   // measured a check again (rerun); the result still stands on its own
+	ConsoleChange = "change" // changed a result by hand (force, fake): DoesItOmarchy.com refuses the report
 )
 
 // Contexts.
@@ -83,7 +91,10 @@ type File struct {
 	// Ports says which bus paths sit behind which connector, as the port
 	// tests learned it: the wiring a configuration's reports agree on goes
 	// into the snapshot (GET /api/v1/snapshot, wiring).
-	Ports    []PortAnswer        `yaml:"ports" json:"ports,omitempty"`
+	Ports []PortAnswer `yaml:"ports" json:"ports,omitempty"`
+	// Console lists the commands typed in the test tool's console that
+	// measured a check again (redo) or changed a result (change), in order.
+	Console  []ConsoleEntry      `yaml:"console" json:"console,omitempty"`
 	Hardware map[string]any      `yaml:"hardware" json:"hardware,omitempty"`
 	Items    map[string]FileItem `yaml:"items" json:"items"`
 	Extras   []FileExtra         `yaml:"extras" json:"extras,omitempty"`
@@ -155,6 +166,13 @@ type PortAnswer struct {
 	// WiringSaid is the connector the catalog's wiring gave, when the
 	// tester corrected it (how: corrected only).
 	WiringSaid string `yaml:"wiring_said" json:"wiring_said,omitempty" doc:"corrected only: the connector the snapshot's wiring gave"`
+}
+
+// ConsoleEntry is one command typed in the test tool's console (OmaBoot?
+// Live's) that redid or changed a result.
+type ConsoleEntry struct {
+	Command string `yaml:"command" json:"command" doc:"The command as typed, e.g. rerun graphics.acceleration"`
+	Kind    string `yaml:"kind" json:"kind" doc:"redo (measured again) or change (a result changed by hand)"`
 }
 
 // Parse reads a YAML or JSON submission. Unknown fields are errors, so a

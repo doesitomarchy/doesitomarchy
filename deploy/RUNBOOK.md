@@ -167,6 +167,18 @@ reject, retract, resolve flags and pick a configuration.
 - **Locally:** `doiomad serve -demo -admin-insecure -addr 127.0.0.1:8081` opens
   `/admin` without Access, as "local". The flag is refused on any other address.
 
+### Staging-only settings
+
+Staging (the private server for dev OmaBoot? builds) sets these in its
+service's environment. Production never does; leave them out of
+`/etc/doiomad/doiomad.env`.
+
+- `DOIOMAD_EXEMPT_VMS=1`: reports from a QEMU VM skip the per-Mac daily limit,
+  so the smoke test can submit after every build.
+- `DOIOMAD_ACCEPT_CONSOLE_CHANGES=1`: takes reports whose results were changed
+  in OmaBoot?'s console (a `console` entry of kind `change`). Without it they're
+  refused with 422. `/admin` marks such a report "Changed in the console".
+
 ### Ambiguous reports
 
 When the hardware in a report fits several configurations (they differ only

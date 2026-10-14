@@ -25,6 +25,7 @@ type (
 	FileExtra    = report.FileExtra
 	ReplacedPart = report.ReplacedPart
 	PortAnswer   = report.PortAnswer
+	ConsoleEntry = report.ConsoleEntry
 )
 
 // SchemaV1JSON is the report schema as a JSON Schema document (GET /api/v1/schema).
