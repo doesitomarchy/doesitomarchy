@@ -1,19 +1,17 @@
 name: ci
 
+# Every change reaches main through a pull request, so its run is the check.
+# A release reuses that run when the tagged commit holds the code it tested.
 on:
-  push:
-    branches: [main]
-    paths-ignore: ["**.md"]
   pull_request:
     paths-ignore: ["**.md"]
-  workflow_call: # the release workflow runs the checks when main's run for the tag can't be reused
+  workflow_call: # the release workflow runs the checks when no pull request run can be reused
 
 permissions:
   contents: read
 
 # A newer push to the same pull request cancels the run still checking the
-# old commit. Pushes to main and releases are keyed by commit, so each one
-# runs to the end (a release reuses main's run for its commit).
+# old commit. A release's checks are keyed by commit and run to the end.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -36,6 +34,15 @@ jobs:
         run: CGO_ENABLED=0 go build -trimpath -o bin/doiomad ./cmd/doiomad
       - name: validate catalog
         run: ./bin/doiomad validate
+      # The tree this run checked (for a pull request, its head merged into
+      # main). A release whose commit has the same tree reuses this run.
+      - name: record tree
+        run: git rev-parse 'HEAD^{tree}' > tested-tree
+      - uses: actions/upload-artifact@v7
+        with:
+          name: tested-tree
+          path: tested-tree
+          retention-days: 90
 
   # Accessibility (axe-core) and layout checks against a running server, at
   # phone and desktop widths and in every theme (PLAN.md §17.5).

@@ -1,9 +1,9 @@
 name: release
 
 # Pushing a version tag (git tag v0.5.0 && git push origin v0.5.0) checks the
-# commit (reusing main's ci run for it when there is one), publishes a GitHub
-# Release with the binary, deploys it to the droplet and purges Cloudflare's
-# cache (PLAN.md §18.5).
+# commit (reusing its pull request's ci run when that run checked the same
+# code), publishes a GitHub Release with the binary, deploys it to the droplet
+# and purges Cloudflare's cache (PLAN.md §18.5).
 on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
@@ -16,14 +16,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # The tag is pushed right after merging to main, whose push already runs
-  # every check on this exact commit. Wait for that run and reuse its result
-  # instead of checking the same code twice.
-  main-ci:
+  # The tag goes on a pull request's squash-merge. That pull request's ci run
+  # recorded the tree it checked (its head merged into main); when it matches
+  # the tagged commit's tree, the run already checked this exact code.
+  pr-ci:
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
+      pull-requests: read
     outputs:
       passed: ${{ steps.find.outputs.passed }}
     steps:
@@ -31,33 +32,32 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          id=""
-          for i in $(seq 1 12); do # main's run can take a few seconds to appear
-            id=$(gh run list -R "$GITHUB_REPOSITORY" --workflow ci.yml --branch main --event push --commit "$GITHUB_SHA" \
-              --json databaseId -q '.[0].databaseId')
-            [ -n "$id" ] && break
-            sleep 5
+          reuse() { echo "$1"; echo "passed=true" >> "$GITHUB_OUTPUT"; exit 0; }
+          check() { echo "$1; running the checks here."; echo "passed=false" >> "$GITHUB_OUTPUT"; exit 0; }
+          tree=$(gh api "repos/$GITHUB_REPOSITORY/git/commits/$GITHUB_SHA" -q .tree.sha) || check "Couldn't read $GITHUB_SHA"
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" -q '[.[] | select(.merged_at != null)][0].number // empty') || pr=""
+          [ -n "$pr" ] || check "No merged pull request for $GITHUB_SHA"
+          head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$pr" -q .head.sha) || check "Couldn't read #$pr"
+          # Newest first: a later run may have checked the head against a newer main.
+          for id in $(gh run list -R "$GITHUB_REPOSITORY" --workflow ci.yml --event pull_request --commit "$head" \
+              --status success --limit 10 --json databaseId -q '.[].databaseId' || true); do
+            dir=$(mktemp -d)
+            gh run download "$id" -R "$GITHUB_REPOSITORY" -n tested-tree -D "$dir" 2>/dev/null || continue
+            if [ "$(cat "$dir/tested-tree")" = "$tree" ]; then
+              reuse "ci run $id for #$pr checked tree $tree; reusing it."
+            fi
           done
-          if [ -z "$id" ]; then
-            echo "No ci run on main for $GITHUB_SHA; running the checks here."
-            echo "passed=false" >> "$GITHUB_OUTPUT"
-          elif gh run watch "$id" -R "$GITHUB_REPOSITORY" --interval 15 --exit-status > /dev/null; then
-            echo "ci run $id passed for $GITHUB_SHA; reusing it."
-            echo "passed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ci run $id did not pass; running the checks here."
-            echo "passed=false" >> "$GITHUB_OUTPUT"
-          fi
+          check "No passing ci run for #$pr checked tree $tree"
 
   ci:
-    needs: main-ci
-    if: needs.main-ci.outputs.passed != 'true'
+    needs: pr-ci
+    if: needs.pr-ci.outputs.passed != 'true'
     uses: ./.github/workflows/ci.yml
 
   release:
-    needs: [main-ci, ci]
-    # ci is skipped when main's run was reused.
-    if: ${{ !cancelled() && (needs.main-ci.outputs.passed == 'true' || needs.ci.result == 'success') }}
+    needs: [pr-ci, ci]
+    # ci is skipped when the pull request's run was reused.
+    if: ${{ !cancelled() && (needs.pr-ci.outputs.passed == 'true' || needs.ci.result == 'success') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -81,7 +81,7 @@ jobs:
 
   deploy:
     needs: release
-    # Without this, a skipped ci job (main's run was reused) skips the deploy too.
+    # Without this, a skipped ci job (the pull request's run was reused) skips the deploy too.
     if: ${{ !cancelled() && needs.release.result == 'success' }}
     runs-on: ubuntu-latest
     environment: production
