@@ -211,6 +211,9 @@ func TestScrub(t *testing.T) {
 		{"link/ether a4:83:e7:12:34:56 brd ff:ff:ff:ff:ff:ff", "a4:83:e7:12:34:56", "link/ether"},
 		{"wlan0: 00-1B-63-84-45-E6 up", "00-1B-63-84-45-E6", "wlan0"},
 		{"inet 192.168.1.42/24", "192.168.1.42", "inet "},
+		{"from 10.0.0.5, port 22", "10.0.0.5", "from "},
+		{"peer=172.16.4.1.", "172.16.4.1", "peer="},
+		{"gw 192.168.1.1-192.168.1.9", "192.168.1.9", "gw "},
 		{"inet6 fe80::a6b1:c2ff:fe3d:1234/64", "fe80::a6b1", "inet6 "},
 		{"inet6 2001:db8:85a3:0:0:8a2e:370:7334", "2001:db8", "inet6"},
 		{"SMART PASSED (serial S1K5NYAF123456)", "S1K5NYAF123456", "(serial "},
@@ -241,6 +244,10 @@ func TestScrub(t *testing.T) {
 		"brcmfmac: brcmf_c_preinit_dcmds: Firmware: BCM4364/3 wl0: Mar 28 2021 22:55:10",
 		"std::vector in Foo::bar()",
 		"serial port ttyS0 at 0x3f8",
+		`"firmware":"429.0.0.0.0"`,
+		"hci0 on USB 3-1.8.1.3 [05ac:821f]",
+		"usb 1-1.2.3.4: new full-speed USB device",
+		"/sys/devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1.8/3-1.8.1/3-1.8.1.3",
 	} {
 		if got := Scrub(keep); got != keep {
 			t.Errorf("Scrub(%q) = %q: should be unchanged", keep, got)

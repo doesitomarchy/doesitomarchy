@@ -213,3 +213,60 @@ items: { boot.install: { status: supported, method: observed } }
 		t.Errorf("retract without a reason: %d %s", code, loc)
 	}
 }
+
+// /admin shows the reviewer's newest note in the queue and on the report,
+// the gates' answer for a pending report, and who accepted it.
+func TestAdminReviewNotes(t *testing.T) {
+	ts, _, st, c := adminServer(t, Options{AdminInsecure: true})
+	ctx := context.Background()
+	f, _ := results.Parse([]byte(`schema: doesitomarchy/report/v1
+config: macbookair5-2-mid-2012-a
+tested_at: 2026-10-01T12:00:00Z
+omarchy: { version: "4.0.4" }
+items: { boot.install: { status: supported, method: observed, note: it installed } }
+`))
+	r, err := results.Validate(f, c, time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, _ := st.InsertResult(ctx, r, nil, results.SchemaV1, "test")
+	d, _ := st.Result(ctx, id)
+	if err := st.AddReviewNote(ctx, id, store.ActionHeld, "the owner should check <the> install", store.Reviewer); err != nil {
+		t.Fatal(err)
+	}
+	get := func(path string) string {
+		res, err := ts.Client().Get(ts.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := io.ReadAll(res.Body)
+		res.Body.Close()
+		return string(b)
+	}
+	note := "<b>Held</b> by the AI reviewer"
+	for _, want := range []string{note, "the owner should check &lt;the&gt; install", `class="review-note"`} {
+		if b := get("/admin"); !strings.Contains(b, want) {
+			t.Errorf("queue lacks %q", want)
+		}
+	}
+	page := get("/admin/report/" + d.Code)
+	for _, want := range []string{note, "Review gates: <b>hold</b>", "omaboot: not an OmaBoot? report: for the owner"} {
+		if !strings.Contains(page, want) {
+			t.Errorf("report page lacks %q", want)
+		}
+	}
+	if err := st.AcceptResult(ctx, id, "fits the evidence policy", store.Reviewer); err != nil {
+		t.Fatal(err)
+	}
+	if b := get("/admin"); !strings.Contains(b, "by the AI reviewer") || !strings.Contains(b, "fits the evidence policy") {
+		t.Error("recent decisions lack the reviewer's accept")
+	}
+	page = get("/admin/report/" + d.Code)
+	if !strings.Contains(page, "Accepted by the AI reviewer") || strings.Contains(page, "Review gates:") {
+		t.Error("an accepted report: who accepted it, and no gates")
+	}
+	b := eventually(t, ts, "/report/"+d.Code, func(b string) bool { return strings.Contains(b, "MacBookAir5,2") }, "the public report page")
+	if strings.Contains(b, "fits the evidence policy") || strings.Contains(b, "reviewer") {
+		t.Error("the public report page shows the review note")
+	}
+}

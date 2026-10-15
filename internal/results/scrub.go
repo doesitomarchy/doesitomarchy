@@ -28,8 +28,6 @@ var scrubRules = []struct {
 	{regexp.MustCompile(`(?i)\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b`), Redacted},
 	// IPv6: hex groups with "::", or at least four colon-separated groups (times have two).
 	{regexp.MustCompile(`(?i)(?:\b[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:)*[0-9a-f]{1,4}\b|\b(?:[0-9a-f]{1,4}:){4,7}[0-9a-f]{1,4}\b`), Redacted},
-	// IPv4.
-	{regexp.MustCompile(`\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b`), Redacted},
 	// User names in home-directory and removable-media paths.
 	{regexp.MustCompile(`(/home/|/Users/|/var/home/|/run/media/|/media/)[^/\s"']+`), "${1}" + Redacted},
 	// Shell prompts ("carl@work-mbp:~$", "[carl@work-mbp ~]$"). Only prompt-like
@@ -56,7 +54,33 @@ func Scrub(s string) string {
 	for _, r := range scrubRules {
 		s = r.re.ReplaceAllString(s, r.repl)
 	}
-	return s
+	return scrubIPv4(s)
+}
+
+// IPv4 addresses. Version strings and USB port paths share the dotted shape:
+// Apple's firmware "429.0.0.0.0" and the kernel's "usb 3-1.8.1.3" are kept,
+// so a dotted run with more than four numbers, or one hanging off a USB bus
+// number ("3-"), isn't an address.
+var (
+	ipv4Re     = regexp.MustCompile(`\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b`)
+	usbPathEnd = regexp.MustCompile(`(?:^|[^0-9A-Za-z.])\d{1,3}-$`)
+)
+
+func scrubIPv4(s string) string {
+	var b strings.Builder
+	last := 0
+	for _, m := range ipv4Re.FindAllStringIndex(s, -1) {
+		before, after := s[:m[0]], s[m[1]:]
+		if strings.HasSuffix(before, ".") || (len(after) > 1 && after[0] == '.' && after[1] >= '0' && after[1] <= '9') ||
+			usbPathEnd.MatchString(before) {
+			continue
+		}
+		b.WriteString(s[last:m[0]])
+		b.WriteString(Redacted)
+		last = m[1]
+	}
+	b.WriteString(s[last:])
+	return b.String()
 }
 
 // personalKey matches structured fields whose whole value is personal.

@@ -86,3 +86,7 @@ details.confirm form { margin-top: 0.5rem; }
 
 /* An OmaBoot? fix in the review facts sits in running text: underline it. */
 .facts a.fixref { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+/* The reviewer's newest note (PLAN §32): wraps in the queue rather than widening it. */
+td.review-note { min-width: 14rem; max-width: 28rem; font-size: 12px; }
+p.review-note { margin: 0.25rem 0 0; }

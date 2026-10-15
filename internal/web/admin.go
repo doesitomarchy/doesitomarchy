@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
+	gates "github.com/doesitomarchy/doesitomarchy/internal/review"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
@@ -171,7 +172,9 @@ type adminReportData struct {
 	Dropped []wiringConflict
 	// Changed are the console commands that changed a result by hand: only
 	// a server that takes them (staging) stores such a report.
-	Changed   []string
+	Changed []string
+	// Gates are the review gates' answer for a pending report (PLAN §32).
+	Gates     *gates.Verdict
 	Done, Err string
 }
 
@@ -235,6 +238,13 @@ func (s *Server) adminReport(w http.ResponseWriter, r *http.Request, who string)
 	for _, c := range rd.Console {
 		if c.Kind == report.ConsoleChange {
 			d.Changed = append(d.Changed, c.Command)
+		}
+	}
+	if rd.State == store.Pending {
+		if v, err := gates.Check(ctx, s.store, id); err == nil {
+			d.Gates = &v
+		} else {
+			s.log.Warn("review gates", "code", rd.Code, "err", err)
 		}
 	}
 	s.render(w, r, http.StatusOK, "admin-report", page{Title: "Review " + rd.Code, Data: d})

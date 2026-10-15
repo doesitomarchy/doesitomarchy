@@ -152,15 +152,12 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 		}
 	}
 	flags := r.Flags
-	// The same source, tester, configuration and test time as an earlier report.
 	var dup string
-	err = tx.QueryRowContext(ctx, `SELECT code FROM results WHERE id <> ? AND source_id = ? AND tester_handle = ? AND config_id = ?
-		AND tested_at = ? AND state <> 'rejected' ORDER BY id LIMIT 1`, id, r.SourceID, r.TesterHandle, r.ConfigID, r.TestedAt).Scan(&dup)
-	if err == nil {
+	if dup, err = duplicateOf(ctx, tx, id); err != nil {
+		return 0, err
+	} else if dup != "" {
 		flags = append(flags, results.Flag{Kind: results.FlagDuplicate,
 			Detail: fmt.Sprintf("same source, tester, configuration and test time as report %s", dup)})
-	} else if !errors.Is(err, sql.ErrNoRows) {
-		return 0, err
 	}
 	for _, f := range flags {
 		if _, err = tx.ExecContext(ctx, "INSERT INTO result_flags (result_id, kind, detail) VALUES (?, ?, ?)", id, f.Kind, f.Detail); err != nil {
@@ -171,6 +168,75 @@ func (s *Store) InsertResult(ctx context.Context, r *results.Result, raw []byte,
 		return 0, err
 	}
 	return id, tx.Commit()
+}
+
+type rowQuerier interface {
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
+// duplicateOf is the code of an earlier report with the same source, tester,
+// configuration and test time as report id that wasn't rejected, or "".
+func duplicateOf(ctx context.Context, q rowQuerier, id int64) (string, error) {
+	var dup string
+	err := q.QueryRowContext(ctx, `SELECT d.code FROM results r JOIN results d ON d.id < r.id AND d.source_id = r.source_id
+		AND d.tester_handle = r.tester_handle AND d.config_id = r.config_id AND d.tested_at = r.tested_at AND d.state <> 'rejected'
+		WHERE r.id = ? ORDER BY d.id LIMIT 1`, id).Scan(&dup)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+	return dup, err
+}
+
+// DuplicateOf is the code of an earlier report that report id duplicates
+// (the duplicate flag's rule, read again from what's stored), or "".
+func (s *Store) DuplicateOf(ctx context.Context, id int64) (string, error) {
+	return duplicateOf(ctx, s.db, id)
+}
+
+// SameMacReports counts the reports the same source sent from the same Mac
+// (results.ProbeFingerprint of the stored hardware) in the window up to
+// report id's submission, report id included: the per-Mac limit, counted
+// from what's stored.
+func (s *Store) SameMacReports(ctx context.Context, id int64, window time.Duration) (int, error) {
+	var source, at string
+	if err := s.db.QueryRowContext(ctx, "SELECT source_id, submitted_at FROM results WHERE id = ?", id).Scan(&source, &at); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = fmt.Errorf("result %d: %w", id, ErrNotFound)
+		}
+		return 0, err
+	}
+	t, err := time.Parse(time.RFC3339, at)
+	if err != nil {
+		return 0, fmt.Errorf("result %d: submitted_at %q: %w", id, at, err)
+	}
+	rows, err := s.db.QueryContext(ctx, `SELECT r.id, r.hardware, c.mac_identifier FROM results r JOIN configs c ON c.id = r.config_id
+		WHERE r.source_id = ? AND r.submitted_at > ? AND r.submitted_at <= ? AND (r.submitted_at < ? OR r.id <= ?)`,
+		source, t.Add(-window).UTC().Format(time.RFC3339), at, at, id) // in the same second, the earlier rows
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	prints := map[int64]string{}
+	for rows.Next() {
+		var rid int64
+		var hw, ident string
+		if err := rows.Scan(&rid, &hw, &ident); err != nil {
+			return 0, err
+		}
+		m := map[string]any{}
+		json.Unmarshal([]byte(hw), &m)
+		prints[rid] = results.ProbeFingerprint(results.ProbeFromHardware(m, ident))
+	}
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	n := 0
+	for _, fp := range prints {
+		if fp == prints[id] {
+			n++
+		}
+	}
+	return n, nil
 }
 
 func event(ctx context.Context, tx *sql.Tx, id int64, actor, action, detail string) error {
@@ -187,7 +253,21 @@ func bumpDataVersion(ctx context.Context, tx *sql.Tx) error {
 // SetResultState moderates a result: accept or reject a pending one, or
 // retract an accepted one. Moves that change what counts bump the data
 // version, which tells running servers to rebuild.
-func (s *Store) SetResultState(ctx context.Context, id int64, to, reason, actor string) (err error) {
+func (s *Store) SetResultState(ctx context.Context, id int64, to, reason, actor string) error {
+	return s.moderate(ctx, id, to, reason, "", actor)
+}
+
+// AcceptResult accepts a pending result with a review note: why it was
+// accepted, kept in its history (never public, unlike a retraction's
+// reason). The note may be empty.
+func (s *Store) AcceptResult(ctx context.Context, id int64, note, actor string) error {
+	if err := checkNote(note, false); err != nil {
+		return err
+	}
+	return s.moderate(ctx, id, Accepted, "", note, actor)
+}
+
+func (s *Store) moderate(ctx context.Context, id int64, to, reason, note, actor string) (err error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -228,7 +308,11 @@ func (s *Store) SetResultState(ctx context.Context, id int64, to, reason, actor 
 		to, strings.TrimSpace(reason), actor, now(), id); err != nil {
 		return err
 	}
-	if err = event(ctx, tx, id, actor, to, strings.TrimSpace(reason)); err != nil {
+	detail := strings.TrimSpace(reason)
+	if detail == "" {
+		detail = strings.TrimSpace(note)
+	}
+	if err = event(ctx, tx, id, actor, to, detail); err != nil {
 		return err
 	}
 	if to == Accepted || from == Accepted {
@@ -237,6 +321,106 @@ func (s *Store) SetResultState(ctx context.Context, id int64, to, reason, actor 
 		}
 	}
 	return tx.Commit()
+}
+
+// Reviewer is the identity the AI reviewer's decisions are recorded under
+// (PLAN §32): its accepts have state_by "reviewer".
+const Reviewer = "reviewer"
+
+// Review-note actions in a result's history, besides an acceptance's note:
+// a hold (the report stays pending; the note says why) and, in shadow mode,
+// the acceptance the reviewer would have made.
+const (
+	ActionHeld        = "held"
+	ActionWouldAccept = "would-accept"
+)
+
+// MaxReviewNote is the longest review note kept, in bytes.
+const MaxReviewNote = 2000
+
+// ReviewNote is the newest note on a report's review: a hold, a would-be
+// acceptance (shadow mode) or an acceptance's note. Note is "" when there is
+// none. Notes live in the report's history (result_events), so every
+// earlier one is kept; the newest wins.
+type ReviewNote struct{ At, By, Action, Note string }
+
+// reviewActions are the history actions that carry a review note (in their detail).
+const reviewActions = "('" + ActionHeld + "', '" + ActionWouldAccept + "', '" + Accepted + "')"
+
+func checkNote(note string, required bool) error {
+	switch n := strings.TrimSpace(note); {
+	case required && n == "":
+		return errors.New("a note is required")
+	case len(n) > MaxReviewNote:
+		return fmt.Errorf("the note is %d bytes; the limit is %d", len(n), MaxReviewNote)
+	case strings.ContainsRune(n, 0):
+		return errors.New("the note contains a NUL byte")
+	}
+	return nil
+}
+
+// AddReviewNote records a note on a pending report without changing its
+// state: action is ActionHeld or ActionWouldAccept. The newest note wins.
+// Nothing public changes, so the data version stays.
+func (s *Store) AddReviewNote(ctx context.Context, id int64, action, note, actor string) (err error) {
+	if action != ActionHeld && action != ActionWouldAccept {
+		return fmt.Errorf("unknown review action %q", action)
+	}
+	if err := checkNote(note, true); err != nil {
+		return err
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+	var state string
+	if err = tx.QueryRowContext(ctx, "SELECT state FROM results WHERE id = ?", id).Scan(&state); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = fmt.Errorf("result %d: %w", id, ErrNotFound)
+		}
+		return err
+	}
+	if state != Pending {
+		return fmt.Errorf("result %d is %s; only a pending report takes a review note: %w", id, state, ErrState)
+	}
+	if err = event(ctx, tx, id, actor, action, strings.TrimSpace(note)); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// reviewNotes reads the newest review note of each result in ids.
+func (s *Store) reviewNotes(ctx context.Context, ids []int64) (map[int64]ReviewNote, error) {
+	out := map[int64]ReviewNote{}
+	if len(ids) == 0 {
+		return out, nil
+	}
+	in := strings.Repeat("?, ", len(ids)-1) + "?"
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		args[i] = id
+	}
+	rows, err := s.db.QueryContext(ctx, `SELECT e.result_id, e.at, e.actor, e.action, e.detail FROM result_events e
+		WHERE e.id IN (SELECT max(x.id) FROM result_events x WHERE x.result_id IN (`+in+`) AND x.action IN `+reviewActions+`
+		AND x.detail <> '' GROUP BY x.result_id)`, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int64
+		var n ReviewNote
+		if err := rows.Scan(&id, &n.At, &n.By, &n.Action, &n.Note); err != nil {
+			return nil, err
+		}
+		out[id] = n
+	}
+	return out, rows.Err()
 }
 
 // SetWiringChecked marks an accepted report's port answers as checked by a
@@ -318,7 +502,13 @@ type ResultSummary struct {
 	SubmittedBy, SubmittedAt              string
 	Supported, Partial, Failed, NotTested int
 	OpenFlags                             int
+	// Review is the newest review note (PLAN §32): filled by ListResults
+	// and Result; maintainers only, never public.
+	Review ReviewNote
 }
+
+// ByReviewer reports whether the AI reviewer made the result's last decision.
+func (x ResultSummary) ByReviewer() bool { return x.StateBy == Reviewer }
 
 // ResultFilter narrows ListResults.
 type ResultFilter struct {
@@ -409,14 +599,24 @@ func (s *Store) ListResults(ctx context.Context, f ResultFilter) ([]ResultSummar
 	}
 	defer rows.Close()
 	var out []ResultSummary
+	var ids []int64
 	for rows.Next() {
 		x, err := scanSummary(rows)
 		if err != nil {
 			return nil, err
 		}
 		out = append(out, x)
+		ids = append(ids, x.ID)
 	}
-	return out, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
+	notes, err := s.reviewNotes(ctx, ids)
+	for i := range out {
+		out[i].Review = notes[out[i].ID]
+	}
+	return out, err
 }
 
 func jsonList(xs []string) string {
@@ -562,6 +762,11 @@ func (s *Store) Result(ctx context.Context, id int64) (*ResultDetail, error) {
 		return nil, err
 	}
 	d := &ResultDetail{ResultSummary: sum}
+	notes, err := s.reviewNotes(ctx, []int64{id})
+	if err != nil {
+		return nil, err
+	}
+	d.Review = notes[id]
 	var cands, parts, console string
 	if err := s.db.QueryRowContext(ctx, `SELECT r.omarchy_revision, r.omarchy_image, r.omarchy_commit, r.omarchy_built_at, r.notes,
 		r.hardware, r.consent_notice, r.candidates, r.replaced_parts, r.console, r.wiring_checked_at, r.wiring_checked_by,

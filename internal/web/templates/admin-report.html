@@ -7,6 +7,8 @@
 <header class="admin-head">
   <h1>Report <code class="report-code">{{$r.Code}}</code> {{template "state" $r.State}}</h1>
   {{with $r.StateReason}}<p class="state-reason">{{$r.State}} by {{$r.StateBy}}: {{.}}</p>{{end}}
+  {{if and $r.ByReviewer (eq $r.State "accepted")}}<p class="state-reason">Accepted by the AI reviewer {{utc $r.StateAt}}.</p>{{end}}
+  {{if $r.Review.Note}}<p class="review-note">{{template "reviewnote" $r.Review}}</p>{{end}}
   <dl class="facts">
     <div><dt>Mac</dt><dd><a class="ident" href="/mac/{{$r.Slug}}">{{$r.Identifier}}</a></dd></div>
     <div><dt>Configuration</dt><dd>{{if .Ambiguous}}<span class="tag warn-tag">not decided</span> <span class="muted">fits {{len $r.Candidates}}; pick one below</span>{{else}}{{with .Config}}<span class="cfgref">{{.Diff}}</span> {{.Label}} <span class="muted">({{.ReleaseName}})</span>{{else}}<code>{{$r.ConfigID}}</code>{{end}}{{end}}</dd></div>
@@ -59,6 +61,8 @@
 <section class="panel admin-section">
   <h2>Decide</h2>
   {{if eq $r.State "pending"}}
+    {{with $d.Gates}}<p>Review gates: {{if .Pass}}<b>pass</b> <span class="muted">· the AI reviewer may accept it</span>{{else}}<b>hold</b> <span class="muted">· for you; the AI reviewer can't accept it</span>{{end}}</p>
+    {{if not .Pass}}<ul class="admin-flags">{{range .Reasons}}<li>{{.}}</li>{{end}}</ul>{{end}}{{end}}
     {{if .Ambiguous}}<p class="notice" role="note">Pick a configuration above before accepting.</p>{{end}}
     <form method="post" action="/admin/report/{{$r.Code}}/accept" class="cf-form" data-reason-form>
       <input type="hidden" name="csrf" value="{{.CSRF}}">

@@ -40,6 +40,7 @@
   <li><strong>What we keep:</strong> your Mac's hardware details, the test results and the Omarchy version. A public name and a contact address are optional; the contact is kept only as a one-way hash that even we can't read back.</li>
   <li><strong>What we remove first:</strong> serial numbers, network and IP addresses, computer and user names, and e-mail addresses.</li>
   <li><strong>What becomes public:</strong> once accepted, the results, the hardware and your public name, if you gave one. The full report stays with maintainers for now, but may be published later so anyone can check our work.</li>
+  <li><strong>AI review:</strong> reports are reviewed with the help of an AI model, through Anthropic's API. It's sent a report only after the details above are removed. A maintainer sees every decision it makes and can reverse it.</li>
   <li><strong>Changing your mind:</strong> reports aren't deleted, so the history stays honest. We can withdraw one so it no longer counts, and take your name off it.</li>
 </ul>
 </section>
@@ -61,6 +62,7 @@
   <li><strong>DigitalOcean</strong> runs our server, in Toronto.</li>
   <li><strong>Cloudflare R2</strong> keeps encrypted database backups for 30 days.</li>
   <li><strong>GitHub</strong> hosts the code. Issues and pull requests there are public.</li>
+  <li><strong>Anthropic</strong> provides the AI model that helps review diagnostic reports. It receives reports only after they're scrubbed.</li>
 </ul>
 </section>
 
@@ -78,6 +80,7 @@
 <h2>Changes</h2>
 <p>Any change is listed here with its date.</p>
 <ul class="plain">
+  <li><time datetime="2026-10-15">15 October 2026</time>: added AI review of diagnostic reports.</li>
   <li><time datetime="2026-10-02">2 October 2026</time>: added Sharing from Identify my Mac.</li>
   <li><time datetime="2026-10-02">2 October 2026</time>: first version.</li>
 </ul>

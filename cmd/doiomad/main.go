@@ -31,8 +31,10 @@ Commands:
   validate   Check the catalog in data/ (-data DIR)
   lock       Record new config IDs in data/config-ids.lock (-data DIR)
   report     Write an HTML review page for a batch (-line mac-mini -o FILE [-intro FILE])
-  reports    Moderate diagnostic reports: import, list, show, accept, reject, retract,
-             flags (doiomad reports help)
+  reports    Moderate diagnostic reports: import, list, show, check, accept, hold, reject,
+             retract, flags (doiomad reports help)
+  reviewer   The AI reviewer's SSH forced command: reads $SSH_ORIGINAL_COMMAND
+             (doiomad reviewer -h)
   sources    Manage the test tools that submit reports: list, add, rotate, revoke,
              trust (doiomad sources help)
   maintainers  Who may review reports in /admin: list, add, remove
@@ -68,6 +70,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return cmdReport(rest, stdout, stderr)
 	case "reports", "results":
 		return cmdResults(rest, stdout, stderr)
+	case "reviewer":
+		return cmdReviewer(rest, stdout, stderr)
 	case "maintainers":
 		return cmdMaintainers(args[1:], stdout, stderr)
 	case "sources":
