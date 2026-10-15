@@ -135,6 +135,8 @@ doiomad reports reject 4f9a2c7e1b -reason "duplicate of 7d1e09ab32"
 doiomad reports retract 4f9a2c7e1b -reason "tested with a third-party Wi-Fi card"
 doiomad reports flags                      # open review flags
 doiomad reports resolve 3 -note "stored, not counted; fine"
+doiomad reports check 4f9a2c7e1b           # the review gates: pass, or hold with reasons (-json)
+doiomad reports hold 4f9a2c7e1b -note "ask the tester about the Wi-Fi card"
 ```
 
 - **Effect:** accepts and retractions bump a change counter. The server
@@ -166,6 +168,55 @@ reject, retract, resolve flags and pick a configuration.
   answers 503; with them, anyone who isn't a maintainer gets 403.
 - **Locally:** `doiomad serve -demo -admin-insecure -addr 127.0.0.1:8081` opens
   `/admin` without Access, as "local". The flag is refused on any other address.
+
+### The AI reviewer's SSH key
+
+The AI reviewer (PLAN.md §32) reaches the server with one SSH key that can
+run only `doiomad reviewer`: `list`, `show CODE`, `check CODE`,
+`accept CODE --note TEXT` and `hold CODE --note TEXT`, each printing JSON.
+Its accepts are recorded as `reviewer` and need every gate to pass
+(`doiomad reports check`); only OmaBoot? reports can pass. It never rejects.
+`setup.sh` doesn't set this up yet; by hand, as root:
+
+1. A user for the key: `useradd --create-home --shell /bin/sh reviewer`, and
+   `reviewer` added to `AllowUsers` in `/etc/ssh/sshd_config.d/50-doiomad.conf`.
+2. The forced command, `/usr/local/bin/doiomad-reviewer-ssh` (root, 0755). The
+   client's command line reaches `doiomad reviewer` as data in
+   `SSH_ORIGINAL_COMMAND`; no shell ever reads it.
+
+   ```sh
+   #!/bin/sh
+   # Forced command for the AI reviewer's SSH key (~reviewer/.ssh/authorized_keys).
+   # Shadow mode (PLAN §32, 6a): 1 records "would accept" notes; 0 accepts.
+   export DOIOMAD_REVIEWER_SHADOW=1
+   exec sudo -n -u doiomad /opt/doiomad/current/doiomad reviewer -db /var/lib/doiomad/doesitomarchy.db
+   ```
+
+   And `/usr/local/bin/doiomad-reviewer-ssh-ro` for the read-only key (the
+   daily bug hunt, which may only read): the same without the shadow line, and
+   `reviewer -read-only`, which refuses accept and hold.
+
+3. `/etc/sudoers.d/doiomad-reviewer` (0440; check with `visudo -cf`):
+
+   ```
+   Defaults:reviewer env_keep += "SSH_ORIGINAL_COMMAND DOIOMAD_REVIEWER_SHADOW"
+   reviewer ALL=(doiomad) NOPASSWD: /opt/doiomad/current/doiomad reviewer -db /var/lib/doiomad/doesitomarchy.db
+   reviewer ALL=(doiomad) NOPASSWD: /opt/doiomad/current/doiomad reviewer -read-only -db /var/lib/doiomad/doesitomarchy.db
+   ```
+
+4. `~reviewer/.ssh/authorized_keys` (0600, owned by reviewer), a line per key:
+
+   ```
+   restrict,command="/usr/local/bin/doiomad-reviewer-ssh" ssh-ed25519 AAAA… reviewer@review-host
+   restrict,command="/usr/local/bin/doiomad-reviewer-ssh-ro" ssh-ed25519 AAAA… reviewer-ro@review-host
+   ```
+
+`restrict` turns off forwarding, the pty and `~/.ssh/rc`; `command=` replaces
+whatever the client asks for. A test from the reviewer's machine:
+`ssh reviewer@<droplet> check 4f9a2c7e1b`. Shadow mode stays on until the
+owner ends it (2 weeks or 20 reports, whichever is later) by changing the
+wrapper to `DOIOMAD_REVIEWER_SHADOW=0`. Mark OmaBoot? trusted first, or every
+report holds: `doiomad sources trust boot-live trusted`.
 
 ### Staging-only settings
 

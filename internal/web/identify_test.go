@@ -124,7 +124,7 @@ func TestIdentify(t *testing.T) {
 func TestInfoPages(t *testing.T) {
 	ts := newTestServer(t)
 	for path, wants := range map[string][]string{
-		"/privacy":     {"TLDR;", "30 days", "one-way hash"},
+		"/privacy":     {"TLDR;", "30 days", "one-way hash", "Anthropic's API"},
 		"/api":         {"Becoming a source", "/api/v1/reports", template.HTMLEscapeString(ConsentNotice)},
 		"/robots.txt":  {"Disallow: /admin"},
 		"/sitemap.xml": {"/identify</loc>", "/api</loc>", "/privacy</loc>"},

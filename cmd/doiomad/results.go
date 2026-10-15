@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -15,6 +17,7 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/builds"
 	"github.com/doesitomarchy/doesitomarchy/internal/catalog"
 	"github.com/doesitomarchy/doesitomarchy/internal/results"
+	"github.com/doesitomarchy/doesitomarchy/internal/review"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
 )
@@ -31,7 +34,13 @@ const resultsUsage = `doiomad reports — moderate diagnostic reports (PLAN.md �
   reports list [-state S] [-config ID] [-limit N]
   reports show CODE                  a report in full, with its flags and history
   reports accept CODE [-config ID]   make a pending report count; -config picks the
-                                     configuration when the hardware fits several
+         [-note TEXT] [-by reviewer] configuration when the hardware fits several; -note
+                                     says why (kept in its history); -by reviewer
+                                     accepts as the AI reviewer: only if every gate passes
+  reports check CODE [-json]         the review gates (PLAN §32): pass, or hold with one
+                                     reason per gate that held
+  reports hold CODE -note TEXT       keep a pending report pending with a note saying why
+         [-by reviewer]              (the newest note shows in /admin)
   reports reject CODE -reason TEXT   turn a pending report down
   reports retract CODE -reason TEXT  stop an accepted report counting (it stays on record)
   reports flags [-all]               review flags (open ones by default)
@@ -71,7 +80,9 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	config := fs.String("config", "", "list: only this config ID; accept: the configuration to use (ambiguous reports)")
 	limit := fs.Int("limit", 50, "list: at most this many")
 	reason := fs.String("reason", "", "reject, retract: why")
-	note := fs.String("note", "", "resolve: how the flag was dealt with")
+	note := fs.String("note", "", "resolve: how the flag was dealt with; accept, hold: why")
+	by := fs.String("by", "", "accept, hold: reviewer, to act as the AI reviewer (accept then needs every gate to pass)")
+	asJSON := fs.Bool("json", false, "check: print JSON")
 	all := fs.Bool("all", false, "flags: include resolved flags")
 	format := fs.String("format", "", "import: the file's format: our schema (default) or omacdiag")
 	omarchy := fs.String("omarchy", "", "import -format omacdiag: the Omarchy version the report ran on")
@@ -90,6 +101,20 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	}
 	defer st.Close()
 	who := actor()
+	switch *by {
+	case "":
+	case store.Reviewer:
+		if sub != "accept" && sub != "hold" {
+			fmt.Fprintf(stderr, "reports %s: -by %s is only for accept and hold (the reviewer never rejects)\n", sub, store.Reviewer)
+			return 2
+		}
+		// A person acting for the reviewer: kept apart from the reviewer's own
+		// decisions (state_by "reviewer"), so the history says who did it.
+		who = store.Reviewer + " (via " + who + ")"
+	default:
+		fmt.Fprintf(stderr, "reports %s: -by takes only %q; your own actions are recorded as %s\n", sub, store.Reviewer, who)
+		return 2
+	}
 
 	// id resolves a report code (or a report number, or a flag number for resolve).
 	id := func() (int64, bool) {
@@ -214,10 +239,54 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 		printDetail(stdout, d)
 		return 0
 
+	case "check":
+		n, ok := id()
+		if !ok {
+			return 2
+		}
+		v, err := review.Check(ctx, st, n)
+		if err != nil {
+			return fail(err)
+		}
+		printVerdict(stdout, v, *asJSON)
+		return 0
+
+	case "hold":
+		n, ok := id()
+		if !ok {
+			return 2
+		}
+		if err := review.Hold(ctx, st, n, *note, who); err != nil {
+			return fail(err)
+		}
+		fmt.Fprintf(stdout, "report %s held: %s\n", code(n), strings.TrimSpace(*note))
+		return 0
+
 	case "accept", "reject", "retract":
 		n, ok := id()
 		if !ok {
 			return 2
+		}
+		if sub == "accept" && *by == store.Reviewer {
+			// The reviewer can't pick a configuration: that's a judgement the gates leave to the owner.
+			if *config != "" {
+				fmt.Fprintln(stderr, "reports accept: -by reviewer can't pick a configuration (-config)")
+				return 2
+			}
+			v, outcome, err := review.Accept(ctx, st, n, *note, who, reviewerShadow())
+			if errors.Is(err, review.ErrHold) {
+				fmt.Fprintf(stderr, "reports accept: report %s holds; not accepted\n", code(n))
+				printVerdict(stderr, v, false)
+				return 1
+			} else if err != nil {
+				return fail(err)
+			}
+			if outcome == review.WouldAccept {
+				fmt.Fprintf(stdout, "report %s would be accepted (shadow mode; DOIOMAD_REVIEWER_SHADOW=0 accepts); noted, still pending\n", code(n))
+				return 0
+			}
+			fmt.Fprintf(stdout, "report %s accepted by %s\n", code(n), who)
+			return 0
 		}
 		if sub == "accept" && *config != "" {
 			applicable, err := results.ApplicableSet(c, *config)
@@ -230,7 +299,13 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintf(stdout, "report %s now counts for %s\n", code(n), *config)
 		}
 		to := map[string]string{"accept": store.Accepted, "reject": store.Rejected, "retract": store.Retracted}[sub]
-		if err := st.SetResultState(ctx, n, to, *reason, who); err != nil {
+		var err error
+		if sub == "accept" {
+			err = st.AcceptResult(ctx, n, *note, who)
+		} else {
+			err = st.SetResultState(ctx, n, to, *reason, who)
+		}
+		if err != nil {
 			return fail(err)
 		}
 		fmt.Fprintf(stdout, "report %s %s\n", code(n), to)
@@ -267,6 +342,21 @@ func cmdResults(args []string, stdout, stderr io.Writer) int {
 	}
 	fmt.Fprintf(stderr, "reports: unknown command %q\n\n%s", sub, resultsUsage)
 	return 2
+}
+
+// printVerdict prints the gates' answer: "pass", or "hold" and one reason
+// per gate that held; as JSON with every gate when asJSON.
+func printVerdict(w io.Writer, v review.Verdict, asJSON bool) {
+	if asJSON {
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		enc.Encode(v)
+		return
+	}
+	fmt.Fprintln(w, v.Verdict)
+	for _, r := range v.Reasons {
+		fmt.Fprintf(w, "  %s\n", r)
+	}
 }
 
 func readInput(path string) ([]byte, error) {
@@ -333,18 +423,21 @@ func preview(ctx context.Context, st *store.Store, c *catalog.Catalog, r *result
 	return before, after, nil
 }
 
-func printEffect(w io.Writer, before, after status.ConfigStatus) {
-	desc := func(s status.ConfigStatus) string {
-		out := fmt.Sprintf("%s (%d/%d tested", s.Verdict.Label(), s.Tested, s.Applicable)
-		if s.Verified() {
-			out += ", verified"
-		}
-		out += ")"
-		if s.Blocker != "" {
-			out += ", blocked by " + s.Blocker
-		}
-		return out
+// effectDesc is a configuration's status in a line: "Partial (27/31 tested), blocked by …".
+func effectDesc(s status.ConfigStatus) string {
+	out := fmt.Sprintf("%s (%d/%d tested", s.Verdict.Label(), s.Tested, s.Applicable)
+	if s.Verified() {
+		out += ", verified"
 	}
+	out += ")"
+	if s.Blocker != "" {
+		out += ", blocked by " + s.Blocker
+	}
+	return out
+}
+
+func printEffect(w io.Writer, before, after status.ConfigStatus) {
+	desc := effectDesc
 	if desc(before) == desc(after) {
 		fmt.Fprintf(w, "  if accepted: no change: %s\n", desc(after))
 		return
@@ -412,6 +505,9 @@ func printDetail(w io.Writer, d *store.ResultDetail) {
 			state = "resolved: " + fl.Resolution
 		}
 		fmt.Fprintf(w, "  flag %d · %s: %s · %s\n", fl.ID, fl.Kind, fl.Detail, state)
+	}
+	if n := d.Review; n.Note != "" {
+		fmt.Fprintf(w, "  review note (%s, %s, %s): %s\n", n.Action, n.By, utcShort(n.At), n.Note)
 	}
 	for _, e := range d.Events {
 		fmt.Fprintf(w, "  %s  %-14s %s %s\n", utcShort(e.At), e.Action, e.Actor, e.Detail)

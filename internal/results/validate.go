@@ -566,10 +566,37 @@ func portSuspects(c *catalog.Catalog, m *catalog.Mac, cfg *catalog.Config, items
 // number: the SHA-256 of its product name, board ID and sorted PCI IDs, as
 // the report's probe gives them. It limits reports per Mac from sources
 // whose key is public (OmaBoot? Live).
-func HardwareFingerprint(f *File) string {
-	p := probeOf(f)
+func HardwareFingerprint(f *File) string { return ProbeFingerprint(probeOf(f)) }
+
+// ProbeFingerprint is HardwareFingerprint for a probe already read, e.g. from
+// a stored report's hardware (ProbeFromHardware).
+func ProbeFingerprint(p match.Probe) string {
 	pci := match.NormalizeIDs(p.PCI, "pci")
 	sort.Strings(pci)
 	sum := sha256.Sum256([]byte(strings.ToLower(p.ProductName) + "\n" + strings.ToLower(p.BoardID) + "\n" + strings.Join(pci, ",")))
 	return hex.EncodeToString(sum[:])
+}
+
+// ReportsPerDayPerMac is how many reports one Mac may send a day through a
+// source whose key is public, because it ships inside a public image
+// (OmaBoot? Live). A Mac is its hardware fingerprint: no serial numbers.
+// The API enforces it on arrival; the review gates count again from what's
+// stored (internal/review).
+const ReportsPerDayPerMac = 5
+
+// vmVendors are PCI vendor IDs only virtual machines show: QEMU's emulated VGA (1234), Red Hat's
+// QEMU devices (1b36) and virtio (1af4).
+var vmVendors = []string{"1234:", "1b36:", "1af4:"}
+
+// FromVM says whether a probe's PCI IDs come from a virtual machine: no Mac
+// has these vendors.
+func FromVM(p match.Probe) bool {
+	for _, id := range p.PCI {
+		for _, v := range vmVendors {
+			if strings.HasPrefix(strings.ToLower(strings.TrimPrefix(strings.TrimSpace(id), "pci:")), v) {
+				return true
+			}
+		}
+	}
+	return false
 }

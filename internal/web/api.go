@@ -29,24 +29,13 @@ var ReportsPerHour = 60
 var ReportsPerHourPublic = 30
 
 // ReportsPerDayPerMac is how many reports one Mac may send a day through a
-// source whose key is public, because it ships inside a public image
-// (OmaBoot? Live). A Mac is its hardware fingerprint: no serial numbers.
-var ReportsPerDayPerMac = 5
-
-// vmVendors are PCI vendor IDs only virtual machines show: QEMU's emulated VGA (1234), Red Hat's
-// QEMU devices (1b36) and virtio (1af4).
-var vmVendors = []string{"1234:", "1b36:", "1af4:"}
+// source whose key is public (results.ReportsPerDayPerMac; a variable so
+// tests can lower it).
+var ReportsPerDayPerMac = results.ReportsPerDayPerMac
 
 // fromVM says whether a report's PCI IDs come from a virtual machine (Options.ExemptVMs).
 func fromVM(f *results.File) bool {
-	for _, id := range results.ProbeFromHardware(f.Hardware, f.Identifier).PCI {
-		for _, v := range vmVendors {
-			if strings.HasPrefix(strings.ToLower(id), v) {
-				return true
-			}
-		}
-	}
-	return false
+	return results.FromVM(results.ProbeFromHardware(f.Hardware, f.Identifier))
 }
 
 // consoleRefusal says why a report whose results were changed in the test tool's console

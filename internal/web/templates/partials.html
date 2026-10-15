@@ -9,6 +9,8 @@
 
 {{define "verdict"}}<span class="verdict {{.}}">{{template "vicon" .}}{{.Label}}</span>{{end}}
 
+{{/* reviewnote is a report's newest review note (store.ReviewNote; PLAN §32): a hold, a would-be acceptance in shadow mode, or an acceptance's note. */}}
+{{define "reviewnote"}}{{if .Note}}<b>{{if eq .Action "held"}}Held{{else if eq .Action "would-accept"}}Would accept{{else}}Accepted{{end}}</b> by {{if eq .By "reviewer"}}the AI reviewer{{else}}{{.By}}{{end}} {{utc .At}}: {{.Note}}{{end}}{{end}}
 {{/* state is a report's review state as a tag, like a verdict. */}}
 {{define "state"}}<span class="state-tag st-{{.}}">{{if eq . "pending"}}Pending{{else if eq . "accepted"}}Accepted{{else if eq . "rejected"}}Rejected{{else if eq . "retracted"}}Retracted{{else}}{{.}}{{end}}</span>{{end}}
 
