@@ -2,6 +2,10 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-19"
+  title: Where each OmaBoot? fix lives
+  summary: "Each OmaBoot? fix now says where in the system it lives, its main level first, and what it changes there: the radeon panel clock fix is a driver patch plus boot options for the iMac10,1, the applesmc fix a driver patch plus a lifted blacklist, and the lid wake fix a system service. No fix touches the firmware. The levels are on /fixes, and each fix links to its details on omaboot.live."
+
 - date: "2026-10-14"
   title: "iMac (2020): first Linux hardware probe"
   summary: "The 27-inch iMac20,2 had no Linux probe. One from a real machine with a Radeon Pro 5700 matches the Gigabit Ethernet configuration exactly, and adds the GPU's PCI ID (1002:731b) and the FaceTime camera's USB ID (05ac:8514)."
