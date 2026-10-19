@@ -25,6 +25,7 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 //go:embed templates/*.html
@@ -150,8 +151,10 @@ func New(st *store.Store, c *catalog.Catalog, log *slog.Logger, opt Options) (*S
 		"itemLabel":   itemLabel,
 		"reasonLabel": reasonLabel,
 		// bootfix looks up an OmaBoot? fix a result lists (data/fixes.yaml).
-		"bootfix":  c.OmabootFix,
-		"fixURL":   fixURL,
+		"bootfix": c.OmabootFix,
+		"fixURL":  fixURL,
+		// fixLevel names a level a fix lives at (report.FixLevels).
+		"fixLevel": func(id string) report.FixLevel { lv, _ := report.FixLevelByID(id); return lv },
 		"partKind": partKind,
 		// pendingSources counts source requests awaiting a maintainer, for
 		// the admin bar (PLAN §30d).

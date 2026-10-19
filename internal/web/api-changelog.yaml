@@ -4,6 +4,10 @@
 # Add an entry with every release that changes the API or the report format;
 # site pages (even API-related ones, like /api/register) don't belong here.
 
+- date: "2026-10-19"
+  title: Where each OmaBoot? fix lives
+  summary: "`GET /api/v1/snapshot`: each fix gains `levels`, where in the system it lives, its main level first: each a `level` and `what` it changes there. The snapshot gains `fix_levels`, the levels from the desktop down to the firmware (`id`, `name`, `means`), in that order. `pkg/report` gains `FixLevels`. Additive."
+
 - date: "2026-10-14"
   title: Console commands in reports
   summary: "Reports gain an optional `console` list: commands typed in a test tool's console that measured a check again (`redo`) or changed a result (`change`). A report with a `change` is refused (422). Additive."

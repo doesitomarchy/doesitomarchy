@@ -13,6 +13,7 @@ type CatalogSnapshot struct {
 	Match        match.Snapshot      `json:"match" doc:"Every Mac's identifier, board IDs and configurations with their hardware IDs and CPUs, for matching a Mac offline"`
 	Capabilities []SnapshotCriterion `json:"capabilities" doc:"The test criteria, with whether a live boot can decide each"`
 	Fixes        []BootFix           `json:"fixes" doc:"The registered OmaBoot? fixes a report may list in fixes"`
+	FixLevels    []FixLevel          `json:"fix_levels" doc:"Where in the system a fix can live, from the desktop down to the firmware; a fix's levels name these"`
 }
 
 // Live flags: whether a live boot can decide a criterion.
@@ -59,7 +60,45 @@ type BootFix struct {
 	UpstreamNote string      `json:"upstream_note,omitempty"`
 	TestedOn     []string    `json:"tested_on,omitempty" doc:"Configurations it was tried on, on real hardware"`
 	Since        string      `json:"since" doc:"The first OmaBoot? build that carries it"`
+	Levels       []FixPlace  `json:"levels" doc:"Where in the system it lives (see fix_levels), its main level first"`
 	URL          string      `json:"url" doc:"Its entry on the site's list of fixes"`
+}
+
+// FixPlace is one level of the system a fix lives at, and what it changes there.
+type FixPlace struct {
+	Level string `json:"level" doc:"A fix level's id, e.g. driver-patch"`
+	What  string `json:"what" doc:"What it changes at that level, e.g. radeon, rebuilt for both kernels"`
+}
+
+// FixLevel is a level of the system a fix can live at.
+type FixLevel struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Means string `json:"means"`
+}
+
+// FixLevels are the levels a fix can live at, from what the user sees down to
+// the firmware. No fix lives at firmware: OmaBoot? never changes it, and the
+// level is listed so a tool can say so.
+var FixLevels = []FixLevel{
+	{"desktop", "Desktop", "Omarchy's own settings: Hyprland, the apps, the look."},
+	{"system", "System service", "Services, hooks and rules that run outside the kernel: systemd, udev."},
+	{"driver-settings", "Driver settings", "Which drivers load, and their options (modprobe.d)."},
+	{"new-driver", "New driver", "A driver the kernel Omarchy ships doesn't have."},
+	{"driver-patch", "Driver patch", "A change to a driver Omarchy ships, rebuilt for its exact kernel."},
+	{"kernel", "Kernel", "A change to the kernel itself."},
+	{"boot-options", "Boot options", "Options the boot menu passes to the kernel."},
+	{"firmware", "Firmware", "The Mac's own firmware and its settings. OmaBoot? never changes them."},
+}
+
+// FixLevelByID finds a fix level by its id.
+func FixLevelByID(id string) (FixLevel, bool) {
+	for _, l := range FixLevels {
+		if l.ID == id {
+			return l, true
+		}
+	}
+	return FixLevel{}, false
 }
 
 // FixDevice is a PCI or USB device a fix acts on.

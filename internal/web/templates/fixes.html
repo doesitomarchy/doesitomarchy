@@ -2,7 +2,7 @@
 <article class="fixes-page">
 <h1>OmaBoot? fixes</h1>
 <p class="tagline-big">#WeCanFixEverything</p>
-<p class="lede">OmaBoot? tests Macs from a live boot, and carries a few fixes that stock Omarchy doesn't have yet, so a Mac that needs one can still be tested. A report lists the fixes that took effect. Its results count for the configuration as usual, marked <em>with OmaBoot? &lt;fix&gt;</em>, linked to the fix's entry below.</p>
+<p class="lede">OmaBoot? tests Macs from a live boot, and carries a few fixes that stock Omarchy doesn't have yet, so a Mac that needs one can still be tested. A report lists the fixes that took effect. Its results count for the configuration as usual, marked <em>with OmaBoot? &lt;fix&gt;</em>, linked to the fix's entry below. How each one works, and how a run shows it took effect, is on <a href="https://omaboot.live/fixes/">omaboot.live</a>.</p>
 <section class="fix-upstream" aria-labelledby="upstream-h">
 <h2 id="upstream-h">Where fixes really happen</h2>
 <p>A fix here is a stopgap. The lasting fix lands upstream, where every Mac gets it:</p>
@@ -20,6 +20,7 @@
 <p>{{.Changes}}</p>
 <table class="defs fixdefs">
   <tbody>
+    <tr><th scope="row">Lives in</th><td>{{range $i, $p := .Levels}}{{if $i}}<br>{{end}}{{with fixLevel $p.Level}}<span class="tag fixlevel{{if not $i}} main{{end}}" title="{{.Means}}">{{.Name}}</span>{{end}} {{$p.What}}{{end}}</td></tr>
     <tr><th scope="row">Hardware</th><td>{{.Targets.Hardware}}</td></tr>
     {{with .Targets.Configs}}<tr><th scope="row">Configurations</th><td>{{range $i, $id := .}}{{if $i}}<br>{{end}}{{template "cfglink" index $.Data.Configs $id}}{{end}}</td></tr>{{end}}
     <tr><th scope="row">Criteria</th><td>{{range $i, $id := .Targets.Criteria}}{{if $i}}, {{end}}{{index $.Data.CapNames $id}}{{end}}</td></tr>
@@ -27,6 +28,7 @@
     {{with .TestedOn}}<tr><th scope="row">Tested on</th><td>{{range $i, $id := .}}{{if $i}}<br>{{end}}{{template "cfglink" index $.Data.Configs $id}}{{end}}</td></tr>{{end}}
     <tr><th scope="row">Since</th><td>OmaBoot? {{.Since}}</td></tr>
     <tr><th scope="row">Report ID</th><td><code>{{.ID}}</code></td></tr>
+    <tr><th scope="row">Details</th><td><a href="https://omaboot.live/fixes/#{{.ID}}">How it works, on omaboot.live</a></td></tr>
   </tbody>
 </table>
 </li>{{else}}<li class="muted">No fixes yet.</li>{{end}}
