@@ -314,6 +314,14 @@ type OmabootFix struct {
 	UpstreamNote string    `yaml:"upstream_note" json:"upstream_note,omitempty"` // e.g. "not upstream yet"
 	TestedOn     []string  `yaml:"tested_on" json:"tested_on,omitempty"`         // configurations it was tried on, on real hardware
 	Since        string    `yaml:"since" json:"since"`                           // the first OmaBoot? build carrying it: "2026.10", or "dev 1d36b14"
+	// Levels: where in the system it lives (report.FixLevels), its main level first.
+	Levels []FixPlace `yaml:"levels" json:"levels"`
+}
+
+// FixPlace is one level of the system a fix lives at, and what it changes there.
+type FixPlace struct {
+	Level string `yaml:"level" json:"level"` // a report.FixLevels id, e.g. "driver-patch"
+	What  string `yaml:"what" json:"what"`   // e.g. "radeon, rebuilt for both kernels"
 }
 
 // FixTargets is the hardware a fix applies to and the criteria it can change.

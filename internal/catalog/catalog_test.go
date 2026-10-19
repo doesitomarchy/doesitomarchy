@@ -294,6 +294,7 @@ exclude:
     criteria: [graphics.external-display]
   upstream: [{ title: A patch, url: "https://example.com/patch" }]
   since: dev abc1234
+  levels: [{ level: driver-patch, what: "the HDMI driver" }]
 `,
 }
 
@@ -403,6 +404,8 @@ func TestValidationRules(t *testing.T) {
 		{"fix config", "fixes.yaml", "configs: [macmini9-9-mid-2099-a]", "configs: [macmini9-9-mid-2099-z]", `unknown configuration "macmini9-9-mid-2099-z"`},
 		{"fix device", "fixes.yaml", `subsystem: "106b:0001"`, `subsystem: "106B-0001"`, "must look like pci:vvvv:dddd"},
 		{"fix upstream", "fixes.yaml", `upstream: [{ title: A patch, url: "https://example.com/patch" }]`, "upstream: []", "upstream must link"},
+		{"fix level", "fixes.yaml", "level: driver-patch", "level: firmware", `unknown level "firmware"`},
+		{"fix levels", "fixes.yaml", `levels: [{ level: driver-patch, what: "the HDMI driver" }]`, "levels: []", "levels must say where"},
 		{"fix without changes", "fixes.yaml", "changes: Makes the HDMI port work.", "changes: \"\"", "name, changes, since and targets.hardware are required"},
 	}
 	for _, tt := range tests {

@@ -14,6 +14,10 @@
 #   tested_on configurations it was tried on, on real hardware
 #   since     the first OmaBoot? build carrying it: a release ("2026.10") or
 #             a dev build ("dev <commit>")
+#   levels    where in the system it lives, its main level first: each a level
+#             (desktop, system, driver-settings, new-driver, driver-patch,
+#             kernel or boot-options; pkg/report FixLevels) and what it changes
+#             there. Never firmware: OmaBoot? doesn't change it.
 
 - id: omaboot.radeon-imac10-1-panel-clock
   name: radeon panel clock fix
@@ -29,6 +33,9 @@
       url: https://github.com/choyer/omarchy-vintage-intel-imac-fix/commit/0d5a406a31
   tested_on: [imac10-1-21-late-2009-b]
   since: "dev 1d36b14"
+  levels:
+    - { level: driver-patch, what: "radeon, rebuilt for both kernels" }
+    - { level: boot-options, what: "radeon.dpm=0 radeon.pcie_gen2=0 radeon.uvd=0, on the iMac10,1 only" }
 
 - id: omaboot.applesmc-led-container-of
   name: applesmc keyboard backlight fix
@@ -42,6 +49,9 @@
   upstream_note: "Not upstream yet: a pull request to t2linux is planned."
   tested_on: [macbookair5-2-mid-2012-a, imac10-1-21-late-2009-b, imac18-3-5k-2017-a]
   since: "dev 1d36b14"
+  levels:
+    - { level: driver-patch, what: "applesmc, rebuilt for the T2 kernel" }
+    - { level: driver-settings, what: "the official live system's applesmc blacklist, removed" }
 
 - id: omaboot.lid-wake-closed-only
   name: lid wake fix
@@ -55,3 +65,5 @@
   upstream_note: "Not upstream yet: a proposal to Omarchy's Apple hardware fixes is planned."
   tested_on: [macbookair5-2-mid-2012-a]
   since: "dev 327b2e3"
+  levels:
+    - { level: system, what: "omaboot-lid-wake, a systemd-sleep hook" }

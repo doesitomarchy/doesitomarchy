@@ -28,7 +28,7 @@ import (
 // without that stamp, the newest entry in the catalog's changelog. Neither
 // goes into the hash.
 func catalogSnapshot(c *catalog.Catalog, date string, wiring map[string]configWiring) (report.CatalogSnapshot, []byte) {
-	x := report.CatalogSnapshot{Match: match.Snapshot(c), Capabilities: []report.SnapshotCriterion{}, Fixes: []report.BootFix{}}
+	x := report.CatalogSnapshot{Match: match.Snapshot(c), Capabilities: []report.SnapshotCriterion{}, Fixes: []report.BootFix{}, FixLevels: report.FixLevels}
 	for _, m := range x.Match.Macs {
 		for _, r := range m.Releases {
 			for i := range r.Configs {
@@ -69,6 +69,9 @@ func bootFixJSON(f catalog.OmabootFix) report.BootFix {
 	}
 	for _, u := range f.Upstream {
 		x.Upstream = append(x.Upstream, report.FixLink{Title: u.Title, URL: u.URL})
+	}
+	for _, p := range f.Levels {
+		x.Levels = append(x.Levels, report.FixPlace{Level: p.Level, What: p.What})
 	}
 	return x
 }

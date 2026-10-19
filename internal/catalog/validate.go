@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 var (
@@ -98,6 +100,22 @@ func (l *loader) validateFixes() {
 		for _, d := range f.Targets.Devices {
 			if !reHWID.MatchString(d.ID) || (d.Subsystem != "" && !reSubsystem.MatchString(d.Subsystem)) {
 				l.errf(path, "%s: device %q (subsystem %q) must look like pci:vvvv:dddd (subsystem vvvv:dddd)", where, d.ID, d.Subsystem)
+			}
+		}
+		if len(f.Levels) == 0 {
+			l.errf(path, "%s: levels must say where in the system it lives, its main level first", where)
+		}
+		levels := map[string]bool{}
+		for _, p := range f.Levels {
+			if lv, ok := report.FixLevelByID(p.Level); !ok || lv.ID == "firmware" {
+				l.errf(path, "%s: unknown level %q (firmware isn't one: OmaBoot? never changes it)", where, p.Level)
+			}
+			if levels[p.Level] {
+				l.errf(path, "%s: level %q listed twice", where, p.Level)
+			}
+			levels[p.Level] = true
+			if p.What == "" {
+				l.errf(path, "%s: level %q needs what it changes there", where, p.Level)
 			}
 		}
 		if len(f.Upstream) == 0 {

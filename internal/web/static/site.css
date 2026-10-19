@@ -753,4 +753,7 @@ ul.pmwhy .pmword[data-st="failed"] { color: var(--bad); }
 ol.fix-list { list-style: none; margin: 2rem 0 0; padding: 0; border-bottom: 1px solid var(--line-strong); }
 ol.fix-list > li { border-top: 1px solid var(--line-strong); padding: 0.25rem 0 1.25rem; }
 .fix-num { color: var(--accent); margin-right: 0.15rem; }
+/* where a fix lives (pkg/report FixLevels): the main level in the accent */
+.tag.fixlevel { text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.35rem; }
+.tag.fixlevel.main { color: var(--accent); border-color: var(--accent); }
 table.fixes td { vertical-align: top; font-size: 13px; }
