@@ -361,8 +361,8 @@ func (s *Server) mcpNeedsTesting(in mcpMacIn) (string, error) {
 	}
 	b.WriteString(`
 ## How to help
-- Testing: run Omarchy on this Mac and check each criterion. Reports arrive through doioma, the DoesItOmarchy test tool, which is being built now: ` + BaseURL + `/contribute
-- Until then: check the Mac's page matches the hardware (` + macURL(m) + `). If it doesn't, open an issue with the output of lspci -nn and lsusb: https://github.com/doesitomarchy/doesitomarchy/issues
+- Testing: start this Mac from OmaBoot? Live, a comprehensive Intel Mac test suite for Omarchy, on a USB stick (nothing is installed; first release coming soon). It checks each criterion and submits the report: https://omaboot.live (more at ` + BaseURL + `/contribute)
+- Until its first release: check the Mac's page matches the hardware (` + macURL(m) + `). If it doesn't, open an issue with the output of lspci -nn and lsusb: https://github.com/doesitomarchy/doesitomarchy/issues
 - Fixing: fixes happen upstream (the Linux kernel, t2linux, Omarchy's repositories); OmaBoot? carries a few for testing: ` + BaseURL + `/fixes
 - Building a test tool: ` + BaseURL + `/api#sources`)
 	return b.String(), nil
