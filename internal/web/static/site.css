@@ -421,7 +421,6 @@ dialog.overlay .foot { border-top: 1px solid var(--line); padding: 0.35rem 0.7re
 .rally .tagline { font-weight: 700; color: var(--accent); }
 .rally .help { font-weight: 700; color: var(--accent-contrast); background: var(--accent); padding: 0.1rem 0.6rem; }
 .rally .help:hover { text-decoration: none; filter: brightness(1.08); }
-.rally .rally-fixes { font-size: 0.9rem; text-decoration: underline; text-underline-offset: 2px; }
 
 /* ── Konami easter egg ──────────────────────────────────────────────── */
 .konami { position: fixed; inset: 0; z-index: 100; background: color-mix(in srgb, var(--bg) 86%, transparent); opacity: 0; transition: opacity 0.45s ease; }
