@@ -3,6 +3,13 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-19"
+  title: A Thunderbolt 3 USB wake fix for USB-C ports
+  summary: "A fourth OmaBoot? fix: on Macs with Thunderbolt 3, the chip's USB controller powers down when idle, and Linux doesn't take the PCIe wake signal that should power it back up when a USB 3 device is plugged into a USB-C port, so the device is never seen. OmaBoot? Live's USB-C test now keeps the controller awake when it has waited with nothing seen, and a result that needed it says so."
+  notes:
+    - "Found on the 2017 iMacs: a USB-C stick plugged into either Thunderbolt 3 port left no trace in the kernel log. Booted with the kernel option pcie_ports=native, an iMac (Retina 5K, 27-inch, 2017) saw the same stick at once, at 5 Gb/s. A Linux patch that fixes it for every Mac was posted in September 2026."
+    - "USB 2 devices, such as an iPhone on a Lightning cable, were never affected: the USB-C ports' USB 2 lines run to the Mac's main USB controller."
+
+- date: "2026-10-19"
   title: Where each OmaBoot? fix lives
   summary: "Each OmaBoot? fix now says where in the system it lives, its main level first, and what it changes there: the radeon panel clock fix is a driver patch plus boot options for the iMac10,1, the applesmc fix a driver patch plus a lifted blacklist, and the lid wake fix a system service. No fix touches the firmware. The levels are on /fixes, and each fix links to its details on omaboot.live."
 
