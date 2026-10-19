@@ -67,3 +67,27 @@
   since: "dev 327b2e3"
   levels:
     - { level: system, what: "omaboot-lid-wake, a systemd-sleep hook" }
+
+- id: omaboot.thunderbolt3-usb-awake
+  name: Thunderbolt 3 USB wake fix
+  changes: "Keeps the Thunderbolt 3 chip's USB controller awake while OmaBoot? Live's USB-C test runs. On a Mac, Linux doesn't take the PCIe wake signal (PME) that powers the idle controller back up, so a USB 3 device plugged into a USB-C port is never seen; USB 2 devices are, through the Mac's main USB controller. When the test has waited 15 seconds with nothing seen while the controller sleeps, it turns the controller's runtime power management off (power/control on) and puts it back after the test. On an installed system, the kernel option pcie_ports=native does the same."
+  targets:
+    hardware: "Intel Macs from 2016 to 2020 with Intel's Thunderbolt 3 chips (Alpine Ridge, Titan Ridge), whose USB-C ports' USB 3 lines run to the chip's own USB controller. It acts only while that controller is runtime-suspended, and only in the USB-C test."
+    devices:
+      - { id: "pci:8086:15b5" }
+      - { id: "pci:8086:15b6" }
+      - { id: "pci:8086:15c1" }
+      - { id: "pci:8086:15d4" }
+      - { id: "pci:8086:15db" }
+      - { id: "pci:8086:15e9" }
+      - { id: "pci:8086:15ec" }
+      - { id: "pci:8086:15f0" }
+    criteria: [ports.usb-c]
+  upstream:
+    - title: "ACPI: PCI: take native PME control on Apple machines (Linux patch, September 2026)"
+      url: https://lore.kernel.org/r/20260924132859.24751-1-fbeltranmillalen@gmail.com
+  upstream_note: "Not merged yet. Until it is, pcie_ports=native on the kernel command line has the same effect: confirmed on an iMac (Retina 5K, 27-inch, 2017), whose USB-C stick then came up at 5 Gb/s."
+  tested_on: [imac18-3-5k-2017-a]
+  since: "dev de06dfb"
+  levels:
+    - { level: driver-settings, what: "runtime power management off for the Thunderbolt 3 chip's USB controller, during the USB-C test" }
