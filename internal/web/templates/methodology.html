@@ -92,7 +92,7 @@
 <div class="paper">
 <section>
 <h2 id="live">Live boots</h2>
-<p><a href="https://doesitboot.com" rel="noopener">OmaBoot? Live</a> tests a Mac from a USB stick, without installing anything. A live boot runs the same kernel and drivers as an installed Omarchy, so its results count toward verdicts like an installed system's, and each one carries a <span class="tag">Live boot</span> tag.</p>
+<p><a href="https://omaboot.live" rel="noopener">OmaBoot? Live</a> tests a Mac from a USB stick, without installing anything. A live boot runs the same kernel and drivers as an installed Omarchy, so its results count toward verdicts like an installed system's, and each one carries a <span class="tag">Live boot</span> tag.</p>
 <p>A few criteria only an installed system can decide:</p>
 <ul>{{range .Data.LiveNo}}<li>{{.}}</li>{{end}}{{range .Data.LiveT2}}<li>{{.}}, on Macs without a T2 chip</li>{{end}}{{range .Data.LiveKernel}}<li>{{.}}, unless the live system runs the kernel an install gives that Mac (OmaBoot? Live does by default)</li>{{end}}</ul>
 <p>A live report sends these as not tested, with the reason <code>live-limit</code>, so nothing pretends to be a result. On some Macs it leaves out more, such as Wi-Fi on Broadcom BCM4331 and BCM4360 cards, whose driver only the installer adds. An <a href="#fixes">OmaBoot? fix</a> that took effect lifts the limit for the criteria it targets.</p>

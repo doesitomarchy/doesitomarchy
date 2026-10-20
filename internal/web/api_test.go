@@ -305,7 +305,7 @@ func TestAPILive(t *testing.T) {
 		t.Error("capabilities lack the live flag")
 	}
 
-	key, err := st.AddSource(context.Background(), "boot-live", "OmaBoot? Live", "https://doesitboot.com")
+	key, err := st.AddSource(context.Background(), "boot-live", "OmaBoot? Live", "https://omaboot.live")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -366,7 +366,7 @@ items:
 			t.Fatal(err)
 		}
 		ts := httptest.NewServer(srv.Handler())
-		key, err := st.AddSource(context.Background(), "boot-live", "OmaBoot? Live", "https://doesitboot.com")
+		key, err := st.AddSource(context.Background(), "boot-live", "OmaBoot? Live", "https://omaboot.live")
 		if err != nil {
 			t.Fatal(err)
 		}

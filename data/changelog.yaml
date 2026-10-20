@@ -2,6 +2,10 @@
 # Each entry: date (YYYY-MM-DD), title, summary, and optional notes (notable
 # findings, especially where the catalog differs from a common source).
 
+- date: "2026-10-20"
+  title: OmaBoot? Live's homepage is omaboot.live
+  summary: "OmaBoot? Live, the source of live-boot reports, now links to its own site, omaboot.live, where its images, its tests and its source are."
+
 - date: "2026-10-19"
   title: Which Macs each OmaBoot? fix applies to
   summary: "Each OmaBoot? fix now lists every configuration it applies to (applies_to in the snapshot). A fix that's that narrow lists them by hand; the others are worked out from the catalog, by the devices the fix acts on or by a rule over the catalog's facts and years, so the lists grow with the catalog. The Thunderbolt 3 USB wake fix applies to 41 configurations, the applesmc fix to 62 (a keyboard backlight, no T2 chip), and the lid wake fix to 73 (a lid, from 2009). Macs that can't run Omarchy at all are left out."

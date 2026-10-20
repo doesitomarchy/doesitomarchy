@@ -123,7 +123,7 @@ omarchy: { version: "4.0.4", image: "omaboot-live dev 0b8738f" }
 func TestAcceptStored(t *testing.T) {
 	ctx := context.Background()
 	st, _ := testdb.Open(t)
-	if err := st.EnsureSource(ctx, OmaBootSource, "OmaBoot? Live", "https://doesitboot.com"); err != nil {
+	if err := st.EnsureSource(ctx, OmaBootSource, "OmaBoot? Live", "https://omaboot.live"); err != nil {
 		t.Fatal(err)
 	}
 	id := insertLive(t, st, "")
@@ -198,7 +198,7 @@ func TestAcceptStored(t *testing.T) {
 func TestPerMacStored(t *testing.T) {
 	ctx := context.Background()
 	st, _ := testdb.Open(t)
-	st.EnsureSource(ctx, OmaBootSource, "OmaBoot? Live", "https://doesitboot.com")
+	st.EnsureSource(ctx, OmaBootSource, "OmaBoot? Live", "https://omaboot.live")
 	st.SetSourceTrust(ctx, OmaBootSource, "trusted")
 	var last int64
 	for i := 0; i <= results.ReportsPerDayPerMac; i++ {
