@@ -14,6 +14,7 @@ import (
 	"github.com/doesitomarchy/doesitomarchy/internal/search"
 	"github.com/doesitomarchy/doesitomarchy/internal/status"
 	"github.com/doesitomarchy/doesitomarchy/internal/store"
+	"github.com/doesitomarchy/doesitomarchy/pkg/report"
 )
 
 // preset is one of the quick searches under the home search bar (PLAN §17.7).
@@ -738,8 +739,4 @@ func (s *Server) privacy(w http.ResponseWriter, r *http.Request) {
 }
 
 // ConsentNotice is the notice test tools must show before submitting (PLAN §22.1).
-const ConsentNotice = "This sends your test results to DoesItOmarchy.com. Serial numbers, network and IP addresses, " +
-	"computer and user names, and e-mail addresses are removed first. Once a maintainer accepts the report, " +
-	"its results, your Mac's hardware details and your handle (if you give one) are public, and the full report, " +
-	"with that personal data removed, may be published later. Submitting means you agree. " +
-	"More at doesitomarchy.com/privacy."
+const ConsentNotice = report.ConsentNotice
