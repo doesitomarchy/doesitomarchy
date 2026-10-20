@@ -55,6 +55,8 @@ type BootFix struct {
 	Hardware     string      `json:"hardware" doc:"Which hardware it applies to, in words"`
 	Devices      []FixDevice `json:"devices,omitempty" doc:"The devices it acts on"`
 	Configs      []string    `json:"configs,omitempty" doc:"The configurations it applies to, when it's that narrow"`
+	AppliesTo    []string    `json:"applies_to" doc:"Every configuration it applies to: its configs, or those the registry's rule picks (its devices, tags or years)"`
+	AppliesRule  string      `json:"applies_rule,omitempty" doc:"The rule in words, e.g. Every Mac with a lid, from 2009; absent when it lists its configs"`
 	Criteria     []string    `json:"criteria" doc:"The criteria whose results it can change"`
 	Upstream     []FixLink   `json:"upstream,omitempty" doc:"Where the fix comes from, or where it's heading"`
 	UpstreamNote string      `json:"upstream_note,omitempty"`

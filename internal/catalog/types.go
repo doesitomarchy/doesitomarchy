@@ -329,7 +329,13 @@ type FixTargets struct {
 	Hardware string      `yaml:"hardware" json:"hardware"` // in words, for people
 	Devices  []FixDevice `yaml:"devices" json:"devices,omitempty"`
 	Configs  []string    `yaml:"configs" json:"configs,omitempty"`
-	Criteria []string    `yaml:"criteria" json:"criteria"`
+	// When, From and To pick configurations by rule when the fix doesn't list
+	// them: When over a configuration's tags (as capabilities.yaml's when),
+	// From and To over its release's announcement year. See FixConfigs.
+	When     *Condition `yaml:"when" json:"when,omitempty"`
+	From     int        `yaml:"from" json:"from,omitempty"`
+	To       int        `yaml:"to" json:"to,omitempty"`
+	Criteria []string   `yaml:"criteria" json:"criteria"`
 }
 
 // FixDevice is a PCI or USB device a fix acts on, with its subsystem ID

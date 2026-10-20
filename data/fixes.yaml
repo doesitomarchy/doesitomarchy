@@ -9,7 +9,14 @@
 #   changes   what it changes, in a sentence or two
 #   targets   hardware: which Macs, in words · devices: PCI/USB IDs it acts
 #             on, with a subsystem when it checks that too · configs: when
-#             it's that narrow · criteria: the results it can change
+#             it's that narrow · when, from, to: a rule picking the
+#             configurations otherwise: when over their tags (the language
+#             of capabilities.yaml's when), from and to over their release's
+#             announcement year · criteria: the results it can change
+#             The configurations it applies to (the API's applies_to) are its
+#             configs, or every configuration that has one of its devices and
+#             fits its rule. A device with a subsystem needs configs: the
+#             catalog doesn't record subsystems.
 #   upstream  the fix's source, or the project it's heading to
 #   tested_on configurations it was tried on, on real hardware
 #   since     the first OmaBoot? build carrying it: a release ("2026.10") or
@@ -42,6 +49,7 @@
   changes: "Fixes an oops while applesmc starts on Macs whose SMC has a keyboard-backlight key: t2linux patch 3001 takes the SMC's data from the backlight's LED device, which doesn't hold it. A one-line container_of fix. With it, fans, the light sensor and the keyboard backlight work in a live boot."
   targets:
     hardware: "Macs without a T2 chip whose SMC has a keyboard-backlight key, booted on OmaBoot?'s T2 kernel (linux-t2), which carries the t2linux applesmc patches. Other Macs load it without harm."
+    when: { all: ["feature:keyboard-backlight"], none: ["chip:t2"] }
     criteria: [input.keyboard-backlight, input.ambient-light-sensor, thermal.fans]
   upstream:
     - title: t2linux kernel patches
@@ -58,6 +66,8 @@
   changes: "Arms the lid's wake only for a sleep that starts with the lid closed. On these Macs the lid's wake is a bit in the embedded controller, set before every sleep, so a sleep that starts with the lid open (Suspend from the menu, an idle suspend) is woken by the lid a few seconds in. A small systemd-sleep hook turns the lid's wake off in /proc/acpi/wakeup for such a sleep and back on after it; a sleep from closing the lid still wakes when it opens. OmaBoot? Live's sleep test naps once with the stock setting and, if the lid woke it, once more with the fix."
   targets:
     hardware: "Mac laptops whose lid wake goes through the embedded controller: the lid's ACPI _PSW sets a wake-on-lid-open bit. Found on the MacBook Air (13-inch, Mid 2012); every other Mac laptop whose ACPI tables were checked has the same pattern (8 models from 2009 to 2019, MacBook Pro and MacBook Air, in public hardware probes). It does nothing on a Mac without a lid, or when the lid is closed."
+    when: { all: ["feature:lid"] }
+    from: 2009
     criteria: [power.sleep-wake]
   upstream:
     - title: "Omarchy (Apple hardware fixes in install/hardware/apple)"

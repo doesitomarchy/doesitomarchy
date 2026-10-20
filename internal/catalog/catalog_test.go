@@ -186,6 +186,44 @@ func TestRealCatalogHardBlocker(t *testing.T) {
 	}
 }
 
+// TestRealCatalogFixConfigs pins what each fix's rule picks, so a catalog
+// change that widens or narrows one shows up here.
+func TestRealCatalogFixConfigs(t *testing.T) {
+	c := loadReal(t)
+	tests := []struct {
+		fix, rule string
+		has, not  []string
+	}{
+		{"omaboot.radeon-imac10-1-panel-clock", "", []string{"imac10-1-21-late-2009-b"}, []string{"imac10-1-27-late-2009-a", "imac11-2-21-mid-2010-a"}},
+		{"omaboot.thunderbolt3-usb-awake", "Every Mac with one of the devices it acts on", []string{"imac18-3-5k-2017-a", "macmini8-1-2018-a"}, []string{"imac17-1-5k-late-2015-a"}},
+		{"omaboot.applesmc-led-container-of", "Every Mac with a keyboard backlight, without a T2 chip", []string{"macbookair5-2-mid-2012-a"}, []string{"imac18-3-5k-2017-a", "macbookpro1-1-15-early-2006-a"}},
+		{"omaboot.lid-wake-closed-only", "Every Mac with a lid, from 2009", []string{"macbookair5-2-mid-2012-a"}, []string{"imac18-3-5k-2017-a", "macbook2-1-late-2006-a"}},
+	}
+	for _, tt := range tests {
+		f := c.OmabootFix(tt.fix)
+		if f == nil {
+			t.Fatalf("%s: not in the registry", tt.fix)
+		}
+		if got := c.FixRule(f); got != tt.rule {
+			t.Errorf("%s: rule %q, want %q", tt.fix, got, tt.rule)
+		}
+		got := map[string]bool{}
+		for _, id := range c.FixConfigs(f) {
+			got[id] = true
+		}
+		for _, id := range tt.has {
+			if !got[id] {
+				t.Errorf("%s: should apply to %s", tt.fix, id)
+			}
+		}
+		for _, id := range tt.not {
+			if got[id] {
+				t.Errorf("%s: shouldn't apply to %s", tt.fix, id)
+			}
+		}
+	}
+}
+
 // ── Validation rules, against a minimal fixture ─────────────────────────────
 
 var fixture = map[string]string{
@@ -407,6 +445,9 @@ func TestValidationRules(t *testing.T) {
 		{"fix level", "fixes.yaml", "level: driver-patch", "level: firmware", `unknown level "firmware"`},
 		{"fix levels", "fixes.yaml", `levels: [{ level: driver-patch, what: "the HDMI driver" }]`, "levels: []", "levels must say where"},
 		{"fix without changes", "fixes.yaml", "changes: Makes the HDMI port work.", "changes: \"\"", "name, changes, since and targets.hardware are required"},
+		{"fix subsystem without configs", "fixes.yaml", "configs: [macmini9-9-mid-2099-a]", "configs: []", "checks a subsystem"},
+		{"fix configs and rule", "fixes.yaml", "configs: [macmini9-9-mid-2099-a]", "configs: [macmini9-9-mid-2099-a]\n    from: 2009", "configs or a rule"},
+		{"fix tag", "fixes.yaml", "configs: [macmini9-9-mid-2099-a]", "when: { all: [\"feature:jetpack\"] }", `unknown tag "feature:jetpack"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
