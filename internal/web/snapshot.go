@@ -42,7 +42,7 @@ func catalogSnapshot(c *catalog.Catalog, date string, wiring map[string]configWi
 		x.Capabilities = append(x.Capabilities, report.SnapshotCriterion{ID: cp.ID, Name: cp.Name, Category: cp.Category(), Live: cp.Live, Retired: cp.Retired})
 	}
 	for _, f := range c.OmabootFixes {
-		x.Fixes = append(x.Fixes, bootFixJSON(f))
+		x.Fixes = append(x.Fixes, bootFixJSON(c, f))
 	}
 	body, _ := json.Marshal(x)
 	sum := sha256.Sum256(body)
@@ -61,8 +61,9 @@ func catalogSnapshot(c *catalog.Catalog, date string, wiring map[string]configWi
 }
 
 // bootFixJSON is a registry entry as the API shows it.
-func bootFixJSON(f catalog.OmabootFix) report.BootFix {
+func bootFixJSON(c *catalog.Catalog, f catalog.OmabootFix) report.BootFix {
 	x := report.BootFix{ID: f.ID, Name: f.Name, Changes: f.Changes, Hardware: f.Targets.Hardware, Configs: f.Targets.Configs,
+		AppliesTo: c.FixConfigs(&f), AppliesRule: c.FixRule(&f),
 		Criteria: f.Targets.Criteria, UpstreamNote: f.UpstreamNote, TestedOn: f.TestedOn, Since: f.Since, URL: BaseURL + fixURL(f.ID)}
 	for _, d := range f.Targets.Devices {
 		x.Devices = append(x.Devices, report.FixDevice{ID: d.ID, Subsystem: d.Subsystem})

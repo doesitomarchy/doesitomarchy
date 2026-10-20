@@ -3,6 +3,10 @@
 # findings, especially where the catalog differs from a common source).
 
 - date: "2026-10-19"
+  title: Which Macs each OmaBoot? fix applies to
+  summary: "Each OmaBoot? fix now lists every configuration it applies to (applies_to in the snapshot). A fix that's that narrow lists them by hand; the others are worked out from the catalog, by the devices the fix acts on or by a rule over the catalog's facts and years, so the lists grow with the catalog. The Thunderbolt 3 USB wake fix applies to 41 configurations, the applesmc fix to 62 (a keyboard backlight, no T2 chip), and the lid wake fix to 73 (a lid, from 2009). Macs that can't run Omarchy at all are left out."
+
+- date: "2026-10-19"
   title: A Thunderbolt 3 USB wake fix for USB-C ports
   summary: "A fourth OmaBoot? fix: on Macs with Thunderbolt 3, the chip's USB controller powers down when idle, and Linux doesn't take the PCIe wake signal that should power it back up when a USB 3 device is plugged into a USB-C port, so the device is never seen. OmaBoot? Live's USB-C test now keeps the controller awake when it has waited with nothing seen, and a result that needed it says so."
   notes:

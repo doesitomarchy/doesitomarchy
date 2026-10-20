@@ -102,6 +102,35 @@ func (l *loader) validateFixes() {
 				l.errf(path, "%s: device %q (subsystem %q) must look like pci:vvvv:dddd (subsystem vvvv:dddd)", where, d.ID, d.Subsystem)
 			}
 		}
+		t := f.Targets
+		rule := t.When != nil || t.From != 0 || t.To != 0
+		switch {
+		case len(t.Configs) > 0 && rule:
+			l.errf(path, "%s: configs or a rule (when, from, to), not both", where)
+		case len(t.Configs) == 0 && len(t.Devices) == 0 && !rule:
+			l.errf(path, "%s: say which configurations it applies to: configs, devices or a rule (when, from, to)", where)
+		}
+		for _, d := range t.Devices {
+			if d.Subsystem != "" && len(t.Configs) == 0 {
+				l.errf(path, "%s: device %q checks a subsystem, which the catalog doesn't record: list its configs", where, d.ID)
+			}
+		}
+		if w := t.When; w != nil {
+			if len(w.All)+len(w.Any)+len(w.None) == 0 {
+				l.errf(path, "%s: empty when", where)
+			}
+			for _, tag := range append(append(append([]string{}, w.All...), w.Any...), w.None...) {
+				if !c.Vocab.validTag(tag) {
+					l.errf(path, "%s: unknown tag %q", where, tag)
+				}
+			}
+		}
+		if (t.From != 0 && (t.From < 2005 || t.From > 2030)) || (t.To != 0 && (t.To < 2005 || t.To > 2030)) || (t.From != 0 && t.To != 0 && t.From > t.To) {
+			l.errf(path, "%s: from and to are announcement years, from no later than to", where)
+		}
+		if len(c.FixConfigs(&c.OmabootFixes[i])) == 0 {
+			l.errf(path, "%s: applies to no configuration", where)
+		}
 		if len(f.Levels) == 0 {
 			l.errf(path, "%s: levels must say where in the system it lives, its main level first", where)
 		}
