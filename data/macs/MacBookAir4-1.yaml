@@ -4,6 +4,10 @@ efi: 64
 board_ids: [Mac-C08A6BB70A942AC2]
 research_notes: |
   Adds Thunderbolt and brings back the backlit keyboard.
+  This model's EFI firmware hangs (frozen screen, no console output, dead
+  keyboard) when it executes a bootloader binary directly, regardless of
+  which one (GRUB, Limine, rEFInd all reproduce it). Confirmed fix:
+  chainload through a signed shim first. See omacom/omarchy#1641.
 sources:
   - https://support.apple.com/en-us/112439
   - https://support.apple.com/en-us/102869
@@ -12,6 +16,7 @@ sources:
   - https://everymac.com/systems/apple/macbook-air/macbook-air-faq/macbook-air-late-2010-pros-and-cons.html
   - https://github.com/acidanthera/OpenCorePkg/blob/master/AppleModels/DataBase/MacBookAir/MBA41.yaml
   - https://github.com/linuxhw/LsPCI/tree/master/Notebook/Apple/MacBookAir4/MacBookAir4%2C1
+  - https://github.com/omacom/omarchy/issues/1641
 releases:
   - id: mid-2011
     name: "MacBook Air (11-inch, Mid 2011)"
